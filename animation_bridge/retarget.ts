@@ -2,31 +2,6 @@
  * animation_bridge/retarget.ts
  * ─────────────────────────────────────────────────────────────────────────────
  * Animation bridge: source registry + measured retarget lane.
- *
- * This module is the integration point between the Bannon animation source
- * registry (SOURCE_REGISTRY.json) and the Three.js runtime.
- *
- * Architecture:
- *   FBX / BVH / animated GLB / owner-granted Bannon motion bank
- *   → source discovery
- *   → normalization (bone name aliases)
- *   → retargeting (AnimationRetargeter)
- *   → bind-relative quaternion correction for Bannon source motion
- *   → AnimationClip creation
- *   → clip validation
- *   → state/action mapping
- *   → AnimationMixer(visibleClone)
- *   → YOUR SKELETON
- *   → MOVING BANNON
- *
- * Three.js architecture notes:
- *   - SkeletonUtils.clone() preserves the cloned skin/bone relationship
- *   - AnimationMixer must be rooted on the object being animated (the visible clone)
- *   - mixer.update(delta) must be called every render frame
- *
- * IDENTITY: Bone names are the stable cross-file identity — NOT UUIDs.
- * UUIDs change every time a scene is cloned.
- * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import * as THREE from 'three';
@@ -38,6 +13,7 @@ import {
 } from '../src/engine/retarget/SemanticStateAliases';
 import {
   applyBindRelativeQuaternionTracks,
+  BANNON_MOTION_CLIP_NAMES,
   buildBannonMotionClips,
 } from '../src/engine/retarget/BannonMotionBank';
 
@@ -80,8 +56,10 @@ export class AnimationBridge {
   ): AnimationBridgeResult {
     const retargetReport = this.retargeter.buildMap(sourceScene, targetScene);
 
-    // The GLB may contain only idle or a partial bank. Reattach the real
-    // owner-granted Bannon motion bank instead of rebuilding attacks in code.
+    // Reattach the actual owner-granted Bannon motion bank in addition to any
+    // clips embedded in the GLB. This restores locomotion, strikes, guard,
+    // reactions, grapples, knockdowns and the larger move vocabulary without
+    // replacing the fighter's authored world transform.
     const ownerMotion = buildBannonMotionClips();
     const mergedSourceClips = [
       ...sourceClips,
@@ -93,15 +71,14 @@ export class AnimationBridge {
     const { clips: retargetedClipsRaw, totalResolved, totalUnresolved } =
       this.retargeter.retargetClips(mergedSourceClips, this.characterId);
 
-    // Bannon's JSON clips are authored in Mixamo/Euler space. Apply the
-    // bind-relative delta only to those imported clips. Existing native GLB
-    // clips remain untouched, so fighter world orientation/position stays locked.
-    const retargetedClips = retargetedClipsRaw.map((clip) => {
-      const sourceType = String((clip as THREE.AnimationClip & { userData?: Record<string, unknown> }).userData?.clipSourceType ?? '');
-      return sourceType === 'BANNON_OWNER_MOTION'
+    // AnimationRetargeter intentionally produces fresh clips, so source
+    // metadata is not relied upon here. The generated bank's exact clip names
+    // are the stable provenance identity.
+    const retargetedClips = retargetedClipsRaw.map((clip) =>
+      BANNON_MOTION_CLIP_NAMES.has(clip.name)
         ? applyBindRelativeQuaternionTracks(clip, targetScene)
-        : clip;
-    });
+        : clip,
+    );
 
     validateAnimationChannelBones(targetScene, retargetedClips, this.characterId);
 
