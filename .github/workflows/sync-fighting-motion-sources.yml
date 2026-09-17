@@ -14,7 +14,7 @@ permissions:
 jobs:
   discover:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout Brutal Fist
         uses: actions/checkout@v4
@@ -38,7 +38,36 @@ jobs:
       - name: Index real motion assets
         run: node scripts/sync-fighting-motion-sources.mjs
 
-      - name: Report discovered source assets
+      - name: Write human-readable motion inventory
         run: |
-          node -e "import('./src/generated/FightingMotionSources.generated.ts').catch(() => process.exit(0))"
-          git status --short
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'src/generated/FightingMotionSources.generated.ts';
+          const text = fs.readFileSync(path, 'utf8');
+          const records = JSON.parse(text.match(/IMPORTED_FIGHTING_MOTION_SOURCES = ([\s\S]*?) as const;/)[1]);
+          const animations = JSON.parse(text.match(/IMPORTED_FIGHTING_ANIMATION_SOURCES = ([\s\S]*?) as const;/)[1]);
+          const lines = [
+            '# Fighting Motion Source Inventory',
+            '',
+            `Supported source files discovered: ${records.length}`,
+            `Animation-bearing source files discovered: ${animations.length}`,
+            '',
+          ];
+          for (const source of ['tekken3-recompiled', 'schwarzer-blitz']) {
+            lines.push(`## ${source}`);
+            const rows = animations.filter((r) => r.source === source);
+            if (!rows.length) lines.push('- No animation-bearing files were present in this checkout.');
+            else for (const row of rows) lines.push(`- \`${row.path}\` (${row.extension})`);
+            lines.push('');
+          }
+          fs.writeFileSync('fighting-motion-inventory.md', lines.join('\n'));
+          NODE
+
+      - name: Upload motion inventory and generated manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: fighting-motion-source-inventory
+          path: |
+            fighting-motion-inventory.md
+            src/generated/FightingMotionSources.generated.ts
+          if-no-files-found: error
