@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "name": "Brutal Fist",
+  "framework": "nextjs-typescript",
+  "primaryRuntime": "vite-pwa",
+  "preview": {
+    "command": "npm run dev",
+    "host": "0.0.0.0",
+    "port": 8080,
+    "publicPath": "/",
+    "singleApp": true,
+    "entry": "src/App.tsx",
+    "nextCompatibilityEntry": "app/page.tsx"
+  },
+  "game": {
+    "flow": ["character-select", "stage-select", "vs", "combat"],
+    "playablePreview": true,
+    "pwa": true,
+    "doNotCreatePlayRoute": true,
+    "preserveExistingRoutes": true
+  },
+  "assets": {
+    "runtimeDirectories": ["public", "src/assets", "src/generated", "vendor"],
+    "followSymlinks": false,
+    "includeGeneratedMotionBanks": true
+  },
+  "build": {
+    "install": "npm install",
+    "build": "npm run build",
+    "nextBuild": "npm run next:build",
+    "healthcheck": "/"
+  }
+}
