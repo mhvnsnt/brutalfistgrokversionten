@@ -1,6 +1,5 @@
 /**
  * animation_bridge/retarget.ts
- * ─────────────────────────────────────────────────────────────────────────────
  * Animation bridge: source registry + measured retarget lane.
  */
 
@@ -83,8 +82,15 @@ export class AnimationBridge {
     validateAnimationChannelBones(targetScene, retargetedClips, this.characterId);
 
     const clipsByState = new Map<string, THREE.AnimationClip>();
-    const missingStates: string[] = [];
 
+    // Keep every real clip addressable by its exact authored name. This is
+    // what lets character-specific move slots request BOXING__2_, CAPOEIRA,
+    // SUPLEX, etc. instead of collapsing everything into one generic attack.
+    for (const clip of retargetedClips) {
+      clipsByState.set(clip.name, clip);
+    }
+
+    const missingStates: string[] = [];
     for (const [semanticState, aliases] of Object.entries(SEMANTIC_STATE_ALIASES)) {
       let found = false;
       for (const alias of aliases) {
@@ -152,6 +158,11 @@ export class AnimationBridge {
     combatState: string,
     clipsByState: Map<string, THREE.AnimationClip>,
   ): THREE.AnimationClip | null {
+    // Exact authored move name wins first. This preserves per-character move
+    // identities when the state machine supplies a move/animation id.
+    const named = clipsByState.get(combatState);
+    if (named) return named;
+
     const semanticState = COMBAT_STATE_TO_SEMANTIC[combatState];
     if (!semanticState) return null;
 
