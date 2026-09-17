@@ -1,4 +1,5 @@
 node_modules/
+.next/
 .project_id
 .github_repo
 .env
