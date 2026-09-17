@@ -1,14 +1,14 @@
 /**
  * Tekken-style directional commands.
- * Camera at +Z: toward cam = +Z (down), away = −Z (up).
+ * Camera at +Z: toward cam = down/+Z; away = up/-Z.
  *
  *  tap up           jump (after the double-tap window, so tap-tap can sidestep)
  *  up+forward/back  jump immediately; forward/back still read while airborne
- *  double-tap up    sidestep away from camera (−Z)
+ *  double-tap up    sidestep away from camera (-Z)
  *  double-tap down  sidestep toward camera (+Z)
  *  hold down        crouch
- *  f,f              dash     f,f hold = run
- *  b,b              Korean backdash    b,b hold = run back
+ *  f,f              dash; hold after the second tap = run
+ *  b,b              Korean backdash; hold after the second tap = run back
  */
 const DOUBLE_MS = 220;
 const HOLD_RUN_MS = 160;
@@ -49,7 +49,10 @@ export function createTekkenStick() {
   const rise = (slot: DirTap, pressed: boolean, now: number): { rose: boolean; dbl: boolean; fell: boolean } => {
     const rose = pressed && !slot.down;
     const fell = !pressed && slot.down;
-    const dbl = rose && now - slot.last < DOUBLE_MS;
+    // A zero timestamp is the sentinel for "no previous tap". Without this
+    // guard the first tap can be misclassified as a double-tap because the
+    // game clock is also near zero during the opening frames.
+    const dbl = rose && slot.last > 0 && now - slot.last < DOUBLE_MS;
     if (rose) {
       slot.down = true;
       slot.heldSince = now;
@@ -79,7 +82,7 @@ export function createTekkenStick() {
         pendingJump = true;
         jumpPressAt = now;
       } else if (pendingJump && (f.down || b.down)) {
-        // Jump then press forward/back — air control, do not wait for simultaneous press.
+        // Jump then press forward/back — air control; simultaneous input is not required.
         jumpUntil = now + 480;
         pendingJump = false;
       } else if (pendingJump && now - jumpPressAt >= DOUBLE_MS) {
@@ -94,10 +97,10 @@ export function createTekkenStick() {
       const sidestepUp = now < sidestepUpUntil;
       const sidestepDown = now < sidestepDownUntil;
       const jumping = now < jumpUntil;
-      const dashing = now < dashUntil && f.down;
-      const backdashing = now < backdashUntil && !f.down;
-      const running = dashing && f.down && now - f.heldSince > HOLD_RUN_MS;
-      const runBack = backdashing && b.down && now - b.heldSince > HOLD_RUN_MS && !f.down;
+      const running = f.down && now < dashUntil && now - f.heldSince > HOLD_RUN_MS;
+      const runBack = b.down && now < backdashUntil && now - b.heldSince > HOLD_RUN_MS;
+      const dashing = now < dashUntil && !running;
+      const backdashing = now < backdashUntil && !runBack;
 
       let forward = 0;
       if (running || dashing) forward = 1;
