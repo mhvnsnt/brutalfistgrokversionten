@@ -9,6 +9,8 @@ export interface BannonMotionClipData {
   }>;
 }
 
+export const BANNON_MOTION_CLIP_NAMES = new Set(Object.keys(BANNON_MOTION_BANK));
+
 const QUATERNION_BONE_NAMES = new Set<string>([
   'mixamorigHips', 'mixamorigSpine', 'mixamorigSpine1', 'mixamorigSpine2',
   'mixamorigNeck', 'mixamorigHead',
