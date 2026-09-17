@@ -6,21 +6,21 @@
  * This module is the integration point between the Bannon animation source
  * registry (SOURCE_REGISTRY.json) and the Three.js runtime.
  *
- * Architecture (from PR #44):
- *   FBX / BVH / animated GLB
- *   → source discovery (SOURCE_REGISTRY.json)
+ * Architecture:
+ *   FBX / BVH / animated GLB / owner-granted Bannon motion bank
+ *   → source discovery
  *   → normalization (bone name aliases)
  *   → retargeting (AnimationRetargeter)
+ *   → bind-relative quaternion correction for Bannon source motion
  *   → AnimationClip creation
- *   → clip validation (validateAnimationChannelBones)
- *   → state/action mapping (SEMANTIC_STATE_ALIASES)
+ *   → clip validation
+ *   → state/action mapping
  *   → AnimationMixer(visibleClone)
  *   → YOUR SKELETON
  *   → MOVING BANNON
  *
  * Three.js architecture notes:
  *   - SkeletonUtils.clone() preserves the cloned skin/bone relationship
- *   - SkeletonUtils.retargetClip() can transfer an AnimationClip between skeletons
  *   - AnimationMixer must be rooted on the object being animated (the visible clone)
  *   - mixer.update(delta) must be called every render frame
  *
@@ -36,12 +36,12 @@ import {
   SEMANTIC_STATE_ALIASES,
   COMBAT_STATE_TO_SEMANTIC,
 } from '../src/engine/retarget/SemanticStateAliases';
+import {
+  applyBindRelativeQuaternionTracks,
+  buildBannonMotionClips,
+} from '../src/engine/retarget/BannonMotionBank';
 
 export { SEMANTIC_STATE_ALIASES, COMBAT_STATE_TO_SEMANTIC };
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
 
 export interface BridgeClipEntry {
   semanticState: string;
@@ -53,23 +53,13 @@ export interface BridgeClipEntry {
 }
 
 export interface AnimationBridgeResult {
-  /** Clips keyed by semantic state */
   clipsByState: Map<string, THREE.AnimationClip>;
-  /** All retargeted clips */
   allClips: THREE.AnimationClip[];
-  /** States with no valid clip */
   missingStates: string[];
-  /** Retarget report */
   retargetReport: RetargetReport | null;
-  /** Resolved track count */
   resolvedTrackCount: number;
-  /** Unresolved track count */
   unresolvedTrackCount: number;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// AnimationBridge
-// ─────────────────────────────────────────────────────────────────────────────
 
 export class AnimationBridge {
   private readonly characterId: string;
@@ -83,30 +73,38 @@ export class AnimationBridge {
     );
   }
 
-  /**
-   * Build the animation bridge for a character.
-   *
-   * @param sourceScene   Source skeleton scene (animation source)
-   * @param targetScene   Target skeleton scene (visible clone)
-   * @param sourceClips   Animation clips from the source
-   * @returns AnimationBridgeResult with clips keyed by semantic state
-   */
   build(
     sourceScene: THREE.Object3D,
     targetScene: THREE.Object3D,
     sourceClips: THREE.AnimationClip[]
   ): AnimationBridgeResult {
-    // Build retarget map
     const retargetReport = this.retargeter.buildMap(sourceScene, targetScene);
 
-    // Retarget all clips
-    const { clips: retargetedClips, totalResolved, totalUnresolved } =
-      this.retargeter.retargetClips(sourceClips, this.characterId);
+    // The GLB may contain only idle or a partial bank. Reattach the real
+    // owner-granted Bannon motion bank instead of rebuilding attacks in code.
+    const ownerMotion = buildBannonMotionClips();
+    const mergedSourceClips = [
+      ...sourceClips,
+      ...ownerMotion.filter((ownerClip) => !sourceClips.some(
+        (sourceClip) => sourceClip.name.toLowerCase() === ownerClip.name.toLowerCase(),
+      )),
+    ];
 
-    // Validate channel resolution on target skeleton
+    const { clips: retargetedClipsRaw, totalResolved, totalUnresolved } =
+      this.retargeter.retargetClips(mergedSourceClips, this.characterId);
+
+    // Bannon's JSON clips are authored in Mixamo/Euler space. Apply the
+    // bind-relative delta only to those imported clips. Existing native GLB
+    // clips remain untouched, so fighter world orientation/position stays locked.
+    const retargetedClips = retargetedClipsRaw.map((clip) => {
+      const sourceType = String((clip as THREE.AnimationClip & { userData?: Record<string, unknown> }).userData?.clipSourceType ?? '');
+      return sourceType === 'BANNON_OWNER_MOTION'
+        ? applyBindRelativeQuaternionTracks(clip, targetScene)
+        : clip;
+    });
+
     validateAnimationChannelBones(targetScene, retargetedClips, this.characterId);
 
-    // Map clips to semantic states
     const clipsByState = new Map<string, THREE.AnimationClip>();
     const missingStates: string[] = [];
 
@@ -148,20 +146,6 @@ export class AnimationBridge {
     };
   }
 
-  /**
-   * Feed retargeted clips to an AnimationMixer.
-   * The mixer MUST target the visible SkeletonUtils.clone() instance.
-   *
-   * Pipeline:
-   *   source animation → normalize names → canonical mapping → retarget to target skeleton
-   *   → validate track paths → AnimationMixer(visibleClone) → clipAction() → .play()
-   *   → mixer.update(delta)
-   *
-   * @param mixer       AnimationMixer rooted on the visible clone
-   * @param targetScene The visible clone (must match mixer root)
-   * @param clips       Retargeted clips from build()
-   * @returns Actions map: clip name → AnimationAction
-   */
   feedToMixer(
     mixer: THREE.AnimationMixer,
     targetScene: THREE.Object3D,
@@ -183,19 +167,10 @@ export class AnimationBridge {
     return actions;
   }
 
-  /**
-   * Resolve a FighterStateMachine combat state to a semantic animation state.
-   * Returns null when the combat state has no mapping — never invents idle.
-   */
   static resolveSemanticState(combatState: string): string | null {
     return COMBAT_STATE_TO_SEMANTIC[combatState] ?? null;
   }
 
-  /**
-   * Get the best clip for a combat state from a clips-by-state map.
-   * Required combat states (attack/block/hit/knockdown/getup/walk) do NOT
-   * silently fall back to idle. MISSING_CLIP stays MISSING_CLIP.
-   */
   static getClipForCombatState(
     combatState: string,
     clipsByState: Map<string, THREE.AnimationClip>,
@@ -216,18 +191,17 @@ export class AnimationBridge {
       return direct;
     }
 
-    // Locomotion-only related fallbacks. Never idle-substitute combat verbs.
     const locomotionFallbacks: Record<string, string[]> = {
-      walk_back:   ['walk_forward'],
+      walk_back: ['walk_forward'],
       strafe_left: ['walk_forward'],
-      strafe_right:['walk_forward'],
-      backdash:    ['walk_back', 'walk_forward'],
-      run:         ['walk_forward'],
-      dash_forward:['run', 'walk_forward'],
-      attack_rp:   ['attack_1'],
-      attack_lk:   ['attack_2', 'attack_rk'],
-      attack_rk:   ['attack_2', 'attack_lk'],
-      attack_2:    ['attack_rk', 'attack_lk'],
+      strafe_right: ['walk_forward'],
+      backdash: ['walk_back', 'walk_forward'],
+      run: ['walk_forward'],
+      dash_forward: ['run', 'walk_forward'],
+      attack_rp: ['attack_1'],
+      attack_lk: ['attack_2', 'attack_rk'],
+      attack_rk: ['attack_2', 'attack_lk'],
+      attack_2: ['attack_rk', 'attack_lk'],
     };
     const chain = locomotionFallbacks[semanticState] ?? [];
     for (const fb of chain) {
