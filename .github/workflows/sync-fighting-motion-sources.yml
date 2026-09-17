@@ -1,0 +1,44 @@
+name: Sync Fighting Motion Sources
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sync-fighting-motion-sources.mjs'
+      - 'src/engine/retarget/FightingMotionSources.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Brutal Fist
+        uses: actions/checkout@v4
+
+      - name: Checkout Tekken 3 source
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: mhvnsnt/BrutalfistbaseofTekken3Recompiled
+          path: vendor/BrutalfistbaseofTekken3Recompiled
+          fetch-depth: 1
+
+      - name: Checkout Schwarzer Blitz source
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          repository: mhvnsnt/SchwarzerblitzEngine
+          path: vendor/SchwarzerblitzEngine
+          fetch-depth: 1
+
+      - name: Index real motion assets
+        run: node scripts/sync-fighting-motion-sources.mjs
+
+      - name: Report discovered source assets
+        run: |
+          node -e "import('./src/generated/FightingMotionSources.generated.ts').catch(() => process.exit(0))"
+          git status --short
