@@ -221,14 +221,13 @@ export class LocomotionSystem {
 
     // Target velocities from input
     const hasSidestep = Math.abs(strafeInput) > 0.1;
+    const sidestepVector = hasSidestep && target
+      ? this.targetedSidestepVelocity(target, Math.sign(strafeInput), strafeMax)
+      : null;
     const targetVX = Math.abs(forwardInput) > 0.1
       ? Math.sign(forwardInput) * maxSpeed * this.state.facing
-      : hasSidestep && target
-        ? this.targetedSidestepVX(target.x)
-        : 0;
-    const targetVZ = hasSidestep
-      ? Math.sign(strafeInput) * strafeMax
-      : 0;
+      : sidestepVector?.x ?? 0;
+    const targetVZ = sidestepVector?.z ?? 0;
 
     // Smooth velocity with acceleration/deceleration
     this.state.velocityX = this.smoothVel(this.state.velocityX, targetVX, dt);
@@ -272,18 +271,32 @@ export class LocomotionSystem {
   }
 
   /**
-   * Tekken-style sidestep is not a straight conveyor-belt move on Z.
-   * While circling, bias a small amount of X velocity toward the opponent so
-   * the fighter remains oriented around the opponent instead of drifting away
-   * on a parallel rail. The bias is deliberately capped: it is a targeting
-   * correction, not an auto-approach or homing attack.
+   * Tekken-style sidestep follows the opponent rather than moving on a fixed
+   * world-Z rail. The primary component is tangent to the fighter-to-target
+   * line; a small radial correction keeps the pair in a useful fighting gap.
+   * It is bounded and never homes an attack or changes facing by itself.
    */
-  private targetedSidestepVX(targetX: number): number {
-    const dx = targetX - this.state.rootX;
-    const distance = Math.abs(dx);
-    if (distance < 0.35) return 0;
-    const correction = Math.min(0.85, distance * 0.45);
-    return Math.sign(dx) * correction;
+  private targetedSidestepVelocity(
+    target: { x: number; z: number },
+    side: number,
+    speed: number,
+  ): { x: number; z: number } {
+    const dx = target.x - this.state.rootX;
+    const dz = target.z - this.state.rootZ;
+    const distance = Math.hypot(dx, dz);
+    if (distance < 0.001) return { x: 0, z: side * speed };
+
+    const nx = dx / distance;
+    const nz = dz / distance;
+    const tangentX = -nz * side;
+    const tangentZ = nx * side;
+
+    const desiredGap = 2.8;
+    const radial = Math.max(-0.65, Math.min(0.65, (distance - desiredGap) * 0.5));
+    return {
+      x: tangentX * speed + nx * radial,
+      z: tangentZ * speed + nz * radial,
+    };
   }
 
   private smoothVel(current: number, target: number, dt: number): number {
