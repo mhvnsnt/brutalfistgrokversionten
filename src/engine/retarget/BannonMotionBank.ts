@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { BANNON_MOTION_BANK } from '../../generated/BannonMotionBank.generated';
+import { resolveRuntimeBone } from './boneNameMap.mjs';
 
 export interface BannonMotionClipData {
   dur: number;
@@ -11,29 +12,41 @@ export interface BannonMotionClipData {
 
 export const BANNON_MOTION_CLIP_NAMES = new Set(Object.keys(BANNON_MOTION_BANK));
 
-const QUATERNION_BONE_NAMES = new Set<string>([
-  'mixamorigHips', 'mixamorigSpine', 'mixamorigSpine1', 'mixamorigSpine2',
-  'mixamorigNeck', 'mixamorigHead',
-  'mixamorigLeftShoulder', 'mixamorigLeftArm', 'mixamorigLeftForeArm', 'mixamorigLeftHand',
-  'mixamorigRightShoulder', 'mixamorigRightArm', 'mixamorigRightForeArm', 'mixamorigRightHand',
-  'mixamorigLeftUpLeg', 'mixamorigLeftLeg', 'mixamorigLeftFoot', 'mixamorigLeftToeBase',
-  'mixamorigRightUpLeg', 'mixamorigRightLeg', 'mixamorigRightFoot', 'mixamorigRightToeBase',
-]);
+/** Provenance stamped onto every clip a Euler bank produces. */
+export interface EulerBankSource {
+  clipSourceType: string;
+  source: string;
+  sourceConvention: string;
+}
 
-function makeClip(name: string, data: BannonMotionClipData): THREE.AnimationClip {
-  const boneNames = new Set<string>();
+function makeClip(
+  name: string,
+  data: BannonMotionClipData,
+  provenance: EulerBankSource = BANNON_SOURCE,
+): THREE.AnimationClip {
+  /**
+   * runtime bone -> the raw key it came from in this clip.
+   *
+   * The source clips speak three vocabularies (canonical Mixamo, a namespaced
+   * Mixamo export, and the `J_` rig); boneNameMap.mjs is the single translation
+   * layer, shared with scripts/sync-bannon-motion.mjs so the cache and the
+   * runtime cannot disagree. Measured across the bank, no clip has two raw
+   * bones resolving to the same runtime bone, so this cannot merge two rigs.
+   */
+  const boneNames = new Map<string, string>();
   for (const key of data.keys) {
     for (const bone of Object.keys(key.bones)) {
-      if (QUATERNION_BONE_NAMES.has(bone)) boneNames.add(bone);
+      const runtimeBone = resolveRuntimeBone(bone);
+      if (runtimeBone) boneNames.set(runtimeBone, bone);
     }
   }
 
   const tracks: THREE.KeyframeTrack[] = [];
-  for (const bone of boneNames) {
+  for (const [bone, rawBone] of boneNames) {
     const times: number[] = [];
     const values: number[] = [];
     for (const key of data.keys) {
-      const e = key.bones[bone];
+      const e = key.bones[rawBone] ?? key.bones[bone];
       if (!e) continue;
       const q = new THREE.Quaternion().setFromEuler(
         new THREE.Euler(e.rx, e.ry, e.rz, 'XYZ'),
@@ -48,13 +61,30 @@ function makeClip(name: string, data: BannonMotionClipData): THREE.AnimationClip
 
   const clip = new THREE.AnimationClip(name, data.dur, tracks);
   (clip as THREE.AnimationClip & { userData: Record<string, unknown> }).userData = {
-    clipSourceType: 'BANNON_OWNER_MOTION',
-    source: 'mhvnsnt/Bannon/assets/moves/clips',
-    sourceConvention: 'mixamo',
+    ...provenance,
     ownerGranted: true,
     loop: false,
   };
   return clip;
+}
+
+const BANNON_SOURCE: EulerBankSource = {
+  clipSourceType: 'BANNON_OWNER_MOTION',
+  source: 'mhvnsnt/Bannon/assets/moves/clips',
+  sourceConvention: 'mixamo',
+};
+
+/**
+ * Build AnimationClips from any bank in the cached Euler format.
+ *
+ * Shared so a second owner-granted source cannot drift from the first: the same
+ * bone resolution, the same XYZ Euler order and the same track construction.
+ */
+export function buildClipsFromEulerBank(
+  bank: Record<string, BannonMotionClipData>,
+  provenance: EulerBankSource,
+): THREE.AnimationClip[] {
+  return Object.entries(bank).map(([name, data]) => makeClip(name, data, provenance));
 }
 
 /** Build the real owner-granted Bannon motion bank synchronously from the generated cache. */

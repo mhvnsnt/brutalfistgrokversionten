@@ -100,7 +100,7 @@ export const statsService = {
         if (isSchemaError(error)) throw error;
         return [];
       }
-      return (data || []).map(r => ({
+      return (data || []).map((r: any) => ({
         id: r.id,
         name: r.name,
         description: r.description,
@@ -191,7 +191,7 @@ export const statsService = {
         if (isSchemaError(error)) throw error;
         return [];
       }
-      return (data || []).map(r => ({
+      return (data || []).map((r: any) => ({
         id: r.id,
         userId: r.user_id,
         tournamentId: r.tournament_id,
@@ -254,7 +254,7 @@ export const statsService = {
         if (isSchemaError(error)) throw error;
         return [];
       }
-      return (data || []).map(r => ({
+      return (data || []).map((r: any) => ({
         id: r.id,
         sessionId: r.session_id,
         userId: r.user_id,
@@ -314,7 +314,7 @@ export const statsService = {
         if (isSchemaError(error)) throw error;
         return [];
       }
-      return (data || []).map(r => ({
+      return (data || []).map((r: any) => ({
         id: r.id,
         userId: r.user_id,
         fighterId: r.fighter_id,
@@ -376,7 +376,7 @@ export const statsService = {
         if (isSchemaError(error)) throw error;
         return [];
       }
-      return (data || []).map(r => ({
+      return (data || []).map((r: any) => ({
         id: r.id,
         userId: r.user_id,
         rankPoints: r.rank_points,

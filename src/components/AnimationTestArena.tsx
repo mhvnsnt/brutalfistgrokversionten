@@ -88,6 +88,9 @@ function resolveClipForSemanticState(
   return { clipName: availableClips[0] ?? null, sourceType: availableClips[0] ? classifyClipSource(availableClips[0]) : 'MISSING_CLIP' };
 }
 
+/** States that hold rather than play once. */
+const LOOPING_STATES = ['idle', 'walk_forward', 'walk_back', 'strafe_left', 'strafe_right', 'block'];
+
 // ── 3D Character viewer ───────────────────────────────────────────────────────
 interface CharacterViewerProps {
   modelUrl: string;
@@ -125,14 +128,31 @@ function CharacterViewerInner({
         actions: result.actions,
       };
 
-      // Auto-play idle
+      // Auto-play whatever state the panel is actually showing.
+      //
+      // This used to hardcode 'idle' and never call onClipChange, so the panel
+      // reported "MISSING_CLIP - no animation for this state" for the state it
+      // loaded on, while that state's clip was playing the whole time. Measured
+      // by driving the real screen: state 1 of 12 reported MISSING_CLIP, states
+      // 2-12 were fine, because the state-change effect below is what calls
+      // onClipChange and it only runs when the state CHANGES - the model
+      // arriving is a ref mutation, which re-renders nothing.
+      //
+      // A false "no animation" in the screen built to judge animation health is
+      // the mirror of the false-success problem this project keeps hitting, so
+      // the load path now reports what it resolved.
       const availableClips = Object.keys(result.actions);
-      const { clipName } = resolveClipForSemanticState('idle', availableClips);
+      const { clipName, sourceType } = resolveClipForSemanticState(currentSemanticState, availableClips);
       if (clipName && result.actions[clipName]) {
         const action = result.actions[clipName];
-        action.setLoop(THREE.LoopRepeat, Infinity);
+        const isLoop = LOOPING_STATES.includes(currentSemanticState);
+        action.setLoop(isLoop ? THREE.LoopRepeat : THREE.LoopOnce, isLoop ? Infinity : 1);
+        action.clampWhenFinished = !isLoop;
         action.reset().play();
       }
+      // Claim the state so the effect below does not immediately restart it.
+      lastStateRef.current = currentSemanticState;
+      onClipChange(clipName, sourceType);
 
       // Run integrity gate
       const integrityReport = runAnimationIntegrityGate({
@@ -176,7 +196,7 @@ function CharacterViewerInner({
     // Stop all, play new
     const currentAction = Object.values(normalized.actions).find(a => a?.isRunning());
     const nextAction = normalized.actions[clipName];
-    const isLoop = ['idle', 'walk_forward', 'walk_back', 'strafe_left', 'strafe_right', 'block'].includes(currentSemanticState);
+    const isLoop = LOOPING_STATES.includes(currentSemanticState);
 
     nextAction.setLoop(isLoop ? THREE.LoopRepeat : THREE.LoopOnce, isLoop ? Infinity : 1);
     nextAction.clampWhenFinished = !isLoop;

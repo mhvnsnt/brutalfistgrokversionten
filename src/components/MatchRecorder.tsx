@@ -137,7 +137,7 @@ export async function fetchReplaysFromSupabase(userId: string): Promise<SavedRep
 
   if (error || !data) return [];
 
-  return data.map(r => ({
+  return data.map((r: any) => ({
     id: r.id,
     clipId: r.clip_id,
     label: r.label,

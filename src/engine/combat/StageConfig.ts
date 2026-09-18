@@ -76,6 +76,22 @@ export interface StageConfig {
   /** Secondary fill light colour */
   fillLightColor: string;
 
+  /**
+   * Colours the stage's own practical lights emit — neon signs, strip lights,
+   * braziers. Emissive materials only make a surface LOOK lit; they cast no
+   * light on anything else, which is why a neon street renders as a black block
+   * with a few glowing strips floating in it.
+   *
+   * These drive real lights placed at the emitters, mixed over the base ambient
+   * night rather than replacing it. Omit for a stage with no practical lights.
+   *
+   * The COUNT of lights a stage shows must stay constant: three.js keys its
+   * shader programs on the number of lights, so making one appear or disappear
+   * recompiles every material in the scene. Colour and intensity are animated
+   * instead, never visibility.
+   */
+  neonPalette?: string[];
+
   // ── Audio ─────────────────────────────────────────────────────────────────
   /** BGM track key (maps to public/audio/bgm/<bgmTrack>.mp3) */
   bgmTrack: string;
@@ -128,6 +144,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
     ambientColor: '#1a0030',
     primaryLightColor: '#c084fc',
     fillLightColor: '#3b0764',
+    neonPalette: ['#a855f7', '#22d3ee', '#ff3d81', '#7c3aed'],
     bgmTrack: 'urban_night',
     hazardDamagePerSec: 0,
     hazardLabel: '',
@@ -290,6 +307,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
     ambientColor: '#1c0f00',
     primaryLightColor: '#fbbf24',
     fillLightColor: '#92400e',
+    neonPalette: ['#ff7a18', '#ffd166', '#4ade80'],
     bgmTrack: 'industrial',
     hazardDamagePerSec: 5,
     hazardLabel: 'MOLTEN METAL',
@@ -316,6 +334,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
     ambientColor: '#0f1a00',
     primaryLightColor: '#bef264',
     fillLightColor: '#365314',
+    neonPalette: ['#ffb347', '#ff5a3c', '#f0d080'],
     bgmTrack: 'ghetto_streets',
     hazardDamagePerSec: 0,
     hazardLabel: '',
@@ -345,6 +364,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
     ambientColor: '#1c1a18',
     primaryLightColor: '#d6d3d1',
     fillLightColor: '#44403c',
+    neonPalette: ['#ff6a20', '#facc15'],
     bgmTrack: 'junkyard',
     hazardDamagePerSec: 0,
     hazardLabel: '',
@@ -374,6 +394,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
     ambientColor: '#082f49',
     primaryLightColor: '#7dd3fc',
     fillLightColor: '#0c4a6e',
+    neonPalette: ['#ffd166', '#7dd3fc'],
     bgmTrack: 'sky_crane',
     hazardDamagePerSec: 0,
     hazardLabel: '',
@@ -403,6 +424,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
     ambientColor: '#1a0000',
     primaryLightColor: '#ef4444',
     fillLightColor: '#7f1d1d',
+    neonPalette: ['#ff2a2a', '#ff6a4a'],
     bgmTrack: 'spike_pit',
     hazardDamagePerSec: 30,
     hazardLabel: '⚠ SPIKE PIT',
@@ -432,6 +454,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
     ambientColor: '#052e16',
     primaryLightColor: '#86efac',
     fillLightColor: '#14532d',
+    neonPalette: ['#7cff4a', '#adff6a'],
     bgmTrack: 'acid_pit',
     hazardDamagePerSec: 25,
     hazardLabel: '☣ ACID PIT',
@@ -461,6 +484,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
     ambientColor: '#1c0a00',
     primaryLightColor: '#fb923c',
     fillLightColor: '#7c2d12',
+    neonPalette: ['#ffae42', '#ff5e3a'],
     bgmTrack: 'grinder_pit',
     hazardDamagePerSec: 40,
     hazardLabel: '⚙ GRINDER',
@@ -490,6 +514,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
     ambientColor: '#1a0020',
     primaryLightColor: '#e879f9',
     fillLightColor: '#701a75',
+    neonPalette: ['#ff4a10', '#ff9a3c'],
     bgmTrack: 'gang_brawl',
     hazardDamagePerSec: 0,
     hazardLabel: '',
@@ -519,6 +544,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
     ambientColor: '#1a1200',
     primaryLightColor: '#fbbf24',
     fillLightColor: '#78350f',
+    neonPalette: ['#7dd3fc', '#fbbf24', '#94a3b8'],
     bgmTrack: 'subway',
     hazardDamagePerSec: 0,
     hazardLabel: '🚇 TRAIN INCOMING',

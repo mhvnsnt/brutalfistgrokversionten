@@ -172,7 +172,7 @@ export default function LeaderboardScreen({ onBack }: { onBack: () => void }) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'fighter_stats' },
-        (payload) => {
+        (payload: any) => {
           // Flash the changed row and reload silently
           const changedUserId = (payload.new as any)?.user_id ?? (payload.old as any)?.user_id;
           if (changedUserId) {
@@ -185,7 +185,7 @@ export default function LeaderboardScreen({ onBack }: { onBack: () => void }) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'player_ranks' },
-        (payload) => {
+        (payload: any) => {
           const changedUserId = (payload.new as any)?.user_id ?? (payload.old as any)?.user_id;
           if (changedUserId) {
             setFlashRow(changedUserId);
@@ -194,7 +194,7 @@ export default function LeaderboardScreen({ onBack }: { onBack: () => void }) {
           loadData(true);
         }
       )
-      .subscribe((status) => {
+      .subscribe((status: any) => {
         setLiveConnected(status === 'SUBSCRIBED');
       });
 

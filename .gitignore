@@ -4,3 +4,7 @@ node_modules/
 .github_repo
 .env
 .env.*
+.vercel/
+.nitro/
+dist/
+

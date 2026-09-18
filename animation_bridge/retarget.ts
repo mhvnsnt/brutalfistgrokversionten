@@ -15,6 +15,10 @@ import {
   BANNON_MOTION_CLIP_NAMES,
   buildBannonMotionClips,
 } from '../src/engine/retarget/BannonMotionBank';
+import {
+  SCHWARZERBLITZ_CLIP_NAMES,
+  buildSchwarzerblitzMotionClips,
+} from '../src/engine/retarget/SchwarzerblitzMotionBank';
 
 export { SEMANTIC_STATE_ALIASES, COMBAT_STATE_TO_SEMANTIC };
 
@@ -60,12 +64,19 @@ export class AnimationBridge {
     // reactions, grapples, knockdowns and the larger move vocabulary without
     // replacing the fighter's authored world transform.
     const ownerMotion = buildBannonMotionClips();
-    const mergedSourceClips = [
-      ...sourceClips,
-      ...ownerMotion.filter((ownerClip) => !sourceClips.some(
-        (sourceClip) => sourceClip.name.toLowerCase() === ownerClip.name.toLowerCase(),
-      )),
-    ];
+
+    // The owner-granted Schwarzerblitz fighting set joins the same merge. It
+    // carries locomotion and combat the Bannon bank does not - sidesteps, real
+    // guards, jump attacks, throw starts with their receiver halves, landings
+    // and getups. Bannon clips keep precedence: a name already present is not
+    // replaced, so nothing that works today changes.
+    const schwarzerblitzMotion = buildSchwarzerblitzMotionClips();
+
+    const mergedSourceClips = [...sourceClips];
+    for (const clip of [...ownerMotion, ...schwarzerblitzMotion]) {
+      if (mergedSourceClips.some((existing) => existing.name.toLowerCase() === clip.name.toLowerCase())) continue;
+      mergedSourceClips.push(clip);
+    }
 
     const { clips: retargetedClipsRaw, totalResolved, totalUnresolved } =
       this.retargeter.retargetClips(mergedSourceClips, this.characterId);
@@ -73,8 +84,11 @@ export class AnimationBridge {
     // AnimationRetargeter intentionally produces fresh clips, so source
     // metadata is not relied upon here. The generated bank's exact clip names
     // are the stable provenance identity.
+    // Both imported banks are bind-relative: their rest pose is not this GLB's,
+    // so the motion is re-based onto the target's own bind pose rather than
+    // written onto it absolutely. This is the locked orientation contract.
     const retargetedClips = retargetedClipsRaw.map((clip) =>
-      BANNON_MOTION_CLIP_NAMES.has(clip.name)
+      BANNON_MOTION_CLIP_NAMES.has(clip.name) || SCHWARZERBLITZ_CLIP_NAMES.has(clip.name)
         ? applyBindRelativeQuaternionTracks(clip, targetScene)
         : clip,
     );
