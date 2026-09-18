@@ -51,6 +51,12 @@ jobs:
             if curl --fail --silent --show-error --max-time 2 http://127.0.0.1:8080/ -o /tmp/brutal-fist-rocket.html; then
               grep -q 'id="root"' /tmp/brutal-fist-rocket.html
               grep -q '/src/rocket-main.tsx' /tmp/brutal-fist-rocket.html
+              # Rocket's embedded preview must receive a plain HTML shell without
+              # an HMR client; the runtime is intentionally HMR-free.
+              if grep -q '@vite/client' /tmp/brutal-fist-rocket.html; then
+                echo "Unexpected Vite HMR client in Rocket preview shell"
+                exit 1
+              fi
               exit 0
             fi
             sleep 1
