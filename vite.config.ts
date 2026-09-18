@@ -36,6 +36,10 @@ function pgliteBootstrapPlugin(): Plugin {
     name: "app-builder:pglite-bootstrap",
     apply: "serve",
     async configureServer(server) {
+      // Rocket's embedded preview has auth/database disabled. Do not make the
+      // first HTML response wait for PGLite migrations; the DB remains lazy
+      // for code paths that explicitly use it.
+      if (process.env.ROCKET_PREVIEW === "1") return;
       if (!hasGlobbedMigrations(server.config.root)) return;
       try {
         const mod = (await server.ssrLoadModule("/src/lib/db.ts")) as {
