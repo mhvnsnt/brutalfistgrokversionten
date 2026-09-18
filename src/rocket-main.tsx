@@ -1,4 +1,4 @@
-import { Component, StrictMode, type ErrorInfo, type ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -69,11 +69,9 @@ if (!root) {
 }
 
 createRoot(root).render(
-  <StrictMode>
-    <RocketPreviewErrorBoundary>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </RocketPreviewErrorBoundary>
-  </StrictMode>,
+  <RocketPreviewErrorBoundary>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  </RocketPreviewErrorBoundary>,
 );
