@@ -1,5 +1,63 @@
 # Brutal Fist — dev conversation
 
+## 2026-09-18 — 50 clips animated nothing because of a colon in the bone names
+
+The previous entry left 110 of 201 indexed clips building ZERO tracks. Measured what skeleton they
+actually use, rather than assuming they were all foreign rigs:
+
+    "mixamorig:"  49 clips   Maya/FBX namespace separator
+    "mixamorig9"   1 clip    Mixamo's auto-number for a second rig
+    "J_Hips" rig  59 clips   a different skeleton (VRoid-style body + F_ facial bones)
+    other          1 clip    SHELBYIKRIG_ARREGLADO
+
+**50 of them were Mixamo all along.** `QUATERNION_BONE_NAMES` is an exact-match set, so
+`mixamorig:Hips` matched nothing and every bone was filtered out. The 49 `mixamorig:` clips are not
+incidental — they are the project's own content: the whole `ZONE_` ring-transition set (slide in/out,
+over the top, apron hop, vault, climb, perch, midrope), the `LOCO_`, `STANCE_` and `GUARD_` sets, the
+four `TAUNT_` entries, and the owner's own captures — `TIGER_FEINT_KICK`, `JUNGLE_JUICE`,
+`TZ_SCOOP_SLAM`, `TZ_TILT_WHIRL_SLAM` and their `__RECV` halves.
+
+`canonicalBoneName` collapses the namespace (`/^mixamorig[0-9:_\-.\s]*(?=[A-Z])/` -> `mixamorig`),
+in `scripts/sync-bannon-motion.mjs` and in `BannonMotionBank.makeClip` so a clip arriving by any other
+route binds identically.
+
+**Checked for the failure this could cause before applying it:** if one clip held two rigs, collapsing
+the namespace would merge an attacker's skeleton onto a receiver's. Measured across the whole bank —
+**0 collisions**; no clip has two distinct raw bones landing on the same canonical bone. Canonical
+names are returned unchanged (verified against all 22).
+
+    clips building real tracks     91 -> 141
+    clips building zero tracks    110 -> 60
+    generated cache               2.8 MB -> 4.1 MB (still 10x under the original 44.4 MB)
+
+Verified on the rebuilt clips, counting bones that actually move rather than tracks that merely exist:
+`JUNGLE_JUICE` 14 tracks / 14 moving / 2.15 s, `TIGER_FEINT_KICK` 14 / 14 / 4.22 s, `ZONE_OVER_TOP_IN`
+17 / 17. `BOXING` (the control, already working) is unchanged at 22 / 22. `CH06_NONPBR` builds 22
+tracks with 0 moving over 0.03 s — it is a single-frame reference pose, correctly inert.
+
+### What this does and does not change in play — measured against the real resolver
+
+`FighterMesh` resolves a state by taking the first alias **whose name is present**; it never checks
+whether that clip has tracks, so a present-but-empty clip wins and the fighter does nothing. Walking
+every entry in `SEMANTIC_STATE_ALIASES` against the bank, exactly one state's first resolvable clip
+went from silent to animated:
+
+    crouch -> STANCE_CROUCH   0 -> 17 tracks
+
+The other 49 recovered clips sit behind an alias that already resolved to a working clip. They are now
+*available* — a character can equip `TIGER_FEINT_KICK` as a signature, the `ZONE_` transitions can be
+driven — where before they were present but empty. That is the honest scope: one state fixed outright,
+fifty clips made usable.
+
+### Still open after this pass
+
+- **59 clips on the `J_` rig** (`J_Hips`/`J_Spine1`/`J_Spine2`/`J_Chest`/`J_Neck`/`J_Head` plus `F_`
+  facial bones) — all 59 share one skeleton, so one bone map would recover them. That is a semantic
+  cross-rig map, not a namespace strip, and a wrong spine correspondence twists the torso, so it wants
+  its own pass with the hierarchy verified rather than guessed. Mostly taunts: CROTCHCHOP, CARTWHEEL,
+  RAPIDCHESTBEATING, TAUNT, TAU_*.
+- 770 clip files in the checkout are still absent from `index.json` and unreachable.
+
 ## 2026-09-18 — The repo could not install; the motion cache shipped 40 MB the runtime discards
 
 Four measurements, four fixes. Every CI gate (`npm install` / `typecheck` / `test` / `build`) was red

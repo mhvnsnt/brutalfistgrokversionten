@@ -20,20 +20,42 @@ const QUATERNION_BONE_NAMES = new Set<string>([
   'mixamorigRightUpLeg', 'mixamorigRightLeg', 'mixamorigRightFoot', 'mixamorigRightToeBase',
 ]);
 
+/**
+ * Collapse a Mixamo namespace onto the canonical bone name.
+ *
+ * Exporters stamp the rig's namespace into every bone: Maya/FBX writes
+ * `mixamorig:Hips`, and Mixamo auto-numbers a second rig as `mixamorig9Hips`.
+ * Measured over the indexed Bannon bank, 50 clips matched no bone at all for
+ * this reason and built zero tracks — including the project's own ZONE_ ring
+ * transitions and the owner's TIGER_FEINT_KICK / JUNGLE_JUICE captures.
+ *
+ * Verified before applying: no clip carries two distinct raw bones that collapse
+ * onto the same canonical bone, so an attacker's and a receiver's skeleton can
+ * never be merged by this. Already-canonical names are returned unchanged.
+ *
+ * scripts/sync-bannon-motion.mjs applies the identical rule when building the
+ * generated cache; this keeps direct callers of makeClip in step with it.
+ */
+function canonicalBoneName(name: string): string {
+  return name.replace(/^mixamorig[0-9:_\-.\s]*(?=[A-Z])/, 'mixamorig');
+}
+
 function makeClip(name: string, data: BannonMotionClipData): THREE.AnimationClip {
-  const boneNames = new Set<string>();
+  /** canonical bone name -> the raw key it came from in this clip */
+  const boneNames = new Map<string, string>();
   for (const key of data.keys) {
     for (const bone of Object.keys(key.bones)) {
-      if (QUATERNION_BONE_NAMES.has(bone)) boneNames.add(bone);
+      const canonical = canonicalBoneName(bone);
+      if (QUATERNION_BONE_NAMES.has(canonical)) boneNames.set(canonical, bone);
     }
   }
 
   const tracks: THREE.KeyframeTrack[] = [];
-  for (const bone of boneNames) {
+  for (const [bone, rawBone] of boneNames) {
     const times: number[] = [];
     const values: number[] = [];
     for (const key of data.keys) {
-      const e = key.bones[bone];
+      const e = key.bones[rawBone] ?? key.bones[bone];
       if (!e) continue;
       const q = new THREE.Quaternion().setFromEuler(
         new THREE.Euler(e.rx, e.ry, e.rz, 'XYZ'),

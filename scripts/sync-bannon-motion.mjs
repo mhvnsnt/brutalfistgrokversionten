@@ -57,6 +57,28 @@ const RUNTIME_BONE_NAMES = [
 ];
 const RUNTIME_BONES = new Set(RUNTIME_BONE_NAMES);
 
+/**
+ * Collapse a Mixamo namespace onto the canonical bone name.
+ *
+ * Exporters stamp the rig's namespace into every bone: Maya/FBX writes
+ * `mixamorig:Hips`, and Mixamo auto-numbers a second rig as `mixamorig9Hips`.
+ * MEASURED over the indexed bank: 50 clips were rejected on this alone and
+ * animated nothing — CH06_NONPBR (22 bones) plus the 49 `mixamorig:` clips,
+ * which are the project's own ZONE_ ring transitions, the LOCO_, STANCE_ and
+ * GUARD_ sets, the four TAUNT_ entries, and the owner's own TIGER_FEINT_KICK,
+ * JUNGLE_JUICE and TZ_ captures with their __RECV halves.
+ *
+ * Verified before applying: no clip in the bank has two distinct raw bones that
+ * collapse onto the same runtime bone (0 collisions), so this cannot merge an
+ * attacker's and a receiver's skeleton. Already-canonical names are untouched.
+ *
+ * The same rule is applied in src/engine/retarget/BannonMotionBank.ts so a clip
+ * that reaches makeClip by any other route binds identically.
+ */
+function canonicalBoneName(name) {
+  return name.replace(/^mixamorig[0-9:_\-.\s]*(?=[A-Z])/, 'mixamorig');
+}
+
 /** Local checkouts of mhvnsnt/Bannon this workspace may already have attached. */
 function localClipDirCandidates() {
   const fromEnv = process.env.BANNON_REPO ? [resolve(process.env.BANNON_REPO)] : [];
@@ -86,8 +108,10 @@ function pruneClip(clip, stats) {
   const keys = [];
   for (const key of clip?.keys ?? []) {
     const bones = {};
-    for (const [name, rotation] of Object.entries(key?.bones ?? {})) {
+    for (const [rawName, rotation] of Object.entries(key?.bones ?? {})) {
+      const name = canonicalBoneName(rawName);
       if (!RUNTIME_BONES.has(name)) continue;
+      if (name !== rawName) stats.renamedBones.add(`${rawName} -> ${name}`);
       // 73 of 48,048 source entries omit a component (4 clips). THREE.Euler
       // already defaults a missing argument to 0, so writing the 0 explicitly
       // changes no rotation — it just makes the cached triple complete.
@@ -124,7 +148,7 @@ async function main() {
     .filter(([, meta]) => meta && typeof meta.file === 'string' && meta.file.endsWith('.json'));
 
   const bank = {};
-  const stats = { seen: new Set(), filledComponents: 0, emptyClips: [] };
+  const stats = { seen: new Set(), filledComponents: 0, emptyClips: [], renamedBones: new Set() };
   const concurrency = localDir ? 16 : 8;
   let cursor = 0;
   const skipped = [];
@@ -187,6 +211,10 @@ async function main() {
   );
   const absent = RUNTIME_BONE_NAMES.filter((bone) => !stats.seen.has(bone));
   if (absent.length) console.warn(`[motion-sync] runtime bones absent from every clip: ${absent.join(', ')}`);
+  if (stats.renamedBones.size) {
+    const prefixes = new Set([...stats.renamedBones].map((pair) => pair.split(' -> ')[0].match(/^mixamorig[^A-Z]*/)[0]));
+    console.log(`[motion-sync] collapsed Mixamo namespaces onto canonical bone names: ${[...prefixes].join(', ')}`);
+  }
   if (stats.filledComponents) {
     console.log(`[motion-sync] ${stats.filledComponents} source rotations omitted a component; written as an explicit 0 (THREE.Euler's own default).`);
   }
