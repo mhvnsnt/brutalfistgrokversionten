@@ -329,6 +329,8 @@ export default function GameBattleArena({
       i.right = held.has("KeyD") || held.has("ArrowRight");
       i.up = held.has("KeyW") || held.has("ArrowUp");
       i.down = held.has("KeyS") || held.has("ArrowDown");
+      i.sidestepLeft = held.has("KeyQ");
+      i.sidestepRight = held.has("KeyE");
     };
     window.__controlsTest = {
       getYaw: () => -p1XRef.current,
@@ -586,7 +588,14 @@ export default function GameBattleArena({
       // ── Build SM input from bitmask ────────────────────────────────────
       const bitmask = inputRef.current;
       const cmd = p1StickRef.current.resolve(
-        { left: !!bitmask.left, right: !!bitmask.right, up: !!bitmask.up, down: !!bitmask.down },
+        {
+          left: !!bitmask.left,
+          right: !!bitmask.right,
+          up: !!bitmask.up,
+          down: !!bitmask.down,
+          sidestepLeft: !!(bitmask as any).sidestepLeft,
+          sidestepRight: !!(bitmask as any).sidestepRight,
+        },
         now,
       );
       const smInput: SMInput = {
