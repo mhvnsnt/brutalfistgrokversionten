@@ -59,10 +59,21 @@ function findLocalClipDir() {
   return localClipDirCandidates().find((dir) => existsSync(join(dir, 'index.json'))) ?? '';
 }
 
+const NETWORK_TIMEOUT_MS = Number(process.env.BANNON_SYNC_TIMEOUT_MS ?? 5000);
+
 async function fetchJson(url) {
-  const response = await fetch(url, { headers: { 'User-Agent': 'brutal-fist-motion-sync/1.0' } });
-  if (!response.ok) throw new Error(`${response.status} ${response.statusText} for ${url}`);
-  return response.json();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), NETWORK_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, {
+      headers: { 'User-Agent': 'brutal-fist-motion-sync/1.0' },
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText} for ${url}`);
+    return response.json();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /**
