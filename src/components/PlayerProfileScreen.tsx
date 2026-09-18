@@ -421,7 +421,7 @@ export default function PlayerProfileScreen({ onBack }: PlayerProfileScreenProps
       supabase.from('cosmetic_unlocks').select('*').eq('user_id', user.id).order('unlocked_at', { ascending: false }),
     ]).then(([eloRes, tierRes, h2hRes, cosRes]) => {
       if (eloRes.data) {
-        setPlayerEloRows(eloRes.data.map(r => ({
+        setPlayerEloRows(eloRes.data.map((r: any) => ({
           fighterId: r.fighter_id,
           fighterName: r.fighter_name,
           eloRating: r.elo_rating,
@@ -433,7 +433,7 @@ export default function PlayerProfileScreen({ onBack }: PlayerProfileScreenProps
         })));
       }
       if (tierRes.data) {
-        setTierHistory(tierRes.data.map(r => ({
+        setTierHistory(tierRes.data.map((r: any) => ({
           id: r.id,
           fighterId: r.fighter_id,
           fighterName: r.fighter_name,
@@ -445,7 +445,7 @@ export default function PlayerProfileScreen({ onBack }: PlayerProfileScreenProps
         })));
       }
       if (h2hRes.data) {
-        setH2HRecords(h2hRes.data.map(r => ({
+        setH2HRecords(h2hRes.data.map((r: any) => ({
           id: r.id,
           opponentId: r.opponent_id,
           opponentName: r.opponent_name,
@@ -458,7 +458,7 @@ export default function PlayerProfileScreen({ onBack }: PlayerProfileScreenProps
         })));
       }
       if (cosRes.data) {
-        setCosmeticTimeline(cosRes.data.map(r => ({
+        setCosmeticTimeline(cosRes.data.map((r: any) => ({
           id: r.id,
           cosmeticId: r.cosmetic_id,
           cosmeticName: r.cosmetic_name,

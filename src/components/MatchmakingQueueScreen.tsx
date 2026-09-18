@@ -91,7 +91,7 @@ export default function MatchmakingQueueScreen({ onBack, onMatchFound }: Matchma
       .eq('user_id', user.id)
       .eq('fighter_id', selectedFighterId)
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data }: { data: any }) => {
         if (data) {
           setPlayerElo(data.elo_rating);
           setSelectedTier(data.tier as QueueTier);
@@ -124,7 +124,7 @@ export default function MatchmakingQueueScreen({ onBack, onMatchFound }: Matchma
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'active_match_queue' },
-        (payload) => {
+        (payload: any) => {
           const row = payload.new as any;
           const oldRow = payload.old as any;
 
@@ -200,9 +200,9 @@ export default function MatchmakingQueueScreen({ onBack, onMatchFound }: Matchma
       .select('*')
       .eq('status', 'waiting')
       .order('joined_at', { ascending: true })
-      .then(({ data }) => {
+      .then(({ data }: { data: any }) => {
         if (data) {
-          setQueueEntries(data.map(r => ({
+          setQueueEntries(data.map((r: any) => ({
             id: r.id,
             userId: r.user_id,
             fighterName: r.fighter_name,

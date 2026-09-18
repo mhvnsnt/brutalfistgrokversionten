@@ -168,7 +168,7 @@ export default function SpectatorViewerScreen({ onBack }: SpectatorViewerProps) 
   useEffect(() => {
     const channel = supabase
       .channel('spectator-chat')
-      .on('broadcast', { event: 'chat_message' }, (payload) => {
+      .on('broadcast', { event: 'chat_message' }, (payload: any) => {
         const msg = payload.payload as ChatMessage;
         setChatMessages(prev => [...prev.slice(-49), msg]);
       })
