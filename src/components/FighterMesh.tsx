@@ -51,6 +51,12 @@ export interface FighterMeshProps {
    */
   animationTrigger?: number;
   /**
+   * Fighter-state attack window in seconds. Long authored clips are retimed
+   * to this window so the full clip is visible without stretching the move
+   * into a multi-second demo.
+   */
+  attackDurationSeconds?: number;
+  /**
    * Current locomotion velocity from FighterStateMachine.getWalkVelocity().
    * Used for velocity-weighted blend gating to prevent jitter on micro-inputs.
    */
@@ -402,6 +408,7 @@ function FighterMeshInner({
   showHitbox = false,
   hitboxGeometry = null,
   animationTrigger = 0,
+  attackDurationSeconds,
   locomotionVelocity,
   hitStopActive = false,
   onRigDiagnostic,
@@ -668,7 +675,16 @@ function FighterMeshInner({
     nextAction.setLoop(isLoop ? THREE.LoopRepeat : THREE.LoopOnce, isLoop ? Infinity : 1);
     nextAction.clampWhenFinished = !isLoop;
     nextAction.reset();
-    nextAction.setEffectiveTimeScale(1);
+    // Attacks are authored at mixed source rates (including long Mixamo
+    // boxing demonstrations). Fit the entire authored clip to the fighter's
+    // state-machine window instead of cutting it off when recovery ends.
+    // LoopOnce + clampWhenFinished then holds the final pose until the state
+    // machine explicitly transitions away; idle cannot interrupt the swing.
+    const clipDuration = Math.max(0.001, nextAction.getClip().duration);
+    const attackWindow = isAttack && attackDurationSeconds && attackDurationSeconds > 0
+      ? attackDurationSeconds
+      : null;
+    nextAction.setEffectiveTimeScale(attackWindow ? clipDuration / attackWindow : 1);
     nextAction.setEffectiveWeight(1);
 
     const seen = new Set<THREE.AnimationAction>();
@@ -692,7 +708,7 @@ function FighterMeshInner({
     activeClipRef.current = clipName;
     committedClipRef.current = clipName;
     lastCrossfadeTimeRef.current = now;
-  }, [state, animation, animationTrigger, normalized, gltfUrl]);
+  }, [state, animation, animationTrigger, attackDurationSeconds, normalized, gltfUrl]);
 
   // Idle kickstart is handled by the bind effect when `normalized` first lands.
   // A second auto-play effect was overwriting punches with breathing idle.
