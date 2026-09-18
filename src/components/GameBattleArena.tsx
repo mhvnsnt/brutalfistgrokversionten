@@ -1943,12 +1943,12 @@ export default function GameBattleArena({
       {cinematicPhase === 'fight' && (
         <>
           {/* Health bars + timer — semi-transparent background only on bar rows */}
-          <div className="absolute top-0 left-0 right-0 z-30 px-3 pt-2 pb-1 pointer-events-none">
+          <div className="absolute top-0 left-0 right-0 z-30 px-safe pt-safe pb-1 pointer-events-none">
             <div className="flex items-center gap-2">
               <img
                 src={p1Fighter.pixelPortrait ?? `/portraits/pixel/${p1Fighter.id}.png`}
                 alt=""
-                className="h-12 w-12 shrink-0 border border-zinc-700 object-cover"
+                className="h-12 w-12 max-[380px]:h-10 max-[380px]:w-10 shrink-0 border border-zinc-700 object-cover"
                 style={{ imageRendering: "pixelated" }}
               />
               {/* P1 health bar */}
@@ -2437,7 +2437,7 @@ export default function GameBattleArena({
       {onBack && cinematicPhase === 'fight' && (
         <button
           onClick={onBack}
-          className="absolute top-16 left-3 z-40 text-[8px] text-zinc-400 hover:text-zinc-200 border border-zinc-700/60 hover:border-zinc-500 px-2 py-1 transition-colors bg-black/50"
+          className="absolute top-safe-16 left-3 z-40 text-[8px] text-zinc-400 hover:text-zinc-200 border border-zinc-700/60 hover:border-zinc-500 px-2 py-1 transition-colors bg-black/50"
         >
           ← BACK
         </button>
@@ -2447,7 +2447,7 @@ export default function GameBattleArena({
       {cinematicPhase === 'fight' && !ko && (
         <button
           onClick={() => { setIsPaused(p => !p); setPauseTab('menu'); }}
-          className="absolute top-3 right-3 z-40 text-[8px] text-zinc-500 hover:text-zinc-200 border border-zinc-700/40 hover:border-zinc-500 px-2 py-1 transition-colors bg-black/50 font-mono tracking-widest"
+          className="absolute top-safe-3 right-3 z-40 text-[8px] text-zinc-500 hover:text-zinc-200 border border-zinc-700/40 hover:border-zinc-500 px-2 py-1 transition-colors bg-black/50 font-mono tracking-widest"
         >
           ⏸ ESC
         </button>
