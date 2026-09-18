@@ -148,6 +148,7 @@ function authPopupPlugin(): Plugin {
 }
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
+const rocketPreview = process.env.ROCKET_PREVIEW === "1";
 
 // `0.0.0.0:8080` is the live-preview contract — don't change host/port.
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
@@ -171,14 +172,15 @@ export default defineConfig(({ command, isPreview }) => ({
   },
   plugins: [
     pgliteBootstrapPlugin(),
-    // Before tanstackStart so /auth/popup never falls through to the SPA.
-    authPopupPlugin(),
+    // Rocket gets a browser-only Vite shell: no SSR/router middleware is
+    // allowed to sit on the critical path for the embedded preview.
+    ...(rocketPreview ? [] : [authPopupPlugin()]),
     // Dev-only /__app-env, read by scripts/check-auth-invariant.mjs.
     appEnvPlugin(),
     // PWA head + ?install=1 tutorial page; runs before Start/Nitro.
     grokPwaPlugin(),
     tailwindcss(),
-    tanstackStart(),
+    ...(rocketPreview ? [] : [tanstackStart()]),
     ...(command === "build" || isPreview
       ? [
           nitro({
