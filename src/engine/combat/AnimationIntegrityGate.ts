@@ -85,6 +85,12 @@ export interface ClipSourceSummary {
   sourceType: ClipSourceType;
   trackCount: number;
   resolvedTracks: number;
+  /**
+   * Tracks whose values actually change over the clip. A clip can bind every
+   * bone, resolve every track, and still animate nothing — every keyframe
+   * holding the same value. Track counts cannot see that; this can.
+   */
+  movingTracks: number;
 }
 
 export interface AnimationIntegrityReport {
@@ -106,6 +112,8 @@ export interface AnimationIntegrityReport {
   retargetedClipCount: number;
   placeholderClipCount: number;
   missingClipCount: number;
+  /** Clips that bind at least one track but hold a pose on every one of them. */
+  staticClipNames: string[];
   // ── Playback state ────────────────────────────────────────────────────────
   activeClipName: string | null;
   activeClipSourceType: ClipSourceType;
@@ -122,6 +130,42 @@ export interface AnimationIntegrityReport {
   warningChecks: string[];
   // ── Raw log lines (for console output) ───────────────────────────────────
   logLines: string[];
+}
+
+/**
+ * Does this track's value actually change over the clip?
+ *
+ * Quaternion tracks are compared as an angle so the threshold means the same
+ * thing on every track; everything else is compared per component.
+ *
+ * WHY THIS EXISTS: `HURRICANE_KICK` binds 22 tracks, resolves all 22, and is
+ * the first alias for both attack_2 and attack_rk — and 21 of its bones read a
+ * span of exactly 0 while the hips sweep ~180 degrees. A frozen body spinning
+ * in place passes every count-based check there is.
+ */
+function trackMoves(track: THREE.KeyframeTrack): boolean {
+  const values = track.values;
+  if (values.length === 0) return false;
+
+  if (track instanceof THREE.QuaternionKeyframeTrack) {
+    // ~2 degrees of rotation from the first key, in quaternion dot terms.
+    const MIN_DOT = Math.cos((2 * Math.PI) / 180 / 2);
+    const x = values[0], y = values[1], z = values[2], w = values[3];
+    for (let i = 4; i + 3 < values.length; i += 4) {
+      const dot = Math.abs(x * values[i] + y * values[i + 1] + z * values[i + 2] + w * values[i + 3]);
+      if (dot < MIN_DOT) return true;
+    }
+    return false;
+  }
+
+  const stride = track.getValueSize();
+  for (let c = 0; c < stride; c++) {
+    const first = values[c];
+    for (let i = c; i < values.length; i += stride) {
+      if (Math.abs(values[i] - first) > 1e-4) return true;
+    }
+  }
+  return false;
 }
 
 // ── Key bones to measure travel for ──────────────────────────────────────────
@@ -203,6 +247,7 @@ export function runAnimationIntegrityGate(
   let retargetedClipCount = 0;
   let placeholderClipCount = 0;
   let missingClipCount = 0;
+  const staticClipNames: string[] = [];
 
   // Build object name set for track resolution
   const objectNameSet = new Set<string>();
@@ -218,10 +263,12 @@ export function runAnimationIntegrityGate(
 
     let clipResolved = 0;
     let clipTotal = 0;
+    let clipMoving = 0;
 
     for (const track of clip.tracks) {
       totalTrackCount++;
       clipTotal++;
+      if (trackMoves(track)) clipMoving++;
       const dotIdx = track.name.lastIndexOf('.');
       const withoutProp = dotIdx !== -1 ? track.name.slice(0, dotIdx) : track.name;
       const pipeIdx = withoutProp.lastIndexOf('|');
@@ -238,7 +285,10 @@ export function runAnimationIntegrityGate(
       }
     }
 
-    clipSources.push({ clipName, sourceType, trackCount: clipTotal, resolvedTracks: clipResolved });
+    clipSources.push({
+      clipName, sourceType, trackCount: clipTotal, resolvedTracks: clipResolved, movingTracks: clipMoving,
+    });
+    if (clipTotal > 0 && clipMoving === 0) staticClipNames.push(clipName);
 
     switch (sourceType) {
       case 'AUTHORED_CLIP':            authoredClipCount++;    break;
@@ -270,6 +320,13 @@ export function runAnimationIntegrityGate(
     log(`     → Required: real BANNON_rigged.glb + authored animation clips`);
   }
 
+  if (staticClipNames.length > 0) {
+    warningChecks.push('STATIC_CLIPS');
+    log(`  ⚠️  STATIC_CLIPS — ${staticClipNames.length} clip(s) bind tracks but hold a pose (every key the same value)`);
+    staticClipNames.slice(0, 10).forEach(c => log(`     • ${c}`));
+    log(`     → These animate NOTHING. A track count cannot see this; only the values can.`);
+  }
+
   if (unresolvedTrackCount > 0) {
     warningChecks.push('UNRESOLVED_TRACKS');
     log(`  ⚠️  UNRESOLVED_TRACKS — ${unresolvedTrackCount} track(s) target bones not in skeleton`);
@@ -299,6 +356,20 @@ export function runAnimationIntegrityGate(
   log(`  ACTIVE CLIP:      ${resolvedActiveClipName ?? 'NONE'} [${activeClipSourceType}]`);
   if (activeClipDuration !== null) {
     log(`  CLIP DURATION:    ${activeClipDuration.toFixed(3)}s`);
+  }
+
+  // A static clip somewhere in the set is worth a warning; the clip that is
+  // PLAYING being static is the fighter visibly frozen, which is the symptom
+  // this project keeps chasing. Say so plainly and name the state it serves.
+  if (resolvedActiveClipName && staticClipNames.includes(resolvedActiveClipName)) {
+    // Not a failing check: BLOCKED means "no usable authored animation" and has
+    // its own caller path. This is a usable clip that happens to animate
+    // nothing, so it drops the verdict to UNKNOWN instead — the gate's own rule
+    // is that UNKNOWN is never PASS, and a frozen fighter must never read PASS.
+    warningChecks.push('ACTIVE_CLIP_IS_STATIC');
+    log(`  ❌ ACTIVE_CLIP_IS_STATIC — "${resolvedActiveClipName}" is playing and every track holds a pose`);
+    log(`     → The mixer is running and the fighter will not move. Re-capture the clip,`);
+    log(`       or point this state at a different one.`);
   }
 
   // ── 4. Mixer root validation ──────────────────────────────────────────────
@@ -387,7 +458,8 @@ export function runAnimationIntegrityGate(
     warningChecks.includes('NO_SKINNED_MESH') ||
     warningChecks.includes('NO_SKELETON') ||
     warningChecks.includes('NO_ANIMATION_CLIPS') ||
-    warningChecks.includes('ZERO_BONE_TRAVEL')
+    warningChecks.includes('ZERO_BONE_TRAVEL') ||
+    warningChecks.includes('ACTIVE_CLIP_IS_STATIC')
   ) {
     verdict = 'UNKNOWN';
   } else if (
@@ -443,6 +515,7 @@ export function runAnimationIntegrityGate(
     retargetedClipCount,
     placeholderClipCount,
     missingClipCount,
+    staticClipNames,
     activeClipName: resolvedActiveClipName,
     activeClipSourceType,
     activeClipDuration,

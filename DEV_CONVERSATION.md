@@ -1,5 +1,37 @@
 # Brutal Fist — dev conversation
 
+## 2026-09-18 — the gate could not see a frozen clip; now it can
+
+`AnimationIntegrityGate` counts clips, tracks, resolved tracks and bone travel. **None of those can
+see a clip that binds every bone, resolves every track, and then holds a pose on all of them.** That
+is the `HURRICANE_KICK` shape found in the previous entry, and it passes every count-based check there
+is. Extended the project's existing instrument rather than writing a fourth one.
+
+- `ClipSourceSummary.movingTracks` — per clip, how many tracks' values actually change. Quaternion
+  tracks are compared as an angle (~2°) so the threshold means the same thing on every track.
+- `staticClipNames` + a `STATIC_CLIPS` warning naming every clip that binds tracks and animates nothing.
+- `ACTIVE_CLIP_IS_STATIC` when the clip that is *playing* is one of them — the fighter visibly frozen,
+  which is the symptom this project keeps chasing.
+
+**Deliberately a warning, not a failing check.** `BLOCKED` means "no usable authored animation" and has
+its own caller path in `FighterMesh`; a usable clip that happens to animate nothing is not that. Instead
+it drops the verdict to `UNKNOWN`, which honours the gate's own rule — *UNKNOWN is never PASS* — so a
+frozen fighter can never be reported as a pass. Nothing about playback changes; the gate is diagnostic.
+
+`scripts/animation-integrity-static.test.mjs` builds a real skinned rig and three clips: fully frozen,
+fully animating, and the root-only shape. It asserts the trap explicitly — the frozen clip's tracks
+still *resolve*, which is why resolution counts never caught this — and that a playing frozen clip
+cannot read PASS. Note the root-only clip is correctly **not** called static: one track does move, and
+the gate reports the honest 1-of-4 rather than overstating it.
+
+### Checked and closed: the 770 unindexed clips are not a gap
+
+Before chasing them, measured what the game actually asks for. Across `SEMANTIC_STATE_ALIASES` and
+`BannonEulerMotionAdapter`, 132 clip-name aliases: **127 reachable through the index, 0 on disk but
+unindexed**, and 5 absent — `T_1`, `T_2`, `T_3`, `T_4`, `T_1_3`, which are Tekken-source naming, not
+Bannon clips. So the 770 unindexed files are not what the game is missing, and indexing them would only
+add unused weight to the bundle. Nothing to do here; recorded so nobody re-derives it.
+
 ## 2026-09-18 — the last dead clips: one translation layer, and the owner's own map
 
 The previous entry left 59 clips on a `J_` rig and one outlier. Rather than derive the cross-rig
