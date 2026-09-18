@@ -9,19 +9,35 @@ interface UrbanNightStageProps {
   p2Color: string;
 }
 
-// Animated neon strip that flickers
+/**
+ * Animated neon strip that flickers AND throws its colour onto the street.
+ *
+ * THE REACH IS THE POINT. These strips sit on the back wall at z between -7 and
+ * -8.8, and the fighters stand at z ~ 0. The light was `distance={6}`, so it
+ * died at z ~ -2.8 and never arrived: the neon glowed, the street stayed black.
+ * `distance` is the hard cutoff in three.js, so no amount of intensity helps
+ * until the radius covers the fight plane — about 9 units from the wall.
+ *
+ * `decay={2}` is inverse-square and physically right, but at 9 units it leaves
+ * a few percent of the nominal value, so intensity is raised to match the reach
+ * rather than the number looking large for its own sake.
+ */
 function NeonStrip({
   position,
   rotation,
   width,
   color,
   flickerSpeed = 1.3,
+  intensity = 16,
+  distance = 22,
 }: {
   position: [number, number, number];
   rotation?: [number, number, number];
   width: number;
   color: string;
   flickerSpeed?: number;
+  intensity?: number;
+  distance?: number;
 }) {
   const lightRef = useRef<THREE.PointLight>(null);
   useFrame(({ clock }) => {
@@ -29,15 +45,15 @@ function NeonStrip({
     const t = clock.elapsedTime * flickerSpeed;
     // Subtle flicker using sin + noise-like offset
     const flicker = 0.85 + 0.15 * Math.sin(t * 7.3) * Math.sin(t * 3.1);
-    lightRef.current.intensity = 1.8 * flicker;
+    lightRef.current.intensity = intensity * flicker;
   });
   return (
     <group position={position} rotation={rotation as any}>
       <mesh>
         <boxGeometry args={[width, 0.06, 0.06]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={2.5} />
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={2.5} toneMapped={false} />
       </mesh>
-      <pointLight ref={lightRef} color={color} intensity={1.8} distance={6} decay={2} />
+      <pointLight ref={lightRef} color={color} intensity={intensity} distance={distance} decay={2} />
     </group>
   );
 }
@@ -205,15 +221,38 @@ export function UrbanNightStage({ p1Color, p2Color }: UrbanNightStageProps) {
       {/* Red accent — right fence post */}
       <NeonStrip position={[9, 3, -8.4]} rotation={[0, -Math.PI / 2, 0]} width={2} color="#dc2626" flickerSpeed={1.6} />
 
-      {/* ── Chiaroscuro lighting: very low ambient, intense contrasting spots ── */}
-      {/* Ambient — near black */}
-      <ambientLight intensity={0.04} color="#1a1020" />
+      {/* ── Street-level neon: the lights the fighters actually stand in ──
+          Everything above is on the back wall 7-9 units away. These sit level
+          with the fight plane on both sides, in different colours, so the
+          street reads as a mix rather than one flat purple wash. */}
+      <NeonStrip position={[-5.5, 2.6, -1.2]} rotation={[0, Math.PI / 2, 0]} width={3.2} color="#22d3ee" flickerSpeed={1.25} intensity={18} distance={16} />
+      <NeonStrip position={[5.5, 2.6, -1.2]} rotation={[0, -Math.PI / 2, 0]} width={3.2} color="#ff3d81" flickerSpeed={0.95} intensity={18} distance={16} />
+      <NeonStrip position={[-4.2, 0.35, 2.2]} rotation={[0, Math.PI / 2, 0]} width={2.2} color="#a855f7" flickerSpeed={1.9} intensity={10} distance={12} />
+      <NeonStrip position={[4.2, 0.35, 2.2]} rotation={[0, -Math.PI / 2, 0]} width={2.2} color="#eab308" flickerSpeed={1.45} intensity={10} distance={12} />
 
-      {/* Key spot — ultraviolet from above-front, hits floor and fighters */}
+      {/* Sodium street lamp overhead — the warm note the neon plays against */}
+      <NeonStrip position={[0, 5.4, -1.5]} width={1.2} color="#ffa63d" flickerSpeed={0.55} intensity={22} distance={18} />
+
+      {/* ── Chiaroscuro lighting: low ambient night, intense contrasting spots ──
+          Ambient was 0.04, which is essentially black: with the practicals out
+          of range, anything they did not hit rendered as a silhouette. It stays
+          a night sky, just not a void — the practicals above do the colouring,
+          this only keeps unlit surfaces readable. */}
+      <ambientLight intensity={0.16} color="#241436" />
+      {/* Sky-to-ground bounce: cold from above, warm sodium spill from the road */}
+      <hemisphereLight args={['#2a1c4a', '#3a2410', 0.55]} />
+
+      {/* Key spot — ultraviolet from above-front, hits floor and fighters.
+          NOTE on aiming: a SpotLight points at its `target`, and three.js only
+          uses that target's matrixWorld if the target is in the scene. R3F's
+          `target-position` mutates the default target, which is NOT parented,
+          so its matrixWorld stays identity and every spot here aims at the
+          ORIGIN whatever its target-position says. That is what the fight plane
+          wants, so the positions below are chosen to give the intended angle
+          while aiming at origin - do not trust the target-position values. */}
       <spotLight
         position={[0, 9, 3]}
-        target-position={[0, 0, 0]}
-        intensity={4.5}
+        intensity={26}
         color="#6d28d9"
         angle={0.35}
         penumbra={0.5}
@@ -226,8 +265,7 @@ export function UrbanNightStage({ p1Color, p2Color }: UrbanNightStageProps) {
       {/* Fill spot — deep purple from left, hits background wall */}
       <spotLight
         position={[-8, 7, 1]}
-        target-position={[-4, 0, -6]}
-        intensity={3.0}
+        intensity={18}
         color="#7c3aed"
         angle={0.45}
         penumbra={0.7}
@@ -237,8 +275,7 @@ export function UrbanNightStage({ p1Color, p2Color }: UrbanNightStageProps) {
       {/* Counter spot — neon yellow from right, hits floor */}
       <spotLight
         position={[8, 6, 2]}
-        target-position={[3, 0, -2]}
-        intensity={3.5}
+        intensity={20}
         color="#ca8a04"
         angle={0.4}
         penumbra={0.6}
@@ -248,8 +285,7 @@ export function UrbanNightStage({ p1Color, p2Color }: UrbanNightStageProps) {
       {/* Rim light — cold blue from behind fighters */}
       <spotLight
         position={[0, 5, -7]}
-        target-position={[0, 1, 0]}
-        intensity={2.0}
+        intensity={14}
         color="#1e40af"
         angle={0.5}
         penumbra={0.8}
@@ -257,8 +293,8 @@ export function UrbanNightStage({ p1Color, p2Color }: UrbanNightStageProps) {
         decay={2}
       />
       {/* Faction floor glows */}
-      <pointLight position={[P1_X, 0.4, 0]} intensity={1.5} color={p1Color} distance={5} decay={2} />
-      <pointLight position={[P2_X, 0.4, 0]} intensity={1.5} color={p2Color} distance={5} decay={2} />
+      <pointLight position={[P1_X, 0.4, 0]} intensity={6} color={p1Color} distance={7} decay={2} />
+      <pointLight position={[P2_X, 0.4, 0]} intensity={6} color={p2Color} distance={7} decay={2} />
     </group>
   );
 }

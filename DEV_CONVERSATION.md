@@ -1,5 +1,54 @@
 # Brutal Fist — dev conversation
 
+## 2026-09-18 — the neon glowed and lit nothing; urban_night was a black box
+
+Owner: "stage lights need to emit light like the neon streets need to be lit up by those neon lights
+so it's not [a] black block ... a mix of colors of lights dynamically to match the lights in the
+settings on top of the main ambient night." Rendered the stage first and he was right — the street,
+the wall and both fighters were silhouettes with a few neon lines floating in the dark.
+
+**An emissive material makes a surface LOOK lit and casts no light on anything else.** That part was
+already understood here: every `NeonStrip` carried a real `pointLight`. The defect was reach.
+
+    the strips sit on the back wall at z between -7 and -8.8
+    the fighters stand at z ~ 0
+    the lights were distance={6}
+
+`distance` is a HARD CUTOFF in three.js, so the neon died at z ~ -2.8 and never arrived — and no
+amount of intensity fixes that until the radius covers the fight plane, ~9 units away. Raised to
+16-22 with intensity matched to the inverse-square falloff at that range, rather than picking numbers
+that merely look big.
+
+**FIRST ATTEMPT WENT INTO THE WRONG FILE, and only measuring caught it.** The neon system was built in
+`ProceduralStage`, gated on `urban_night` — but `CombatArena3D` routes `urban_night` to its own
+`UrbanNightStage` component and only falls back to `ProceduralStage` for everything else. The gate
+could never fire. The same "everything exists, nothing is joined" shape as the rest of this repo; the
+gate now covers the generic outdoor stages, which is what actually reaches that file.
+
+Added on top, in the stage that is really rendered:
+- **Street-level neon at the fight plane** on both sides in different colours (cyan and magenta at
+  chest height, purple and yellow at ankle height) so the street reads as a MIX rather than one flat
+  purple wash, plus a warm sodium lamp overhead as the note the neon plays against.
+- **Ambient 0.04 -> 0.16** with a hemisphere light (cold sky, warm sodium bounce). 0.04 is effectively
+  black: anything the practicals missed rendered as a silhouette. It is still night, just not a void.
+- Faction glows and the four spots given reach: they were 1.5-4.5 intensity against `decay={2}` over
+  6-9 units, which arrives as a few percent.
+
+**A REAL BUG FOUND AND WRITTEN DOWN RATHER THAN SILENTLY WORKED AROUND:** a SpotLight aims at its
+`target`, and three.js only uses that target's matrixWorld if the target is IN THE SCENE. R3F's
+`target-position` mutates the default target, which is never parented, so its matrixWorld stays
+identity and **every spot on this stage aims at the world origin whatever its `target-position`
+says**. Three of the four had targets that therefore did nothing. The origin is where the fight is, so
+the positions are chosen to give the intended angle while aiming there, and the caveat is in the code
+so the next person does not trust those values.
+
+`neonPalette` was added to `StageConfig` for ten stages, with the note that a stage's light COUNT must
+stay constant — three.js keys shader programs on the number of lights, so making one appear or
+disappear recompiles every material mid-fight. Colour and intensity animate; visibility never does.
+
+VERIFIED BY LOOKING, before and after, in a real match: the brick wall, the asphalt and both fighters
+are lit, with cyan, magenta, purple, yellow and sodium pools across the street. 0 page errors.
+
 ## 2026-09-18 — Schwarzerblitz's fighting set imported; what the Tekken 3 repo actually holds
 
 Owner: "let's get all the um animations and combat and movement and locomotion from night sky engine

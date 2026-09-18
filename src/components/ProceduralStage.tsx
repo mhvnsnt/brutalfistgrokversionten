@@ -106,6 +106,14 @@ export function ProceduralStage({ stageId, p1Color, p2Color, seed }: ProceduralS
         <meshBasicMaterial color={cfg.ambientColor} side={THREE.BackSide} />
       </mesh>
 
+      {/* Practical lights for the generic outdoor stages. `urban_night` is NOT
+          one of them - CombatArena3D routes it to its own UrbanNightStage, so
+          gating this on that id would have been dead code. Stages with their
+          own component (UNIQUE_OUTDOOR) keep their authored look. */}
+      {!indoor && !uniqueOutdoor && cfg.neonPalette && (
+        <NeonStreet palette={cfg.neonPalette} floorW={floorW} floorD={floorD} />
+      )}
+
       {resolvedId === "dojo" && <DojoHall accent={accent} />}
       {resolvedId === "wrestling_ring" && <WrestlingRing accent={accent} />}
       {resolvedId === "mma_octagon" && <OctagonCage accent={accent} />}
@@ -175,6 +183,144 @@ function Cyl({
       <cylinderGeometry args={[args[0], args[1], args[2], args[3] ?? 8]} />
       <meshStandardMaterial color={c} roughness={r} metalness={m} emissive={e ?? "#000"} emissiveIntensity={ei} />
     </mesh>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Practical stage lights
+//
+// An emissive material makes a surface LOOK lit and casts no light on anything
+// else, so a neon street renders as a black block with a few glowing strips
+// floating in it. These are the real lights, placed at the emitters and mixed
+// OVER the base ambient night rather than replacing it.
+//
+// THE COUNT IS FIXED ON PURPOSE. three.js keys its shader programs on the
+// number of lights in the scene, so making one appear or disappear recompiles
+// every material — a hitch mid-fight. Colour and intensity are animated;
+// visibility and count never change.
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface NeonEmitter {
+  /** where the light sits */
+  position: [number, number, number];
+  /** index into the stage palette this emitter starts on */
+  hue: number;
+  /** the sign geometry drawn at the emitter, if any */
+  sign?: { size: [number, number, number]; offset: [number, number, number] };
+  distance: number;
+  intensity: number;
+}
+
+function NeonLights({ emitters, palette }: { emitters: NeonEmitter[]; palette: string[] }) {
+  const lights = useRef<Array<THREE.PointLight | null>>([]);
+  const signs = useRef<Array<THREE.MeshStandardMaterial | null>>([]);
+
+  // Pre-resolve the palette once: constructing Colors per frame would churn.
+  const colors = useMemo(() => palette.map((hex) => new THREE.Color(hex)), [palette]);
+  const scratch = useMemo(() => new THREE.Color(), []);
+
+  useFrame(({ clock }) => {
+    if (!colors.length) return;
+    const t = clock.elapsedTime;
+    for (let i = 0; i < emitters.length; i++) {
+      const light = lights.current[i];
+      if (!light) continue;
+      const e = emitters[i];
+
+      // Drift through the palette so the street reads as a MIX of colours
+      // rather than one flat wash, each emitter offset so they never agree.
+      const cycle = t * 0.11 + e.hue * 0.37;
+      const span = colors.length;
+      const from = colors[Math.floor(cycle % span + span) % span];
+      const to = colors[Math.floor((cycle + 1) % span + span) % span];
+      scratch.copy(from).lerp(to, cycle - Math.floor(cycle));
+
+      // Mains hum plus an occasional bad-tube flicker, per emitter.
+      const hum = 0.88 + Math.sin(t * 3.1 + e.hue * 2.3) * 0.12;
+      const flicker = Math.sin(t * 27 + e.hue * 11) > 0.93 ? 0.55 : 1;
+      light.color.copy(scratch);
+      light.intensity = e.intensity * hum * flicker;
+
+      const sign = signs.current[i];
+      if (sign) {
+        sign.color.copy(scratch);
+        sign.emissive.copy(scratch);
+        sign.emissiveIntensity = 1.5 * hum * flicker;
+      }
+    }
+  });
+
+  return (
+    <group>
+      {emitters.map((e, i) => (
+        <group key={i}>
+          <pointLight
+            ref={(r) => { lights.current[i] = r; }}
+            position={e.position}
+            distance={e.distance}
+            decay={2}
+            intensity={e.intensity}
+            color={palette[e.hue % palette.length] ?? "#ffffff"}
+          />
+          {e.sign && (
+            <mesh position={[e.position[0] + e.sign.offset[0], e.position[1] + e.sign.offset[1], e.position[2] + e.sign.offset[2]]}>
+              <boxGeometry args={e.sign.size} />
+              <meshStandardMaterial
+                ref={(r) => { signs.current[i] = r; }}
+                color={palette[e.hue % palette.length] ?? "#ffffff"}
+                emissive={palette[e.hue % palette.length] ?? "#ffffff"}
+                emissiveIntensity={1.5}
+                toneMapped={false}
+              />
+            </mesh>
+          )}
+        </group>
+      ))}
+    </group>
+  );
+}
+
+/**
+ * The neon street. `urban_night` had no stage component at all — it rendered
+ * the generic building ring and nothing else, under an ambient of 0.25, which
+ * is why it read as a black box. Signs down both sides, each one a real light.
+ */
+function NeonStreet({ palette, floorW, floorD }: { palette: string[]; floorW: number; floorD: number }) {
+  const emitters = useMemo<NeonEmitter[]>(() => {
+    const out: NeonEmitter[] = [];
+    const x = floorW * 0.36;
+    const zs = [-floorD * 0.3, 0, floorD * 0.3];
+    zs.forEach((z, i) => {
+      out.push({
+        position: [-x, 2.6, z], hue: i, distance: 13, intensity: 4.2,
+        sign: { size: [0.12, 1.5, 0.5], offset: [-0.25, 0, 0] },
+      });
+      out.push({
+        position: [x, 2.6, z], hue: i + 1, distance: 13, intensity: 4.2,
+        sign: { size: [0.12, 1.5, 0.5], offset: [0.25, 0, 0] },
+      });
+    });
+    // A low pair washing the road itself, so the fighters' feet are not in a void.
+    out.push({ position: [-floorW * 0.18, 0.55, floorD * 0.22], hue: 2, distance: 9, intensity: 2.4 });
+    out.push({ position: [floorW * 0.18, 0.55, -floorD * 0.22], hue: 0, distance: 9, intensity: 2.4 });
+    return out;
+  }, [floorW, floorD]);
+
+  return (
+    <group>
+      <NeonLights emitters={emitters} palette={palette} />
+      {/* wet asphalt: the neon has something to bounce off */}
+      <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[floorW * 0.92, floorD * 0.92]} />
+        <meshStandardMaterial color="#0b0b12" roughness={0.26} metalness={0.55} />
+      </mesh>
+      {[-1, 1].map((side) => (
+        <Box key={side} p={[side * floorW * 0.4, 1.9, 0]} s={[0.5, 3.8, floorD * 0.9]} c="#141019" r={0.85} />
+      ))}
+      {[-1, 1].map((side) => (
+        <Box key={`k${side}`} p={[side * floorW * 0.33, 0.07, 0]} s={[0.35, 0.14, floorD * 0.9]} c="#23202a" r={0.9} />
+      ))}
+    </group>
   );
 }
 
