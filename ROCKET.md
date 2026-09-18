@@ -5,7 +5,8 @@ Rocket must treat this repository as one complete playable application, not as a
 ## Runtime contract
 
 - Primary runtime: Vite + React + Three.js PWA.
-- Start command: `npm run dev`.
+- Start command: `npm run rocket:preview`.
+- Rocket preview intentionally bypasses the normal `predev` asset-sync hooks; generated runtime banks are treated as caches, so a sandbox with restricted outbound network cannot hold the preview startup open.
 - Bind address: `0.0.0.0`.
 - Port: `8080`.
 - Browser entry: `/`.
