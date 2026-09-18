@@ -140,11 +140,26 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
     levels: [{ floorY: 0, boundaryX: 4.5, boundaryZ: 3.0, hazardDamagePerSec: 0, label: 'STREET' }],
     breakableFloor: false,
     floorBreakThreshold: 0,
-    ambientIntensity: 0.25,
-    ambientColor: '#1a0030',
-    primaryLightColor: '#c084fc',
-    fillLightColor: '#3b0764',
-    neonPalette: ['#a855f7', '#22d3ee', '#ff3d81', '#7c3aed'],
+    // THE CATALOGUE NOW MATCHES WHAT THE STAGE RENDERS. UrbanNightStage read
+    // nothing from this record, so these five fields described a stage nobody
+    // ever saw: the component hardcoded its own chiaroscuro. The values below
+    // are the ones it actually draws, so wiring it up changed no pixel — and
+    // editing them here now moves the lights, which is the whole point.
+    ambientIntensity: 0.25,          // x AMBIENT_CALIBRATION -> the measured 0.16
+    ambientColor: '#241436',
+    primaryLightColor: '#6d28d9',    // key spot, above-front
+    fillLightColor: '#7c3aed',       // fill spot, from the left
+    /**
+     * The eleven NEON PRACTICALS in declaration order: seven wall accents, then
+     * the four street-level strips that sit on the fight plane. Entries cycle,
+     * so a shorter palette still lights every strip. The warm sodium street lamp
+     * is deliberately NOT in here — it is not neon, it is the note the neon
+     * plays against.
+     */
+    neonPalette: [
+      '#7c3aed', '#9333ea', '#9333ea', '#eab308', '#eab308', '#06b6d4', '#dc2626',
+      '#22d3ee', '#ff3d81', '#a855f7', '#eab308',
+    ],
     bgmTrack: 'urban_night',
     hazardDamagePerSec: 0,
     hazardLabel: '',
@@ -567,6 +582,28 @@ export function resolveStageConfig(id: StageId): StageConfig {
 }
 
 // ── Arena combat state (reset on every stage load) ────────────────────────────
+
+/**
+ * Take the nth practical light's colour from a stage palette.
+ *
+ * Entries CYCLE, so a palette shorter than the stage's light count still
+ * lights every fixture, and an absent or empty palette falls back to the
+ * colour authored in the stage component. Pure so it can be tested without a
+ * renderer — the bug this replaces was a component that read no config at all,
+ * which no render test would have caught either.
+ */
+export function neonAt(palette: string[] | undefined, index: number, authored: string): string {
+  if (!palette || palette.length === 0) return authored;
+  const i = ((index % palette.length) + palette.length) % palette.length;
+  return palette[i] ?? authored;
+}
+
+/**
+ * The catalogue's ambientIntensity is on its own scale; this maps it to the
+ * value measured to keep unlit surfaces readable without greying out the night.
+ * urban_night's 0.25 lands on the measured 0.16.
+ */
+export const AMBIENT_CALIBRATION = 0.16 / 0.25;
 
 export interface ArenaCombatState {
   stageId: StageId;

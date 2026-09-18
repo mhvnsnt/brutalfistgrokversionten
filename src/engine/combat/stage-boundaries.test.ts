@@ -9,7 +9,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { STAGE_CONFIGS, type StageId } from './StageConfig.ts';
+import { AMBIENT_CALIBRATION, neonAt, STAGE_CONFIGS, type StageId } from './StageConfig.ts';
 import {
   checkWallCollision,
   wallBoundsFromStage,
@@ -150,6 +150,56 @@ describe('the ledge-throw zone is per stage', () => {
         false,
         `${id} must not ledge-throw`,
       );
+    }
+  });
+});
+
+describe('stage practical lights are driven by the catalogue palette', () => {
+  it('an absent or empty palette falls back to the authored colour', () => {
+    assert.equal(neonAt(undefined, 0, '#abcdef'), '#abcdef');
+    assert.equal(neonAt([], 3, '#abcdef'), '#abcdef');
+  });
+
+  it('entries cycle, so a short palette still lights every fixture', () => {
+    const p = ['#111111', '#222222'];
+    assert.equal(neonAt(p, 0, '#000'), '#111111');
+    assert.equal(neonAt(p, 1, '#000'), '#222222');
+    assert.equal(neonAt(p, 2, '#000'), '#111111');
+    assert.equal(neonAt(p, 11, '#000'), '#222222');
+    // Never returns undefined for a negative index.
+    assert.equal(neonAt(p, -1, '#000'), '#222222');
+  });
+
+  it('urban_night carries a colour for every one of its neon practicals', () => {
+    // UrbanNightStage declares eleven NeonStrip practicals it drives from the
+    // palette (the warm sodium lamp is deliberately excluded). A palette
+    // shorter than that would silently start repeating colours down the street.
+    const palette = STAGE_CONFIGS.urban_night.neonPalette;
+    assert.ok(palette, 'urban_night must declare a palette');
+    assert.equal(palette!.length, 11, 'one entry per driven practical');
+    for (const c of palette!) assert.match(c, /^#[0-9a-fA-F]{6}$/, `${c} is not a hex colour`);
+  });
+
+  it('every palette entry on every stage is a usable colour', () => {
+    for (const id of STAGE_IDS) {
+      for (const c of STAGE_CONFIGS[id].neonPalette ?? []) {
+        assert.match(c, /^#[0-9a-fA-F]{6}$/, `${id} palette entry ${c}`);
+      }
+    }
+  });
+
+  it('the ambient calibration reproduces the measured urban_night value', () => {
+    // 0.16 was measured as the floor that keeps unlit surfaces readable without
+    // greying the night sky. Wiring the field up must not have changed it.
+    const rendered = STAGE_CONFIGS.urban_night.ambientIntensity * AMBIENT_CALIBRATION;
+    assert.ok(Math.abs(rendered - 0.16) < 1e-9, `ambient rendered at ${rendered}, expected 0.16`);
+  });
+
+  it('no stage declares an ambient that renders black or blown out', () => {
+    for (const id of STAGE_IDS) {
+      const rendered = STAGE_CONFIGS[id].ambientIntensity * AMBIENT_CALIBRATION;
+      assert.ok(rendered > 0.03, `${id} renders at ambient ${rendered.toFixed(3)} — a black block`);
+      assert.ok(rendered < 1, `${id} renders at ambient ${rendered.toFixed(3)} — flat, no chiaroscuro`);
     }
   });
 });
