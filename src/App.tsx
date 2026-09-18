@@ -7,7 +7,6 @@ import { useAuth } from './contexts/AuthContext';
 import { type TournamentEndData } from './components/TournamentBracket';
 import { type TournamentSettings, DEFAULT_TOURNAMENT_SETTINGS } from './components/TournamentSettingsScreen';
 import { type StageId } from './engine/combat/StageConfig';
-import { warmupImages } from './engine/pipeline/glbCache';
 
 function ScreenShell() {
   return <div className="fixed inset-0 bg-[#0a0a0a]" />;
@@ -45,13 +44,11 @@ export default function App() {
   const [tournamentSettings, setTournamentSettings] = useState<TournamentSettings>(DEFAULT_TOURNAMENT_SETTINGS);
   const [selectedStageId, setSelectedStageId] = useState<StageId>('urban_night');
 
-  useEffect(() => {
-    warmupImages(getAllBannonFighters().map((f) => `/portraits/concept/${f.id}.jpg?v=ai3`));
-    void import('./components/CharacterSelect');
-    void import('./components/StageSelectScreen');
-    void import('./components/GameBattleArena');
-    void import('./components/CombatArena3D');
-  }, []);
+  // Keep the first preview paint small. Heavy 3D screens are already lazy
+  // components; importing them here defeats that boundary and makes an embedded
+  // Rocket iframe wait for the entire combat graph before it can show the title.
+  // Each screen loads on demand through its dynamic component below.
+  useEffect(() => {}, []);
 
   useEffect(() => {
     if (screen !== AppScreen?.Boot) return;
