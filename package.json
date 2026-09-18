@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "node scripts/with-app-env.mjs vite dev --host 0.0.0.0 --port 8080",
+    "rocket:preview": "node scripts/with-app-env.mjs vite dev --host 0.0.0.0 --port 8080",
     "predev": "node scripts/sync-bannon-motion.mjs && node scripts/sync-schwarzerblitz-motion.mjs && node scripts/sync-fighting-motion-sources.mjs",
     "next:dev": "next dev --hostname 0.0.0.0 --port 3000",
     "next:build": "next build",
