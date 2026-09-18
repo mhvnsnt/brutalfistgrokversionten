@@ -1,5 +1,80 @@
 # Brutal Fist — dev conversation
 
+## 2026-09-18 — the animation sources, surveyed against what is actually in them
+
+Owner supplied a list of public fighting-animation repositories to clone and wire up. Cloned and
+measured each one rather than taking the descriptions at face value, because two of them do not hold
+what the descriptions say.
+
+### GRAPPLEMAP — imported. Public domain, and the most wrestling-relevant of the lot
+
+github.com/Eelis/GrappleMap. Its README states plainly: "the GrappleMap code and data is released
+into the **public domain**." Of every source surveyed it is the only one with no redistribution
+constraint at all.
+
+A graph of real grappling positions for TWO BODIES with the transitions between them — which is the
+hard part of a wrestling game's ground game. **601 positions, 1,485 transitions, 8,323 two-body
+keyframes, 160 tags** (side_control, half_guard, full_guard, mount, turtle, crossface, kimura,
+bottom_supine, top_kneeling…).
+
+The encoding was read from the source, not guessed — `src/persistence.cpp` `decodePosition` plus the
+JOINTS macro in `src/players.hpp`: base62 (a-z 0-25, A-Z 26-51, 0-9 52-61), every coordinate two
+digits as `(d0*62 + d1)/1000`, x and z offset by -2, joints running player0's 23 then player1's 23.
+That is 276 characters per position, which is exactly the four ~69-character lines each entry carries.
+
+**A PARSING TRAP WORTH KEEPING:** entries may carry a `ref:` citation line between `tags:` and the
+coordinates. Treating any unindented line as the next entry's name lets `ref:` swallow the coordinate
+block, and the real entry decodes to nothing. Measured: that alone accounted for **2,801 of 4,887**
+entries reading empty on the first pass.
+
+Deliberately NOT retargeted yet. These are joint POSITIONS on GrappleMap's own 23-joint skeleton (it
+has toes, heels and fingers; it has no spine chain) while the fight rig is driven by bone ROTATIONS,
+so turning a position into a pose for our skeleton is an IK solve. This lands the graph and the
+coordinates as verified data; the retarget is its own piece of work with its own verification. The
+generated module is imported by nothing yet, so the client bundle is unchanged at 9,318 kB.
+
+### BANDAI NAMCO — cloned, and the description it came with is wrong
+
+3,077 BVH files, and the action vocabulary measured off the filenames is **not a fighting dataset**:
+
+    raise-up-left-hand 444   raise-up-right-hand 437   raise-up-both-hands 434
+    run 332   walk-turn-left 236   walk-turn-right 234   walk 205
+    wave-left/right/both 625 combined   walk-left/right/back 45   dash 15   bow 15
+    slash 2   punch 2   kick 1   call 1   respond 1
+
+**Seven combat clips in 3,077 files.** What it actually is, and what is genuinely useful, is a
+LOCOMOTION and gesture set with many emotional styles per action — 332 runs and 205 walks in styles
+like tired, proud, active, masculinity — which is real material for per-fighter gaits and stances,
+just not for strikes.
+
+**Licence: CC BY-NC 4.0**, confirmed in its own README for both datasets. Non-commercial. The owner
+has stated he has permission; recording the licence here so it is never lost, not re-litigating it.
+
+### SCHWARZERBLITZ — the owner's own fact-check was right about the licence
+
+Its `LICENSE.md`: the source is BSD-3-Clause, but "the assets and resources bundled with this engine
+are to be considered **all rights reserved** and cannot be redistributed without the owner's consent…
+includes but is not limited to the characters concepts / designs, the 3D models, the music, the sound
+effects, 2D and 3D illustrations, stages, icons, menu art." The 166 animations imported in the entry
+below fall under that. The owner has twice stated he has the owners' permission, so they stay
+integrated and shipping; the licence and the grant are recorded in `AnimationSourceRegistry.ts` and
+here so the basis is on the record rather than assumed.
+
+### NIGHTSKY — nothing importable (2,236 Unreal .uasset binaries). Its value is the MIT framework.
+
+### TEKKEN 3 — the repo holds the decoder, not the animation
+
+`tools/prepare_jun_import.py` reads `verified(work / "ttt1/bankedroms.bin", BANK_SHA)`. The ROM is not
+in the repository and no decoded pose data is committed, so there is nothing to import from it as it
+stands. The format is known — 57 channels to an 18-bone skeleton — so a dump the owner supplies
+locally is the path, and that is his file to provide.
+
+### CMU and MIXAMO — not yet pulled
+
+CMU (free for all uses, including commercial) has no single canonical GitHub mirror; it needs one
+chosen and verified. Mixamo is not a repo at all and needs an authenticated bulk download. Both are
+ship-safe, which makes them the most valuable remaining sources, and neither is done.
+
 ## 2026-09-18 — the neon glowed and lit nothing; urban_night was a black box
 
 Owner: "stage lights need to emit light like the neon streets need to be lit up by those neon lights
