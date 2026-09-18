@@ -2456,11 +2456,11 @@ export default function GameBattleArena({
       {/* ── Pause Menu Overlay ── */}
       {isPaused && cinematicPhase === 'fight' && !ko && (
         <div
-          className="absolute inset-0 z-50 flex items-center justify-center"
+          className="absolute inset-0 z-50 flex items-center justify-center p-safe mobile-menu-scroll"
           style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(6px)' }}
         >
           <div
-            className="w-full max-w-sm border border-zinc-700 bg-zinc-950 font-mono"
+            className="w-[calc(100%-1.5rem)] max-w-sm max-h-[calc(100dvh-2rem)] overflow-y-auto border border-zinc-700 bg-zinc-950 font-mono"
             style={{ boxShadow: '0 0 40px rgba(250,204,21,0.08)' }}
           >
             {/* Pause header */}
