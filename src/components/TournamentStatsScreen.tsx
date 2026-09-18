@@ -117,7 +117,7 @@ export default function TournamentStatsScreen({ onBack }: TournamentStatsScreenP
   ];
 
   return (
-    <div className="fixed inset-0 bg-black text-white font-mono overflow-hidden flex flex-col">
+    <div className="fixed inset-0 screen-safe bg-black text-white font-mono overflow-hidden flex flex-col">
       {/* Atmospheric bg */}
       <div
         className="absolute inset-0 pointer-events-none"

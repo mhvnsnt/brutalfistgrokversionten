@@ -70,7 +70,7 @@ export default function MoveLibraryViewer({ onClose }: MoveLibraryViewerProps) {
   const totalClips = library.totalClips;
 
   return (
-    <div className="fixed inset-0 bg-[#080a10] text-white font-mono overflow-y-auto z-50">
+    <div className="fixed inset-0 screen-safe bg-[#080a10] text-white font-mono overflow-y-auto z-50">
       <div className="max-w-2xl mx-auto px-4 py-6">
 
         {/* Header */}

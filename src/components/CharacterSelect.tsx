@@ -512,7 +512,7 @@ export default function CharacterSelect({ onSelectP1, onSelectP2, onStartMatch }
   }
 
   return (
-    <div className="fixed inset-0 overflow-hidden select-none font-mono flex flex-col"
+    <div className="fixed inset-0 screen-safe overflow-hidden select-none font-mono flex flex-col"
       style={{
         background: 'linear-gradient(180deg, #0a0a0a 0%, #111113 40%, #0d0d0f 100%)',
       }}

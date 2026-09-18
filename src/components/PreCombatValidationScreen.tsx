@@ -375,7 +375,7 @@ export default function PreCombatValidationScreen({
   const canProceed  = !validating && !!p1Result && !!p2Result;
 
   return (
-    <div className="fixed inset-0 bg-[#080b10] text-white font-mono overflow-y-auto">
+    <div className="fixed inset-0 screen-safe bg-[#080b10] text-white font-mono overflow-y-auto">
       <div className="max-w-3xl mx-auto px-4 py-6">
 
         {/* Header */}

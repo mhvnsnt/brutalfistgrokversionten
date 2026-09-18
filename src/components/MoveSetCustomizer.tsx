@@ -202,7 +202,7 @@ export default function MoveSetCustomizer({ onClose, onConfirm, initialCharacter
   if (!selectedFighter || !selectedMoveSet) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-safe">
       <div className="w-full max-w-6xl h-full max-h-[90vh] bg-gray-950 border border-gray-700 rounded-xl flex flex-col overflow-hidden shadow-2xl">
 
         {/* Header */}

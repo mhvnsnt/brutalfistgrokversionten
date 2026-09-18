@@ -40,7 +40,7 @@ export default function AuthScreen({ onSuccess }: AuthScreenProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black text-white flex items-center justify-center font-mono overflow-hidden">
+    <div className="fixed inset-0 screen-safe bg-black text-white flex items-center justify-center font-mono overflow-hidden">
       {/* Atmospheric bg */}
       <div
         className="absolute inset-0 pointer-events-none"

@@ -99,7 +99,7 @@ export default function PracticeArenaScreen({ onBack }: PracticeArenaScreenProps
 
   // ── SETUP PHASE ───────────────────────────────────────────────────────────
   return (
-    <div className="fixed inset-0 bg-[#080a10] text-white font-mono overflow-y-auto">
+    <div className="fixed inset-0 screen-safe bg-[#080a10] text-white font-mono overflow-y-auto">
       <div className="max-w-2xl mx-auto px-4 py-6">
 
         {/* Header */}

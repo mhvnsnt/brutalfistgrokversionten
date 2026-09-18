@@ -531,14 +531,14 @@ export default function PlayerProfileScreen({ onBack }: PlayerProfileScreenProps
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black text-white flex items-center justify-center font-mono">
+      <div className="fixed inset-0 screen-safe bg-black text-white flex items-center justify-center font-mono">
         <div className="text-[9px] tracking-[0.45em] text-zinc-600 animate-pulse">LOADING PROFILE...</div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-black text-white flex flex-col font-mono overflow-hidden">
+    <div className="fixed inset-0 screen-safe bg-black text-white flex flex-col font-mono overflow-hidden">
       {/* Atmosphere */}
       <div className="absolute inset-0 pointer-events-none" style={{
         background: `radial-gradient(ellipse at 50% 0%, ${rankColor}12 0%, transparent 55%)`,

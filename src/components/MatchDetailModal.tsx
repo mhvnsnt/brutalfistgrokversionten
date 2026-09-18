@@ -38,7 +38,7 @@ export default function MatchDetailModal({ match, onClose, onReplay }: MatchDeta
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 screen-safe z-50 flex items-center justify-center"
       style={{ background: 'rgba(0,0,0,0.88)' }}
       onClick={onClose}
     >
