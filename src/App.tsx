@@ -44,12 +44,6 @@ export default function App() {
   const [tournamentSettings, setTournamentSettings] = useState<TournamentSettings>(DEFAULT_TOURNAMENT_SETTINGS);
   const [selectedStageId, setSelectedStageId] = useState<StageId>('urban_night');
 
-  // Keep the first preview paint small. Heavy 3D screens are already lazy
-  // components; importing them here defeats that boundary and makes an embedded
-  // Rocket iframe wait for the entire combat graph before it can show the title.
-  // Each screen loads on demand through its dynamic component below.
-  useEffect(() => {}, []);
-
   useEffect(() => {
     if (screen !== AppScreen?.Boot) return;
     const timer = window.setTimeout(() => setScreen(AppScreen?.Title), 1400);
