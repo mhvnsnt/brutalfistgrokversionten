@@ -22,8 +22,9 @@
 }
 
 @layer base {
-  html, body, #app {
+  html, body, #app, #root {
     height: 100%;
+    min-height: 100dvh;
     background: var(--color-bg);
     color: var(--color-fg);
     font-family: var(--font-sans);
@@ -42,5 +43,43 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* Mobile safe-area contract: keep menus, HUD and touch controls clear of
+ * camera cutouts, gesture indicators and browser/standalone URL chrome. */
+@layer utilities {
+  .pt-safe {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .px-safe {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  .p-safe {
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+  .bottom-safe-4 {
+    bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .bottom-safe-1 {
+    bottom: max(0.25rem, env(safe-area-inset-bottom));
+  }
+  .mobile-menu-scroll {
+    max-height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .mobile-menu-scroll::-webkit-scrollbar {
+    display: none;
   }
 }
