@@ -1,7 +1,11 @@
+// `.ts` / explicit extensions on purpose: they are what let the repo's own
+// runner (`node --experimental-strip-types --test`) resolve this module.
+// tsconfig sets allowImportingTsExtensions and Vite/esbuild resolve them
+// unchanged. Without them these invariants cannot be tested at all.
 import * as THREE from 'three';
 
-import { SCHWARZERBLITZ_MOTION_BANK } from '../../generated/SchwarzerblitzMotionBank.generated';
-import { buildClipsFromEulerBank, type BannonMotionClipData } from './BannonMotionBank';
+import { SCHWARZERBLITZ_MOTION_BANK } from '../../generated/SchwarzerblitzMotionBank.generated.ts';
+import { buildClipsFromEulerBank, type BannonMotionClipData } from './BannonMotionBank.ts';
 
 /**
  * The owner-granted Schwarzerblitz fighting set, imported from

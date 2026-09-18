@@ -831,6 +831,8 @@ export default function CombatArena3D({
           facing={1}
           rotationY={p1RotationY}
           tint={p1SkinTint ?? p1Color}
+          characterId={p1Fighter.id}
+          fightingStyle={p1Fighter.fightingStyle}
           animationTrigger={p1AnimTrigger}
           attackDurationSeconds={p1AttackDurationSeconds}
           locomotionVelocity={p1LocomotionVelocity}
@@ -855,6 +857,8 @@ export default function CombatArena3D({
           facing={-1}
           rotationY={p2RotationY}
           tint={p2SkinTint ?? p2Color}
+          characterId={p2Fighter.id}
+          fightingStyle={p2Fighter.fightingStyle}
           animationTrigger={p2AnimTrigger}
           attackDurationSeconds={p2AttackDurationSeconds}
           locomotionVelocity={p2LocomotionVelocity}

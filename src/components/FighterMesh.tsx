@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, Suspense } from 'react';
+import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -24,6 +24,8 @@ import { AnimationBridge } from '../../animation_bridge/retarget';
 // ─────────────────────────────────────────────────────────────────────────────
 // Props
 // ─────────────────────────────────────────────────────────────────────────────
+import { stanceKitFor, stancePreferences } from '../engine/combat/CharacterStances';
+
 export interface FighterMeshProps {
   /** FighterStateMachine motion state key — drives animation playback */
   state: string;
@@ -43,6 +45,14 @@ export interface FighterMeshProps {
    */
   rotationY?: number;
   tint?: string;
+  /**
+   * Who this is, so the fighter can use HIS OWN stance and guard rather than
+   * the one clip everybody shared. Optional: with no id the generic alias table
+   * decides exactly as before. See engine/combat/CharacterStances.
+   */
+  characterId?: string;
+  /** The roster's authored `fightingStyle`, which picks the stance shortlist. */
+  fightingStyle?: string;
   showHitbox?: boolean;
   hitboxGeometry?: { offsetX: number; offsetZ: number; width: number; depth: number } | null;
   /**
@@ -293,9 +303,25 @@ function buildClipsByState(actions: Record<string, THREE.AnimationAction>): Map<
   return clipsByState;
 }
 
-function resolveClipName(key: string, actions: Record<string, THREE.AnimationAction>): string | null {
+function resolveClipName(
+  key: string,
+  actions: Record<string, THREE.AnimationAction>,
+  /**
+   * This fighter's own clips for this state, tried BEFORE anything else.
+   * Falls straight through when his rig does not carry them, so a preference
+   * can only ever add variety — it can never take away a character's own
+   * animation or block the generic table.
+   */
+  preferred: string[] = [],
+): string | null {
   const availableClips = Object.keys(actions);
   const clipsByState = buildClipsByState(actions);
+
+  for (const want of preferred) {
+    if (actions[want]) return want;
+    const ci = availableClips.find((c) => c.toLowerCase() === want.toLowerCase());
+    if (ci) return ci;
+  }
 
   const bridged = AnimationBridge.getClipForCombatState(key, clipsByState);
   if (bridged) {
@@ -405,6 +431,8 @@ function FighterMeshInner({
   facing,
   rotationY = 0,
   tint,
+  characterId,
+  fightingStyle,
   showHitbox = false,
   hitboxGeometry = null,
   animationTrigger = 0,
@@ -423,6 +451,8 @@ function FighterMeshInner({
   facing: 1 | -1;
   rotationY?: number;
   tint?: string;
+  characterId?: string;
+  fightingStyle?: string;
   showHitbox?: boolean;
   hitboxGeometry?: FighterMeshProps['hitboxGeometry'];
   animationTrigger?: number;
@@ -436,6 +466,16 @@ function FighterMeshInner({
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const [normalized, setNormalized] = useState<NormalizedResult | null>(null);
+
+  /**
+   * This fighter's own stance, guard, crouch and walk. Deterministic from his
+   * id, so it is a signature rather than a roll. With no id every preference
+   * list is empty and the generic alias table decides exactly as before.
+   */
+  const stanceKit = useMemo(
+    () => (characterId ? stanceKitFor(characterId, fightingStyle) : null),
+    [characterId, fightingStyle],
+  );
 
   // ── Jitter-prevention refs ────────────────────────────────────────────────
   /** The clip name that is currently playing (or crossfading to) */
@@ -523,7 +563,11 @@ function FighterMeshInner({
     }
 
     const inputKey = animation ?? state;
-    let clipName = resolveClipName(inputKey, actions) as string | null;
+    let clipName = resolveClipName(
+      inputKey,
+      actions,
+      stanceKit ? stancePreferences(stanceKit, inputKey) : [],
+    ) as string | null;
 
     const isAttack = ATTACK_STATES.has(inputKey);
     if (isAttack) {
@@ -614,7 +658,11 @@ function FighterMeshInner({
       if (!anyActionRunning) {
         // Mixer was stopped by FIRST_FRAME_DISPLACEMENT — recover ONLY the requested clip.
         // Never silently substitute idle for a missing combat semantic state.
-        const recoverClip = resolveClipName(inputKey, normalized.actions);
+        const recoverClip = resolveClipName(
+          inputKey,
+          normalized.actions,
+          stanceKit ? stancePreferences(stanceKit, inputKey) : [],
+        );
         if (recoverClip && normalized.actions[recoverClip]) {
           const recoverAction = normalized.actions[recoverClip];
           const isRecoverLoop = LOOP_STATES.has(inputKey);

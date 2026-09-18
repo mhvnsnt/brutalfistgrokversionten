@@ -72,6 +72,7 @@ import { sanitizeMotionClip } from '../retarget/neutralizeRootMotion';
 import { fillBindRelativeGaps, makeClipBindRelative, collectRestMap } from '../retarget/BindRelativeMotion';
 import { bindClipTracksToTargetBones } from '../retarget/AnimationRetargeter';
 import { loadBannonClipsFromPublic, loadBannonMotionBankVariants } from '../retarget/BannonClipJsonAdapter';
+import { buildSchwarzerblitzMotionClips } from '../retarget/SchwarzerblitzMotionBank';
 import {
   AnimationSourceRegistry,
   validateRegistryCompleteness,
@@ -744,6 +745,33 @@ export async function extractAndRetargetAnimations(
       const sem = String((clip as THREE.AnimationClip & { userData?: { semanticState?: string } }).userData?.semanticState ?? '');
       ingestNamed(sem || key, clip, false);
     }
+
+    // ── The Schwarzerblitz set ────────────────────────────────────────────
+    // MEASURED: `buildSchwarzerblitzMotionClips()` had ZERO CALLERS. All 166
+    // imported clips were compiled into the bundle and reached no fighter, so
+    // the eleven distinct fighting STANCES in that set (GRAFSTANCE 1-3,
+    // TIGERSTANCE, KRAVESTANCE, LOWSTANCE, LOWSTANCENEW, SHAZSTANCE,
+    // JOHNSON_STANCE, STANCE), both its GUARDS and its walks were unreachable
+    // — which is a large part of why every character stands identically.
+    //
+    // ADDITIVE ONLY: replaceSemantic=false, so a Schwarzerblitz clip can never
+    // displace a character's own GLB clip or a Bannon bank clip that already
+    // owns a semantic state. It only widens the pool that per-character stance
+    // selection draws from.
+    //
+    // It goes through the SAME `ingest` path as everything else, so it is
+    // bound to the target's bones and made BIND-RELATIVE. That is what keeps
+    // a borrowed animation from firing in the wrong direction on a rig it was
+    // not authored for.
+    let sbBound = 0;
+    for (const clip of buildSchwarzerblitzMotionClips()) {
+      if (processedClips.some((c) => c.name === clip.name)) continue;
+      const before = bankBound;
+      const sem = String((clip as THREE.AnimationClip & { userData?: { semanticState?: string } }).userData?.semanticState ?? '');
+      ingestNamed(sem || clip.name, clip, false);
+      if (bankBound > before) sbBound++;
+    }
+    if (sbBound > 0) console.log(`[CharacterPipeline] ✅ "${modelName}" Schwarzerblitz set: ${sbBound} clip(s)`);
     if (bankBound > 0) {
       retargetApplied = true;
       retargetVerdict = 'PASS';
