@@ -30,6 +30,8 @@ import { tickKiCharge, createKiChargeState } from './KiChargeSystem';
 import {
   tickWallSplat,
   checkWallCollision,
+  DEFAULT_WALL_BOUNDS,
+  type WallBounds,
   applyWallSplat,
   createWallSplatState,
   type WallSplatState,
@@ -309,11 +311,30 @@ export function applyBlockStun(fighter: FighterCombatState, blockstunFrames: num
  * @param p2Input P2 input this frame
  * @param dt      Delta time in seconds
  */
+/**
+ * Keep a fighter inside the stage. An open stage (hasWalls false, or an
+ * infinite boundary) does not clamp at all — walking off the edge is the
+ * ring-out, and the old hardcoded +/-4.5 clamp is what stopped that from ever
+ * being reachable on ghetto_streets, junkyard and gang_brawl.
+ */
+function clampToBounds(x: number, bounds: WallBounds): number {
+  if (!bounds.hasWalls) return x;
+  const lo = isFinite(bounds.leftX) ? bounds.leftX : -Infinity;
+  const hi = isFinite(bounds.rightX) ? bounds.rightX : Infinity;
+  return Math.max(lo, Math.min(hi, x));
+}
+
 export function tickCombatState(
   state: CombatMatchState,
   p1Input: { lp?: boolean; rp?: boolean; lk?: boolean; rk?: boolean; attackLanded?: boolean },
   p2Input: { lp?: boolean; rp?: boolean; lk?: boolean; rk?: boolean; attackLanded?: boolean },
   dt: number,
+  /**
+   * The stage's real barrier. Omitted = the module's historic +/-4.5, so every
+   * existing caller behaves exactly as before. See WallSystem.WallBounds for
+   * why the constants were wrong on 9 of the 15 shipped stages.
+   */
+  bounds: WallBounds = DEFAULT_WALL_BOUNDS,
 ): CombatMatchState {
   if (state.matchPhase !== 'fight') return state;
 
@@ -360,7 +381,7 @@ export function tickCombatState(
 
   // ── Wall collision check for P1 ───────────────────────────────────────────
   const p1VelX = state.p1.velocityX ?? 0;
-  const p1WallResult = checkWallCollision(p1Pos.x + p1VelX, p1VelX);
+  const p1WallResult = checkWallCollision(p1Pos.x + p1VelX, p1VelX, bounds);
   let p1FinalPos = { ...p1Pos };
   let p1FinalWallSplat = p1WallSplat;
   let p1FinalVelX = p1VelX * 0.85; // friction
@@ -369,12 +390,12 @@ export function tickCombatState(
     p1FinalWallSplat = applyWallSplat(p1WallSplat, p1WallResult.wall!);
     p1FinalVelX = p1WallResult.knockbackVelocityX;
   } else if (!p1WallResult.hitWall) {
-    p1FinalPos = { ...p1Pos, x: Math.max(WALL_LEFT_X, Math.min(WALL_RIGHT_X, p1Pos.x + p1VelX)) };
+    p1FinalPos = { ...p1Pos, x: clampToBounds(p1Pos.x + p1VelX, bounds) };
   }
 
   // ── Wall collision check for P2 ───────────────────────────────────────────
   const p2VelX = state.p2.velocityX ?? 0;
-  const p2WallResult = checkWallCollision(p2Pos.x + p2VelX, p2VelX);
+  const p2WallResult = checkWallCollision(p2Pos.x + p2VelX, p2VelX, bounds);
   let p2FinalPos = { ...p2Pos };
   let p2FinalWallSplat = p2WallSplat;
   let p2FinalVelX = p2VelX * 0.85;
@@ -383,7 +404,7 @@ export function tickCombatState(
     p2FinalWallSplat = applyWallSplat(p2WallSplat, p2WallResult.wall!);
     p2FinalVelX = p2WallResult.knockbackVelocityX;
   } else if (!p2WallResult.hitWall) {
-    p2FinalPos = { ...p2Pos, x: Math.max(WALL_LEFT_X, Math.min(WALL_RIGHT_X, p2Pos.x + p2VelX)) };
+    p2FinalPos = { ...p2Pos, x: clampToBounds(p2Pos.x + p2VelX, bounds) };
   }
 
   return {

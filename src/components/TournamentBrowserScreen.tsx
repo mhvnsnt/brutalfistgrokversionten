@@ -184,7 +184,7 @@ export default function TournamentBrowserScreen({ onBack }: TournamentBrowserPro
   if (phase === 'pick_fighter' && selectedTournament) {
     const color = TIER_COLOR[selectedTournament.tier] ?? '#94a3b8';
     return (
-      <div className="fixed inset-0 bg-black text-white font-mono overflow-hidden flex flex-col">
+      <div className="fixed inset-0 screen-safe bg-black text-white font-mono overflow-hidden flex flex-col">
         <div
           className="absolute inset-0 pointer-events-none"
           style={{ background: `radial-gradient(ellipse at 50% 0%, ${color}18 0%, #000 65%)` }}
@@ -268,7 +268,7 @@ export default function TournamentBrowserScreen({ onBack }: TournamentBrowserPro
   ];
 
   return (
-    <div className="fixed inset-0 bg-black text-white font-mono overflow-hidden flex flex-col">
+    <div className="fixed inset-0 screen-safe bg-black text-white font-mono overflow-hidden flex flex-col">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse at 50% 0%, #1c1c2e 0%, #000 70%)' }}

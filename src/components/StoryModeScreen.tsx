@@ -503,7 +503,7 @@ export default function StoryModeScreen({ onBack, onStartStoryBattle, onCosmetic
   };
 
   return (
-    <div className="fixed inset-0 bg-[#08090d] text-white font-mono overflow-hidden flex flex-col">
+    <div className="fixed inset-0 screen-safe bg-[#08090d] text-white font-mono overflow-hidden flex flex-col">
       {/* ── Cosmetic unlock banner ── */}
       {cosmeticBanner && (
         <div

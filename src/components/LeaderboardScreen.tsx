@@ -206,7 +206,7 @@ export default function LeaderboardScreen({ onBack }: { onBack: () => void }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-[#0a0c12] text-white font-mono overflow-y-auto">
+    <div className="fixed inset-0 screen-safe bg-[#0a0c12] text-white font-mono overflow-y-auto">
       <div className="max-w-2xl mx-auto px-4 py-8">
 
         {/* Header */}

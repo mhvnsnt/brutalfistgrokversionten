@@ -242,12 +242,12 @@ export default function PostMatchScreen({
   const totalDuration = roundResults.reduce((s, r) => s + r.durationSeconds, 0);
 
   return (
-    <div className="fixed inset-0 bg-black text-white font-mono overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black text-white font-mono overflow-hidden flex flex-col p-safe">
       <Scanlines />
 
       {/* ── Cinematic letterbox bars ── */}
-      <div className="absolute top-0 left-0 right-0 h-[8%] bg-black z-20" />
-      <div className="absolute bottom-0 left-0 right-0 h-[8%] bg-black z-20" />
+      <div className="absolute top-0 left-0 right-0 h-[calc(8%+env(safe-area-inset-top))] bg-black z-20" />
+      <div className="absolute bottom-0 left-0 right-0 h-[calc(8%+env(safe-area-inset-bottom))] bg-black z-20" />
 
       {/* ── Background bloom radial ── */}
       <div
@@ -261,7 +261,7 @@ export default function PostMatchScreen({
 
       {/* ── Main content ── */}
       <div
-        className="relative z-10 flex flex-col items-center justify-start h-full pt-[10%] pb-[10%] px-4 overflow-y-auto gap-4"
+        className="relative z-10 flex flex-col items-center justify-start h-full pt-[calc(10%+env(safe-area-inset-top))] pb-[calc(10%+env(safe-area-inset-bottom))] px-4 overflow-y-auto overscroll-contain gap-4"
         style={{ transition: 'opacity 0.5s ease, transform 0.5s ease', opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(20px)' }}
       >
         {/* ── Winner announcement ── */}

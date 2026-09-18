@@ -9,7 +9,7 @@
     "port": 8080,
     "publicPath": "/",
     "singleApp": true,
-    "entry": "src/App.tsx",
+    "entry": "src/rocket-main.tsx",
     "nextCompatibilityEntry": "app/page.tsx"
   },
   "game": {

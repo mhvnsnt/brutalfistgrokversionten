@@ -8,7 +8,7 @@ export default function ConceptArtGallery({ onBack }: Props) {
   const fighters = getAllBannonFighters().filter((f, i, arr) => arr.findIndex((x) => x.id === f.id) === i);
 
   return (
-    <div className="fixed inset-0 overflow-auto bg-bg text-fg">
+    <div className="fixed inset-0 screen-safe overflow-auto bg-bg text-fg">
       <div className="mx-auto max-w-6xl px-4 py-6 md:px-8">
         <header className="mb-6 flex items-end justify-between border-b border-border pb-4">
           <div>

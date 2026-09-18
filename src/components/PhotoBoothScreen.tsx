@@ -86,7 +86,7 @@ export default function PhotoBoothScreen({ onBack }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 overflow-auto bg-bg text-fg font-mono">
+    <div className="fixed inset-0 screen-safe overflow-auto bg-bg text-fg font-mono">
       <div className="mx-auto flex min-h-full max-w-6xl flex-col gap-6 px-4 py-6 md:px-8">
         <header className="flex items-end justify-between gap-4 border-b border-border pb-4">
           <div>

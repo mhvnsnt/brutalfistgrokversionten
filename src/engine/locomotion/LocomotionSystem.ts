@@ -77,10 +77,79 @@ const WALK_DECEL = 18.0;         // deceleration rate
 const ROOT_MOTION_THRESHOLD = 0.005; // minimum displacement to count as root motion
 
 // ── Stage boundary ────────────────────────────────────────────────────────────
-const STAGE_X_MIN = -4.5;
-const STAGE_X_MAX = 4.5;
-const STAGE_Z_MIN = -2.0;
-const STAGE_Z_MAX = 2.0;
+//
+// THE DEFAULTS, AND WHY THEY WERE WRONG ON ALMOST EVERY STAGE.
+//
+// These were the ONLY bounds this system knew. It is the thing that actually
+// moves a fighter, and it had no idea which stage it was in, so a fighter
+// walked to +/-4.5 x +/-2.0 everywhere. Measured against the 15 shipped stages:
+//
+//   wrestling_ring  boundaryX 3.8  -> the fighter walked 0.7 units PAST the
+//                                     ropes. That is "walking through ropes".
+//   sky_crane       boundaryX 3.0  -> 1.5 units past the end of the crane.
+//   dojo / steel_cage 4.0, mma_octagon 4.2 -> through the wall or the cage.
+//   ring / octagon  boundaryZ 3.8 / 4.2 -> the Z clamp stopped them 1.8 units
+//                                     SHORT of the ropes instead.
+//   open streets    boundaryX Infinity -> clamped at 4.5, so the ring-out those
+//                                     stages enable could never be reached.
+//
+// setBounds() is how a stage tells this system where its floor ends. The
+// defaults below reproduce the old behaviour exactly, so a caller that never
+// sets bounds is unchanged.
+const DEFAULT_X_MIN = -4.5;
+const DEFAULT_X_MAX = 4.5;
+const DEFAULT_Z_MIN = -2.0;
+const DEFAULT_Z_MAX = 2.0;
+
+export interface LocomotionBounds {
+  minX: number;
+  maxX: number;
+  minZ: number;
+  maxZ: number;
+  /**
+   * false = an open stage: there is no wall to splat against, and X is bounded
+   * only by a distant backstop past the ring-out line, so walking off the edge
+   * rings you out instead of stopping you dead. Clamping at the old 4.5 is
+   * precisely what made that unreachable.
+   */
+  hasWalls: boolean;
+}
+
+/**
+ * The ring-out line of an open stage, mirrored from StageConfig so this module
+ * stays free of engine-module cycles. Kept in step by a test.
+ */
+export const OPEN_STAGE_RING_OUT_X = 8;
+/** How far past the ring-out line a body may travel before it is stopped dead. */
+export const OPEN_STAGE_OVERRUN = 2;
+
+export const DEFAULT_LOCOMOTION_BOUNDS: LocomotionBounds = {
+  minX: DEFAULT_X_MIN, maxX: DEFAULT_X_MAX,
+  minZ: DEFAULT_Z_MIN, maxZ: DEFAULT_Z_MAX,
+  hasWalls: true,
+};
+
+/** Read a stage's real floor off its config. Structural, to avoid a cycle. */
+export function locomotionBoundsFromStage(
+  cfg: { boundaryX: number; boundaryZ: number; hasWalls: boolean } | null | undefined,
+): LocomotionBounds {
+  if (!cfg) return DEFAULT_LOCOMOTION_BOUNDS;
+  const hasWalls = cfg.hasWalls && Number.isFinite(cfg.boundaryX);
+  const z = Number.isFinite(cfg.boundaryZ) ? cfg.boundaryZ : DEFAULT_Z_MAX;
+  // An open stage still gets a HARD LIMIT, just a distant one. Leaving X
+  // unbounded would let a fighter walk away forever if the ring-out somehow did
+  // not fire — a body drifting off screen, which is the other half of the bug
+  // this fixes. The limit sits BEYOND the ring-out line so the ring-out always
+  // wins; it is the backstop, not the rule.
+  const openLimit = OPEN_STAGE_RING_OUT_X + OPEN_STAGE_OVERRUN;
+  return {
+    minX: hasWalls ? -cfg.boundaryX : -openLimit,
+    maxX: hasWalls ? cfg.boundaryX : openLimit,
+    minZ: -z,
+    maxZ: z,
+    hasWalls,
+  };
+}
 
 /**
  * LocomotionSystem — manages a single fighter's position using the
@@ -88,6 +157,7 @@ const STAGE_Z_MAX = 2.0;
  */
 export class LocomotionSystem {
   private state: LocomotionState;
+  private bounds: LocomotionBounds = DEFAULT_LOCOMOTION_BOUNDS;
 
   // Root motion tracking
   private rootMotionAccumX = 0;
@@ -183,8 +253,8 @@ export class LocomotionSystem {
     const hasMotion = Math.abs(dx) > ROOT_MOTION_THRESHOLD || Math.abs(dz) > ROOT_MOTION_THRESHOLD;
 
     if (hasMotion && this.state.mode === 'rootMotion') {
-      this.state.rootX = Math.max(STAGE_X_MIN, Math.min(STAGE_X_MAX, this.state.rootX + dx));
-      this.state.rootZ = Math.max(STAGE_Z_MIN, Math.min(STAGE_Z_MAX, this.state.rootZ + dz));
+      this.state.rootX = this.clampToX(this.state.rootX + dx);
+      this.state.rootZ = this.clampToZ(this.state.rootZ + dz);
     }
 
     return { dx, dz, hasMotion };
@@ -197,6 +267,7 @@ export class LocomotionSystem {
     dt: number,
     isDashing: boolean,
     isBackdashing: boolean,
+    target?: { x: number; z: number },
   ): void {
     if (this.state.mode === 'rootMotion') {
       this.updateRootMotion(dt);
@@ -204,7 +275,7 @@ export class LocomotionSystem {
     }
 
     // Programmatic locomotion
-    this.updateProgrammatic(forwardInput, strafeInput, dt, isDashing, isBackdashing);
+    this.updateProgrammatic(forwardInput, strafeInput, dt, isDashing, isBackdashing, target);
   }
 
   private updateProgrammatic(
@@ -213,29 +284,28 @@ export class LocomotionSystem {
     dt: number,
     isDashing: boolean,
     isBackdashing: boolean,
+    target?: { x: number; z: number },
   ): void {
     const maxSpeed = isDashing ? DASH_SPEED : isBackdashing ? BACKDASH_SPEED : WALK_SPEED;
     const strafeMax = SIDESTEP_SPEED;
 
     // Target velocities from input
+    const hasSidestep = Math.abs(strafeInput) > 0.1;
+    const sidestepVector = hasSidestep && target
+      ? this.targetedSidestepVelocity(target, Math.sign(strafeInput), strafeMax)
+      : null;
     const targetVX = Math.abs(forwardInput) > 0.1
       ? Math.sign(forwardInput) * maxSpeed * this.state.facing
-      : 0;
-    const targetVZ = Math.abs(strafeInput) > 0.1
-      ? Math.sign(strafeInput) * strafeMax
-      : 0;
+      : sidestepVector?.x ?? 0;
+    const targetVZ = sidestepVector?.z ?? 0;
 
     // Smooth velocity with acceleration/deceleration
     this.state.velocityX = this.smoothVel(this.state.velocityX, targetVX, dt);
     this.state.velocityZ = this.smoothVel(this.state.velocityZ, targetVZ, dt);
 
     // Apply to root position
-    this.state.rootX = Math.max(STAGE_X_MIN, Math.min(STAGE_X_MAX,
-      this.state.rootX + this.state.velocityX * dt
-    ));
-    this.state.rootZ = Math.max(STAGE_Z_MIN, Math.min(STAGE_Z_MAX,
-      this.state.rootZ + this.state.velocityZ * dt
-    ));
+    this.state.rootX = this.clampToX(this.state.rootX + this.state.velocityX * dt);
+    this.state.rootZ = this.clampToZ(this.state.rootZ + this.state.velocityZ * dt);
 
     if (this.jumpY > 0 || this.jumpV > 0) {
       this.jumpV -= 22 * dt;
@@ -257,13 +327,42 @@ export class LocomotionSystem {
     const bellCurve = Math.sin(progress * Math.PI);
     const frameDisplacement = this.attackRootMotionProfile.forwardDisplacement * bellCurve * dt / Math.max(0.001, this.attackRootMotionDuration);
 
-    this.state.rootX = Math.max(STAGE_X_MIN, Math.min(STAGE_X_MAX,
+    this.state.rootX = this.clampToX(
       this.state.rootX + frameDisplacement * this.state.facing
-    ));
+    );
 
     if (progress >= 1.0) {
       this.endRootMotionAttack();
     }
+  }
+
+  /**
+   * Tekken-style sidestep follows the opponent rather than moving on a fixed
+   * world-Z rail. The primary component is tangent to the fighter-to-target
+   * line; a small radial correction keeps the pair in a useful fighting gap.
+   * It is bounded and never homes an attack or changes facing by itself.
+   */
+  private targetedSidestepVelocity(
+    target: { x: number; z: number },
+    side: number,
+    speed: number,
+  ): { x: number; z: number } {
+    const dx = target.x - this.state.rootX;
+    const dz = target.z - this.state.rootZ;
+    const distance = Math.hypot(dx, dz);
+    if (distance < 0.001) return { x: 0, z: side * speed };
+
+    const nx = dx / distance;
+    const nz = dz / distance;
+    const tangentX = -nz * side;
+    const tangentZ = nx * side;
+
+    const desiredGap = 2.8;
+    const radial = Math.max(-0.65, Math.min(0.65, (distance - desiredGap) * 0.5));
+    return {
+      x: tangentX * speed + nx * radial,
+      z: tangentZ * speed + nz * radial,
+    };
   }
 
   private smoothVel(current: number, target: number, dt: number): number {
@@ -281,8 +380,11 @@ export class LocomotionSystem {
 
   // ── Set position directly (teleport / round reset) ────────────────────────
   setPosition(x: number, z: number) {
-    this.state.rootX = x;
-    this.state.rootZ = z;
+    // Clamped like every other write. It was not, so a teleport, a round reset
+    // or a throw landing could place a fighter outside the stage and nothing
+    // downstream would pull them back — a body drifting off screen.
+    this.state.rootX = this.clampToX(x);
+    this.state.rootZ = this.clampToZ(z);
     this.state.velocityX = 0;
     this.state.velocityZ = 0;
     this.endRootMotionAttack();
@@ -304,15 +406,41 @@ export class LocomotionSystem {
   applyPushback(amount: number) {
     // Pushback is always away from the attacker (opposite to facing)
     const pushX = -this.state.facing * amount;
-    this.state.rootX = Math.max(STAGE_X_MIN, Math.min(STAGE_X_MAX, this.state.rootX + pushX));
+    this.state.rootX = this.clampToX(this.state.rootX + pushX);
   }
 
   // ── Clamp X position (used for fighter separation enforcement) ────────────
+  /**
+   * Tell this fighter where the stage ends. Called when a match loads; without
+   * it the module defaults apply and behaviour is exactly as before.
+   */
+  setBounds(bounds: LocomotionBounds) {
+    this.bounds = bounds;
+    // Anything already outside the new stage is pulled in, so a stage swap
+    // cannot strand a fighter beyond a wall that did not exist a moment ago.
+    this.state.rootX = this.clampToX(this.state.rootX);
+    this.state.rootZ = this.clampToZ(this.state.rootZ);
+  }
+
+  getBounds(): LocomotionBounds {
+    return this.bounds;
+  }
+
+  private clampToX(x: number): number {
+    // Open stages clamp too — just at the distant backstop, past the ring-out
+    // line, so the ring-out fires first and nobody can drift off screen.
+    return Math.max(this.bounds.minX, Math.min(this.bounds.maxX, x));
+  }
+
+  private clampToZ(z: number): number {
+    return Math.max(this.bounds.minZ, Math.min(this.bounds.maxZ, z));
+  }
+
   clampX(x: number) {
-    this.state.rootX = Math.max(STAGE_X_MIN, Math.min(STAGE_X_MAX, x));
+    this.state.rootX = this.clampToX(x);
     // Kill velocity toward the clamped direction
-    if ((x <= STAGE_X_MIN && this.state.velocityX < 0) ||
-        (x >= STAGE_X_MAX && this.state.velocityX > 0)) {
+    if ((x <= this.bounds.minX && this.state.velocityX < 0) ||
+        (x >= this.bounds.maxX && this.state.velocityX > 0)) {
       this.state.velocityX = 0;
     }
   }

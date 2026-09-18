@@ -340,7 +340,7 @@ export default function AnimationTestArena({ onBack }: AnimationTestArenaProps) 
     : integrityReport.verdict === 'BLOCKED'? '#ef4444' :'#94a3b8' :'#94a3b8';
 
   return (
-    <div className="fixed inset-0 bg-[#0a0c12] text-white font-mono flex flex-col">
+    <div className="fixed inset-0 screen-safe bg-[#0a0c12] text-white font-mono flex flex-col">
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-[#0d1018]">
         <button

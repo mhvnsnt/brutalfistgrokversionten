@@ -223,7 +223,7 @@ export default function SpectatorViewerScreen({ onBack }: SpectatorViewerProps) 
   const getBarColor = (pct: number) => pct > 50 ? '#22c55e' : pct > 25 ? '#f97316' : '#ef4444';
 
   return (
-    <div className="fixed inset-0 bg-black text-white flex flex-col font-mono overflow-hidden">
+    <div className="fixed inset-0 screen-safe bg-black text-white flex flex-col font-mono overflow-hidden">
       {/* Atmosphere */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
         style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.5) 3px, rgba(255,255,255,0.5) 4px)' }} />

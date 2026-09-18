@@ -432,7 +432,7 @@ export default function SeasonalTournamentScreen({
   const roundLabels = ['QUARTER-FINALS', 'SEMI-FINALS', 'FINALS'];
 
   return (
-    <div className="fixed inset-0 bg-[#080808] text-white font-mono flex flex-col overflow-hidden">
+    <div className="fixed inset-0 screen-safe bg-[#080808] text-white font-mono flex flex-col overflow-hidden">
       {/* Reward banner */}
       {rewardTier && <RewardBanner tier={rewardTier} visible={showReward} />}
 

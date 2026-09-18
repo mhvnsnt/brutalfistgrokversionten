@@ -140,11 +140,26 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
     levels: [{ floorY: 0, boundaryX: 4.5, boundaryZ: 3.0, hazardDamagePerSec: 0, label: 'STREET' }],
     breakableFloor: false,
     floorBreakThreshold: 0,
-    ambientIntensity: 0.25,
-    ambientColor: '#1a0030',
-    primaryLightColor: '#c084fc',
-    fillLightColor: '#3b0764',
-    neonPalette: ['#a855f7', '#22d3ee', '#ff3d81', '#7c3aed'],
+    // THE CATALOGUE NOW MATCHES WHAT THE STAGE RENDERS. UrbanNightStage read
+    // nothing from this record, so these five fields described a stage nobody
+    // ever saw: the component hardcoded its own chiaroscuro. The values below
+    // are the ones it actually draws, so wiring it up changed no pixel — and
+    // editing them here now moves the lights, which is the whole point.
+    ambientIntensity: 0.25,          // x AMBIENT_CALIBRATION -> the measured 0.16
+    ambientColor: '#241436',
+    primaryLightColor: '#6d28d9',    // key spot, above-front
+    fillLightColor: '#7c3aed',       // fill spot, from the left
+    /**
+     * The eleven NEON PRACTICALS in declaration order: seven wall accents, then
+     * the four street-level strips that sit on the fight plane. Entries cycle,
+     * so a shorter palette still lights every strip. The warm sodium street lamp
+     * is deliberately NOT in here — it is not neon, it is the note the neon
+     * plays against.
+     */
+    neonPalette: [
+      '#7c3aed', '#9333ea', '#9333ea', '#eab308', '#eab308', '#06b6d4', '#dc2626',
+      '#22d3ee', '#ff3d81', '#a855f7', '#eab308',
+    ],
     bgmTrack: 'urban_night',
     hazardDamagePerSec: 0,
     hazardLabel: '',
@@ -568,6 +583,28 @@ export function resolveStageConfig(id: StageId): StageConfig {
 
 // ── Arena combat state (reset on every stage load) ────────────────────────────
 
+/**
+ * Take the nth practical light's colour from a stage palette.
+ *
+ * Entries CYCLE, so a palette shorter than the stage's light count still
+ * lights every fixture, and an absent or empty palette falls back to the
+ * colour authored in the stage component. Pure so it can be tested without a
+ * renderer — the bug this replaces was a component that read no config at all,
+ * which no render test would have caught either.
+ */
+export function neonAt(palette: string[] | undefined, index: number, authored: string): string {
+  if (!palette || palette.length === 0) return authored;
+  const i = ((index % palette.length) + palette.length) % palette.length;
+  return palette[i] ?? authored;
+}
+
+/**
+ * The catalogue's ambientIntensity is on its own scale; this maps it to the
+ * value measured to keep unlit surfaces readable without greying out the night.
+ * urban_night's 0.25 lands on the measured 0.16.
+ */
+export const AMBIENT_CALIBRATION = 0.16 / 0.25;
+
 export interface ArenaCombatState {
   stageId: StageId;
   config: StageConfig;
@@ -605,6 +642,28 @@ export function createArenaCombatState(stageId: StageId): ArenaCombatState {
  * Tick arena state — call once per combat frame.
  * Returns updated state (pure function, no mutation).
  */
+/**
+ * THE RING-OUT EDGE OF AN OPEN STAGE.
+ *
+ * ghetto_streets, junkyard and gang_brawl declare `boundaryX: Infinity` AND
+ * `ringOutEnabled: true`. Those two cannot both be honoured literally:
+ * `Math.abs(x) > Infinity` is never true, so the ring-out on the only three
+ * stages that enable it could never fire. It was masked because locomotion
+ * clamped every fighter at the module default of 4.5, so nobody ever walked
+ * far enough to notice.
+ *
+ * 8 is not a new invention: ProceduralStage already falls back to a half-width
+ * of 8 when `boundaryX` is not finite, and draws the floor at 2.4x that. So the
+ * ring-out line sits inside the floor the player can actually see.
+ */
+export const OPEN_STAGE_RING_OUT_X = 8;
+
+/** The X at which a ring-out fires, finite for every stage that enables one. */
+export function ringOutEdgeX(cfg: Pick<StageConfig, 'boundaryX' | 'ringOutEnabled'>): number {
+  if (!cfg.ringOutEnabled) return Infinity;
+  return Number.isFinite(cfg.boundaryX) ? cfg.boundaryX : OPEN_STAGE_RING_OUT_X;
+}
+
 export function tickArenaState(
   prev: ArenaCombatState,
   p1X: number,
@@ -618,9 +677,12 @@ export function tickArenaState(
   let next = { ...prev };
 
   // ── Ring-out detection ────────────────────────────────────────────────────
-  if (cfg.ringOutEnabled && isFinite(cfg.boundaryX)) {
-    if (!next.p1RingOut && Math.abs(p1X) > cfg.boundaryX) next.p1RingOut = true;
-    if (!next.p2RingOut && Math.abs(p2X) > cfg.boundaryX) next.p2RingOut = true;
+  // `isFinite(cfg.boundaryX)` used to gate this, which silently excluded the
+  // three open-street stages — the only ones that enable a ring-out at all.
+  if (cfg.ringOutEnabled) {
+    const edge = ringOutEdgeX(cfg);
+    if (!next.p1RingOut && Math.abs(p1X) > edge) next.p1RingOut = true;
+    if (!next.p2RingOut && Math.abs(p2X) > edge) next.p2RingOut = true;
   }
 
   // ── Floor-break detection ─────────────────────────────────────────────────

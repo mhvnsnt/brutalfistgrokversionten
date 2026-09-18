@@ -36,7 +36,11 @@
  *  - After crossing, new random timer rolls and loop continues
  */
 
-import { resolveStageConfig, type StageConfig, type StageId } from './StageConfig';
+// `.ts` extension on purpose: it is what lets the repo's own runner
+// (`node --experimental-strip-types --test`) resolve this module. tsconfig
+// already sets allowImportingTsExtensions, and Vite/esbuild resolve it
+// unchanged. Without it the stage tests cannot import the engine at all.
+import { resolveStageConfig, type StageConfig, type StageId } from './StageConfig.ts';
 
 // ── Fighter persistent state cache (survives stage wipes) ─────────────────────
 export interface FighterPersistentState {
@@ -481,11 +485,19 @@ export function checkLedgeThrowOverride(
   defenderX: number,
   stageBoundaryX: number,
   ringOutEnabled: boolean,
+  /**
+   * The stage's own `edgeZoneDistance`. StageConfig has declared this per stage
+   * from the start and NOTHING read it — the module constant was used on every
+   * stage, so tuning the field did nothing. Omitted = the old constant, so the
+   * default behaviour is unchanged.
+   */
+  edgeZoneDistance: number = LEDGE_THROW_PROXIMITY,
 ): boolean {
   if (!ringOutEnabled || !isFinite(stageBoundaryX)) return false;
+  const zone = edgeZoneDistance > 0 ? edgeZoneDistance : LEDGE_THROW_PROXIMITY;
   // Check if attacker is near the edge and defender is between attacker and edge
-  const attackerNearEdge = Math.abs(attackerX) > stageBoundaryX - LEDGE_THROW_PROXIMITY;
-  const defenderNearEdge = Math.abs(defenderX) > stageBoundaryX - LEDGE_THROW_PROXIMITY;
+  const attackerNearEdge = Math.abs(attackerX) > stageBoundaryX - zone;
+  const defenderNearEdge = Math.abs(defenderX) > stageBoundaryX - zone;
   return attackerNearEdge || defenderNearEdge;
 }
 
@@ -661,7 +673,11 @@ export function createStageManagerState(
   p2MaxHp: number,
 ): StageManagerState {
   const config = resolveStageConfig(stageId);
-  const isSubway = (stageId as string) === 'subway';
+  // READ THE FIELD, NOT THE NAME. This was `stageId === 'subway'`, which left
+  // `hasTrainHazard` with zero readers anywhere in src/ — so a new stage that
+  // declared a train got none, and renaming subway would have silently removed
+  // its train.
+  const hasTrain = config.hasTrainHazard;
   return {
     stageId,
     config,
@@ -671,7 +687,7 @@ export function createStageManagerState(
     ledgeThrow: createLedgeThrowState(),
     destructibleWalls: createDestructibleWallState(),
     hazardBounce: createHazardBounceState(),
-    trainHazard: createTrainHazardState(isSubway),
+    trainHazard: createTrainHazardState(hasTrain),
     isLoading: false,
   };
 }

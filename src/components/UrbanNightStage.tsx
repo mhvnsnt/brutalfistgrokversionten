@@ -4,10 +4,23 @@ import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
+import { AMBIENT_CALIBRATION, neonAt, resolveStageConfig, type StageId } from '../engine/combat/StageConfig';
+
 interface UrbanNightStageProps {
   p1Color: string;
   p2Color: string;
+  /**
+   * Which catalogue entry to take the palette from. This component used to read
+   * NOTHING from StageConfig, so urban_night's `neonPalette`, `ambientIntensity`,
+   * `ambientColor`, `primaryLightColor` and `fillLightColor` were declared and
+   * never read — editing them in settings changed nothing on the one stage that
+   * declares them. Defaults to urban_night, so the existing call site is
+   * unchanged.
+   */
+  stageId?: StageId;
 }
+
+
 
 /**
  * Animated neon strip that flickers AND throws its colour onto the street.
@@ -142,11 +155,20 @@ function ChainlinkFence({
   );
 }
 
-export function UrbanNightStage({ p1Color, p2Color }: UrbanNightStageProps) {
+export function UrbanNightStage({ p1Color, p2Color, stageId = 'urban_night' }: UrbanNightStageProps) {
   const P1_X = -1.8;
   const P2_X = 1.8;
   const FLOOR_W = 22;
   const FLOOR_D = 12;
+
+  const cfg = resolveStageConfig(stageId);
+  const palette = cfg.neonPalette;
+  /**
+   * The strip's position, intensity and distance are deliberately NOT
+   * config-driven: those were measured (see NeonStrip) and a palette edit must
+   * never be able to put the light back out of reach of the fight plane.
+   */
+  const neon = (index: number, authored: string) => neonAt(palette, index, authored);
 
   return (
     <group>
@@ -208,27 +230,27 @@ export function UrbanNightStage({ p1Color, p2Color }: UrbanNightStageProps) {
 
       {/* ── Neon accent strips on walls ── */}
       {/* UV / ultraviolet strip — top of back wall */}
-      <NeonStrip position={[0, 6.8, -8.8]} width={18} color="#7c3aed" flickerSpeed={0.9} />
+      <NeonStrip position={[0, 6.8, -8.8]} width={18} color={neon(0, "#7c3aed")} flickerSpeed={0.9} />
       {/* Deep purple strip — mid back wall */}
-      <NeonStrip position={[-6, 4.2, -8.7]} width={6} color="#9333ea" flickerSpeed={1.7} />
-      <NeonStrip position={[6, 4.2, -8.7]} width={6} color="#9333ea" flickerSpeed={1.4} />
+      <NeonStrip position={[-6, 4.2, -8.7]} width={6} color={neon(1, "#9333ea")} flickerSpeed={1.7} />
+      <NeonStrip position={[6, 4.2, -8.7]} width={6} color={neon(2, "#9333ea")} flickerSpeed={1.4} />
       {/* Neon yellow accent — floor level, left side */}
-      <NeonStrip position={[-8, 0.3, -7]} rotation={[0, Math.PI / 2, 0]} width={3} color="#eab308" flickerSpeed={2.1} />
+      <NeonStrip position={[-8, 0.3, -7]} rotation={[0, Math.PI / 2, 0]} width={3} color={neon(3, "#eab308")} flickerSpeed={2.1} />
       {/* Neon yellow accent — floor level, right side */}
-      <NeonStrip position={[8, 0.3, -7]} rotation={[0, -Math.PI / 2, 0]} width={3} color="#eab308" flickerSpeed={1.8} />
+      <NeonStrip position={[8, 0.3, -7]} rotation={[0, -Math.PI / 2, 0]} width={3} color={neon(4, "#eab308")} flickerSpeed={1.8} />
       {/* Cyan accent — left fence post */}
-      <NeonStrip position={[-9, 3, -8.4]} rotation={[0, Math.PI / 2, 0]} width={2} color="#06b6d4" flickerSpeed={1.1} />
+      <NeonStrip position={[-9, 3, -8.4]} rotation={[0, Math.PI / 2, 0]} width={2} color={neon(5, "#06b6d4")} flickerSpeed={1.1} />
       {/* Red accent — right fence post */}
-      <NeonStrip position={[9, 3, -8.4]} rotation={[0, -Math.PI / 2, 0]} width={2} color="#dc2626" flickerSpeed={1.6} />
+      <NeonStrip position={[9, 3, -8.4]} rotation={[0, -Math.PI / 2, 0]} width={2} color={neon(6, "#dc2626")} flickerSpeed={1.6} />
 
       {/* ── Street-level neon: the lights the fighters actually stand in ──
           Everything above is on the back wall 7-9 units away. These sit level
           with the fight plane on both sides, in different colours, so the
           street reads as a mix rather than one flat purple wash. */}
-      <NeonStrip position={[-5.5, 2.6, -1.2]} rotation={[0, Math.PI / 2, 0]} width={3.2} color="#22d3ee" flickerSpeed={1.25} intensity={18} distance={16} />
-      <NeonStrip position={[5.5, 2.6, -1.2]} rotation={[0, -Math.PI / 2, 0]} width={3.2} color="#ff3d81" flickerSpeed={0.95} intensity={18} distance={16} />
-      <NeonStrip position={[-4.2, 0.35, 2.2]} rotation={[0, Math.PI / 2, 0]} width={2.2} color="#a855f7" flickerSpeed={1.9} intensity={10} distance={12} />
-      <NeonStrip position={[4.2, 0.35, 2.2]} rotation={[0, -Math.PI / 2, 0]} width={2.2} color="#eab308" flickerSpeed={1.45} intensity={10} distance={12} />
+      <NeonStrip position={[-5.5, 2.6, -1.2]} rotation={[0, Math.PI / 2, 0]} width={3.2} color={neon(7, "#22d3ee")} flickerSpeed={1.25} intensity={18} distance={16} />
+      <NeonStrip position={[5.5, 2.6, -1.2]} rotation={[0, -Math.PI / 2, 0]} width={3.2} color={neon(8, "#ff3d81")} flickerSpeed={0.95} intensity={18} distance={16} />
+      <NeonStrip position={[-4.2, 0.35, 2.2]} rotation={[0, Math.PI / 2, 0]} width={2.2} color={neon(9, "#a855f7")} flickerSpeed={1.9} intensity={10} distance={12} />
+      <NeonStrip position={[4.2, 0.35, 2.2]} rotation={[0, -Math.PI / 2, 0]} width={2.2} color={neon(10, "#eab308")} flickerSpeed={1.45} intensity={10} distance={12} />
 
       {/* Sodium street lamp overhead — the warm note the neon plays against */}
       <NeonStrip position={[0, 5.4, -1.5]} width={1.2} color="#ffa63d" flickerSpeed={0.55} intensity={22} distance={18} />
@@ -238,7 +260,7 @@ export function UrbanNightStage({ p1Color, p2Color }: UrbanNightStageProps) {
           of range, anything they did not hit rendered as a silhouette. It stays
           a night sky, just not a void — the practicals above do the colouring,
           this only keeps unlit surfaces readable. */}
-      <ambientLight intensity={0.16} color="#241436" />
+      <ambientLight intensity={cfg.ambientIntensity * AMBIENT_CALIBRATION} color={cfg.ambientColor} />
       {/* Sky-to-ground bounce: cold from above, warm sodium spill from the road */}
       <hemisphereLight args={['#2a1c4a', '#3a2410', 0.55]} />
 
@@ -253,7 +275,7 @@ export function UrbanNightStage({ p1Color, p2Color }: UrbanNightStageProps) {
       <spotLight
         position={[0, 9, 3]}
         intensity={26}
-        color="#6d28d9"
+        color={cfg.primaryLightColor}
         angle={0.35}
         penumbra={0.5}
         distance={18}
@@ -266,7 +288,7 @@ export function UrbanNightStage({ p1Color, p2Color }: UrbanNightStageProps) {
       <spotLight
         position={[-8, 7, 1]}
         intensity={18}
-        color="#7c3aed"
+        color={cfg.fillLightColor}
         angle={0.45}
         penumbra={0.7}
         distance={20}

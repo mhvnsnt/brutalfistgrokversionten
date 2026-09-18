@@ -181,7 +181,7 @@ export function CosmeticUnlockBanner({ rewards, onDismiss }: UnlockBannerProps) 
   const rarityColor = RARITY_COLOR[reward.rarity] ?? '#94a3b8';
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
+    <div className="fixed inset-0 screen-safe z-[100] flex items-center justify-center pointer-events-none">
       <div
         className="pointer-events-auto mx-4 border-2 p-5 text-center font-mono max-w-xs w-full"
         style={{

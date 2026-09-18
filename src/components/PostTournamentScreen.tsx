@@ -529,7 +529,7 @@ export default function PostTournamentScreen({
     : 0;
 
   return (
-    <div className="fixed inset-0 bg-black text-white flex flex-col font-mono overflow-hidden">
+    <div className="fixed inset-0 screen-safe bg-black text-white flex flex-col font-mono overflow-hidden">
       {/* Atmosphere */}
       <div className="absolute inset-0 pointer-events-none" style={{
         background: isChampion

@@ -36,7 +36,7 @@ import { useMatchRecorder, PauseMenuRecorder, saveReplayToSupabase } from './Mat
 import { InputStringRecorder } from './InputStringRecorder';
 import { useAuth } from '../contexts/AuthContext';
 // ── Locomotion + bone hitbox systems ─────────────────────────────────────────
-import { LocomotionSystem, ATTACK_ROOT_MOTION_PROFILES } from '../engine/locomotion/LocomotionSystem';
+import { LocomotionSystem, ATTACK_ROOT_MOTION_PROFILES, locomotionBoundsFromStage } from '../engine/locomotion/LocomotionSystem';
 import { createTekkenStick } from '../engine/combat/TekkenInput';
 import { BoneHitboxSystem, HIT_STOP_DURATIONS, HIT_STOP_DEFAULT_MS } from '../engine/locomotion/BoneHitboxSystem';
 // ── Announcer system ──────────────────────────────────────────────────────────
@@ -52,9 +52,11 @@ import {
   createArenaCombatState,
   tickArenaState,
   type ArenaCombatState,
+  type StageId,
 } from '../engine/combat/StageConfig';
 // ── Stage Manager — multi-tier transitions, train hazard, ledge throws, wall breaks ──
 import { createStageManagerState, tickTrainHazard, tickFloorBreak, tickLedgeThrow, tickDestructibleWalls, tickHazardBounce, triggerFloorBreak, executeLedgeThrow, applyWallBreak, applyHazardBounce, checkLedgeThrowOverride, checkWallBreak, checkHazardVolume, TRAIN_HIT_DAMAGE, TRAIN_PLATFORM_Y, type StageManagerState,  } from '../engine/combat/StageManager';
+import { wallBoundsFromStage } from '../engine/combat/WallSystem';
 // ── Heat Burst / Power Crush / Rage Art ──────────────────────────────────────
 import { type HeatState, type PowerCrushState, type RageArtState,  } from '../engine/combat/HeatBurstSystem';
 // ── Directional throw system ──────────────────────────────────────────────────
@@ -170,6 +172,27 @@ export default function GameBattleArena({
   // ── Locomotion systems (one per fighter) ─────────────────────────────────
   const p1LocoRef = useRef<LocomotionSystem>(new LocomotionSystem(-1.8, 0, 1));
   const p2LocoRef = useRef<LocomotionSystem>(new LocomotionSystem(1.8, 0, -1));
+
+  /**
+   * Tell both fighters where THIS stage's floor ends.
+   *
+   * LocomotionSystem is the thing that actually moves a body, and it used to
+   * clamp to its own module constants (+/-4.5 x +/-2.0) on every stage. That is
+   * why fighters walked through the ring ropes (boundaryX 3.8), off the crane
+   * (3.0) and through the cage (4.0), while the Z clamp stopped them 1.8 units
+   * SHORT of the ropes on the ring and the octagon.
+   *
+   * Called after every construction as well as on stage change: a missed call
+   * means walking through walls again, and the cost of calling twice is nil.
+   */
+  const applyStageBounds = useCallback((id: StageId) => {
+    const bounds = locomotionBoundsFromStage(resolveStageConfig(id));
+    p1LocoRef.current.setBounds(bounds);
+    p2LocoRef.current.setBounds(bounds);
+  }, []);
+
+  // A stage swap without a fresh match still has to move the walls.
+  useEffect(() => { applyStageBounds(stageId as StageId); }, [stageId, applyStageBounds]);
   const p1StickRef = useRef(createTekkenStick());
   const p1JumpYRef = useRef(0);
 
@@ -329,6 +352,8 @@ export default function GameBattleArena({
       i.right = held.has("KeyD") || held.has("ArrowRight");
       i.up = held.has("KeyW") || held.has("ArrowUp");
       i.down = held.has("KeyS") || held.has("ArrowDown");
+      i.sidestepLeft = held.has("KeyQ");
+      i.sidestepRight = held.has("KeyE");
     };
     window.__controlsTest = {
       getYaw: () => -p1XRef.current,
@@ -416,6 +441,7 @@ export default function GameBattleArena({
     p1XRef.current = -1.8; p2XRef.current = 1.8;
     p1LocoRef.current = new LocomotionSystem(-1.8, 0, 1);
     p2LocoRef.current = new LocomotionSystem(1.8, 0, -1);
+    applyStageBounds(stageId as StageId);
 
     // Reset state machines and hitbox systems for new match
     p1SMRef.current = new FighterStateMachine();
@@ -586,7 +612,14 @@ export default function GameBattleArena({
       // ── Build SM input from bitmask ────────────────────────────────────
       const bitmask = inputRef.current;
       const cmd = p1StickRef.current.resolve(
-        { left: !!bitmask.left, right: !!bitmask.right, up: !!bitmask.up, down: !!bitmask.down },
+        {
+          left: !!bitmask.left,
+          right: !!bitmask.right,
+          up: !!bitmask.up,
+          down: !!bitmask.down,
+          sidestepLeft: !!(bitmask as any).sidestepLeft,
+          sidestepRight: !!(bitmask as any).sidestepRight,
+        },
         now,
       );
       const smInput: SMInput = {
@@ -643,6 +676,10 @@ export default function GameBattleArena({
         p1KiInput,
         {},
         dt,
+        // The stage's REAL barrier. Without this the wall splat fired at the
+        // module default of +/-4.5 on every stage — wrong on 9 of 15, and an
+        // invisible wall in the three open-street stages.
+        wallBoundsFromStage(stageManagerRef.current.config),
       );
 
       // ── Tick arena combat state (stage boundaries, ring-out, floor-break, hazard) ──
@@ -854,6 +891,7 @@ export default function GameBattleArena({
           const isLedgeOverride = checkLedgeThrowOverride(
             p1XRef.current, p2XRef.current,
             stageCfg.boundaryX, stageCfg.ringOutEnabled,
+            stageCfg.edgeZoneDistance,
           );
           if (isLedgeOverride) {
             const ledgeState = executeLedgeThrow('p2');
@@ -1550,8 +1588,14 @@ export default function GameBattleArena({
 
         if (cmd.jump) p1LocoRef.current.beginJump();
         else p1LocoRef.current.armJump();
-        p1LocoRef.current.update(p1Vel.forward, p1Vel.strafe, dt, p1IsDashing, p1IsBackdashing);
-        p2LocoRef.current.update(p2Vel.forward, p2Vel.strafe, dt, false, p2IsBackdashing);
+        p1LocoRef.current.update(
+          p1Vel.forward, p1Vel.strafe, dt, p1IsDashing, p1IsBackdashing,
+          { x: p2XRef.current, z: p2ZRef.current },
+        );
+        p2LocoRef.current.update(
+          p2Vel.forward, p2Vel.strafe, dt, false, p2IsBackdashing,
+          { x: p1XRef.current, z: p1ZRef.current },
+        );
 
         // ── Feed locomotion positions back to visual state ────────────────
         // Enforce minimum separation so fighters can't overlap
@@ -1911,6 +1955,14 @@ export default function GameBattleArena({
           stageId={stageId ?? 'urban_night'}
           p1AnimTrigger={p1AnimTrigger}
           p2AnimTrigger={p2AnimTrigger}
+          p1AttackDurationSeconds={(() => {
+            const move = p1SMRef.current.getHitboxWindow().move;
+            return move ? move.startup + move.active + move.recovery : undefined;
+          })()}
+          p2AttackDurationSeconds={(() => {
+            const move = p2SMRef.current.getHitboxWindow().move;
+            return move ? move.startup + move.active + move.recovery : undefined;
+          })()}
           p1LocomotionVelocity={p1LocomotionVelocity}
           p2LocomotionVelocity={p2LocomotionVelocity}
           p1X={p1X}
@@ -1929,12 +1981,12 @@ export default function GameBattleArena({
       {cinematicPhase === 'fight' && (
         <>
           {/* Health bars + timer — semi-transparent background only on bar rows */}
-          <div className="absolute top-0 left-0 right-0 z-30 px-3 pt-2 pb-1 pointer-events-none">
+          <div className="absolute top-0 left-0 right-0 z-30 px-safe pt-safe pb-1 pointer-events-none">
             <div className="flex items-center gap-2">
               <img
                 src={p1Fighter.pixelPortrait ?? `/portraits/pixel/${p1Fighter.id}.png`}
                 alt=""
-                className="h-12 w-12 shrink-0 border border-zinc-700 object-cover"
+                className="h-12 w-12 max-[380px]:h-10 max-[380px]:w-10 shrink-0 border border-zinc-700 object-cover"
                 style={{ imageRendering: "pixelated" }}
               />
               {/* P1 health bar */}
@@ -2373,7 +2425,7 @@ export default function GameBattleArena({
           {!ko && <MobileControls inputRef={inputRef} />}
 
           {/* Controls legend */}
-          <div className="absolute bottom-2 left-3 z-30 text-[7px] text-zinc-500 space-y-0.5 pointer-events-none">
+          <div className="absolute bottom-safe-1 left-3 z-30 text-[7px] text-zinc-500 space-y-0.5 pointer-events-none pr-2">
             <div>ARROWS: MOVE · Z/U: 1(LP) · X/I: 2(RP) · J: 3(LK) · K: 4(RK) · C: GUARD · V: GRAPPLE · Q/E: SIDESTEP</div>
             <div className="text-zinc-600">COMBOS: U+J=THROW · I+K=THROW · I+J=HEAT BURST · →+C=CMD THROW · SPECIAL: L+L+H or H+H+L</div>
             <div className="text-purple-500/60">KI CHARGE: U+X+J+K (1+2+3+4) — NEXT HIT = COUNTER · NO BLOCK</div>
@@ -2423,7 +2475,7 @@ export default function GameBattleArena({
       {onBack && cinematicPhase === 'fight' && (
         <button
           onClick={onBack}
-          className="absolute top-16 left-3 z-40 text-[8px] text-zinc-400 hover:text-zinc-200 border border-zinc-700/60 hover:border-zinc-500 px-2 py-1 transition-colors bg-black/50"
+          className="absolute top-safe-16 left-3 z-40 text-[8px] text-zinc-400 hover:text-zinc-200 border border-zinc-700/60 hover:border-zinc-500 px-2 py-1 transition-colors bg-black/50"
         >
           ← BACK
         </button>
@@ -2433,7 +2485,7 @@ export default function GameBattleArena({
       {cinematicPhase === 'fight' && !ko && (
         <button
           onClick={() => { setIsPaused(p => !p); setPauseTab('menu'); }}
-          className="absolute top-3 right-3 z-40 text-[8px] text-zinc-500 hover:text-zinc-200 border border-zinc-700/40 hover:border-zinc-500 px-2 py-1 transition-colors bg-black/50 font-mono tracking-widest"
+          className="absolute top-safe-3 right-3 z-40 text-[8px] text-zinc-500 hover:text-zinc-200 border border-zinc-700/40 hover:border-zinc-500 px-2 py-1 transition-colors bg-black/50 font-mono tracking-widest"
         >
           ⏸ ESC
         </button>
@@ -2442,11 +2494,11 @@ export default function GameBattleArena({
       {/* ── Pause Menu Overlay ── */}
       {isPaused && cinematicPhase === 'fight' && !ko && (
         <div
-          className="absolute inset-0 z-50 flex items-center justify-center"
+          className="absolute inset-0 z-50 flex items-center justify-center p-safe mobile-menu-scroll"
           style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(6px)' }}
         >
           <div
-            className="w-full max-w-sm border border-zinc-700 bg-zinc-950 font-mono"
+            className="w-[calc(100%-1.5rem)] max-w-sm max-h-[calc(100dvh-2rem)] overflow-y-auto border border-zinc-700 bg-zinc-950 font-mono"
             style={{ boxShadow: '0 0 40px rgba(250,204,21,0.08)' }}
           >
             {/* Pause header */}
@@ -2537,6 +2589,7 @@ export default function GameBattleArena({
                 p1XRef.current = -1.8; p2XRef.current = 1.8;
                 p1LocoRef.current = new LocomotionSystem(-1.8, 0, 1);
                 p2LocoRef.current = new LocomotionSystem(1.8, 0, -1);
+                applyStageBounds(stageId as StageId);
                 p1SMRef.current = new FighterStateMachine();
                 p2SMRef.current = new FighterStateMachine();
                 p1SMRef.current.registerSpecialMoves(DEFAULT_SPECIAL_MOVES);

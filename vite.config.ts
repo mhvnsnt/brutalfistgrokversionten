@@ -148,6 +148,7 @@ function authPopupPlugin(): Plugin {
 }
 
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
+const rocketPreview = process.env.ROCKET_PREVIEW === "1";
 
 // `0.0.0.0:8080` is the live-preview contract — don't change host/port.
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
@@ -157,10 +158,17 @@ export default defineConfig(({ command, isPreview }) => ({
     host: "0.0.0.0",
     port: 8080,
     strictPort: true,
+    // Rocket embeds this behind its own preview proxy. `hmr: false` is kept
+    // for any dev-server use, but it is NOT sufficient on its own - MEASURED:
+    // a Vite DEV server still injects `<script src="/@vite/client">` into the
+    // HTML with hmr disabled, and that client still tries to open a socket.
+    // That is why `rocket:preview` serves the BUILT bundle instead (below).
+    ...(rocketPreview ? { hmr: false } : {}),
   },
   preview: {
-    host: "127.0.0.1",
-    port: 8081,
+    // Rocket's contract is 0.0.0.0:8080; everything else previews on 8081.
+    host: rocketPreview ? "0.0.0.0" : "127.0.0.1",
+    port: rocketPreview ? 8080 : 8081,
     strictPort: true,
   },
   resolve: {
@@ -171,15 +179,20 @@ export default defineConfig(({ command, isPreview }) => ({
   },
   plugins: [
     pgliteBootstrapPlugin(),
-    // Before tanstackStart so /auth/popup never falls through to the SPA.
-    authPopupPlugin(),
+    // Rocket gets a browser-only Vite shell: no SSR/router middleware is
+    // allowed to sit on the critical path for the embedded preview.
+    ...(rocketPreview ? [] : [authPopupPlugin()]),
     // Dev-only /__app-env, read by scripts/check-auth-invariant.mjs.
     appEnvPlugin(),
     // PWA head + ?install=1 tutorial page; runs before Start/Nitro.
     grokPwaPlugin(),
     tailwindcss(),
-    tanstackStart(),
-    ...(command === "build" || isPreview
+    ...(rocketPreview ? [] : [tanstackStart()]),
+    // Nitro/Vercel is the deploy target for the real build. Rocket's preview
+    // wants a plain static SPA it can serve with no server runtime, so the
+    // server preset is skipped when ROCKET_PREVIEW is set - otherwise the
+    // build emits only `.vercel/output` and there is no static shell to serve.
+    ...((command === "build" || isPreview) && !rocketPreview
       ? [
           nitro({
             preset: "vercel",

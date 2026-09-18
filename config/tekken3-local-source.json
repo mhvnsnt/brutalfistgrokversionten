@@ -1,0 +1,15 @@
+{
+  "id": "tekken3-local-source",
+  "repository": "mhvnsnt/BrutalfistbaseofTekken3Recompiled",
+  "romSource": {
+    "driveFolderUrl": "https://drive.google.com/drive/folders/1tGHKalMKV1Xb7b2lL3R9Plk7cWJzfRd1",
+    "environmentVariable": "TEKKEN3_SOURCE_DIR",
+    "doNotCommit": true,
+    "runtimeRequired": false
+  },
+  "requiredGameFiles": [
+    {"kind":"tekken3-ps1-disc","requiredFor":"Tekken 3 recompiler/import pipeline","accepted":["*.cue","*.bin"],"discId":"SLUS-00402"},
+    {"kind":"tekken3-arcade","requiredFor":"arcade portrait/mod import when enabled","accepted":["tekken3.zip"]},
+    {"kind":"ttt1-arcade","requiredFor":"Jun donor import in the Tekken 3 Recompiled project","accepted":["tektagt.zip"]}
+  ]
+}

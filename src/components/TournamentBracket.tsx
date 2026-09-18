@@ -307,7 +307,7 @@ export default function TournamentBracket({ playerFighter, onExit, onTournamentE
     const draw = lastResult.winner === 'draw';
 
     return (
-      <div className="fixed inset-0 bg-black text-white flex flex-col items-center justify-center font-mono overflow-hidden">
+      <div className="fixed inset-0 screen-safe bg-black text-white flex flex-col items-center justify-center font-mono overflow-hidden">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: won ? 'radial-gradient(ellipse at 50% 50%, #1d4ed822 0%, transparent 70%)' : 'radial-gradient(ellipse at 50% 50%, #dc262622 0%, transparent 70%)' }}
         />
@@ -388,7 +388,7 @@ export default function TournamentBracket({ playerFighter, onExit, onTournamentE
   // ── CHAMPION SCREEN (fallback when no onTournamentEnd) ──
   if (phase === 'champion') {
     return (
-      <div className="fixed inset-0 bg-black text-white flex flex-col items-center justify-center font-mono overflow-hidden">
+      <div className="fixed inset-0 screen-safe bg-black text-white flex flex-col items-center justify-center font-mono overflow-hidden">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 50% 40%, #facc1530 0%, transparent 65%)' }}
         />
@@ -439,7 +439,7 @@ export default function TournamentBracket({ playerFighter, onExit, onTournamentE
   // ── ELIMINATED SCREEN (fallback when no onTournamentEnd) ──
   if (phase === 'eliminated') {
     return (
-      <div className="fixed inset-0 bg-black text-white flex flex-col items-center justify-center font-mono overflow-hidden">
+      <div className="fixed inset-0 screen-safe bg-black text-white flex flex-col items-center justify-center font-mono overflow-hidden">
         <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 50%, #dc262618 0%, transparent 65%)' }} />
         <div className="relative z-10 flex flex-col items-center gap-6 w-[min(90vw,480px)]">
           <div className="text-[10px] tracking-[0.5em] text-zinc-500">TOURNAMENT OVER</div>
@@ -476,7 +476,7 @@ export default function TournamentBracket({ playerFighter, onExit, onTournamentE
 
   // ── BRACKET VIEW (pre-fight) ──
   return (
-    <div className="fixed inset-0 bg-black text-white flex flex-col items-center justify-center font-mono overflow-hidden">
+    <div className="fixed inset-0 screen-safe bg-black text-white flex flex-col items-center justify-center font-mono overflow-hidden">
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 30%, #1c1c2e 0%, #000 70%)' }} />
       <div className="absolute inset-0 opacity-5" style={{
         backgroundImage: `repeating-linear-gradient(90deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 1px, transparent 1px, transparent 80px),

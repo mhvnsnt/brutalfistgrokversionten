@@ -495,6 +495,9 @@ export interface CombatArena3DProps {
   /** Animation trigger counters — increment to force re-trigger on repeated same-key attacks */
   p1AnimTrigger?: number;
   p2AnimTrigger?: number;
+  /** Current fighter-state attack windows used to retime authored clips. */
+  p1AttackDurationSeconds?: number;
+  p2AttackDurationSeconds?: number;
   /** Locomotion velocity from FighterStateMachine — used for velocity-gated animation blending */
   p1LocomotionVelocity?: { forward: number; strafe: number };
   p2LocomotionVelocity?: { forward: number; strafe: number };
@@ -548,6 +551,8 @@ export default function CombatArena3D({
   stageId = 'urban_night',
   p1AnimTrigger = 0,
   p2AnimTrigger = 0,
+  p1AttackDurationSeconds,
+  p2AttackDurationSeconds,
   p1LocomotionVelocity,
   p2LocomotionVelocity,
   onP1BoneHitboxReady,
@@ -827,6 +832,7 @@ export default function CombatArena3D({
           rotationY={p1RotationY}
           tint={p1SkinTint ?? p1Color}
           animationTrigger={p1AnimTrigger}
+          attackDurationSeconds={p1AttackDurationSeconds}
           locomotionVelocity={p1LocomotionVelocity}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP1BoneHitboxReady}
@@ -850,6 +856,7 @@ export default function CombatArena3D({
           rotationY={p2RotationY}
           tint={p2SkinTint ?? p2Color}
           animationTrigger={p2AnimTrigger}
+          attackDurationSeconds={p2AttackDurationSeconds}
           locomotionVelocity={p2LocomotionVelocity}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP2BoneHitboxReady}
