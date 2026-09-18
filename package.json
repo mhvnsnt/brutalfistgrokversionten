@@ -5,7 +5,12 @@
   "type": "module",
   "overrides": {
     "nf3": "0.3.17",
-    "three-mesh-bvh": "$three-mesh-bvh"
+    "three-mesh-bvh": "$three-mesh-bvh",
+    "jiti": "^2.7.0",
+    "@react-three/fiber": {
+      "react": "^19.0.0",
+      "react-dom": "^19.0.0"
+    }
   },
   "scripts": {
     "dev": "node scripts/with-app-env.mjs vite dev --host 0.0.0.0 --port 8080",
@@ -18,8 +23,8 @@
     "build": "node scripts/with-app-env.mjs vite build && npm run db:migrate",
     "prebuild": "node scripts/sync-bannon-motion.mjs && node scripts/sync-schwarzerblitz-motion.mjs && node scripts/sync-fighting-motion-sources.mjs && node scripts/sync-schwarzerblitz-moves.mjs",
     "db:migrate": "node scripts/migrate.mjs",
-    "build:dev": "node scripts/with-app-env.mjs vite build --mode development",
-    "preview": "node scripts/with-app-env.mjs vite preview",
+    "build:dev": "next build --webpack",
+    "preview": "next start --hostname 0.0.0.0 --port 8080",
     "preview:restart": "node scripts/preview.mjs restart",
     "preview:stop": "node scripts/preview.mjs stop",
     "pretypecheck": "node scripts/sync-schwarzerblitz-motion.mjs",

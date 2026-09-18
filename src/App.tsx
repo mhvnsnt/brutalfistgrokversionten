@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AppScreen } from './types';
 import { BANNON_GLB_PLAYABLE_MODELS } from './data/bannonGlbRoster';
-import { type BannonFighterProfile, getBannonFighter, getAllBannonFighters } from './data/bannonRoster';
+import { type BannonFighterProfile, getBannonFighter } from './data/bannonRoster';
 import dynamic from 'next/dynamic';
 import { useAuth } from './contexts/AuthContext';
 import { type TournamentEndData } from './components/TournamentBracket';

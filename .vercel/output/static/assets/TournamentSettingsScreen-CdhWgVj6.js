@@ -1,0 +1,1 @@
+import{n as e,r as t}from"./routes-BELRA_h0.js";export{e as DEFAULT_TOURNAMENT_SETTINGS,t as default};

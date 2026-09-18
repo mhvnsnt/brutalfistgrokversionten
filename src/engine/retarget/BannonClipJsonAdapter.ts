@@ -23,16 +23,7 @@
  */
 
 import * as THREE from 'three';
-import {
-  convertBannonEulerMotionClip,
-  isBannonEulerMotionBank,
-  pickPreferredMotionBankFiles,
-  BANNON_MOTION_BANK_INDEX,
-  BANNON_MOTION_BANK_BASE,
-  inferSemanticFromMotionKey,
-  type BannonEulerClipJson,
-  type BannonMotionIndex,
-} from './BannonEulerMotionAdapter';
+import { convertBannonEulerMotionClip, isBannonEulerMotionBank, pickPreferredMotionBankFiles, BANNON_MOTION_BANK_INDEX, BANNON_MOTION_BANK_BASE, type BannonEulerClipJson, type BannonMotionIndex,  } from './BannonEulerMotionAdapter';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Bannon motion bank JSON schema
@@ -918,7 +909,7 @@ export async function loadBannonClipsFromUrls(
 
   const loadResults = await Promise.allSettled(
     clipUrls.map(async (url) => {
-      const res = await fetch(url);
+      let res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${url}`);
       const json = await res.json();
       return { url, json };
@@ -1065,7 +1056,7 @@ export async function loadBannonClipsFromPublic(): Promise<Map<string, THREE.Ani
 
   const MANIFEST_URL = '/assets/moves/clips/manifest.json';
   try {
-    const res = await fetch(MANIFEST_URL);
+    let res = await fetch(MANIFEST_URL);
     if (res.ok) {
       const manifest = await res.json();
       const clipUrls = (manifest.clips ?? []).map((f: string) =>

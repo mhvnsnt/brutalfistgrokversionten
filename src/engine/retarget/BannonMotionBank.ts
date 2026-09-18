@@ -19,6 +19,12 @@ export interface EulerBankSource {
   sourceConvention: string;
 }
 
+const BANNON_SOURCE: EulerBankSource = {
+  clipSourceType: 'BANNON_OWNER_MOTION',
+  source: 'mhvnsnt/Bannon/assets/moves/clips',
+  sourceConvention: 'mixamo',
+};
+
 function makeClip(
   name: string,
   data: BannonMotionClipData,
@@ -67,12 +73,6 @@ function makeClip(
   };
   return clip;
 }
-
-const BANNON_SOURCE: EulerBankSource = {
-  clipSourceType: 'BANNON_OWNER_MOTION',
-  source: 'mhvnsnt/Bannon/assets/moves/clips',
-  sourceConvention: 'mixamo',
-};
 
 /**
  * Build AnimationClips from any bank in the cached Euler format.

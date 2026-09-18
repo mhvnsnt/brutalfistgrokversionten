@@ -3,19 +3,10 @@
  * Visual mixer stays in FighterMesh; this machine only forbids illegal
  * action transitions the way Castagne / Night Sky isolate state from render.
  */
-import { setup, createActor, type ActorRefFrom } from 'xstate';
+import { setup, createActor } from 'xstate';
 
 export type CombatAction =
-  | 'idle'
-  | 'walk'
-  | 'startup'
-  | 'active'
-  | 'recovery'
-  | 'guard'
-  | 'hitstun'
-  | 'knockdown'
-  | 'wakeup'
-  | 'ko';
+  | 'idle' |'walk' |'startup' |'active' |'recovery' |'guard' |'hitstun' |'knockdown' |'wakeup' |'ko';
 
 export const combatActionMachine = setup({
   types: {
@@ -70,7 +61,7 @@ export function createCombatActionActor() {
   return createActor(combatActionMachine);
 }
 
-export type CombatActionActor = ActorRefFrom<typeof combatActionMachine>;
+export type CombatActionActor = ReturnType<typeof createCombatActionActor>;
 
 export function canFireCombatEvent(actor: CombatActionActor, type: Parameters<CombatActionActor['send']>[0]['type']) {
   const snapshot = actor.getSnapshot();

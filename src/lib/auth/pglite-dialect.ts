@@ -3,20 +3,8 @@
  * Lazy: resolves `getClient` on first connection so migrations can finish first.
  */
 import type { PGlite } from "@electric-sql/pglite";
-import {
-  CompiledQuery,
-  type DatabaseConnection,
-  type DatabaseIntrospector,
-  type Dialect,
-  type Driver,
-  type Kysely,
-  PostgresAdapter,
-  PostgresIntrospector,
-  PostgresQueryCompiler,
-  type QueryCompiler,
-  type QueryResult,
-  type TransactionSettings,
-} from "kysely";
+import { CompiledQuery, PostgresAdapter, PostgresIntrospector, PostgresQueryCompiler } from "kysely";
+import type { DatabaseConnection, DatabaseIntrospector, Dialect, Driver, Kysely, QueryCompiler, QueryResult, TransactionSettings } from "kysely";
 
 type Client = PGlite;
 

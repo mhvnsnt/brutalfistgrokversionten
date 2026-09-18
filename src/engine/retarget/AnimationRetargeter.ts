@@ -535,12 +535,12 @@ export class AnimationRetargeter {
       const pipeIdx = withoutProp.lastIndexOf('|');
       const sourceBoneName = pipeIdx !== -1 ? withoutProp.slice(pipeIdx + 1) : withoutProp;
 
-      const targetBoneName = this.sourceToTarget.get(sourceBoneName);
+      let targetBoneName = this.sourceToTarget.get(sourceBoneName);
 
       if (targetBoneName && property) {
         // Rewrite track name to use target bone name
         const newTrackName = `${targetBoneName}.${property}`;
-        const RetargetedTrack = track.constructor as unknown as new (...args: unknown[]) => THREE.KeyframeTrack;
+        const RetargetedTrack = track.constructor as unknown as new (name: string, times: ArrayLike<number>, values: ArrayLike<number>, interpolation?: THREE.InterpolationModes) => THREE.KeyframeTrack;
         retargetedTracks.push(
           new RetargetedTrack(newTrackName, track.times, track.values, track.getInterpolation())
         );
