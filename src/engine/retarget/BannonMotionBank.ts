@@ -12,7 +12,18 @@ export interface BannonMotionClipData {
 
 export const BANNON_MOTION_CLIP_NAMES = new Set(Object.keys(BANNON_MOTION_BANK));
 
-function makeClip(name: string, data: BannonMotionClipData): THREE.AnimationClip {
+/** Provenance stamped onto every clip a Euler bank produces. */
+export interface EulerBankSource {
+  clipSourceType: string;
+  source: string;
+  sourceConvention: string;
+}
+
+function makeClip(
+  name: string,
+  data: BannonMotionClipData,
+  provenance: EulerBankSource = BANNON_SOURCE,
+): THREE.AnimationClip {
   /**
    * runtime bone -> the raw key it came from in this clip.
    *
@@ -50,13 +61,30 @@ function makeClip(name: string, data: BannonMotionClipData): THREE.AnimationClip
 
   const clip = new THREE.AnimationClip(name, data.dur, tracks);
   (clip as THREE.AnimationClip & { userData: Record<string, unknown> }).userData = {
-    clipSourceType: 'BANNON_OWNER_MOTION',
-    source: 'mhvnsnt/Bannon/assets/moves/clips',
-    sourceConvention: 'mixamo',
+    ...provenance,
     ownerGranted: true,
     loop: false,
   };
   return clip;
+}
+
+const BANNON_SOURCE: EulerBankSource = {
+  clipSourceType: 'BANNON_OWNER_MOTION',
+  source: 'mhvnsnt/Bannon/assets/moves/clips',
+  sourceConvention: 'mixamo',
+};
+
+/**
+ * Build AnimationClips from any bank in the cached Euler format.
+ *
+ * Shared so a second owner-granted source cannot drift from the first: the same
+ * bone resolution, the same XYZ Euler order and the same track construction.
+ */
+export function buildClipsFromEulerBank(
+  bank: Record<string, BannonMotionClipData>,
+  provenance: EulerBankSource,
+): THREE.AnimationClip[] {
+  return Object.entries(bank).map(([name, data]) => makeClip(name, data, provenance));
 }
 
 /** Build the real owner-granted Bannon motion bank synchronously from the generated cache. */

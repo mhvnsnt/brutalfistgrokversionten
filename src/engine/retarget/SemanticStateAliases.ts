@@ -4,30 +4,45 @@
  * AnimationBridge, and FighterMesh.
  */
 
+/**
+ * Resolution takes the FIRST alias whose name is present in the clip set, so
+ * order is meaning. The owner-granted Schwarzerblitz entries (uppercase ids like
+ * STANCE, ROUNDHOUSEKICK, WAKEUPANIMATION) are appended as FALLBACKS on purpose:
+ * they add locomotion and combat the Bannon bank does not carry - sidesteps,
+ * real guards, jump attacks, throw starts, landings and getups - without
+ * displacing anything that already resolves.
+ *
+ * ONE KNOWN EXCEPTION WORTH THE OWNER'S CALL: `HURRICANE_KICK` is the first
+ * alias for attack_2 and attack_rk and is a frozen capture - measured at source,
+ * every bone reads a span of exactly 0 except the hips, which sweep ~180
+ * degrees. It plays as a spinning statue. ROUNDHOUSEKICK and QUICKKICK are now
+ * available as real alternatives; moving them ahead of it is a design decision,
+ * so the order is left as it is and the gate reports the defect instead.
+ */
 export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
-  idle:           ['idle', 'Idle', 'IDLE', 'BOX_IDLE', 'STANCE_BLADED', 'STANCE_WIDE', 'DRUNK_IDLE_VARIATION', 'ACTION_IDLE_TO_STANDING_IDLE', 'neutral', 'Neutral', 'standing', 'Standing', 'stance', 'Stance', 'combatIdle', 'CombatIdle', 'idle_procedural_placeholder'],
-  walk_forward:   ['walk_forward', 'walk', 'Walk', 'DWARF_WALK', 'DRUNK_WALK', 'GINGA_FORWARD', 'LOCO_STRUT', 'LOCO_LIGHT', 'DRUNK_RUN_FORWARD', 'walkForward', 'WalkForward', 'walking', 'Walking', 'walk_fwd', 'SBW_walk_fwd', 'walk_forward_procedural_placeholder'],
-  walk_back:      ['walk_back', 'walkBack', 'WalkBack', 'GINGA_BACKWARD', 'INJURED_RUN_BACKWARDS_RIGHT_TURN', 'walkBackward', 'WalkBackward', 'walk_bwd', 'SBW_walk_back', 'walk_back_procedural_placeholder'],
-  strafe_left:    ['strafe_left', 'strafeLeft', 'StrafeLeft', 'GINGA_SIDEWAYS_2', 'LOCO_PROWL', 'sidestepLeft', 'SidestepLeft', 'SBW_strafe_left', 'sidestepUp'],
-  strafe_right:   ['strafe_right', 'strafeRight', 'StrafeRight', 'CROUCH_TORCH_WALK_RIGHT', 'INJURED_TURN_RIGHT', 'sidestepRight', 'SidestepRight', 'SBW_strafe_right', 'sidestepDown'],
-  attack_1:       ['attack_1', 'lightAttack', 'LightAttack', 'BOXING', 'BODY_JAB_CROSS', 'BOXING__1_', 'punch', 'Punch', 'jab', 'Jab', 'attack', 'Attack', 'LP', 'T_1', 'bf_jab', 'attack_1_procedural_placeholder'],
-  attack_rp:      ['attack_rp', 'heavyAttack', 'HeavyAttack', 'COMBO_PUNCH', 'BOXING__2_', 'BOXING__3_', 'ILLEGAL_ELBOW_PUNCH', 'ILLEGAL_ELBOW_PUNCH__1_', 'BASEBALL_HIT', 'cross', 'Cross', 'RP', 'T_2', 'bf_cross'],
-  attack_2:       ['attack_2', 'HURRICANE_KICK', 'DROP_KICK', 'ILLEGAL_KNEE', 'TIGER_FEINT_KICK', 'BASH', 'AU', 'CAPOEIRA', 'kick', 'Kick', 'bf_kick'],
-  attack_lk:      ['attack_lk', 'lightKick', 'LightKick', 'DROP_KICK', 'ILLEGAL_KNEE', 'TIGER_FEINT_KICK', 'LK', 'T_3', 'bf_lk'],
-  attack_rk:      ['attack_rk', 'heavyKick', 'HeavyKick', 'HURRICANE_KICK', 'AU', 'CAPOEIRA', 'BASH', 'CROSS_JUMPS', 'RK', 'T_4', 'bf_rk'],
-  block:          ['block', 'guard', 'Guard', 'CENTER_BLOCK', 'GUARD_HIGH', 'GUARD_LOW', 'DEFENDER', 'ESQUIVA_4', 'Block', 'defend', 'Defend', 'SBW_guard', 'T_guard', 'block_procedural_placeholder'],
-  hit_reaction:   ['hit_reaction', 'hit', 'Hit', 'HIT_REACTION', 'HIT_TO_BODY', 'HIT_TO_HEAD', 'BIG_RIB_HIT', 'HIT_ON_THE_BACK', 'HIT_ON_SIDE_OF_HEAD', 'BIG_BODY_BLOW', 'hurt', 'Hurt', 'flinch', 'Flinch', 'hitstun', 'Hitstun', 'SBW_hit', 'T_hit', 'hit_reaction_procedural_placeholder'],
-  knockdown:      ['knockdown', 'Knockdown', 'FALLING_FLAT_IMPACT', 'FALLING_FORWARD_DEATH', 'DEFEAT', 'DYING_BACKWARDS', 'ko', 'KO', 'fall', 'Fall', 'SBW_knockdown', 'T_knockdown', 'knockdown_procedural_placeholder'],
-  getup:          ['getup', 'getUp', 'GetUp', 'KIP_UP', 'CORKSCREW_KIP_UP', 'CORKSCREW_EVADE', 'quickStand', 'QuickStand', 'gettingUp', 'GettingUp', 'T_quickstand', 'getup_procedural_placeholder'],
-  grapple:        ['grapple', 'grab', 'Grab', 'SUPLEX', 'GERMANSUPLEX', 'DDT', 'CHOKESLAM', 'DOUBLE_LEG_TAKEDOWN___VICTIM', 'throw', 'Throw', 'SBW_throw', 'T_1_3'],
-  crouch:         ['crouch', 'Crouch', 'STANCE_CROUCH', 'CROUCH_IDLE_02_LOOKING_AROUND', 'CROUCH_WALK_FORWARD', 'duck', 'Duck', 'SBW_crouch', 'T_crouch'],
-  run:            ['run', 'Run', 'DRUNK_RUN_FORWARD', 'LOCO_LIGHT', 'running', 'Running', 'sprint', 'Sprint'],
-  dash_forward:   ['dash_forward', 'dashForward', 'DashForward', 'dash', 'Dash', 'DRUNK_RUN_FORWARD'],
-  backdash:       ['backdash', 'Backdash', 'backDash', 'BackDash', 'GINGA_BACKWARD', 'SBW_backdash', 'T_backdash', 'Backdashing'],
-  jump:           ['jump', 'Jump', 'hop', 'Hop', 'CROSS_JUMPS', 'jumpForward', 'jumpBack'],
-  victory:        ['victory', 'Victory', 'win', 'Win', 'BREAKDANCE_READY', 'STANCE_WIDE', 'victoryPose', 'VictoryPose'],
+  idle:           ['idle', 'Idle', 'IDLE', 'BOX_IDLE', 'STANCE_BLADED', 'STANCE_WIDE', 'DRUNK_IDLE_VARIATION', 'ACTION_IDLE_TO_STANDING_IDLE', 'neutral', 'Neutral', 'standing', 'Standing', 'stance', 'Stance', 'combatIdle', 'CombatIdle', 'idle_procedural_placeholder', 'STANCE', 'LOWSTANCE', 'LOWSTANCENEW', 'TIGERSTANCE', 'GRAFSTANCE', 'SHAZSTANCE', 'JOHNSON_STANCE', 'KRAVESTANCE'],
+  walk_forward:   ['walk_forward', 'walk', 'Walk', 'DWARF_WALK', 'DRUNK_WALK', 'GINGA_FORWARD', 'LOCO_STRUT', 'LOCO_LIGHT', 'DRUNK_RUN_FORWARD', 'walkForward', 'WalkForward', 'walking', 'Walking', 'walk_fwd', 'SBW_walk_fwd', 'walk_forward_procedural_placeholder', 'WALK', 'WALKFAST', 'SHAZWALK'],
+  walk_back:      ['walk_back', 'walkBack', 'WalkBack', 'GINGA_BACKWARD', 'INJURED_RUN_BACKWARDS_RIGHT_TURN', 'walkBackward', 'WalkBackward', 'walk_bwd', 'SBW_walk_back', 'walk_back_procedural_placeholder', 'WALK'],
+  strafe_left:    ['strafe_left', 'strafeLeft', 'StrafeLeft', 'GINGA_SIDEWAYS_2', 'LOCO_PROWL', 'sidestepLeft', 'SidestepLeft', 'SBW_strafe_left', 'sidestepUp', 'SIDESTEP', 'SIDESTEPF', 'SIDESTEPMEDIUM', 'SIDESTEPFAST'],
+  strafe_right:   ['strafe_right', 'strafeRight', 'StrafeRight', 'CROUCH_TORCH_WALK_RIGHT', 'INJURED_TURN_RIGHT', 'sidestepRight', 'SidestepRight', 'SBW_strafe_right', 'sidestepDown', 'SIDESTEPF', 'SIDESTEP', 'SIDESTEPMEDIUM'],
+  attack_1:       ['attack_1', 'lightAttack', 'LightAttack', 'BOXING', 'BODY_JAB_CROSS', 'BOXING__1_', 'punch', 'Punch', 'jab', 'Jab', 'attack', 'Attack', 'LP', 'T_1', 'bf_jab', 'attack_1_procedural_placeholder', 'HIGHPUNCH', 'GRAFQUICKJAB', 'GYAKUZUKI'],
+  attack_rp:      ['attack_rp', 'heavyAttack', 'HeavyAttack', 'COMBO_PUNCH', 'BOXING__2_', 'BOXING__3_', 'ILLEGAL_ELBOW_PUNCH', 'ILLEGAL_ELBOW_PUNCH__1_', 'BASEBALL_HIT', 'cross', 'Cross', 'RP', 'T_2', 'bf_cross', 'UPPERCUT', 'PUNCHKICKCOMBO', 'ORAORAORA', 'GRAFPUNCHCOMBO'],
+  attack_2:       ['attack_2', 'HURRICANE_KICK', 'DROP_KICK', 'ILLEGAL_KNEE', 'TIGER_FEINT_KICK', 'BASH', 'AU', 'CAPOEIRA', 'kick', 'Kick', 'bf_kick', 'QUICKKICK', 'AXEKICK', 'GRAFPUSHINGKICK'],
+  attack_lk:      ['attack_lk', 'lightKick', 'LightKick', 'DROP_KICK', 'ILLEGAL_KNEE', 'TIGER_FEINT_KICK', 'LK', 'T_3', 'bf_lk', 'QUICKKICK', 'CROUCHINGKICK', 'ROUNDHOUSELOW'],
+  attack_rk:      ['attack_rk', 'heavyKick', 'HeavyKick', 'HURRICANE_KICK', 'AU', 'CAPOEIRA', 'BASH', 'CROSS_JUMPS', 'RK', 'T_4', 'bf_rk', 'ROUNDHOUSEKICK', 'HEAVYKICK', 'AXEKICK', 'TIGER_HEAVYKICK'],
+  block:          ['block', 'guard', 'Guard', 'CENTER_BLOCK', 'GUARD_HIGH', 'GUARD_LOW', 'DEFENDER', 'ESQUIVA_4', 'Block', 'defend', 'Defend', 'SBW_guard', 'T_guard', 'block_procedural_placeholder', 'GUARD', 'LOWSTANCEGUARD'],
+  hit_reaction:   ['hit_reaction', 'hit', 'Hit', 'HIT_REACTION', 'HIT_TO_BODY', 'HIT_TO_HEAD', 'BIG_RIB_HIT', 'HIT_ON_THE_BACK', 'HIT_ON_SIDE_OF_HEAD', 'BIG_BODY_BLOW', 'hurt', 'Hurt', 'flinch', 'Flinch', 'hitstun', 'Hitstun', 'SBW_hit', 'T_hit', 'hit_reaction_procedural_placeholder', 'REACTION_HITWEAKHIGH', 'REACTION_HITWEAKMEDIUM', 'REACTION_HITSTRONGHIGH', 'REACTION_HITSTRONGMID'],
+  knockdown:      ['knockdown', 'Knockdown', 'FALLING_FLAT_IMPACT', 'FALLING_FORWARD_DEATH', 'DEFEAT', 'DYING_BACKWARDS', 'ko', 'KO', 'fall', 'Fall', 'SBW_knockdown', 'T_knockdown', 'knockdown_procedural_placeholder', 'REACTION_HEAVYHITAIRREVOLT', 'REACTION_HEAVYHITAIRREVOLTBACK', 'SUPINE'],
+  getup:          ['getup', 'getUp', 'GetUp', 'KIP_UP', 'CORKSCREW_KIP_UP', 'CORKSCREW_EVADE', 'quickStand', 'QuickStand', 'gettingUp', 'GettingUp', 'T_quickstand', 'getup_procedural_placeholder', 'WAKEUPANIMATION', 'ROLLOUT', 'ROLLOUTRIGHT', 'LAZORFORWARDROLL', 'LAZORBACKROLL'],
+  grapple:        ['grapple', 'grab', 'Grab', 'SUPLEX', 'GERMANSUPLEX', 'DDT', 'CHOKESLAM', 'DOUBLE_LEG_TAKEDOWN___VICTIM', 'throw', 'Throw', 'SBW_throw', 'T_1_3', 'THROWSTART', 'THROWSTART_STEP', 'KNEETHROW', 'GRAFTHROW', 'RENZOTHROW'],
+  crouch:         ['crouch', 'Crouch', 'STANCE_CROUCH', 'CROUCH_IDLE_02_LOOKING_AROUND', 'CROUCH_WALK_FORWARD', 'duck', 'Duck', 'SBW_crouch', 'T_crouch', 'CROUCHING'],
+  run:            ['run', 'Run', 'DRUNK_RUN_FORWARD', 'LOCO_LIGHT', 'running', 'Running', 'sprint', 'Sprint', 'RUNNING', 'RUNNINGLOW'],
+  dash_forward:   ['dash_forward', 'dashForward', 'DashForward', 'dash', 'Dash', 'DRUNK_RUN_FORWARD', 'SPINJUMPF', 'SPINJUMPFFAST', 'RUNNING'],
+  backdash:       ['backdash', 'Backdash', 'backDash', 'BackDash', 'GINGA_BACKWARD', 'SBW_backdash', 'T_backdash', 'Backdashing', 'SPINJUMPB', 'SPINJUMPBFAST'],
+  jump:           ['jump', 'Jump', 'hop', 'Hop', 'CROSS_JUMPS', 'jumpForward', 'jumpBack', 'JUMP', 'JUMP2', 'SPINJUMPF', 'SPINJUMPB', 'JUMPAXEKICK', 'DEFAULTJUMPKICK'],
+  victory:        ['victory', 'Victory', 'win', 'Win', 'BREAKDANCE_READY', 'STANCE_WIDE', 'victoryPose', 'VictoryPose', 'TIGERWINPOSE', 'JOHNSONWINPOSE'],
   defeat:         ['defeat', 'Defeat', 'DEFEAT', 'lose', 'Lose', 'knockdown', 'Knockdown'],
-  taunt:          ['taunt', 'Taunt', 'TAUNT', 'TAUNT_CALLOUT', 'BREAKDANCE_READY', 'CAPOEIRA', 'idle', 'Idle'],
+  taunt:          ['taunt', 'Taunt', 'TAUNT', 'TAUNT_CALLOUT', 'BREAKDANCE_READY', 'CAPOEIRA', 'idle', 'Idle', 'TIGERINTROPOSE', 'JOHNSONINTROPOSE', 'GRAFINTRO', 'SHAZENTRANCE'],
 };
 
 export const COMBAT_STATE_TO_SEMANTIC: Record<string, string> = {

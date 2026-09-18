@@ -1,5 +1,89 @@
 # Brutal Fist — dev conversation
 
+## 2026-09-18 — Schwarzerblitz's fighting set imported; what the Tekken 3 repo actually holds
+
+Owner: "let's get all the um animations and combat and movement and locomotion from night sky engine
+and Schwarzer blitz and my tekken repo and all that all pulled in i got permission to use all of
+that stuff." Surveyed all three against what is actually in them, rather than assuming.
+
+### SCHWARZERBLITZ — 166 clips imported, the real win
+
+`bin/media/common/animations/*.x`. Measured: 236 of the 245 `.x` files in the checkout carry an
+`AnimationSet`, and they are the TEXT flavour (`xof 0303txt 0032`), so they parse directly — no
+Blender, no converter. The 166 under `common/animations` are a complete fighting set: stances, walk,
+walkFast, running, four sidesteps, jumps and jump attacks, guards, strikes, throws **with their
+receiver halves**, hit reactions, landings, rollouts and a wake-up.
+
+**The quaternion convention was measured, not trusted.** A `.x` rotation key is `(w, x, y, z)` and in
+the DirectX convention is the CONJUGATE of the rotation — get it wrong and every motion plays
+mirrored, silently, which is the failure `docs/mocap_orientation_master_prompt.md` warns about. So
+each bone's first rotation key was compared against the rotation decomposed from that same bone's own
+`FrameTransformMatrix`, as-is and conjugated. Over axeKick.x's 41 bones, **39 matched only as the
+conjugate** (dot 1.000 against 0.000); the two that did not are the root frames carrying the armature
+transform.
+
+**Frame rate read from the engine, not guessed:** `FK_BasicAnimationRate = 24.0` in
+`SchwarzerblitzEngine/FK_Database.h`, used as the default in `FK_Character.cpp` and
+`FK_DatabaseAccessor.cpp`.
+
+**The bone map was derived from the Frame hierarchy in the files**, which settles what names cannot:
+`Armature_Hips` is the true pelvis (both legs AND the spine branch from it), `Armature_Torso` is the
+chest (both arms AND the neck branch from it, so it maps to mixamorigSpine2), and `Armature_Hips_001`
+is a root offset above the pelvis and is deliberately left unmapped — as are the eight IK helper
+frames and the finger and thumb chains. This rig has a two-segment spine against Mixamo's three and no
+clavicle, so **19 of the 22 runtime bones are driven** and mixamorigSpine1 plus both shoulders hold
+their bind rotation. It went into `boneNameMap.mjs`, the same single translation layer, so the sync
+and the runtime cannot disagree.
+
+Verified the import is semantically right, per clip, by which bones actually travel:
+
+    WALK       RightUpLeg 359° LeftUpLeg 41°      RUNNING    both legs + arm swing
+    HIGHPUNCH  LeftArm 329° LeftForeArm 84°       UPPERCUT   LeftArm 351° Forearm 122°
+    AXEKICK    LeftUpLeg 359° LeftLeg 106°        GUARD      RightArm 334° both forearms
+    JUMP       both legs                          THROWSTART both arms
+
+Punches move arms, kicks move legs, guards move both arms, jumps move both legs. Nothing is inverted.
+
+`buildClipsFromEulerBank` was extracted from `BannonMotionBank` so both banks share one bone
+resolution, one Euler order and one track construction, and both go through
+`applyBindRelativeQuaternionTracks` — their rest pose is not this GLB's, so the motion is re-based
+onto the target's bind pose rather than written onto it absolutely. The locked orientation contract
+is unchanged.
+
+**Aliases are appended, never reordered.** Resolution takes the first alias whose NAME is present, so
+inserting these ahead would silently change which move a state plays. They sit at the end as
+fallbacks; 75 entries added across 22 states.
+
+VERIFIED IN THE RUNNING GAME, not on paper: clips reaching a fighter **244 -> 307**, authored 236 ->
+299, `height=1.850 forwardCorrection=0° floorY=0.0000` unchanged, verdict PASS, 0 page errors.
+
+COST, stated plainly: the cached bank is 4.92 MB and the client combat chunk went **5,056 kB -> 9,319
+kB (gzip 1,034 -> 1,531 kB)**. That is still far below the 36,476 kB (gzip 4,487 kB) this arc started
+at, but 166 clips are not free and this should be split or lazily loaded before it ships to a phone.
+
+### NIGHTSKY ENGINE — nothing importable, and that is not a failure
+
+2,236 `.uasset` files and no FBX, BVH, GLB or `.x` anywhere. Unreal binary assets cannot be read
+without Unreal to export them, so there is no animation here to pull into a Three.js runtime. Its
+value is what `AnimationSourceRegistry.ts` already records: an MIT-licensed fighting **framework** —
+architecture, state machines, frame data — reference rather than assets. Porting that is a separate
+piece of work with a different shape, not an import.
+
+### TEKKEN 3 RECOMPILED — the repo contains the DECODER, not the animation
+
+`mhvnsnt/BrutalfistbaseofTekken3Recompiled`, cloned and surveyed (361 MB): 308 `.py`, 247 `.h`,
+225 `.c`, 132 `.cpp`. It is a PS1 recompilation project. `src/tekken3_jun_motion.c` and
+`tools/ttt1_motion.py` decode "System 12 TTT1 joint motion from a verified local ROM bank" — 57
+channels to an 18-bone skeleton — and `tools/prepare_jun_import.py` reads
+`verified(work / "ttt1/bankedroms.bin", BANK_SHA)`.
+
+**That ROM is not in the repository, and no decoded pose data is committed.** So there is nothing to
+import from it today: the animation lives in a dump the owner would have to supply locally, and the
+repo holds the format knowledge and the decoder. This matches what the registry already says —
+"TEKKEN_TOOLING — importer/retargeting reference, NO proprietary bytes". If the owner puts his own
+`ttt1/bankedroms.bin` in place, that decoder is the path, and the 57-channel / 18-bone pose format is
+the seam to retarget from.
+
 ## 2026-09-18 — BANNON's skin and trunks were painted from the same texels
 
 Owner: "that model of Bannon, it has like parts on the texture ... part of the skin is on the trunks,

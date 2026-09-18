@@ -105,6 +105,54 @@ export const ALT_BONE_NAMES = {
 };
 
 /**
+ * CROSS-RIG NAME MAP for the Schwarzerblitz `Armature_` rig
+ * (mhvnsnt/SchwarzerblitzEngine, owner-granted — the grant is recorded in
+ * AnimationSourceRegistry.ts).
+ *
+ * DERIVED FROM THE HIERARCHY IN THE FILES, not from the names. Read off
+ * common/animations/*.x, where the Frame tree is:
+ *
+ *   Armature_Hips_001            a root offset above the pelvis
+ *     Armature_Hips              the real pelvis: BOTH legs and the spine branch here
+ *       Armature_Leg_L           thigh
+ *         Armature_Leg_L_001     shin
+ *           Armature_Foot_L      foot
+ *             Armature_Foot_L_001  toe
+ *       Armature_Spine
+ *         Armature_Torso         the chest: both arms AND the neck branch here
+ *           Armature_Arm_L       upper arm
+ *             Armature_Forearm_L
+ *               Armature_Wrist_L
+ *           Armature_Neck
+ *             Armature_Head
+ *
+ * So `Armature_Torso` is the chest (-> mixamorigSpine2) and `Armature_Hips_001`
+ * is NOT the pelvis and is deliberately left unmapped, as are the eight IK
+ * helper frames (Wrist_IK, Elbow_IK, Knee_IK, Leg_IK) and the finger/thumb
+ * chains, none of which the fight rig drives.
+ *
+ * This rig has a two-segment spine against Mixamo's three, and no clavicle, so
+ * mixamorigSpine1 and both mixamorig*Shoulder bones take nothing and stay at
+ * rest: 20 of the 22 runtime bones are driven.
+ *
+ * @type {Record<string, string>}
+ */
+export const SCHWARZERBLITZ_BONE_NAMES = {
+  armaturehips: 'mixamorigHips',
+  armaturespine: 'mixamorigSpine',
+  armaturetorso: 'mixamorigSpine2',
+  armatureneck: 'mixamorigNeck',
+  armaturehead: 'mixamorigHead',
+  armaturearml: 'mixamorigLeftArm', armaturearmr: 'mixamorigRightArm',
+  armatureforearml: 'mixamorigLeftForeArm', armatureforearmr: 'mixamorigRightForeArm',
+  armaturewristl: 'mixamorigLeftHand', armaturewristr: 'mixamorigRightHand',
+  armaturelegl: 'mixamorigLeftUpLeg', armaturelegr: 'mixamorigRightUpLeg',
+  armaturelegl001: 'mixamorigLeftLeg', armaturelegr001: 'mixamorigRightLeg',
+  armaturefootl: 'mixamorigLeftFoot', armaturefootr: 'mixamorigRightFoot',
+  armaturefootl001: 'mixamorigLeftToeBase', armaturefootr001: 'mixamorigRightToeBase',
+};
+
+/**
  * Resolve any source bone name to the runtime bone it drives, or '' when the
  * bone has no counterpart on the fight rig (facial bones, cloth rigs, helper
  * and aim nulls, a second body's skeleton in a tag capture).
@@ -115,5 +163,6 @@ export const ALT_BONE_NAMES = {
 export function resolveRuntimeBone(name) {
   const canonical = canonicalBoneName(name);
   if (RUNTIME_BONES.has(canonical)) return canonical;
-  return ALT_BONE_NAMES[normalize(name)] ?? '';
+  const key = normalize(name);
+  return ALT_BONE_NAMES[key] ?? SCHWARZERBLITZ_BONE_NAMES[key] ?? '';
 }
