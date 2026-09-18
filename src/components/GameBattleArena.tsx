@@ -1550,8 +1550,14 @@ export default function GameBattleArena({
 
         if (cmd.jump) p1LocoRef.current.beginJump();
         else p1LocoRef.current.armJump();
-        p1LocoRef.current.update(p1Vel.forward, p1Vel.strafe, dt, p1IsDashing, p1IsBackdashing);
-        p2LocoRef.current.update(p2Vel.forward, p2Vel.strafe, dt, false, p2IsBackdashing);
+        p1LocoRef.current.update(
+          p1Vel.forward, p1Vel.strafe, dt, p1IsDashing, p1IsBackdashing,
+          { x: p2XRef.current, z: p2ZRef.current },
+        );
+        p2LocoRef.current.update(
+          p2Vel.forward, p2Vel.strafe, dt, false, p2IsBackdashing,
+          { x: p1XRef.current, z: p1ZRef.current },
+        );
 
         // ── Feed locomotion positions back to visual state ────────────────
         // Enforce minimum separation so fighters can't overlap
