@@ -36,7 +36,7 @@ import { useMatchRecorder, PauseMenuRecorder, saveReplayToSupabase } from './Mat
 import { InputStringRecorder } from './InputStringRecorder';
 import { useAuth } from '../contexts/AuthContext';
 // ── Locomotion + bone hitbox systems ─────────────────────────────────────────
-import { LocomotionSystem, ATTACK_ROOT_MOTION_PROFILES } from '../engine/locomotion/LocomotionSystem';
+import { LocomotionSystem, ATTACK_ROOT_MOTION_PROFILES, locomotionBoundsFromStage } from '../engine/locomotion/LocomotionSystem';
 import { createTekkenStick } from '../engine/combat/TekkenInput';
 import { BoneHitboxSystem, HIT_STOP_DURATIONS, HIT_STOP_DEFAULT_MS } from '../engine/locomotion/BoneHitboxSystem';
 // ── Announcer system ──────────────────────────────────────────────────────────
@@ -52,6 +52,7 @@ import {
   createArenaCombatState,
   tickArenaState,
   type ArenaCombatState,
+  type StageId,
 } from '../engine/combat/StageConfig';
 // ── Stage Manager — multi-tier transitions, train hazard, ledge throws, wall breaks ──
 import { createStageManagerState, tickTrainHazard, tickFloorBreak, tickLedgeThrow, tickDestructibleWalls, tickHazardBounce, triggerFloorBreak, executeLedgeThrow, applyWallBreak, applyHazardBounce, checkLedgeThrowOverride, checkWallBreak, checkHazardVolume, TRAIN_HIT_DAMAGE, TRAIN_PLATFORM_Y, type StageManagerState,  } from '../engine/combat/StageManager';
@@ -171,6 +172,27 @@ export default function GameBattleArena({
   // ── Locomotion systems (one per fighter) ─────────────────────────────────
   const p1LocoRef = useRef<LocomotionSystem>(new LocomotionSystem(-1.8, 0, 1));
   const p2LocoRef = useRef<LocomotionSystem>(new LocomotionSystem(1.8, 0, -1));
+
+  /**
+   * Tell both fighters where THIS stage's floor ends.
+   *
+   * LocomotionSystem is the thing that actually moves a body, and it used to
+   * clamp to its own module constants (+/-4.5 x +/-2.0) on every stage. That is
+   * why fighters walked through the ring ropes (boundaryX 3.8), off the crane
+   * (3.0) and through the cage (4.0), while the Z clamp stopped them 1.8 units
+   * SHORT of the ropes on the ring and the octagon.
+   *
+   * Called after every construction as well as on stage change: a missed call
+   * means walking through walls again, and the cost of calling twice is nil.
+   */
+  const applyStageBounds = useCallback((id: StageId) => {
+    const bounds = locomotionBoundsFromStage(resolveStageConfig(id));
+    p1LocoRef.current.setBounds(bounds);
+    p2LocoRef.current.setBounds(bounds);
+  }, []);
+
+  // A stage swap without a fresh match still has to move the walls.
+  useEffect(() => { applyStageBounds(stageId as StageId); }, [stageId, applyStageBounds]);
   const p1StickRef = useRef(createTekkenStick());
   const p1JumpYRef = useRef(0);
 
@@ -419,6 +441,7 @@ export default function GameBattleArena({
     p1XRef.current = -1.8; p2XRef.current = 1.8;
     p1LocoRef.current = new LocomotionSystem(-1.8, 0, 1);
     p2LocoRef.current = new LocomotionSystem(1.8, 0, -1);
+    applyStageBounds(stageId as StageId);
 
     // Reset state machines and hitbox systems for new match
     p1SMRef.current = new FighterStateMachine();
@@ -2566,6 +2589,7 @@ export default function GameBattleArena({
                 p1XRef.current = -1.8; p2XRef.current = 1.8;
                 p1LocoRef.current = new LocomotionSystem(-1.8, 0, 1);
                 p2LocoRef.current = new LocomotionSystem(1.8, 0, -1);
+                applyStageBounds(stageId as StageId);
                 p1SMRef.current = new FighterStateMachine();
                 p2SMRef.current = new FighterStateMachine();
                 p1SMRef.current.registerSpecialMoves(DEFAULT_SPECIAL_MOVES);
