@@ -69,6 +69,12 @@
   .bottom-safe-4 {
     bottom: max(1rem, env(safe-area-inset-bottom));
   }
+  .top-safe-3 {
+    top: max(0.75rem, env(safe-area-inset-top));
+  }
+  .top-safe-16 {
+    top: max(4rem, calc(env(safe-area-inset-top) + 4rem));
+  }
   .bottom-safe-1 {
     bottom: max(0.25rem, env(safe-area-inset-bottom));
   }
