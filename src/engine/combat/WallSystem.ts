@@ -55,6 +55,54 @@ export function createWallSplatState(): WallSplatState {
 }
 
 // ── Wall collision result ─────────────────────────────────────────────────────
+/**
+ * THE WALL A STAGE ACTUALLY HAS.
+ *
+ * WHY THIS EXISTS — measured, not assumed. `checkWallCollision` read the module
+ * constants WALL_LEFT_X / WALL_RIGHT_X (+/-4.5) and was never told which stage
+ * it was running in, while StageConfig has declared a per-stage `boundaryX` and
+ * a `hasWalls` flag all along. Measured across the 15 shipped stages, only 6
+ * have boundaryX 4.5, so the wall splat fired at the wrong distance on 9:
+ *
+ *   ghetto_streets / junkyard / gang_brawl  boundaryX Infinity, hasWalls false
+ *       -> a fighter splatted against an INVISIBLE WALL in an open street.
+ *   sky_crane  boundaryX 3
+ *       -> the splat wall sat 1.5 units PAST the edge of the crane, so the
+ *          fighter rang out before ever reaching it; sky_crane could not splat.
+ *   wrestling_ring 3.8 / mma_octagon 4.2 / dojo 4.0 / steel_cage 4.0 / industrial 5
+ *       -> splat fired short of, or beyond, the actual barrier.
+ *
+ * `hasWalls` had ZERO readers anywhere in src/ before this. The default below
+ * reproduces the old behaviour exactly, so every caller that does not pass
+ * bounds is unchanged.
+ */
+export interface WallBounds {
+  leftX: number;
+  rightX: number;
+  /** false = open stage: no splat, the edge is a ring-out instead. */
+  hasWalls: boolean;
+}
+
+export const DEFAULT_WALL_BOUNDS: WallBounds = {
+  leftX: WALL_LEFT_X,
+  rightX: WALL_RIGHT_X,
+  hasWalls: true,
+};
+
+/**
+ * Read a stage's real barrier off its config. Kept structural rather than
+ * importing StageConfig so WallSystem stays free of engine-module cycles.
+ */
+export function wallBoundsFromStage(
+  cfg: { boundaryX: number; hasWalls: boolean } | null | undefined,
+): WallBounds {
+  if (!cfg) return DEFAULT_WALL_BOUNDS;
+  // An infinite boundary is an open stage whatever the flag says: there is no
+  // surface at infinity to splat against.
+  const hasWalls = cfg.hasWalls && isFinite(cfg.boundaryX);
+  return { leftX: -cfg.boundaryX, rightX: cfg.boundaryX, hasWalls };
+}
+
 export interface WallCollisionResult {
   /** Whether a wall was hit this frame */
   hitWall: boolean;
@@ -70,20 +118,27 @@ export interface WallCollisionResult {
  * Check if a fighter's X position has crossed a stage boundary.
  * Returns collision result with clamped position and knockback.
  */
-export function checkWallCollision(x: number, velocityX: number): WallCollisionResult {
-  if (x <= WALL_LEFT_X) {
+export function checkWallCollision(
+  x: number,
+  velocityX: number,
+  bounds: WallBounds = DEFAULT_WALL_BOUNDS,
+): WallCollisionResult {
+  // An open stage has no wall to splat against. Ring-out owns the edge there.
+  if (!bounds.hasWalls) return { hitWall: false, wall: null, clampedX: x, knockbackVelocityX: velocityX };
+
+  if (isFinite(bounds.leftX) && x <= bounds.leftX) {
     return {
       hitWall: true,
       wall: 'left',
-      clampedX: WALL_LEFT_X + WALL_PUSH_DISTANCE,
+      clampedX: bounds.leftX + WALL_PUSH_DISTANCE,
       knockbackVelocityX: WALL_KNOCKBACK_VELOCITY, // push right (away from left wall)
     };
   }
-  if (x >= WALL_RIGHT_X) {
+  if (isFinite(bounds.rightX) && x >= bounds.rightX) {
     return {
       hitWall: true,
       wall: 'right',
-      clampedX: WALL_RIGHT_X - WALL_PUSH_DISTANCE,
+      clampedX: bounds.rightX - WALL_PUSH_DISTANCE,
       knockbackVelocityX: -WALL_KNOCKBACK_VELOCITY, // push left (away from right wall)
     };
   }

@@ -55,6 +55,7 @@ import {
 } from '../engine/combat/StageConfig';
 // ── Stage Manager — multi-tier transitions, train hazard, ledge throws, wall breaks ──
 import { createStageManagerState, tickTrainHazard, tickFloorBreak, tickLedgeThrow, tickDestructibleWalls, tickHazardBounce, triggerFloorBreak, executeLedgeThrow, applyWallBreak, applyHazardBounce, checkLedgeThrowOverride, checkWallBreak, checkHazardVolume, TRAIN_HIT_DAMAGE, TRAIN_PLATFORM_Y, type StageManagerState,  } from '../engine/combat/StageManager';
+import { wallBoundsFromStage } from '../engine/combat/WallSystem';
 // ── Heat Burst / Power Crush / Rage Art ──────────────────────────────────────
 import { type HeatState, type PowerCrushState, type RageArtState,  } from '../engine/combat/HeatBurstSystem';
 // ── Directional throw system ──────────────────────────────────────────────────
@@ -652,6 +653,10 @@ export default function GameBattleArena({
         p1KiInput,
         {},
         dt,
+        // The stage's REAL barrier. Without this the wall splat fired at the
+        // module default of +/-4.5 on every stage — wrong on 9 of 15, and an
+        // invisible wall in the three open-street stages.
+        wallBoundsFromStage(stageManagerRef.current.config),
       );
 
       // ── Tick arena combat state (stage boundaries, ring-out, floor-break, hazard) ──
@@ -863,6 +868,7 @@ export default function GameBattleArena({
           const isLedgeOverride = checkLedgeThrowOverride(
             p1XRef.current, p2XRef.current,
             stageCfg.boundaryX, stageCfg.ringOutEnabled,
+            stageCfg.edgeZoneDistance,
           );
           if (isLedgeOverride) {
             const ledgeState = executeLedgeThrow('p2');
