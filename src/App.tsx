@@ -108,8 +108,8 @@ export default function App() {
   // ── Main Menu ──
   if (screen === AppScreen?.MainMenu) {
     return (
-      <div className="fixed inset-0 bg-[#10131a] text-white flex items-center justify-center font-mono">
-        <div className="w-[min(86vw,420px)]">
+      <div className="fixed inset-0 bg-[#10131a] text-white flex items-center justify-center font-mono p-safe">
+        <div className="w-[min(86vw,420px)] mobile-menu-scroll">
           <div className="mb-2 text-xs tracking-[0.45em] text-slate-500">3D FIGHTING GAME</div>
           {user && (
             <div className="mb-6 flex items-center justify-between">
