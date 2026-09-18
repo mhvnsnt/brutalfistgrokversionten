@@ -1,5 +1,48 @@
 # Brutal Fist — dev conversation
 
+## 2026-09-18 — the Schwarzerblitz import was mirrored, and its own engine said so
+
+Surveying what else the Schwarzerblitz checkout holds turned up
+`characters/chara_dummy/bones.txt` — the map the game itself uses to bind hitboxes to bones:
+
+    SHOULDER_L  Armature_Arm_R        LEG_L    Armature_Leg_R
+    SHOULDER_R  Armature_Arm_L        LEG_R    Armature_Leg_L
+    ELBOW_L     Armature_Forearm_R    KNEE_L   Armature_Leg_R_001
+    WRIST_L     Armature_Wrist_R      ANKLE_L  Armature_Foot_R
+
+**The `_L` and `_R` suffixes on this rig are mirrored relative to the anatomy the engine uses.** The
+import mapped them literally, so all 166 clips came in mirrored — a right hook playing as a left hook.
+
+The geometry agrees the two sides are a clean mirror pair: measured off `TPose.x`'s rest transforms,
+the left/right axis is Z, with every `_L` bone at negative Z (Arm_L z=-0.908, Leg_L z=-0.327) and
+every `_R` at positive (Arm_R z=+0.861, Leg_R z=+0.275). Nothing in the bone NAMES could have settled
+which side is which; the engine's own binding table is functional ground truth, because it is what
+places the left-shoulder hitbox.
+
+Corrected, and the result reads like an orthodox fighting stance, which the mirrored version did not:
+
+    HIGHPUNCH       RightArm 329°   UPPERCUT   RightArm 351°
+    AXEKICK         RightUpLeg 359° ROUNDHOUSE RightFoot 359°
+    GUARD           LeftArm 334°  (the lead hand carries the guard)
+    WALK            LeftUpLeg with RightForeArm — contralateral arm swing
+
+### What else is in the Schwarzerblitz checkout, measured
+
+    common      38 MB   166 .x animations (imported), 77 png, 32 xml
+    characters  18 MB   71 .x, 42 png, 32 txt — bones.txt, character.txt, hitboxes, addons
+    scenes      24 MB   60 png, 32 jpg, 31 txt, 25 ogg
+    stages      15 MB   13 png, 6 .x, 3 wav
+    voice_clips 3.5 MB  39 wav
+    movelist    384 KB  47 png (input icons)
+    hud         88 KB   14 png
+
+Beyond the animations already imported, the parts worth taking next are **structural, not artistic**:
+`bones.txt` (a rig binding convention), `additionalHitboxes.txt` and `addons.txt` (bone-parented
+hitboxes and attachable objects with parent, scale, offset, rotation and their own new bones — the
+same shape as the weapon and wearable attachment this project already wants), and `character.txt` /
+move definitions for frame data. Those are data formats and conventions rather than art, which is
+also the least licence-encumbered material in there.
+
 ## 2026-09-18 — the animation sources, surveyed against what is actually in them
 
 Owner supplied a list of public fighting-animation repositories to clone and wire up. Cloned and

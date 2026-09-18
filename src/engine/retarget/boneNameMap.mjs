@@ -143,13 +143,30 @@ export const SCHWARZERBLITZ_BONE_NAMES = {
   armaturetorso: 'mixamorigSpine2',
   armatureneck: 'mixamorigNeck',
   armaturehead: 'mixamorigHead',
-  armaturearml: 'mixamorigLeftArm', armaturearmr: 'mixamorigRightArm',
-  armatureforearml: 'mixamorigLeftForeArm', armatureforearmr: 'mixamorigRightForeArm',
-  armaturewristl: 'mixamorigLeftHand', armaturewristr: 'mixamorigRightHand',
-  armaturelegl: 'mixamorigLeftUpLeg', armaturelegr: 'mixamorigRightUpLeg',
-  armaturelegl001: 'mixamorigLeftLeg', armaturelegr001: 'mixamorigRightLeg',
-  armaturefootl: 'mixamorigLeftFoot', armaturefootr: 'mixamorigRightFoot',
-  armaturefootl001: 'mixamorigLeftToeBase', armaturefootr001: 'mixamorigRightToeBase',
+
+  // THE _L AND _R SUFFIXES ARE MIRRORED ON THIS RIG — take the engine's word,
+  // not the bone name. `characters/chara_dummy/bones.txt` is the map the game
+  // itself uses to place hitboxes, and it reads:
+  //
+  //     SHOULDER_L  Armature_Arm_R        LEG_L   Armature_Leg_R
+  //     SHOULDER_R  Armature_Arm_L        LEG_R   Armature_Leg_L
+  //     ELBOW_L     Armature_Forearm_R    KNEE_L  Armature_Leg_R_001
+  //     WRIST_L     Armature_Wrist_R      ANKLE_L Armature_Foot_R
+  //
+  // The geometry agrees that the two sides are a clean mirror pair: measured
+  // off TPose.x's rest transforms, the left/right axis is Z, with every `_L`
+  // bone at negative Z (Arm_L z=-0.908, Leg_L z=-0.327) and every `_R` at
+  // positive (Arm_R z=+0.861, Leg_R z=+0.275).
+  //
+  // Mapping the suffixes literally imports every clip mirrored: a right hook
+  // plays as a left hook. Following bones.txt keeps the authors' anatomy.
+  armaturearmr: 'mixamorigLeftArm', armaturearml: 'mixamorigRightArm',
+  armatureforearmr: 'mixamorigLeftForeArm', armatureforearml: 'mixamorigRightForeArm',
+  armaturewristr: 'mixamorigLeftHand', armaturewristl: 'mixamorigRightHand',
+  armaturelegr: 'mixamorigLeftUpLeg', armaturelegl: 'mixamorigRightUpLeg',
+  armaturelegr001: 'mixamorigLeftLeg', armaturelegl001: 'mixamorigRightLeg',
+  armaturefootr: 'mixamorigLeftFoot', armaturefootl: 'mixamorigRightFoot',
+  armaturefootr001: 'mixamorigLeftToeBase', armaturefootl001: 'mixamorigRightToeBase',
 };
 
 /**
