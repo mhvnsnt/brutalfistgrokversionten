@@ -1917,6 +1917,14 @@ export default function GameBattleArena({
           stageId={stageId ?? 'urban_night'}
           p1AnimTrigger={p1AnimTrigger}
           p2AnimTrigger={p2AnimTrigger}
+          p1AttackDurationSeconds={(() => {
+            const move = p1SMRef.current.getHitboxWindow().move;
+            return move ? move.startup + move.active + move.recovery : undefined;
+          })()}
+          p2AttackDurationSeconds={(() => {
+            const move = p2SMRef.current.getHitboxWindow().move;
+            return move ? move.startup + move.active + move.recovery : undefined;
+          })()}
           p1LocomotionVelocity={p1LocomotionVelocity}
           p2LocomotionVelocity={p2LocomotionVelocity}
           p1X={p1X}
