@@ -31,6 +31,9 @@ export type FighterAnimation =
 
 export interface InputBitmask {
   up: boolean; down: boolean; left: boolean; right: boolean;
+  /** Explicit lateral orbit controls (keyboard Q/E and mapped controllers). */
+  sidestepLeft?: boolean;
+  sidestepRight?: boolean;
   light: boolean; heavy: boolean; guard: boolean;
   grapple?: boolean;
   escape?: boolean;
