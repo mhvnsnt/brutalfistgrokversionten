@@ -4,7 +4,7 @@
   "framework": "nextjs-typescript",
   "primaryRuntime": "vite-pwa",
   "preview": {
-    "command": "npm run dev",
+    "command": "npm run rocket:preview",
     "host": "0.0.0.0",
     "port": 8080,
     "publicPath": "/",
