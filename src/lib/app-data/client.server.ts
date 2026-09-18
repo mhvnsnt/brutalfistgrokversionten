@@ -37,8 +37,7 @@ function connectorsBaseFor(publicHost: string | null): string | null {
   const host = publicHost?.toLowerCase();
   if (!host || isLoopbackHost(host)) return null;
   if (
-    host === "app-builder-testing.com" ||
-    host.endsWith(".app-builder-testing.com")
+    host === "app-builder-testing.com" || host.endsWith(".app-builder-testing.com")
   ) {
     return `https://${CONNECTORS_HOST_STAGING}`;
   }
@@ -191,11 +190,9 @@ function gateSigninUrl(ctx: InboundContext): string | undefined {
 }
 
 const PENDING_TOKEN_MISSING =
-  "the preview has not received the connector token yet; it arrives once " +
-  "the connector grant is approved";
+  "the preview has not received the connector token yet; it arrives once " + "the connector grant is approved";
 const PENDING_TOKEN_REJECTED =
-  "the gate rejected the current preview token; the preview panel pushes a " +
-  "fresh one on its own schedule";
+  "the gate rejected the current preview token; the preview panel pushes a " + "fresh one on its own schedule";
 
 function pendingTokenResult(reason: string): CallToolResult {
   return {
@@ -215,8 +212,7 @@ function missingAuthResult(): CallToolResult {
     ok: false,
     data: null,
     errorMessage:
-      "missing_connector_token: open this app through the edge gate " +
-      "(the server must receive x-connector-access-token on the inbound request)",
+      "missing_connector_token: open this app through the edge gate " + "(the server must receive x-connector-access-token on the inbound request)",
   };
 }
 
@@ -351,8 +347,7 @@ export async function callTool(
       ok: false,
       data: null,
       errorMessage:
-        "connectorType is required: pass the connector type granted to this app " +
-        "(e.g. { connectorType: ConnectorType.GoogleDrive })",
+        "connectorType is required: pass the connector type granted to this app " + "(e.g. { connectorType: ConnectorType.GoogleDrive })",
     };
   }
 
@@ -424,4 +419,4 @@ export type {
   ToolArgs,
   ConnectorTypeName,
 } from "./types.ts";
-export { isLoginRequired, redirectToLoginIfRequired } from "./login.ts";
+// export { isLoginRequired, redirectToLoginIfRequired } from "./login.ts";

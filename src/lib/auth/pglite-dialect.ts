@@ -9,6 +9,7 @@ import {
   type DatabaseIntrospector,
   type Dialect,
   type Driver,
+  type KyselyPlugin,
   type Kysely,
   PostgresAdapter,
   PostgresIntrospector,
