@@ -657,8 +657,17 @@ function FighterMeshInner({
     const fadeDuration = FADE_DURATIONS[inputKey] ?? DEFAULT_FADE;
     const isLoop = LOOP_STATES.has(inputKey);
     const isUrgent = isAttack || ['hit', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple', 'jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey);
+    const isDefensiveInterrupt = ['hit', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple'].includes(inputKey);
     const isSameClip = clipName === committedClipRef.current;
     const now = performance.now() / 1000;
+
+    // State machines can publish idle/walk transitions while an input-driven
+    // attack is still inside its committed move window. Ignore those passive
+    // transitions; the attack action itself owns the mixer until the window
+    // expires. A real hit/KO remains an explicit interrupt.
+    if (!isAttack && !isDefensiveInterrupt && now < attackLockUntilRef.current) {
+      return;
+    }
 
     if (isSameClip && isAttack) {
       if (animationTrigger <= lastPlayedTriggerRef.current) return;
@@ -686,6 +695,9 @@ function FighterMeshInner({
       : null;
     nextAction.setEffectiveTimeScale(attackWindow ? clipDuration / attackWindow : 1);
     nextAction.setEffectiveWeight(1);
+    if (isAttack && attackWindow) {
+      attackLockUntilRef.current = now + attackWindow;
+    }
 
     const seen = new Set<THREE.AnimationAction>();
     for (const name of availableClips) {
