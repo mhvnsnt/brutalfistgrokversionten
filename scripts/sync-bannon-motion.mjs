@@ -36,48 +36,13 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { RUNTIME_BONE_NAMES, resolveRuntimeBone } from '../src/engine/retarget/boneNameMap.mjs';
+
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const OUTPUT = `${ROOT}/src/generated/BannonMotionBank.generated.ts`;
 const PINNED_COMMIT = '81d3b5da72da4dc2b057c8b3989226158c066240';
 const CLIPS_PATH = 'assets/moves/clips';
 const RAW_BASE = `https://raw.githubusercontent.com/mhvnsnt/Bannon/${PINNED_COMMIT}/${CLIPS_PATH}/`;
-
-/**
- * The bones src/engine/retarget/BannonMotionBank.ts turns into tracks.
- * Keep in step with QUATERNION_BONE_NAMES there — a bone missing from this
- * list simply never reaches the runtime, so the sync reports its coverage.
- */
-const RUNTIME_BONE_NAMES = [
-  'mixamorigHips', 'mixamorigSpine', 'mixamorigSpine1', 'mixamorigSpine2',
-  'mixamorigNeck', 'mixamorigHead',
-  'mixamorigLeftShoulder', 'mixamorigLeftArm', 'mixamorigLeftForeArm', 'mixamorigLeftHand',
-  'mixamorigRightShoulder', 'mixamorigRightArm', 'mixamorigRightForeArm', 'mixamorigRightHand',
-  'mixamorigLeftUpLeg', 'mixamorigLeftLeg', 'mixamorigLeftFoot', 'mixamorigLeftToeBase',
-  'mixamorigRightUpLeg', 'mixamorigRightLeg', 'mixamorigRightFoot', 'mixamorigRightToeBase',
-];
-const RUNTIME_BONES = new Set(RUNTIME_BONE_NAMES);
-
-/**
- * Collapse a Mixamo namespace onto the canonical bone name.
- *
- * Exporters stamp the rig's namespace into every bone: Maya/FBX writes
- * `mixamorig:Hips`, and Mixamo auto-numbers a second rig as `mixamorig9Hips`.
- * MEASURED over the indexed bank: 50 clips were rejected on this alone and
- * animated nothing — CH06_NONPBR (22 bones) plus the 49 `mixamorig:` clips,
- * which are the project's own ZONE_ ring transitions, the LOCO_, STANCE_ and
- * GUARD_ sets, the four TAUNT_ entries, and the owner's own TIGER_FEINT_KICK,
- * JUNGLE_JUICE and TZ_ captures with their __RECV halves.
- *
- * Verified before applying: no clip in the bank has two distinct raw bones that
- * collapse onto the same runtime bone (0 collisions), so this cannot merge an
- * attacker's and a receiver's skeleton. Already-canonical names are untouched.
- *
- * The same rule is applied in src/engine/retarget/BannonMotionBank.ts so a clip
- * that reaches makeClip by any other route binds identically.
- */
-function canonicalBoneName(name) {
-  return name.replace(/^mixamorig[0-9:_\-.\s]*(?=[A-Z])/, 'mixamorig');
-}
 
 /** Local checkouts of mhvnsnt/Bannon this workspace may already have attached. */
 function localClipDirCandidates() {
@@ -106,11 +71,13 @@ async function fetchJson(url) {
  */
 function pruneClip(clip, stats) {
   const keys = [];
+  /** runtime bone -> [min, max] per Euler component, to tell motion from a held pose */
+  const span = new Map();
   for (const key of clip?.keys ?? []) {
     const bones = {};
     for (const [rawName, rotation] of Object.entries(key?.bones ?? {})) {
-      const name = canonicalBoneName(rawName);
-      if (!RUNTIME_BONES.has(name)) continue;
+      const name = resolveRuntimeBone(rawName);
+      if (!name) continue;
       if (name !== rawName) stats.renamedBones.add(`${rawName} -> ${name}`);
       // 73 of 48,048 source entries omit a component (4 clips). THREE.Euler
       // already defaults a missing argument to 0, so writing the 0 explicitly
@@ -119,11 +86,23 @@ function pruneClip(clip, stats) {
       if (rotation.rx === undefined || rotation.ry === undefined || rotation.rz === undefined) {
         stats.filledComponents++;
       }
+      const seen = span.get(name);
+      const next = [bones[name].rx, bones[name].ry, bones[name].rz];
+      if (!seen) span.set(name, [next.slice(), next.slice()]);
+      else for (let i = 0; i < 3; i++) {
+        if (next[i] < seen[0][i]) seen[0][i] = next[i];
+        if (next[i] > seen[1][i]) seen[1][i] = next[i];
+      }
       stats.seen.add(name);
     }
     keys.push({ t: key.t, bones });
   }
-  return { dur: clip?.dur ?? 0, keys };
+  // ~2 degrees. Below that a bone is holding a pose, not animating.
+  let movingBones = 0;
+  for (const [min, max] of span.values()) {
+    if (Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]) > 0.035) movingBones++;
+  }
+  return { clip: { dur: clip?.dur ?? 0, keys }, boneCount: span.size, movingBones };
 }
 
 async function main() {
@@ -148,7 +127,7 @@ async function main() {
     .filter(([, meta]) => meta && typeof meta.file === 'string' && meta.file.endsWith('.json'));
 
   const bank = {};
-  const stats = { seen: new Set(), filledComponents: 0, emptyClips: [], renamedBones: new Set() };
+  const stats = { seen: new Set(), filledComponents: 0, emptyClips: [], staticClips: [], renamedBones: new Set() };
   const concurrency = localDir ? 16 : 8;
   let cursor = 0;
   const skipped = [];
@@ -170,8 +149,9 @@ async function main() {
       const i = cursor++;
       const [id, meta] = entries[i];
       try {
-        const clip = pruneClip(await readClip(meta.file), stats);
-        if (!clip.keys.some((key) => Object.keys(key.bones).length > 0)) stats.emptyClips.push(id);
+        const { clip, boneCount, movingBones } = pruneClip(await readClip(meta.file), stats);
+        if (boneCount === 0) stats.emptyClips.push(id);
+        else if (movingBones <= 1) stats.staticClips.push(`${id} (${movingBones}/${boneCount} bones move)`);
         bank[id] = clip;
       } catch (error) {
         skipped.push(id);
@@ -212,11 +192,25 @@ async function main() {
   const absent = RUNTIME_BONE_NAMES.filter((bone) => !stats.seen.has(bone));
   if (absent.length) console.warn(`[motion-sync] runtime bones absent from every clip: ${absent.join(', ')}`);
   if (stats.renamedBones.size) {
-    const prefixes = new Set([...stats.renamedBones].map((pair) => pair.split(' -> ')[0].match(/^mixamorig[^A-Z]*/)[0]));
-    console.log(`[motion-sync] collapsed Mixamo namespaces onto canonical bone names: ${[...prefixes].join(', ')}`);
+    const vocabularies = new Set(
+      [...stats.renamedBones].map((pair) => {
+        const raw = pair.split(' -> ')[0];
+        const mixamo = raw.match(/^mixamorig[^A-Z]*/);
+        return mixamo ? `${mixamo[0]}*` : `${raw.split('_')[0]}_*`;
+      }),
+    );
+    console.log(`[motion-sync] translated ${stats.renamedBones.size} source bone names onto the fight rig from: ${[...vocabularies].join(', ')}`);
   }
   if (stats.filledComponents) {
     console.log(`[motion-sync] ${stats.filledComponents} source rotations omitted a component; written as an explicit 0 (THREE.Euler's own default).`);
+  }
+  if (stats.staticClips.length) {
+    // A clip can bind every bone and still animate nothing. Most of these are
+    // bind-pose character exports (Y_BOT, the CH##_NONPBR reference models) and
+    // are correctly inert, but a named MOVE in this list is a broken capture.
+    console.warn(
+      `[motion-sync] ${stats.staticClips.length} cached clips bind bones but hold a pose: ${stats.staticClips.join(', ')}`,
+    );
   }
   if (stats.emptyClips.length) {
     console.warn(

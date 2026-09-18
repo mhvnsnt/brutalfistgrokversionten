@@ -1,5 +1,72 @@
 # Brutal Fist — dev conversation
 
+## 2026-09-18 — the last dead clips: one translation layer, and the owner's own map
+
+The previous entry left 59 clips on a `J_` rig and one outlier. Rather than derive the cross-rig
+correspondence from the bone names, found that **the owner had already measured it**: `ALT_BONE_NAMES`
+in `mhvnsnt/Bannon` `tools/mocap/move_sheet.py`, written against a reference skeleton, with a comment
+recording the identical failure — *"Feeding those names to a Mixamo reference skeleton matches nothing,
+so every key came back as the untouched rest pose."* Same bug, same repo, already solved once.
+
+It settles the two correspondences a name alone does not: `J_Clavicle` is the clavicle and `J_Shoulder`
+is the **upper arm**; `J_Knee` is the **shin** with the thigh above it. Extended for the spelling this
+bank actually uses (`J_Leg`/`J_Foot` where the source map says `J_Thigh`/`J_Ankle`) plus `J_Toe`.
+
+A name map alone would not be enough across two rigs — a rotation is relative to its bone's rest
+orientation. It is correct here only because the clip is then re-based onto the target's bind pose by
+`applyBindRelativeQuaternionTracks` (`q_bind x q_src(0)^-1 x q_src(t)`), the project's locked contract.
+
+**`src/engine/retarget/boneNameMap.mjs` is now the single translation layer**, imported by the runtime
+(`BannonMotionBank.ts`) and the build-time sync alike, so the cache and the runtime cannot drift. The
+repo already imports a shared `.mjs` into TypeScript this way (`src/lib/db.ts`).
+
+### THE MAP SHIPPED WITH A LANDMINE IN IT, AND THE COLLISION CHECK CAUGHT IT
+
+The source map contains `'root': 'mixamorighips'`. Measured across this bank: **46 clips carry BOTH
+`Root` and `J_Hips`**, and **0 carry `Root` without a real hips bone**. In `SUPLEX`, `Root` sweeps a
+full 2π on rx while `J_Hips` reads like a pelvis — `Root` is the world transform. Taking it as the
+pelvis would have spun the whole body, and *which of the two won would depend on key iteration order*.
+Dropped, with the measurement written next to it. Re-verified: **0 collisions** bank-wide.
+
+This is the second time the collision check earned its place. Run it before adding any bone mapping.
+
+    clips building real tracks     141 -> 200 of 201
+    clips building zero tracks      60 -> 1  (SHELBYIKRIG_ARREGLADO, its own convention)
+    clips with all 22 bones                 151
+    generated cache                4.1 MB -> 5.8 MB (still 7.6x under the original 44.4 MB)
+    client combat chunk            2,428 kB -> 5,056 kB (vs 36,476 kB before this arc)
+
+Verified as real angular travel per bone, not as tracks that merely exist: CARTWHEEL 22/22 moving,
+peak 174° on Hips; SUPLEX 22/22, 171°; TOMBSTONE 22/22, 171°; CROTCHCHOP 22/22, 92° on RightHand;
+TAUNT 22/22, 116°. `BOXING` unchanged at 22/22 as the control.
+
+`scripts/bone-name-map.test.mjs` locks all of it, including the `Root` guard.
+
+### A SECOND DEFECT CLASS THE FIX EXPOSED — a clip can bind every bone and still hold a pose
+
+With the naming fixed, 9 clips bind bones and animate nothing. Eight are bind-pose character exports
+(`Y_BOT`, `LOLA_B_STYPEREK`, `PASSIVE_MARKER_MAN`, `PALADIN_J_NORDSTROM`, `PUMPKINHULK_L_SHAW`,
+`CH06/CH24/CH44_NONPBR`) — Mixamo's own reference models, correctly inert.
+
+**The ninth is a real move: `HURRICANE_KICK`.** Measured at source: every bone reads a span of exactly
+0 on all three axes except the hips, which sweep ~180° on all three. A frozen body spinning in place.
+It is untouched by any change in this arc — it is canonical `mixamorig*` and always resolved — so this
+is a pre-existing defect in the source capture.
+
+It matters because `HURRICANE_KICK` is the **first** alias for both `attack_2` and `attack_rk`, and
+`FighterMesh` resolves a state by first alias whose *name* is present, never checking for motion. So
+heavy kick has been a spinning statue. **Alias order deliberately left alone** — which move a state
+plays is the owner's call, not a bug fix. The sync now warns on every build, naming any clip that binds
+bones but holds a pose, so this class cannot go quiet again.
+
+### Still open
+
+- `HURRICANE_KICK` needs a re-capture, or `attack_2`/`attack_rk` need a different first alias.
+- `SHELBYIKRIG_ARREGLADO` uses a third convention again (`Foot_L`, `BreastL`, `RingFinger_R002`);
+  one clip, left unmapped rather than guessed at.
+- 770 clip files in the checkout are still absent from `index.json` and unreachable by the game.
+- `ZONE_SLIDE_IN_TEST` is indexed with no file behind it.
+
 ## 2026-09-18 — 50 clips animated nothing because of a colon in the bone names
 
 The previous entry left 110 of 201 indexed clips building ZERO tracks. Measured what skeleton they
