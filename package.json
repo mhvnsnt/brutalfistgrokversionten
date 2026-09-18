@@ -6,18 +6,21 @@
   "overrides": {
     "nf3": "0.3.17",
     "three-mesh-bvh": "$three-mesh-bvh",
-    "@react-three/fiber>react": "^19.0.0",
-    "@react-three/fiber>react-dom": "^19.0.0"
+    "jiti": "^2.7.0",
+    "@react-three/fiber": {
+      "react": "^19.0.0",
+      "react-dom": "^19.0.0"
+    }
   },
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0 --port 8080",
-    "rocket:preview": "ROCKET_PREVIEW=1 next dev --hostname 0.0.0.0 --port 8080",
-    "next:dev": "next dev --hostname 0.0.0.0 --port 3000",
-    "next:build": "next build",
+    "dev": "next dev --webpack --hostname 0.0.0.0 --port 8080",
+    "rocket:preview": "ROCKET_PREVIEW=1 next dev --webpack --hostname 0.0.0.0 --port 8080",
+    "next:dev": "next dev --webpack --hostname 0.0.0.0 --port 3000",
+    "next:build": "next build --webpack",
     "next:start": "next start --hostname 0.0.0.0 --port 3000",
-    "build": "next build",
+    "build": "next build --webpack",
     "db:migrate": "node scripts/migrate.mjs",
-    "build:dev": "next build",
+    "build:dev": "next build --webpack",
     "preview": "next start --hostname 0.0.0.0 --port 8080",
     "preview:restart": "node scripts/preview.mjs restart",
     "preview:stop": "node scripts/preview.mjs stop",
