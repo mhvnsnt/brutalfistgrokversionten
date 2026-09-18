@@ -158,14 +158,17 @@ export default defineConfig(({ command, isPreview }) => ({
     host: "0.0.0.0",
     port: 8080,
     strictPort: true,
-    // Rocket embeds this dev server behind its own preview proxy. A Vite
-    // HMR websocket cannot reliably traverse that proxy and can leave the
-    // preview shell waiting forever. The game does not need HMR to play.
+    // Rocket embeds this behind its own preview proxy. `hmr: false` is kept
+    // for any dev-server use, but it is NOT sufficient on its own - MEASURED:
+    // a Vite DEV server still injects `<script src="/@vite/client">` into the
+    // HTML with hmr disabled, and that client still tries to open a socket.
+    // That is why `rocket:preview` serves the BUILT bundle instead (below).
     ...(rocketPreview ? { hmr: false } : {}),
   },
   preview: {
-    host: "127.0.0.1",
-    port: 8081,
+    // Rocket's contract is 0.0.0.0:8080; everything else previews on 8081.
+    host: rocketPreview ? "0.0.0.0" : "127.0.0.1",
+    port: rocketPreview ? 8080 : 8081,
     strictPort: true,
   },
   resolve: {
@@ -185,7 +188,11 @@ export default defineConfig(({ command, isPreview }) => ({
     grokPwaPlugin(),
     tailwindcss(),
     ...(rocketPreview ? [] : [tanstackStart()]),
-    ...(command === "build" || isPreview
+    // Nitro/Vercel is the deploy target for the real build. Rocket's preview
+    // wants a plain static SPA it can serve with no server runtime, so the
+    // server preset is skipped when ROCKET_PREVIEW is set - otherwise the
+    // build emits only `.vercel/output` and there is no static shell to serve.
+    ...((command === "build" || isPreview) && !rocketPreview
       ? [
           nitro({
             preset: "vercel",

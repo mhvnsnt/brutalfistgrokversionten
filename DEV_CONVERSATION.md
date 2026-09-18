@@ -1,5 +1,63 @@
 # Brutal Fist — dev conversation
 
+## 2026-09-18 — the infinite "Generating preview" was a Turbopack panic on the NEXT surface
+
+Owner: the Rocket preview "still infinitely says generating the preview ... and never shows or loads".
+Roughly a dozen commits had gone at this from the Vite side (pin the port, standalone entry, error
+boundary, skip PGLite, disable HMR). None of it helped, because **Rocket is not running the Vite dev
+server** — `rocket.config.json` declares `"framework": "nextjs-typescript"`, and Rocket's own status
+said it had just fixed "the Next.js dev script". The failure was on the Next path the whole time.
+
+MEASURED, in order, each fix exposing the next:
+
+**1. `npm run next:dev` answered `/` with HTTP 500 and a FATAL Turbopack panic.**
+
+    Failed to write app endpoint /page
+    Caused by: the chunking context (unknown) does not support external modules
+               (request: node:async_hooks)
+
+The chain: `app/page.tsx` -> `src/App` -> `src/lib/app-data/readiness.ts` -> `createServerFn` from
+`@tanstack/react-start` -> `@tanstack/start-storage-context` -> `node:async_hooks`. Under Vite the
+TanStack Start plugin compiles server functions out of the client build, so the Node builtin never
+reaches the browser. **Turbopack has no such transform**, tries to chunk a Node builtin for a browser
+context, and panics. A panic means the route never compiles — so a host embedding it waits forever
+rather than being shown an error. That is the infinite preview, exactly.
+
+`src/shims/async-hooks-browser.ts` + a `turbopack.resolveAlias` in `next.config.ts`. Scoped to the
+Next surface only; the Vite runtime does not read that file and is untouched.
+
+**2. With the route compiling, `/` still 500'd — "useAuth must be used within AuthProvider".**
+`src/App` calls `useAuth` at its top level. `src/rocket-main.tsx` wraps the app in `<AuthProvider>`;
+`app/page.tsx` rendered `<App />` bare. Wrapped it.
+
+**3. Result: `GET / 200`, and the page renders in a real browser** — load 287 ms, readyState complete,
+body reads "SCHWARZERBLITZ RUNTIME BRUTAL FIST", **0 page errors**.
+
+### The Vite preview was also serving something the CI check rejects
+
+Separately measured: `rocket:preview` ran `vite dev`, and the HTML it served still contained
+`<script type="module" src="/@vite/client">` **despite `server.hmr: false`**. Disabling HMR does not
+stop a Vite DEV server injecting its client — nothing short of not using the dev server does. The CI
+step added in `2ada359` greps that exact URL for `@vite/client` and fails if present, so that check
+was red against the very commit meant to satisfy it.
+
+`rocket:preview` now builds and serves the BUILT bundle (`rocket:build` + `vite preview`), and
+`vite.config.ts` skips the Nitro/Vercel preset under `ROCKET_PREVIEW` so the build emits a plain
+static SPA instead of only `.vercel/output`. Measured: serves 200 in 1.5 ms, `id="root"` present,
+**0 occurrences of `@vite/client`**.
+
+### Ruled out by measurement, so nobody re-chases them
+
+The app itself was never broken. Direct load: 545 ms, `#root` populated, "BRUTAL FIST PRESS START",
+0 page errors. **Embedded in a cross-origin iframe** (how a preview host shows it): renders the same,
+readyState complete, and there is no `X-Frame-Options` or CSP `frame-ancestors` blocking embedding.
+`npm ci` resolves, and `npm run build` completes in 30 s.
+
+Still open and cosmetic: `BannonClipJsonAdapter.ts` logs a module-not-found for `fs`/`url` under
+Turbopack. Those paths are already behind `await import()` in a try/catch and are never called in the
+browser, and the route returns 200 regardless — but a "module not found" in a preview log is the kind
+of thing that sends the next person chasing the wrong file.
+
 ## 2026-09-18 — the Schwarzerblitz import was mirrored, and its own engine said so
 
 Surveying what else the Schwarzerblitz checkout holds turned up
