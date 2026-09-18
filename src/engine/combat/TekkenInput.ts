@@ -64,7 +64,7 @@ export function createTekkenStick() {
   };
 
   return {
-    resolve(held: { left: boolean; right: boolean; up: boolean; down: boolean }, now: number): TekkenCommand {
+    resolve(held: { left: boolean; right: boolean; up: boolean; down: boolean; sidestepLeft?: boolean; sidestepRight?: boolean }, now: number): TekkenCommand {
       const F = rise(f, held.right, now);
       const B = rise(b, held.left, now);
       const U = rise(u, held.up, now);
@@ -96,6 +96,9 @@ export function createTekkenStick() {
 
       const sidestepUp = now < sidestepUpUntil;
       const sidestepDown = now < sidestepDownUntil;
+      // Q/E are explicit lateral orbit inputs for keyboard/controller maps.
+      // Up/down double-taps remain the classic Tekken camera-relative step.
+      const lateralSidestep = held.sidestepLeft ? -1 : held.sidestepRight ? 1 : 0;
       const jumping = now < jumpUntil;
       const running = f.down && now < dashUntil && now - f.heldSince > HOLD_RUN_MS;
       const runBack = b.down && now < backdashUntil && now - b.heldSince > HOLD_RUN_MS;
@@ -109,7 +112,8 @@ export function createTekkenStick() {
       else if (b.down && !f.down) forward = -1;
 
       let strafe = 0;
-      if (sidestepUp) strafe = -1;
+      if (lateralSidestep) strafe = lateralSidestep;
+      else if (sidestepUp) strafe = -1;
       else if (sidestepDown) strafe = 1;
 
       return {
