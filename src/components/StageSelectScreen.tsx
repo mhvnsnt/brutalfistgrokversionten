@@ -417,7 +417,7 @@ export default function StageSelectScreen({
       </div>
 
       {/* ── BOTTOM UI PANEL ── */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 pb-safe">
+      <div className="absolute bottom-0 left-0 right-0 z-20 pb-safe max-h-[52dvh] overflow-y-auto overscroll-contain">
         {/* Gradient fade up */}
         <div
           className="h-24 pointer-events-none"
@@ -426,9 +426,9 @@ export default function StageSelectScreen({
           }}
         />
 
-        <div className="bg-black/90 px-4 pt-3 pb-6">
+        <div className="bg-black/90 px-4 pt-3 pb-6 min-h-0">
           {/* Thumbnail row */}
-          <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
+          <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide touch-pan-x">
             {STAGES.map((stage, idx) => (
               <StageThumbnail
                 key={stage.id}
