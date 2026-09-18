@@ -426,6 +426,7 @@ function FighterMeshInner({
   showHitbox?: boolean;
   hitboxGeometry?: FighterMeshProps['hitboxGeometry'];
   animationTrigger?: number;
+  attackDurationSeconds?: number;
   locomotionVelocity?: { forward: number; strafe: number };
   hitStopActive?: boolean;
   onRigDiagnostic?: (report: RigDiagnosticReport) => void;
@@ -444,6 +445,8 @@ function FighterMeshInner({
   /** The resolved clip name of the last state we committed to */
   const committedClipRef = useRef<string | null>(null);
   const lastPlayedTriggerRef = useRef(0);
+  /** Attack owns the mixer until its authored state-machine window expires. */
+  const attackLockUntilRef = useRef(0);
 
   // ── Bone hitbox system ────────────────────────────────────────────────────
   const boneHitboxRef = useRef<BoneHitboxSystem>(new BoneHitboxSystem());
