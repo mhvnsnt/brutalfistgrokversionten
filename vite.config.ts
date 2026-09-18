@@ -158,6 +158,10 @@ export default defineConfig(({ command, isPreview }) => ({
     host: "0.0.0.0",
     port: 8080,
     strictPort: true,
+    // Rocket embeds this dev server behind its own preview proxy. A Vite
+    // HMR websocket cannot reliably traverse that proxy and can leave the
+    // preview shell waiting forever. The game does not need HMR to play.
+    ...(rocketPreview ? { hmr: false } : {}),
   },
   preview: {
     host: "127.0.0.1",
