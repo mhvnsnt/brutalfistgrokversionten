@@ -1,5 +1,86 @@
 # Brutal Fist — dev conversation
 
+## 2026-09-18 — BANNON's skin and trunks were painted from the same texels
+
+Owner: "that model of Bannon, it has like parts on the texture ... part of the skin is on the trunks,
+part of the trunks is on the skin, it's like making weird jacket like vein or lightning like crack
+strikes all over him and he's not supposed to look like that." He was exactly right, and the cause is
+the UV map, not the texture or the rig.
+
+**MEASURED, with a control group** (`scripts/uv-audit.mjs`, banked):
+
+    model                     UV area/sheet   overlap   max tris/texel   stretched
+    BANNON_rigged.glb BEFORE      27.81x       98.6%          83           13.58%
+    VIPER.glb      (control)       0.64x        0.2%           3            0.26%
+    BRUTUS.glb     (control)       0.64x        0.4%           5              -
+    BANNON.glb     (donor)         0.64x        0.1%           5              -
+
+98.6% of the body's texels were shared by two or more triangles, up to **83 triangles on one texel**,
+and the sheet was covered nearly 28 times over. Different body parts were literally reading the same
+pixels. No texture can show two things at one texel, so this was never fixable by dilating, repacking
+or re-baking the image — and the "cracks" were island edges, not paint.
+
+`BANNON_rigged.glb` was the only model in the set with this defect, and it is the default player model.
+
+### The correct UVs already existed
+
+`BANNON.glb` — the 15-part rigid model `BANNON_rigged` was sewn from — carries the **same atlas**,
+byte-identical (md5 `6f520f2dcdd9df59bef0f48c80d96631`), with a clean unwrap and the same geometry in
+the same space (bbox 0.414 x 1.88 x 0.887 against 0.413 x 1.88 x 0.888).
+
+### WHY ONE UV PER VERTEX CANNOT FIX IT — the actual mechanism
+
+First attempt wrote one repaired UV per target vertex. **Overlap went 98.6% -> 99.1%: no better.**
+Measuring the donor explained why. Every one of its 15 parts spans nearly the whole sheet
+(chest u[0.003,1.000] v[0,1], head u[0.005,0.991] v[0,1]) while contributing only ~0.03-0.09 of a
+sheet in area — the atlas is hundreds of small islands interlocked across the whole sheet, so UVs are
+per-triangle-CORNER and the donor duplicates vertices along every island boundary to carry them.
+
+The sew welded those duplicates back together. `sew_rig` fuses vertices sharing a position and
+agreeing on normal, and **does not require a matching UV**, so a vertex that belonged to five islands
+came out holding one. That information does not fit in one UV per vertex.
+
+So `scripts/fix-uv-from-donor.mjs` **splits instead of overwrites**: each target triangle is matched to
+the donor triangle at the same place and facing the same way, each corner takes that donor corner's UV,
+and a vertex is duplicated once per distinct UV it needs. Position, normal, JOINTS_0 and WEIGHTS_0 are
+copied verbatim from the vertex being split, so every copy keeps its skinning.
+
+**A bijection, not three independent nearest-corner lookups.** Assigning each corner its own nearest
+donor corner lets two corners pick the same one, which collapses the UV triangle to zero area and
+renders it as a flat speck of whatever colour sits there. Measured: 36.18% of triangles came out more
+than 20x off the median uv/world area ratio. Scoring all six corner permutations and taking the best:
+**36.18% -> 1.26%** (VIPER 0.26%).
+
+    BANNON_rigged.glb   UV area 27.81x -> 0.63x   overlap 98.6% -> 18.5%   max tris/texel 83 -> 17
+                        stretched 13.58% -> 1.26%   vertices 14,050 -> 23,885   4.2 MB -> 5.65 MB
+
+**Rigging, scale and orientation are untouched by construction** — only the vertex buffer and indices
+are rewritten, from the model's own data. Verified in the running game, not just on paper:
+`SkinnedMesh "BANNON_SEWN" bound to skeleton with 58 bones`, 1397/1397 channels resolved across 30
+clips, `height=1.850 forwardCorrection=0° floorY=0.0000` — identical to before — verdict PASS, 0 page
+errors, and the body deforms correctly mid-attack.
+
+**Looked at it, before and after** (owner law): the lightning-crack strikes across the chest, abs, arms
+and thighs are gone, the trunks are solid black instead of smeared with skin, and the knee pads, boots
+and wrist tape are clean.
+
+HONEST RESIDUAL, not buried: about a dozen small dark specks remain on the abs and thighs — individual
+triangles whose nearest donor triangle belongs to a neighbouring island, because the sewn mesh and the
+donor are not the same triangulation (17,998 vs 17,984). Overlap at 18.5% is still above a healthy
+model's 0.2%. The file also grew 1.4 MB because the repaired attributes are written uncompressed and
+the superseded meshopt buffer views are left in place; stripping those is worth doing before this ships
+in the APK bundle.
+
+### Also fixed on the way: the arena reported MISSING_CLIP for a clip that was playing
+
+Driving the real screen, state 1 of 12 showed "MISSING_CLIP — no animation for this state" while states
+2-12 were fine. The load path hardcoded `idle`, played it, and never called `onClipChange`; the
+state-change effect is what reports, and it only runs when the state CHANGES — the model arriving is a
+ref mutation, which re-renders nothing. So the panel claimed no animation existed for the state whose
+clip was running the whole time. A false "no animation" in the screen built to judge animation health
+is the mirror of the false-success problem this project keeps hitting. The load path now resolves and
+reports whatever state is actually being shown, and claims it so the effect does not restart it.
+
 ## 2026-09-18 — the gate could not see a frozen clip; now it can
 
 `AnimationIntegrityGate` counts clips, tracks, resolved tracks and bone travel. **None of those can
