@@ -1,0 +1,1 @@
+var e=Math.PI/4,t=e,n=-e,r=-Math.PI/4,i=-3*Math.PI/4,a=Math.PI,o=1.05,s=.02;function c(e,a=!1){return a?e===-1?i:r:e===1?t:n}export{c as i,s as n,o as r,a as t};
