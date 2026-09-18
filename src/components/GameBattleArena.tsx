@@ -2379,7 +2379,7 @@ export default function GameBattleArena({
           {!ko && <MobileControls inputRef={inputRef} />}
 
           {/* Controls legend */}
-          <div className="absolute bottom-2 left-3 z-30 text-[7px] text-zinc-500 space-y-0.5 pointer-events-none">
+          <div className="absolute bottom-safe-1 left-3 z-30 text-[7px] text-zinc-500 space-y-0.5 pointer-events-none pr-2">
             <div>ARROWS: MOVE · Z/U: 1(LP) · X/I: 2(RP) · J: 3(LK) · K: 4(RK) · C: GUARD · V: GRAPPLE · Q/E: SIDESTEP</div>
             <div className="text-zinc-600">COMBOS: U+J=THROW · I+K=THROW · I+J=HEAT BURST · →+C=CMD THROW · SPECIAL: L+L+H or H+H+L</div>
             <div className="text-purple-500/60">KI CHARGE: U+X+J+K (1+2+3+4) — NEXT HIT = COUNTER · NO BLOCK</div>
