@@ -10,6 +10,8 @@ export const FIGHTING_MOTION_SOURCES = [
     id: 'tekken3-recompiled',
     repository: 'mhvnsnt/BrutalfistbaseofTekken3Recompiled',
     kind: 'tekken',
+    romSourceManifest: 'config/tekken3-local-source.json',
+    romSourceEnv: 'TEKKEN3_SOURCE_DIR',
   },
   {
     id: 'schwarzer-blitz',
