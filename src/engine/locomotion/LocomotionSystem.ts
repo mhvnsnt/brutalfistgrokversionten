@@ -197,6 +197,7 @@ export class LocomotionSystem {
     dt: number,
     isDashing: boolean,
     isBackdashing: boolean,
+    target?: { x: number; z: number },
   ): void {
     if (this.state.mode === 'rootMotion') {
       this.updateRootMotion(dt);
@@ -204,7 +205,7 @@ export class LocomotionSystem {
     }
 
     // Programmatic locomotion
-    this.updateProgrammatic(forwardInput, strafeInput, dt, isDashing, isBackdashing);
+    this.updateProgrammatic(forwardInput, strafeInput, dt, isDashing, isBackdashing, target);
   }
 
   private updateProgrammatic(
@@ -213,15 +214,19 @@ export class LocomotionSystem {
     dt: number,
     isDashing: boolean,
     isBackdashing: boolean,
+    target?: { x: number; z: number },
   ): void {
     const maxSpeed = isDashing ? DASH_SPEED : isBackdashing ? BACKDASH_SPEED : WALK_SPEED;
     const strafeMax = SIDESTEP_SPEED;
 
     // Target velocities from input
+    const hasSidestep = Math.abs(strafeInput) > 0.1;
     const targetVX = Math.abs(forwardInput) > 0.1
       ? Math.sign(forwardInput) * maxSpeed * this.state.facing
-      : 0;
-    const targetVZ = Math.abs(strafeInput) > 0.1
+      : hasSidestep && target
+        ? this.targetedSidestepVX(target.x)
+        : 0;
+    const targetVZ = hasSidestep
       ? Math.sign(strafeInput) * strafeMax
       : 0;
 
@@ -264,6 +269,21 @@ export class LocomotionSystem {
     if (progress >= 1.0) {
       this.endRootMotionAttack();
     }
+  }
+
+  /**
+   * Tekken-style sidestep is not a straight conveyor-belt move on Z.
+   * While circling, bias a small amount of X velocity toward the opponent so
+   * the fighter remains oriented around the opponent instead of drifting away
+   * on a parallel rail. The bias is deliberately capped: it is a targeting
+   * correction, not an auto-approach or homing attack.
+   */
+  private targetedSidestepVX(targetX: number): number {
+    const dx = targetX - this.state.rootX;
+    const distance = Math.abs(dx);
+    if (distance < 0.35) return 0;
+    const correction = Math.min(0.85, distance * 0.45);
+    return Math.sign(dx) * correction;
   }
 
   private smoothVel(current: number, target: number, dt: number): number {
