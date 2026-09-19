@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import * as THREE from 'three';
 
 import { makeClipBindRelative } from './BindRelativeMotion.ts';
-import { neutralizeRootRestQuaternion } from './neutralizeRootMotion.ts';
+import { neutralizeHipYaw, neutralizeRootRestQuaternion } from './neutralizeRootMotion.ts';
 import {
   SCHWARZERBLITZ_REST_CLIP,
   schwarzerblitzSourceRest,
@@ -124,4 +124,32 @@ test('the roster rigs are NOT in raw Mixamo space — which is why the Mixamo re
   assert.ok(Math.abs(Math.abs(leg.z) - Math.PI) < 0.05, `Mixamo leg rest rz ${leg.z} is not +/-pi`);
   const arm = rest.get('mixamorigLeftArm')!;
   assert.ok(arm.angleTo(new THREE.Quaternion()) < 0.5, 'Mixamo arms rest close to identity (T-pose)');
+});
+
+test('hip-yaw neutralisation removes the authored facing but keeps a spin', () => {
+  // RENDERED: zeroing every frame's hips yaw left HURRICANE_KICK — the
+  // spinning kick — holding one pose with the leg stuck out sideways for all
+  // 24 frames. The spin IS hips yaw. 71 radians of motion were in the clip
+  // (BOXING has 54); none of it reached the body.
+  const AUTHORED_OFFSET = -0.75; // our IDLE.json's baked facing
+  const yaws = [0, 1.0, 2.0].map((y) => y + AUTHORED_OFFSET);
+  const values: number[] = [];
+  for (const y of yaws) {
+    const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.15, y, 0, 'YXZ'));
+    values.push(q.x, q.y, q.z, q.w);
+  }
+  const clip = new THREE.AnimationClip('SPIN', 1, [
+    new THREE.QuaternionKeyframeTrack('mixamorigHips.quaternion', [0, 0.5, 1], values),
+  ]);
+  neutralizeHipYaw(clip);
+
+  const out = clip.tracks[0].values;
+  const read = (i: number) => {
+    const q = new THREE.Quaternion(out[i * 4], out[i * 4 + 1], out[i * 4 + 2], out[i * 4 + 3]);
+    return new THREE.Euler().setFromQuaternion(q, 'YXZ');
+  };
+  assert.ok(Math.abs(read(0).y) < 1e-6, 'frame 0 must land on the instance facing');
+  assert.ok(Math.abs(read(1).y - 1.0) < 1e-5, 'mid-clip yaw change must survive');
+  assert.ok(Math.abs(read(2).y - 2.0) < 1e-5, 'the full turn must survive');
+  assert.ok(Math.abs(read(1).x - 0.15) < 1e-5, 'lean is untouched');
 });

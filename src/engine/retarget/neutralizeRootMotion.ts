@@ -41,16 +41,39 @@ export function stripRootPositionTracks(clip: THREE.AnimationClip): THREE.Animat
   return clip;
 }
 
-/** Zero hip yaw so the instance yaw is the only facing. Keeps X/Z lean. */
+/**
+ * Remove the hip yaw the clip was AUTHORED with, keep the yaw it PERFORMS.
+ *
+ * The instance owns facing, so a constant yaw baked into a clip stacks with it
+ * and the fighter ends up facing away from his opponent while his neck still
+ * looks at him (our IDLE.json rests at hips.ry ~= -0.75). That offset has to
+ * go.
+ *
+ * BUT ZEROING IT OUTRIGHT DELETES EVERY SPIN. Measured and then RENDERED:
+ * HURRICANE_KICK — the spinning kick — held one pose with the leg stuck out
+ * sideways for all 24 frames, because the spin IS hips yaw and every frame's
+ * was being set to zero. The clip was never broken; 71 radians of motion are
+ * in it, more than BOXING's 54.
+ *
+ * So subtract the FIRST FRAME'S yaw from every frame instead of subtracting
+ * all of it. Frame 0 still lands on the instance's facing, which is the whole
+ * point of the rule, and yaw CHANGE within the clip survives — a spinning
+ * kick spins, a turn turns, an idle that drifts and returns still returns.
+ * X/Z lean is untouched either way.
+ */
 export function neutralizeHipYaw(clip: THREE.AnimationClip): THREE.AnimationClip {
   for (const track of clip.tracks) {
     if (!track.name.endsWith('.quaternion')) continue;
     if (!isRootBone(boneFromTrack(track.name))) continue;
     const values = track.values;
+    if (values.length < 4) continue;
+    _q.set(values[0], values[1], values[2], values[3]);
+    _e.setFromQuaternion(_q, 'YXZ');
+    const baseYaw = _e.y;
     for (let i = 0; i + 3 < values.length; i += 4) {
       _q.set(values[i], values[i + 1], values[i + 2], values[i + 3]);
       _e.setFromQuaternion(_q, 'YXZ');
-      _e.y = 0;
+      _e.y -= baseYaw;
       _q.setFromEuler(_e);
       values[i] = _q.x;
       values[i + 1] = _q.y;
