@@ -310,6 +310,29 @@ export function redistributeChain(
  *
  * OFF-AXIS is capped hard as well: measured p95 of the off-hinge swing ran
  * 44 to 116 degrees, and a knee has essentially none.
+ *
+ * THE DIRECTION IS CONFIRMED FROM THE BODY, not from whichever bank was
+ * trusted. A hinge flexes when the far end comes TOWARD the joint above it:
+ * bending an elbow brings the hand closer to the shoulder. Rotating each bone
+ * 45 degrees each way about Z in the bind pose and measuring that distance on
+ * the shipped rig:
+ *
+ *   joint          Z +45      Z -45     flexion
+ *   LeftForeArm   -2.2 cm    -4.5 cm    NEGATIVE
+ *   RightForeArm  -0.7 cm    -6.1 cm    NEGATIVE
+ *   LeftLeg      -11.8 cm    -2.6 cm    POSITIVE
+ *   RightLeg     -12.3 cm    -2.2 cm    POSITIVE
+ *
+ * Y moves the tip 0.0 cm either way, which is the same answer as the twist
+ * decomposition: Y is the bone's length. So the geometry and Schwarzerblitz
+ * agree, and the Bannon bank is the one whose forearms are sign-flipped.
+ *
+ * WHICH IS WHY A CLAMP IS NOT ENOUGH. Clamping a flipped elbow pins it at the
+ * boundary — a straight, locked arm, which is what the owner saw as "the left
+ * arm is doing like an elbow strike". A fold that is clearly on the wrong
+ * side is REFLECTED instead: the joint bends the same amount, the way the
+ * joint actually bends. Small over-travel is still clamped, because a few
+ * degrees past straight is slack, not a sign error.
  */
 export interface HingeJoint {
   /** The joint's one axis of rotation, in its own local space. */
@@ -322,6 +345,13 @@ export interface HingeJoint {
 }
 
 const HINGE_Z = () => new THREE.Vector3(0, 0, 1);
+
+/**
+ * Past this, a bend on the wrong side of a hinge is treated as a flipped sign
+ * rather than over-travel. Below it, a few degrees past straight is the slack
+ * in a straight limb and is simply clamped.
+ */
+export const WRONG_SIDE_DEG = 25;
 
 export const HINGE_JOINTS: Readonly<Record<string, HingeJoint>> = {
   // Elbow: flexion is negative about Z here; a few degrees the other way is
@@ -388,7 +418,16 @@ export function constrainHinges(
       if (Math.abs(angle) > Math.abs(worstAngle)) worstAngle = angle;
       if (offAxis > worstOffAxis) worstOffAxis = offAxis;
 
-      const wanted = Math.min(hinge.max, Math.max(hinge.min, angle));
+      // A fold clearly on the wrong side is a SIGN ERROR, not over-travel:
+      // reflect it so the joint bends the same amount the way it really
+      // bends. Clamping it instead pins the limb straight at the boundary.
+      const flipped = -angle;
+      const wrongSide =
+        Math.abs(angle) > WRONG_SIDE_DEG &&
+        (angle < hinge.min || angle > hinge.max) &&
+        flipped >= hinge.min && flipped <= hinge.max;
+      const corrected = wrongSide ? flipped : angle;
+      const wanted = Math.min(hinge.max, Math.max(hinge.min, corrected));
       const overOff = offAxis > hinge.maxOffAxis;
       if (wanted === angle && !overOff) continue;
 
