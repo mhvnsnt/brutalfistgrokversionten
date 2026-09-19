@@ -436,8 +436,16 @@ export function injectGrokPwaHead(html, ctx = {}) {
 
   const missing = grokPwaHeadTags(appName)
     .filter(([key]) => {
-      if (key === "manifest") return !next.includes('href="/__grok/manifest.webmanifest"');
-      if (key === "apple-touch-icon") return !next.includes('href="/__grok/icon-180.png"');
+      // MATCH ON THE REL, NOT ON AN EXACT HREF. A build served from a
+      // subdirectory (GitHub Pages serves a project site from /<repo>/) has
+      // its absolute hrefs rewritten by Vite, so an exact-string check stops
+      // matching and this injects a SECOND <link rel="manifest"> whose href
+      // still points at the domain root — a duplicate that 404s on that host.
+      // Measured: a PUBLIC_BASE_PATH build emitted two manifest links and an
+      // apple-touch-icon pointing at /__grok/icon-180.png instead of
+      // /<repo>/__grok/icon-180.png.
+      if (key === "manifest") return !/<link[^>]+rel=["']manifest["']/i.test(next);
+      if (key === "apple-touch-icon") return !/<link[^>]+rel=["']apple-touch-icon["']/i.test(next);
       return !next.includes(`name="${key}"`);
     })
     .map(([, tag]) => tag);

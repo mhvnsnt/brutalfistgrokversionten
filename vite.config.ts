@@ -150,10 +150,23 @@ function authPopupPlugin(): Plugin {
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
 const rocketPreview = process.env.ROCKET_PREVIEW === "1";
 
+/**
+ * Where the built app will be served from.
+ *
+ * GitHub Pages serves a project site under `/<repo>/`, not the domain root, so
+ * every absolute asset URL 404s unless the build knows its base. Everything
+ * else (Rocket, Vercel, a local preview) serves from `/`.
+ *
+ * The service worker and the manifest are deliberately SCOPE-RELATIVE, so they
+ * need no build-time knowledge of this — only the bundle's own asset URLs do.
+ */
+const basePath = process.env.PUBLIC_BASE_PATH ?? "/";
+
 // `0.0.0.0:8080` is the live-preview contract — don't change host/port.
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
 // AGENTS.md § "First scaffold".
 export default defineConfig(({ command, isPreview }) => ({
+  base: basePath,
   server: {
     host: "0.0.0.0",
     port: 8080,

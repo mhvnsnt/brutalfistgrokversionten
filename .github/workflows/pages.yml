@@ -1,0 +1,72 @@
+# Publish Brutal Fist to GitHub Pages as an installable PWA.
+#
+# WHY: the game needs a URL that does not depend on Rocket's preview being
+# healthy. Pages gives a stable HTTPS origin, and HTTPS is a hard requirement
+# for a service worker — so this is also what makes "Add to Home Screen"
+# actually install the app rather than bookmark it.
+#
+# THE BASE PATH IS THE WHOLE TRICK. A project site is served from
+# /<repo>/, so the bundle's asset URLs must be built with that prefix or every
+# one of them 404s. The manifest and the service worker are scope-relative and
+# need no such help.
+name: Deploy PWA to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race; always let the newest one win.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build the icon set
+        run: node scripts/build-pwa-icons.mjs
+
+      - name: Build static bundle
+        env:
+          # Serves from https://<owner>.github.io/<repo>/
+          PUBLIC_BASE_PATH: /${{ github.event.repository.name }}/
+          ROCKET_PREVIEW: '1' # static SPA shell, no server runtime
+        run: npm run build
+
+      - name: SPA fallback
+        # Pages has no rewrite rules; a copy of index.html at 404.html is how a
+        # client-routed app survives a deep link or a refresh.
+        run: cp dist/index.html dist/404.html
+
+      - name: Verify the PWA is actually installable
+        run: node scripts/verify-pwa-build.mjs dist
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

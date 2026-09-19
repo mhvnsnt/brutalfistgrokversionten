@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { AuthProvider } from "./contexts/AuthContext";
 import "./styles.css";
+import { registerServiceWorker } from "./pwa/registerServiceWorker";
 
 class RocketPreviewErrorBoundary extends Component<
   { children: ReactNode },
@@ -75,3 +76,7 @@ createRoot(root).render(
     </AuthProvider>
   </RocketPreviewErrorBoundary>,
 );
+
+// Installability + a fast second launch. Never blocks first paint, never
+// fatal — see src/pwa/registerServiceWorker.ts for why each guard is there.
+void registerServiceWorker();

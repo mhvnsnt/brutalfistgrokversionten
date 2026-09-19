@@ -1,0 +1,19 @@
+{
+  "name": "Brutal Fist",
+  "short_name": "Brutal Fist",
+  "description": "3D PS1-style fighting game with the Bannon roster.",
+  "id": "../",
+  "start_url": "../",
+  "scope": "../",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0a0a0b",
+  "theme_color": "#0a0a0b",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

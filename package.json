@@ -16,7 +16,7 @@
     "next:build": "next build",
     "next:start": "next start --hostname 0.0.0.0 --port 3000",
     "build": "node scripts/with-app-env.mjs vite build && npm run db:migrate",
-    "prebuild": "node scripts/sync-bannon-motion.mjs && node scripts/sync-schwarzerblitz-motion.mjs && node scripts/sync-fighting-motion-sources.mjs && node scripts/sync-schwarzerblitz-moves.mjs",
+    "prebuild": "node scripts/sync-bannon-motion.mjs && node scripts/sync-schwarzerblitz-motion.mjs && node scripts/sync-fighting-motion-sources.mjs && node scripts/sync-schwarzerblitz-moves.mjs && node scripts/build-pwa-icons.mjs",
     "db:migrate": "node scripts/migrate.mjs",
     "build:dev": "node scripts/with-app-env.mjs vite build --mode development",
     "preview": "node scripts/with-app-env.mjs vite preview",
@@ -27,7 +27,8 @@
     "check:auth": "node scripts/check-auth-invariant.mjs",
     "test": "node --test 'scripts/**/*.test.mjs' && node --experimental-strip-types --test src/lib/app-data/app-data.test.ts src/lib/app-data/readiness-schedule.test.ts src/lib/auth/gate-identity.test.ts src/lib/auth/sign-in-gate.test.ts src/engine/combat/stage-boundaries.test.ts src/engine/combat/command-input.test.ts src/engine/combat/character-stances.test.ts src/engine/retarget/borrowed-motion-safety.test.ts",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "pwa:verify": "node scripts/verify-pwa-build.mjs dist"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.4",
