@@ -107,6 +107,13 @@ export function buildBannonMotionClips(): THREE.AnimationClip[] {
 export function applyBindRelativeQuaternionTracks(
   clip: THREE.AnimationClip,
   targetScene: THREE.Object3D,
+  /**
+   * Per-bone local rotations composed onto the bind BEFORE deltas are applied,
+   * so a T-pose-authored clip lands correctly on an A-pose rig. Omitted = the
+   * previous behaviour exactly. See RestPoseOffset for why this is needed and
+   * why it touches only the arm chain.
+   */
+  restCorrection?: Map<string, THREE.Quaternion> | null,
 ): THREE.AnimationClip {
   const tracks = clip.tracks.map((track) => {
     if (!(track instanceof THREE.QuaternionKeyframeTrack)) return track;
@@ -118,6 +125,11 @@ export function applyBindRelativeQuaternionTracks(
     if (!bone || track.values.length < 4) return track;
 
     const qBind = bone.quaternion.clone();
+    // The REST THE DELTAS ARE MEASURED FROM. For an arm on an A-pose rig this
+    // is the bind lifted to horizontal, which is the convention the source
+    // clip was authored in; for every other bone it is the bind untouched.
+    const fix = restCorrection?.get(boneName);
+    if (fix) qBind.multiply(fix);
     const qSrc0 = new THREE.Quaternion(
       track.values[0], track.values[1], track.values[2], track.values[3],
     );

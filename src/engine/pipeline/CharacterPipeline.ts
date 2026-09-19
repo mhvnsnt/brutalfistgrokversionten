@@ -70,6 +70,7 @@ import { restoreAuthoredTextures } from './restoreAuthoredTextures';
 import { rosterHeightScale } from './rosterHeightScale';
 import { sanitizeMotionClip } from '../retarget/neutralizeRootMotion';
 import { fillBindRelativeGaps, makeClipBindRelative, collectRestMap } from '../retarget/BindRelativeMotion';
+import { measureRestCorrection, needsCorrection } from '../retarget/RestPoseOffset';
 import { bindClipTracksToTargetBones } from '../retarget/AnimationRetargeter';
 import { loadBannonClipsFromPublic, loadBannonMotionBankVariants } from '../retarget/BannonClipJsonAdapter';
 import { buildSchwarzerblitzMotionClips } from '../retarget/SchwarzerblitzMotionBank';
@@ -678,6 +679,29 @@ export async function extractAndRetargetAnimations(
   const mixamoOk = isMixamoCompatibleRig(rig);
   const registry = new AnimationSourceRegistry();
   const restMap = collectRestMap(targetScene);
+
+  // ── A-POSE / T-POSE CORRECTION ────────────────────────────────────────
+  // MEASURED across the shipped roster: 60 of 77 models rest in an A-pose,
+  // arms a median 57 degrees below horizontal, while both motion banks are
+  // keyed on MIXAMO bone names and Mixamo's convention is T-pose. Composing
+  // the source's motion onto an A-pose rest preserves that 57-degree gap, so
+  // a punch authored from a horizontal arm finishes at the hip.
+  //
+  // Correcting the REST MAP is enough: makeClipBindRelative measures every
+  // delta from it, so one change fixes every clip, and the mesh, the skinning
+  // and the bind matrices are all untouched. A rig already in a T-pose
+  // measures under the threshold and is left exactly alone.
+  const restCorrection = measureRestCorrection(targetScene);
+  if (needsCorrection(restCorrection)) {
+    for (const [boneName, fix] of restCorrection.corrections) {
+      const bind = restMap.get(boneName);
+      if (bind) restMap.set(boneName, bind.clone().multiply(fix));
+    }
+    const summary = restCorrection.measured
+      .map((m) => `${m.bone.replace('mixamorig', '')} ${m.restDeg}->${m.correctedDeg}deg`)
+      .join(', ');
+    console.log(`[CharacterPipeline] 🅰️ "${modelName}" A-pose rest corrected for T-pose clips: ${summary}`);
+  }
 
   const ingest = (clip: THREE.AnimationClip, semantic?: string): THREE.AnimationClip | null => {
     const bound = bindClipTracksToTargetBones(clip, rig.boneNames);
