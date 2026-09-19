@@ -71,6 +71,11 @@ import { rosterHeightScale } from './rosterHeightScale';
 import { sanitizeMotionClip } from '../retarget/neutralizeRootMotion';
 import { fillBindRelativeGaps, makeClipBindRelative, collectRestMap } from '../retarget/BindRelativeMotion';
 import { measureRestCorrection, needsCorrection } from '../retarget/RestPoseOffset';
+import {
+  SPINE_CHAIN,
+  clampToJointLimits,
+  redistributeChain,
+} from '../retarget/SkeletalLimits';
 import { bindClipTracksToTargetBones } from '../retarget/AnimationRetargeter';
 import {
   loadBannonClipsFromPublic,
@@ -722,6 +727,8 @@ export async function extractAndRetargetAnimations(
   //
   // So keep BOTH rests and hand each bank the one that matches it. The mesh,
   // the skinning and the bind matrices are untouched either way.
+  let limitHits = 0;
+  const limitWorst = new Map<string, { bone: string; bend: number; twist: number }>();
   const restCorrection = measureRestCorrection(targetScene);
   const tPoseRestMap = new Map(restMap);
   if (needsCorrection(restCorrection)) {
@@ -752,6 +759,23 @@ export async function extractAndRetargetAnimations(
     sanitizeMotionClip(bound.clip);
     const relative = makeClipBindRelative(bound.clip, targetRest, sourceRest);
     if (!relative) return null;
+
+    // ── THE SKELETON HAS THE FINAL SAY ───────────────────────────────────
+    // A source with fewer spine segments than ours pushes its whole bend
+    // through the segments it does have, and nothing anywhere refused a
+    // rotation for being impossible. MEASURED before this: 111 degrees of
+    // HEAD TWIST on attack_rk and ROUNDHOUSEKICK, against a cervical range
+    // of about 35 — the owl-neck the owner reported. Spread the chain, then
+    // hold every limited joint inside a human range. See SkeletalLimits.
+    redistributeChain(relative, SPINE_CHAIN, targetRest);
+    const clamped = clampToJointLimits(relative, targetRest);
+    if (clamped.length > 0) {
+      limitHits += clamped.length;
+      for (const v of clamped) {
+        const worst = limitWorst.get(v.bone);
+        if (!worst || v.twist > worst.twist) limitWorst.set(v.bone, v);
+      }
+    }
     const ud = (relative as THREE.AnimationClip & { userData: Record<string, unknown> }).userData;
     const sem = semantic || String(ud.semanticState ?? resolveClipSemanticState(relative.name) ?? '');
     if (sem) ud.semanticState = sem;
@@ -913,6 +937,17 @@ export async function extractAndRetargetAnimations(
     processedClips,
     modelName
   );
+
+  if (limitHits > 0) {
+    const worst = [...limitWorst.values()]
+      .sort((a, b) => b.twist - a.twist)
+      .slice(0, 4)
+      .map((v) => `${v.bone.replace('mixamorig', '')} ${v.bend.toFixed(0)}/${v.twist.toFixed(0)}deg`)
+      .join(', ');
+    console.log(
+      `[CharacterPipeline] 🦴 "${modelName}" held ${limitHits} joint track(s) inside human range — worst: ${worst}`,
+    );
+  }
 
   console.log(
     `[CharacterPipeline] 📊 "${modelName}" animation extraction complete:\n` +
