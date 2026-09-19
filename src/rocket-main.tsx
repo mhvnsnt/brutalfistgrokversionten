@@ -2,8 +2,16 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { AuthProvider } from "./contexts/AuthContext";
+import * as THREE from "three";
+
 import "./styles.css";
+import { installAssetBase } from "./lib/assetBase";
 import { registerServiceWorker } from "./pwa/registerServiceWorker";
+
+// Resolve /models, /portraits, /audio against the deploy base BEFORE anything
+// renders. Under a subdirectory deploy (GitHub Pages) every runtime-built
+// asset URL 404s without this.
+installAssetBase(THREE);
 
 class RocketPreviewErrorBoundary extends Component<
   { children: ReactNode },
