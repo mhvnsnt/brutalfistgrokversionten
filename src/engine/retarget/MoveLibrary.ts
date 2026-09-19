@@ -354,7 +354,7 @@ const DEFAULT_FRAME_DATA: Record<FighterMotionState, Omit<MoveFrameData, 'motion
 
 export type ClipSource = 'schwarzerblitz' | 'tekken' | 'bannon' | 'mixamo' | 'generic';
 
-export function resolveClipAlias(clipName: string): { motionState: FighterMotionState; source: ClipSource } | null {
+export function resolveClipAlias(clipName: string): { motionState: FighterMotionState; source: ClipSource; matched?: string } | null {
   // Try each alias map in priority order
   if (SBW_ALIASES[clipName]) return { motionState: SBW_ALIASES[clipName], source: 'schwarzerblitz' };
   if (TEKKEN_ALIASES[clipName]) return { motionState: TEKKEN_ALIASES[clipName], source: 'tekken' };
@@ -395,8 +395,68 @@ export function resolveClipAlias(clipName: string): { motionState: FighterMotion
   if (lower.includes('taunt')) return { motionState: 'taunt', source: 'generic' };
   if (lower.includes('intro') || lower.includes('entrance')) return { motionState: 'intro', source: 'generic' };
 
+  // ── EXTENDED VOCABULARY ────────────────────────────────────────────────
+  // MEASURED: 210 of the 367 synced clips resolved to NOTHING here, so more
+  // than half the animation in the game reached no state. The rules above
+  // look for generic English words, and these clips are named for the MOVE —
+  // TIGERSCARLETSCREW, JOHNSONWAVESWEEPER, GRAFHAMMERCOMBO, GYAKUZUKI.
+  //
+  // The words below are not invented: each one was counted in the
+  // unresolved set before being added, so every entry earns its place.
+  // Counts at the time of writing are in the comments.
+  //
+  // This block runs LAST, so no clip that already resolved changes.
+  for (const [state, re, why] of EXTENDED_CLIP_RULES) {
+    if (re.test(lower)) return { motionState: state, source: 'generic', matched: why };
+  }
+
   return null;
 }
+
+/**
+ * Ordered most-specific first — a name can contain several of these words
+ * (`TIGERSCARLETSCREW_LOWKICK` is both a screw and a kick) and the first
+ * match wins, so the more particular rule has to come first.
+ */
+const EXTENDED_CLIP_RULES: Array<[FighterMotionState, RegExp, string]> = [
+  // A receiver half or a hit reaction: the clip is the body BEING hit. 24 clips.
+  ['hit', /reaction|_recv|recieve|receive/, 'reaction'],
+  // Getting up off the floor. Rollouts and ukemi are the escape, not a knockdown.
+  ['WakeupTechRoll', /rollout|ukemi|techroll|_roll\b|backroll|forwardroll/, 'roll/ukemi'],
+  ['knockdown', /supine|prone|facedown|faceup|floored|grounded/, 'on the floor'],
+  // Throws and slams put the OTHER body somewhere: 5 slam, 4 bomb, 4 suplex,
+  // 3 ddt, plus drivers, backbreakers, cutters, whips and tackles.
+  ['CommandThrow', /suplex|ddt|slam|bomb|driver|backbreaker|cutter|whip|toss|tackle|clutch|cradle|piledriver|powerbomb/, 'throw family'],
+  // Committed strikes. 5 hammer, 5 screw, 5 combo, 4 sweep, 3 knee, 2 chop.
+  ['heavyAttack', /hammer|screw|sweep|combo|launcher|stomp|thrust|headbutt|senton|splash|moonsault|elbow|knee|chop|smash|crush|punishment|oraoraora|rush/, 'committed strike'],
+  // Japanese karate vocabulary — the corpus uses it directly.
+  ['lightAttack', /zuki|tsuki|geri|uchi|jab/, 'karate strike'],
+  // Capoeira: ginga is the sway STANCE, esquiva the dodge, au the cartwheel.
+  // CLAUDE.md records these as dual-purpose taunt/strike clips.
+  ['idle', /ginga|^boxing|stance|kamae/, 'fighting stance'],
+  ['sidestepLeft', /esquiva|\bau\b|cartwheel|evade|dodge/, 'evasive'],
+  // Locomotion the generic rules missed. 8 run, 8 jump, 5 walk, 5 step.
+  ['jump', /jump|leap|hop|airborne/, 'airborne'],
+  // NOT \brun: `_` is a WORD character, so there is no boundary in
+  // DRUNK_RUN_FORWARD and the run was missed. Anchoring to start-or-
+  // underscore matches the real runs and still refuses to fire on DRUNK.
+  ['run', /(?:^|_)run|sprint|dash/, 'running'],
+  // NOT \bwalk: the corpus has SHAZWALK, DWARF_WALK and DRUNK_WALK, where the
+  // word is preceded by a letter. Nothing in the set contains 'walk' by
+  // accident, so the bare stem is safe here — unlike 'run', which would
+  // match DRUNK, hence the boundary on that one.
+  ['walkForward', /walk|stride|march/, 'walking'],
+  ['Backdashing', /backstep|_step|sidestep/, 'stepping'],
+  ['victory', /pose|celebrat/, 'celebration'],
+  // Dying and death animations are the losing side of a KO.
+  ['defeat', /dying|death|dead\b|collaps/, 'death'],
+  // Named specials the earlier rules miss. Each of these is a real strike
+  // in the corpus: a roundhouse, a body blow, a diving attack.
+  ['heavyAttack', /roundhouse|blow|nado|comet|roller|assassination|capoeira|bash|slice|slash/, 'named strike'],
+  // Showboating. CLAUDE.md records the TAU_* clips, the chest beating and
+  // the dance loops as taunt material, several of them dual-purpose.
+  ['taunt', /^tau_|chestbeating|armsspread|dancing|breakdance|uprock|showoff|flex/, 'showboating'],
+];
 
 // ── Move library entry ────────────────────────────────────────────────────────
 
