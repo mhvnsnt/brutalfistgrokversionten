@@ -36,6 +36,9 @@ jobs:
       - name: Tests
         run: npm test
 
+      - name: Next compatibility build
+        run: npm run next:build
+
       - name: Production build
         run: npm run build
 
