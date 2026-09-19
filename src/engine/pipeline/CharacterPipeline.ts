@@ -72,7 +72,11 @@ import { sanitizeMotionClip } from '../retarget/neutralizeRootMotion';
 import { fillBindRelativeGaps, makeClipBindRelative, collectRestMap } from '../retarget/BindRelativeMotion';
 import { measureRestCorrection, needsCorrection } from '../retarget/RestPoseOffset';
 import { bindClipTracksToTargetBones } from '../retarget/AnimationRetargeter';
-import { loadBannonClipsFromPublic, loadBannonMotionBankVariants } from '../retarget/BannonClipJsonAdapter';
+import {
+  loadBannonClipsFromPublic,
+  loadBannonMotionBankTail,
+  loadBannonMotionBankVariants,
+} from '../retarget/BannonClipJsonAdapter';
 import {
   buildSchwarzerblitzMotionClips,
   schwarzerblitzSourceRest,
@@ -648,6 +652,17 @@ export interface AnimationExtractionResult {
   retargetVerdict: 'PASS' | 'PARTIAL' | 'FAIL' | 'SKIPPED';
   /** True when the 52-joint Mixamo/Bannon bank was bound onto this rig */
   mixamoBound: boolean;
+  /**
+   * Load the rest of the move list AFTER the fighter is playable.
+   *
+   * MEASURED: converting all 201 indexed clips up front took the pipeline
+   * from 2.6s to 7.4s. The first 28 are the ones a fighter needs to stand
+   * and swing; the other 173 are the move list, and nothing should wait on
+   * an animation nobody has pressed a button for yet. Bound through the SAME
+   * rest and the SAME bone binding as the fast path — a late clip is not a
+   * second-class clip.
+   */
+  loadMoveListTail: () => Promise<THREE.AnimationClip[]>;
 }
 
 /**
@@ -920,6 +935,18 @@ export async function extractAndRetargetAnimations(
     retargetApplied,
     retargetVerdict,
     mixamoBound: mixamoOk && processedClips.length > glbClipCount,
+    loadMoveListTail: async () => {
+      const tail = await loadBannonMotionBankTail();
+      const out: THREE.AnimationClip[] = [];
+      for (const [key, clip] of tail) {
+        const sem = String((clip as THREE.AnimationClip & { userData?: { semanticState?: string } }).userData?.semanticState ?? '');
+        // Never `replaceSemantic`: a clip arriving after the bell must not
+        // take a state out from under a fighter who is already moving.
+        const converted = ingest(clip, sem || key, restMap);  // Bannon bank: its rest is the model's own bind
+        if (converted) out.push(converted);
+      }
+      return out;
+    },
   };
 }
 
@@ -1146,6 +1173,8 @@ export async function runCharacterPipeline(
       retargetApplied: filled.length > 0,
       retargetVerdict: filled.length > 0 ? 'PASS' : 'SKIPPED',
       mixamoBound: false,
+      // This fallback path never bound the motion bank, so it has no tail.
+      loadMoveListTail: async () => [],
     };
   }
 
@@ -1178,6 +1207,31 @@ export async function runCharacterPipeline(
       }
     }
   }
+
+  // ── The rest of the move list, after the fighter is already playable ────
+  // Never awaited: the match starts on the 28 clips a fighter needs to stand
+  // and swing, and the other 173 register as actions whenever they arrive.
+  // A failure here costs the long tail, never the match.
+  const registerClip = (clip: THREE.AnimationClip) => {
+    if (actions[clip.name]) return;
+    const action = mixer.clipAction(clip, cloned);
+    actions[clip.name] = action;
+    const sem = String((clip as THREE.AnimationClip & { userData?: { semanticState?: string } }).userData?.semanticState ?? '');
+    if (!sem) return;
+    for (const alias of SEMANTIC_STATE_ALIASES[sem] ?? []) {
+      if (!actions[alias]) actions[alias] = action;
+    }
+  };
+  void extractionResult
+    .loadMoveListTail?.()
+    .then((late) => {
+      if (!late.length) return;
+      for (const clip of late) registerClip(clip);
+      console.log(`[CharacterPipeline] 📚 "${modelName}" move list +${late.length} clip(s) after load`);
+    })
+    .catch((e: unknown) => {
+      console.warn(`[CharacterPipeline] ⚠️ move-list tail skipped: ${e instanceof Error ? e.message : String(e)}`);
+    });
 
   // Log instrumentation: resolved/unresolved track counts per clip
   console.log(

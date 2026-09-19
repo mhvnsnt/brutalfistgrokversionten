@@ -958,6 +958,78 @@ export async function loadBannonClipsFromUrls(
   return result;
 }
 
+interface MotionBankRequest { key: string; file: string; semanticState: string }
+
+/** Everything the index holds that the fast path deliberately skipped. */
+let pendingTail: MotionBankRequest[] = [];
+let tailPromise: Promise<Map<string, THREE.AnimationClip>> | null = null;
+
+/**
+ * Fetch and convert ONE motion-bank clip. Local first: every indexed clip
+ * now ships in public/motion, so the GitHub URL is a fallback for the web
+ * build rather than the normal path.
+ */
+async function fetchMotionBankClip({ key, file, semanticState }: MotionBankRequest) {
+  const localUrl = `/motion/${encodeURIComponent(file)}`;
+  let res = await fetch(localUrl);
+  const url = res.ok ? localUrl : `${BANNON_MOTION_BANK_BASE}${encodeURIComponent(file)}`;
+  if (!res.ok) res = await fetch(url);
+  if (!res.ok) throw new Error(`${key} HTTP ${res.status}`);
+  const json = await res.json();
+  const adapted = convertAnyBannonClipJson(json, key, semanticState);
+  if (adapted.trackCount === 0) throw new Error(`${key} NO_TRACKS`);
+  (adapted.clip as any).userData = {
+    ...(adapted.clip as any).userData,
+    clipSourceType: (adapted.clip as any).userData?.clipSourceType ?? "RETARGETED_AUTHORED_CLIP",
+    sourceUrl: url,
+    sourceFile: file,
+    isProcedural: false,
+    semanticState,
+  };
+  return { key, semanticState, adapted };
+}
+
+/**
+ * THE REST OF THE MOVE LIST, loaded once the fighter is already playable.
+ *
+ * MEASURED: the per-semantic budget decides which clip OWNS a state, and it
+ * was also, accidentally, deciding which clips EXISTED — only 28 of the
+ * index's 201 entries were ever fetched, so ~170 authored animations could
+ * not be reached by any move, moveset slot or special, by name or otherwise.
+ * That is most of the move list.
+ *
+ * Loading all 201 up front fixed the reach and cost 2.6s -> 7.4s of pipeline
+ * time, which a match should not pay before the bell. These land in
+ * `variants` only, never in `clips`, so no semantic owner can change under
+ * a fighter who is already moving.
+ *
+ * Resolves to the clips that were ADDED by this call (empty on later calls).
+ */
+export function loadBannonMotionBankTail(): Promise<Map<string, THREE.AnimationClip>> {
+  if (tailPromise) return tailPromise;
+  const requests = pendingTail;
+  pendingTail = [];
+  if (!cachedMotionBank || requests.length === 0) return Promise.resolve(new Map());
+  const bank = cachedMotionBank;
+  tailPromise = Promise.allSettled(requests.map(fetchMotionBankClip)).then((settled) => {
+    const added = new Map<string, THREE.AnimationClip>();
+    let failed = 0;
+    for (const s of settled) {
+      if (s.status === 'rejected') { failed++; continue; }
+      const { key, adapted } = s.value;
+      if (bank.variants.has(key)) continue;
+      bank.variants.set(key, adapted.clip);
+      added.set(key, adapted.clip);
+    }
+    console.log(
+      `[BannonClipJsonAdapter] 📚 move-list tail: +${added.size} clip(s)` +
+      (failed ? `, ${failed} failed` : '') + ` (${bank.variants.size} total)`,
+    );
+    return added;
+  });
+  return tailPromise;
+}
+
 /**
  * Load the real Bannon motion bank from GitHub (rx/ry/rz Euler keys).
  * Falls back to a local /assets/moves/clips/manifest.json if present.
@@ -996,38 +1068,28 @@ export async function loadBannonClipsFromPublic(): Promise<Map<string, THREE.Ani
     const preferred = pickPreferredMotionBankFiles(index);
     const capped: typeof preferred = [];
     const perState = new Map<string, number>();
+    const taken = new Set<string>();
     for (const item of preferred) {
       const n = perState.get(item.semanticState) ?? 0;
     const extraBudget = ['attack_1', 'attack_2', 'attack_rp', 'attack_lk', 'attack_rk', 'hit_reaction', 'grapple', 'taunt'].includes(item.semanticState) ? 3 : 1;
       if (n >= extraBudget) continue;
       capped.push(item);
+      taken.add(item.key);
       perState.set(item.semanticState, n + 1);
     }
+
+    // The rest of the index is loaded AFTER the fighter is playable — see
+    // loadBannonMotionBankTail. MEASURED: fetching and converting all 201
+    // up front took the pipeline from 2.6s to 7.4s, and a match must not
+    // wait on animations nobody has pressed a button for yet.
+    pendingTail = Object.entries(index)
+      .filter(([key, entry]) => entry?.file && !taken.has(key))
+      .map(([key, entry]) => ({ key, file: entry.file, semanticState: inferSemanticFromMotionKey(key) }));
     stats.attempted = capped.length;
     const clips = new Map<string, THREE.AnimationClip>();
     const variants = new Map<string, THREE.AnimationClip>();
 
-    const loaded = await Promise.allSettled(
-      capped.map(async ({ key, file, semanticState }) => {
-        const localUrl = `/motion/${encodeURIComponent(file)}`;
-        let res = await fetch(localUrl);
-        const url = res.ok ? localUrl : `${BANNON_MOTION_BANK_BASE}${encodeURIComponent(file)}`;
-        if (!res.ok) res = await fetch(url);
-        if (!res.ok) throw new Error(`${key} HTTP ${res.status}`);
-        const json = await res.json();
-        const adapted = convertAnyBannonClipJson(json, key, semanticState);
-        if (adapted.trackCount === 0) throw new Error(`${key} NO_TRACKS`);
-        (adapted.clip as any).userData = {
-          ...(adapted.clip as any).userData,
-          clipSourceType: (adapted.clip as any).userData?.clipSourceType ?? "RETARGETED_AUTHORED_CLIP",
-          sourceUrl: url,
-          sourceFile: file,
-          isProcedural: false,
-          semanticState,
-        };
-        return { key, semanticState, adapted };
-      }),
-    );
+    const loaded = await Promise.allSettled(capped.map(fetchMotionBankClip));
 
     for (const settled of loaded) {
       if (settled.status === 'rejected') {
