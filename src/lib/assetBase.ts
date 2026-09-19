@@ -90,5 +90,36 @@ export function installAssetBase(three?: { DefaultLoadingManager?: { setURLModif
   } catch {
     /* leave fetch alone rather than break the app */
   }
+
+  // Covers <img src>, which is NEITHER a three.js load NOR a fetch.
+  //
+  // REPORTED FROM THE LIVE BUILD, and the models fix did not cover it: "the
+  // 2D images on the select screen, none of them are showing". Every portrait
+  // is set through React as an absolute '/portraits/...', which the browser
+  // resolves against the ORIGIN, not the deploy base — so on Pages they all
+  // 404 while the models, which go through the loading manager, come in fine.
+  //
+  // Patching the PROTOTYPE rather than each element is deliberate and is the
+  // same reasoning as the rest of this file: React assigns `img.src` as a DOM
+  // property, a call site added tomorrow would silently reintroduce the bug,
+  // and a resolver catches it. Only our own asset roots are touched.
+  try {
+    const proto = globalThis.HTMLImageElement?.prototype;
+    const desc = proto && Object.getOwnPropertyDescriptor(proto, 'src');
+    if (proto && desc?.set && desc.get) {
+      const { set, get } = desc;
+      Object.defineProperty(proto, 'src', {
+        configurable: true,
+        enumerable: desc.enumerable,
+        get,
+        set(this: HTMLImageElement, value: string) {
+          set.call(this, typeof value === 'string' ? assetUrl(value) : value);
+        },
+      });
+    }
+  } catch {
+    /* an engine that will not let us wrap the property keeps its own */
+  }
+
   return true;
 }
