@@ -59,6 +59,9 @@ import { createStageManagerState, tickTrainHazard, tickFloorBreak, tickLedgeThro
 import { wallBoundsFromStage } from '../engine/combat/WallSystem';
 // ── Motion commands (d/f+2, b,f+P, quarter-circles) ──────────────────────────
 import { createCommandBuffer, pushInput, type Facing } from '../engine/combat/CommandInput';
+import {
+  createRoundState, openingAnnouncement, resolveRound, type RoundState,
+} from '../engine/combat/RoundSystem';
 import { commandButtonsFor, moveSetForFighter, schwarzerblitzSpecials } from '../engine/combat/SchwarzerblitzSpecials';
 // ── Heat Burst / Power Crush / Rage Art ──────────────────────────────────────
 import { type HeatState, type PowerCrushState, type RageArtState,  } from '../engine/combat/HeatBurstSystem';
@@ -179,6 +182,9 @@ export default function GameBattleArena({
    * defined relative to facing, which is what stops P2's command list coming
    * out mirrored.
    */
+  /** Best-of-three bookkeeping. Every round decision lives in RoundSystem. */
+  const roundStateRef = useRef<RoundState>(createRoundState());
+
   const p1CommandRef = useRef(createCommandBuffer());
   const p2CommandRef = useRef(createCommandBuffer());
 
@@ -205,6 +211,56 @@ export default function GameBattleArena({
 
   // A stage swap without a fresh match still has to move the walls.
   useEffect(() => { applyStageBounds(stageId as StageId); }, [stageId, applyStageBounds]);
+
+  /**
+   * Put both fighters back on their marks and replay the intro.
+   *
+   * Used for BOTH a rematch and a round transition — the only difference is
+   * whether the score survives. Before this, the two round-result sites wrote
+   * `round: 1` and went straight to the post-match screen, so a match was
+   * always exactly one round.
+   */
+  const resetForRound = useCallback((clearScore: boolean) => {
+    const engine = engineRef.current;
+    if (!engine) return;
+    setP1Health(p1Fighter.hp);
+    setP2Health(p2Fighter.hp);
+    setKo(false);
+    setWinner(null);
+    setRoundTimer(99);
+    koHandledRef.current = false;
+    roundStartedRef.current = false;
+    if (clearScore) {
+      roundStateRef.current = createRoundState();
+      setRoundResults([]);
+    }
+    roundStartTimeRef.current = Date.now();
+    setP1X(-1.8); setP2X(1.8);
+    p1XRef.current = -1.8; p2XRef.current = 1.8;
+    p1LocoRef.current = new LocomotionSystem(-1.8, 0, 1);
+    p2LocoRef.current = new LocomotionSystem(1.8, 0, -1);
+    applyStageBounds(stageId as StageId);
+    p1SMRef.current = new FighterStateMachine();
+    p2SMRef.current = new FighterStateMachine();
+    p1SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id)));
+    p2SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id)));
+    p1SMRef.current.attachCommandBuffer(p1CommandRef.current);
+    p2SMRef.current.attachCommandBuffer(p2CommandRef.current);
+    p1HitboxRef.current.reset();
+    p2HitboxRef.current.reset();
+    const freshP1Combo = createComboState('p1');
+    const freshP2Combo = createComboState('p2');
+    p1ComboRef.current = freshP1Combo;
+    p2ComboRef.current = freshP2Combo;
+    setP1Combo(freshP1Combo);
+    setP2Combo(freshP2Combo);
+    // Re-arm the announcer so the NEXT round gets its own call.
+    announcerFiredRef.current = { ...announcerFiredRef.current, round: false, fight: false, ko: false };
+    setCinematicPhase('sweep');
+    setArenaReady(false);
+    window.setTimeout(() => setCinematicPhase('intro'), SWEEP_DURATION_MS);
+    window.setTimeout(() => { setCinematicPhase('fight'); setArenaReady(true); }, SWEEP_DURATION_MS + INTRO_DURATION_MS);
+  }, [applyStageBounds, p1Fighter.hp, p1Fighter.id, p2Fighter.hp, p2Fighter.id, stageId]);
   const p1StickRef = useRef(createTekkenStick());
   const p1JumpYRef = useRef(0);
 
@@ -571,11 +627,14 @@ export default function GameBattleArena({
       }
     }, 200);
 
-    // "Round 1!" — fires when intro cinematic starts
+    // The round it is ACTUALLY on. This fired 'round1' literally, so every
+    // round of every match announced as Round 1 — and round2, round3 and
+    // finalRound had no callers at all.
     const tRound = window.setTimeout(() => {
       if (!announcerFiredRef.current.round) {
         announcerFiredRef.current.round = true;
-        announcer.fire('round1');
+        const line = openingAnnouncement(roundStateRef.current);
+        if (line) announcer.fire(line);
       }
     }, SWEEP_DURATION_MS + 300);
 
@@ -1755,15 +1814,24 @@ export default function GameBattleArena({
 
         // Build round result
         const elapsed = Math.round((Date.now() - roundStartTimeRef.current) / 1000);
+        const outcome = resolveRound(roundStateRef.current, w, cond);
         const roundResult: RoundResult = {
-          round: 1,
+          round: outcome.state.history[outcome.state.history.length - 1].round,
           winner: w,
           condition: cond,
           p1HealthRemaining: Math.max(0, engine.p1Health),
           p2HealthRemaining: Math.max(0, engine.p2Health),
           durationSeconds: elapsed,
         };
-        setRoundResults([roundResult]);
+        roundStateRef.current = outcome.state;
+        // APPEND, do not replace: replacing is why a match was one round.
+        setRoundResults((prev) => [...prev, roundResult]);
+
+        if (!outcome.matchOver) {
+          // Another round to play: back to the marks rather than post-match.
+          setTimeout(() => resetForRound(false), 1800);
+          return;
+        }
 
         // Switch to victory cinematic
         setTimeout(() => {
@@ -1771,7 +1839,7 @@ export default function GameBattleArena({
           if (w !== 'draw' && settings.soundEnabled) sfx.playVictory();
         }, 800);
         setTimeout(() => {
-          onMatchEnd?.(w);
+          onMatchEnd?.(outcome.matchWinner ?? w);
           setShowPostMatch(true);
         }, POST_MATCH_DELAY_MS);
       }
@@ -1814,20 +1882,29 @@ export default function GameBattleArena({
 
             setMatchCondition('TIMEOUT');
             const elapsed = Math.round((Date.now() - roundStartTimeRef.current) / 1000);
-            setRoundResults([{
-              round: 1,
+            const toOutcome = resolveRound(roundStateRef.current, w, 'TIMEOUT');
+            setRoundResults((prev) => [...prev, {
+              round: toOutcome.state.history[toOutcome.state.history.length - 1].round,
               winner: w,
-              condition: 'TIMEOUT',
+              condition: 'TIMEOUT' as const,
               p1HealthRemaining: Math.max(0, engine.p1Health),
               p2HealthRemaining: Math.max(0, engine.p2Health),
               durationSeconds: elapsed,
             }]);
+            roundStateRef.current = toOutcome.state;
+            if (!toOutcome.matchOver) {
+              // This block runs inside a setRoundTimer updater, so it has to
+              // return the new timer value — a bare `return` would set it to
+              // undefined. 0 is correct: the clock has run out.
+              setTimeout(() => resetForRound(false), 1800);
+              return 0;
+            }
             setTimeout(() => {
               setCinematicPhase('victory');
               if (w !== 'draw' && settings.soundEnabled) sfx.playVictory();
             }, 800);
             setTimeout(() => {
-              onMatchEnd?.(w);
+              onMatchEnd?.(toOutcome.matchWinner ?? w);
               setShowPostMatch(true);
             }, POST_MATCH_DELAY_MS);
           }
@@ -2617,47 +2694,10 @@ export default function GameBattleArena({
             p2Color={p2Color}
             onRematch={() => {
               setShowPostMatch(false);
-              // Reset match state
-              const engine = engineRef.current;
-              if (engine) {
-                setP1Health(p1Fighter.hp);
-                setP2Health(p2Fighter.hp);
-                setKo(false);
-                setWinner(null);
-                setRoundTimer(99);
-                koHandledRef.current = false;
-                roundStartedRef.current = false;
-                setRoundResults([]);
-                roundStartTimeRef.current = Date.now();
-                setP1X(-1.8); setP2X(1.8);
-                p1XRef.current = -1.8; p2XRef.current = 1.8;
-                p1LocoRef.current = new LocomotionSystem(-1.8, 0, 1);
-                p2LocoRef.current = new LocomotionSystem(1.8, 0, -1);
-                applyStageBounds(stageId as StageId);
-                p1SMRef.current = new FighterStateMachine();
-                p2SMRef.current = new FighterStateMachine();
-                // The imported command list, plus the engine's own button specials
-                // (registerSpecialMoves appends DEFAULT_SPECIAL_MOVES itself, so the
-                // button sequences that already worked keep working).
-                p1SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id)));
-                p2SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id)));
-                p1SMRef.current.attachCommandBuffer(p1CommandRef.current);
-                p2SMRef.current.attachCommandBuffer(p2CommandRef.current);
-                p1HitboxRef.current.reset();
-                p2HitboxRef.current.reset();
-                const freshP1Combo = createComboState('p1');
-                const freshP2Combo = createComboState('p2');
-                p1ComboRef.current = freshP1Combo;
-                p2ComboRef.current = freshP2Combo;
-                setP1Combo(freshP1Combo);
-                setP2Combo(freshP2Combo);
-              }
-              setCinematicPhase('sweep');
-              setArenaReady(false);
-              const t1 = window.setTimeout(() => setCinematicPhase('intro'), SWEEP_DURATION_MS);
-              const t2 = window.setTimeout(() => { setCinematicPhase('fight'); setArenaReady(true); }, SWEEP_DURATION_MS + INTRO_DURATION_MS);
-              // cleanup handled by component unmount
-              void t1; void t2;
+              // One reset, shared with the round transition. This used to be a
+              // second copy of the same twenty lines, which is how the two
+              // drifted apart.
+              resetForRound(true);
             }}
             onCharacterSelect={() => {
               setShowPostMatch(false);
