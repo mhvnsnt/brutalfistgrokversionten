@@ -57,6 +57,9 @@ import {
 // ── Stage Manager — multi-tier transitions, train hazard, ledge throws, wall breaks ──
 import { createStageManagerState, tickTrainHazard, tickFloorBreak, tickLedgeThrow, tickDestructibleWalls, tickHazardBounce, triggerFloorBreak, executeLedgeThrow, applyWallBreak, applyHazardBounce, checkLedgeThrowOverride, checkWallBreak, checkHazardVolume, TRAIN_HIT_DAMAGE, TRAIN_PLATFORM_Y, type StageManagerState,  } from '../engine/combat/StageManager';
 import { wallBoundsFromStage } from '../engine/combat/WallSystem';
+// ── Motion commands (d/f+2, b,f+P, quarter-circles) ──────────────────────────
+import { createCommandBuffer, pushInput, type Facing } from '../engine/combat/CommandInput';
+import { commandButtonsFor, moveSetForFighter, schwarzerblitzSpecials } from '../engine/combat/SchwarzerblitzSpecials';
 // ── Heat Burst / Power Crush / Rage Art ──────────────────────────────────────
 import { type HeatState, type PowerCrushState, type RageArtState,  } from '../engine/combat/HeatBurstSystem';
 // ── Directional throw system ──────────────────────────────────────────────────
@@ -170,6 +173,15 @@ export default function GameBattleArena({
   const p2HitboxRef = useRef<FrameDataHitboxSystem>(new FrameDataHitboxSystem());
 
   // ── Locomotion systems (one per fighter) ─────────────────────────────────
+  /**
+   * Motion-input buffers. Owned here because this is the only place that knows
+   * BOTH the raw stick and each fighter's facing — and numpad notation is
+   * defined relative to facing, which is what stops P2's command list coming
+   * out mirrored.
+   */
+  const p1CommandRef = useRef(createCommandBuffer());
+  const p2CommandRef = useRef(createCommandBuffer());
+
   const p1LocoRef = useRef<LocomotionSystem>(new LocomotionSystem(-1.8, 0, 1));
   const p2LocoRef = useRef<LocomotionSystem>(new LocomotionSystem(1.8, 0, -1));
 
@@ -446,8 +458,13 @@ export default function GameBattleArena({
     // Reset state machines and hitbox systems for new match
     p1SMRef.current = new FighterStateMachine();
     p2SMRef.current = new FighterStateMachine();
-    p1SMRef.current.registerSpecialMoves(DEFAULT_SPECIAL_MOVES);
-    p2SMRef.current.registerSpecialMoves(DEFAULT_SPECIAL_MOVES);
+    // The imported command list, plus the engine's own button specials
+    // (registerSpecialMoves appends DEFAULT_SPECIAL_MOVES itself, so the
+    // button sequences that already worked keep working).
+    p1SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id)));
+    p2SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id)));
+    p1SMRef.current.attachCommandBuffer(p1CommandRef.current);
+    p2SMRef.current.attachCommandBuffer(p2CommandRef.current);
     p1HitboxRef.current.reset();
     p2HitboxRef.current.reset();
 
@@ -648,6 +665,30 @@ export default function GameBattleArena({
         if ((bitmask as any).sidestepBg) smInput.strafe = -1;
         else if ((bitmask as any).sidestepFg) smInput.strafe = 1;
       }
+
+      // ── Feed the motion-command buffer ────────────────────────────────
+      // WORLD-AXIS stick in, facing-relative numpad out. The buffer records
+      // EDGES, so holding forward does not flood it and turn a held direction
+      // into a dash the player never asked for.
+      // Facing is READ from where the two fighters stand, never written here:
+      // P1 faces +X while he is left of P2. V7OrientationContract remains the
+      // only authority on the actual yaw; this just tells the matcher which way
+      // "forward" points so 6 means toward the opponent.
+      const p1Facing: Facing = p1XRef.current <= p2XRef.current ? 1 : -1;
+      pushInput(
+        p1CommandRef.current,
+        {
+          x: bitmask.right ? 1 : bitmask.left ? -1 : 0,
+          y: bitmask.up ? 1 : bitmask.down ? -1 : 0,
+        },
+        commandButtonsFor({
+          lp: smInput.lp, rp: smInput.rp, lk: smInput.lk, rk: smInput.rk,
+          grapple: smInput.grapple,
+        }),
+        p1Facing,
+        now,
+      );
+      p1SMRef.current.setCommandStance(smInput.crouch ? 'Crouch' : cmd.running ? 'Running' : cmd.jump ? 'Air' : 'Ground');
 
       // ── Ki Charge detection (1+2+3+4 = all four limbs) ────────────────
       const p1KiInput = {
@@ -1509,8 +1550,11 @@ export default function GameBattleArena({
       setP2Health(engine.p2Health);
       setP1State(p1DisplayState);
       setP2State(p2DisplayState);
-      setP1Animation(p1NextMotion);
-      setP2Animation(p2NextMotion);
+      // A special plays the animation it was AUTHORED with. Without this every
+      // imported move looks like the same generic heavy, which is most of what
+      // "all the characters do the same thing" looked like on screen.
+      setP1Animation(p1SMRef.current.activeClip() ?? p1NextMotion);
+      setP2Animation(p2SMRef.current.activeClip() ?? p2NextMotion);
       setHitStopActive(engine.hitStopFrames > 0);
 
       // ── Record frame to match recorder ────────────────────────────────────
@@ -2592,8 +2636,13 @@ export default function GameBattleArena({
                 applyStageBounds(stageId as StageId);
                 p1SMRef.current = new FighterStateMachine();
                 p2SMRef.current = new FighterStateMachine();
-                p1SMRef.current.registerSpecialMoves(DEFAULT_SPECIAL_MOVES);
-                p2SMRef.current.registerSpecialMoves(DEFAULT_SPECIAL_MOVES);
+                // The imported command list, plus the engine's own button specials
+                // (registerSpecialMoves appends DEFAULT_SPECIAL_MOVES itself, so the
+                // button sequences that already worked keep working).
+                p1SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id)));
+                p2SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id)));
+                p1SMRef.current.attachCommandBuffer(p1CommandRef.current);
+                p2SMRef.current.attachCommandBuffer(p2CommandRef.current);
                 p1HitboxRef.current.reset();
                 p2HitboxRef.current.reset();
                 const freshP1Combo = createComboState('p1');

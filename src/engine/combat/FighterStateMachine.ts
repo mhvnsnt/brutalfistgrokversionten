@@ -1,4 +1,7 @@
-import type { FighterMotionState } from '../retarget/AnimationController';
+// Explicit extensions on purpose: they are what let the repo's own runner
+// (`node --experimental-strip-types --test`) resolve these modules. tsconfig
+// sets allowImportingTsExtensions and Vite/esbuild resolve them unchanged.
+import type { FighterMotionState } from '../retarget/AnimationController.ts';
 
 // ── Action States ─────────────────────────────────────────────────────────────
 export type ActionState =
@@ -55,6 +58,15 @@ export interface MoveWindow {
   active: number;
   recovery: number;
   animation: FighterMotionState;
+  /**
+   * The SOURCE CLIP this move was authored with, when it has one — e.g. an
+   * imported Schwarzerblitz animation name. `animation` stays a typed motion
+   * state so every existing consumer is unaffected; this is the preferred clip
+   * the mesh tries FIRST, falling through to `animation` when the fighter's rig
+   * does not carry it. It is what makes a special look like itself instead of
+   * like a generic heavy.
+   */
+  clip?: string;
   hitboxStartFrame?: number;
   hitboxEndFrame?: number;
   totalFrames?: number;
@@ -74,10 +86,31 @@ export interface MoveWindow {
 }
 
 // ── Special Move Definitions ──────────────────────────────────────────────────
+import {
+  matchCommand,
+  type CommandBuffer,
+  type CommandStep,
+  type MatchableMove,
+} from './CommandInput.ts';
+
 export interface SpecialMoveDefinition {
   id: string;
   name: string;
+  /**
+   * A button-only sequence, e.g. ['heavy','heavy','light']. This is what the
+   * engine has always had, and it stays exactly as it was.
+   */
   sequence: Array<keyof FighterInput>;
+  /**
+   * A MOTION COMMAND — `d/f+2`, `b,f+P`, `2 1 4 P`. Optional, so every existing
+   * button-sequence special is untouched. Matched against the command buffer
+   * this machine is handed, in NUMPAD notation, which is relative to facing —
+   * so 6 is toward the opponent for both players and a command list cannot make
+   * P2 attack backwards. See engine/combat/CommandInput.
+   */
+  command?: CommandStep[];
+  /** Only available from this stance (Ground / Crouch / Air / Running / …). */
+  stance?: string;
   move: MoveWindow;
 }
 
@@ -418,6 +451,14 @@ export class FighterStateMachine {
   private jumpAirTimer = 0;
 
   private specialMoves: SpecialMoveDefinition[] = [...DEFAULT_SPECIAL_MOVES];
+  /**
+   * The motion-input buffer, fed by whoever owns the real controls (they know
+   * the stick AND the facing; this machine knows neither). Null = no motion
+   * commands, and the machine behaves exactly as it did before.
+   */
+  private commandBuffer: CommandBuffer | null = null;
+  /** The stance motion commands are gated on, e.g. 'Ground' or 'Crouch'. */
+  private commandStance = 'Ground';
 
   private prevInput: FighterInput = {
     forward: 0, strafe: 0, light: false, heavy: false,
@@ -501,6 +542,32 @@ export class FighterStateMachine {
   /** Set rage art availability based on current HP percentage */
   setRageArtAvailable(hpPercent: number) {
     this.rageArtAvailable = hpPercent <= 0.25;
+  }
+
+  /**
+   * Hand this machine the motion-input buffer. Without it, only button
+   * sequences fire — which is precisely how the engine behaved before motion
+   * commands existed, so not calling this changes nothing.
+   */
+  attachCommandBuffer(buffer: CommandBuffer | null) {
+    this.commandBuffer = buffer;
+  }
+
+  /** Update the stance motion commands are gated on. */
+  setCommandStance(stance: string) {
+    this.commandStance = stance;
+  }
+
+  /**
+   * The SOURCE CLIP of the move currently executing, when it has one.
+   *
+   * An imported special was authored with its own animation; without this the
+   * mesh falls back to the generic motion state and every special looks like
+   * the same heavy. `resolveClipName` already tries an explicit animation key
+   * as a clip name, so handing this straight through is all that is needed.
+   */
+  activeClip(): string | null {
+    return this.currentMove?.clip ?? null;
   }
 
   registerSpecialMoves(moves: SpecialMoveDefinition[]) {
@@ -1295,11 +1362,19 @@ export class FighterStateMachine {
   }
 
   private detectSpecialMove(now: number): SpecialMoveDefinition | null {
+    // ── Motion commands first ────────────────────────────────────────────
+    // A motion is strictly more deliberate than a button sequence of the same
+    // length, and the whole point of a command list is that the special comes
+    // out instead of the jab when you earned it.
+    const motion = this.detectMotionCommand(now);
+    if (motion) return motion;
+
     const cutoff = now - this.BUFFER_WINDOW_MS;
     const recent = this.inputBuffer.filter(e => e.timestamp >= cutoff);
 
     for (const special of this.specialMoves) {
       const seq = special.sequence;
+      if (!seq.length) continue; // a motion-only special has no button sequence
       if (recent.length < seq.length) continue;
       const tail = recent.slice(-seq.length);
       const matches = seq.every((key, i) => tail[i].key === key);
@@ -1309,5 +1384,33 @@ export class FighterStateMachine {
       }
     }
     return null;
+  }
+
+  /**
+   * Match the command buffer against every special that carries a motion.
+   * `matchCommand` does longest-match-wins and stance gating; consuming the
+   * buffer on a hit is what stops one motion firing the same special twice.
+   */
+  private detectMotionCommand(now: number): SpecialMoveDefinition | null {
+    const buffer = this.commandBuffer;
+    if (!buffer) return null;
+
+    const candidates: Array<MatchableMove & { def: SpecialMoveDefinition }> = [];
+    for (const special of this.specialMoves) {
+      if (!special.command?.length) continue;
+      candidates.push({
+        name: special.id,
+        input: special.command,
+        stance: special.stance,
+        def: special,
+      });
+    }
+    if (!candidates.length) return null;
+
+    const hit = matchCommand(candidates, buffer, { now, stance: this.commandStance });
+    if (!hit) return null;
+    // Consume, so holding the button does not re-fire the special every frame.
+    buffer.events.length = 0;
+    return hit.move.def;
   }
 }
