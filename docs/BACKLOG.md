@@ -21,6 +21,9 @@ movesets, then arenas and presentation.
 | 1.5 | Neck twisting "like an owl" | **done** — 111° head twist clamped to 35° (`452ce19`) |
 | 1.6 | Idle body twisted up | **done** — 171° of axial roll on both thighs, clamped (`cbe0939`) |
 | 1.7 | **Universal skeleton, and bake every clip onto it offline** | gate shipped (`check-universal-skeleton.mjs`); the BAKE is the next big piece |
+| 1.12 | Elbows/knees bending both ways and sideways | **done** — 646 hinge tracks were off-axis; a wrong-side fold is reflected, not clamped |
+| 1.13 | Idle was a Mixamo shadowboxing loop | **done** — the idle is an authored fighting stance now |
+| 1.14 | **The Bannon Mixamo bank is clamped on EVERY frame** | OPEN, and it is the next animation job. Measured on BOXING: RightShoulder and LeftShoulder sit at 35/25 with a RANGE OF 0, and both forearm twists at 12 with range 0 — every frame saturated against the ceiling, which reads as a stiff, pinned arm. GRAFQUICKJAB, from Schwarzerblitz, measures 0/0 and is untouched. The constraints are papering over a convention problem in that bank rather than fixing it. Those clips hold no combat slot any more, so nothing in a fight depends on them — but they are wrong, and the bake is where they get fixed properly. |
 | 1.8 | Re-rig the 4 fighters off the skeleton | open — CIPHER_rigged, MAIME, MAIME_tattered, EDWIN_KENNEDY_unchained |
 | 1.9 | Candy-wrapper pinch at wrists and knees | open — no twist bones on any rig; fix is dual-quaternion skinning (shader, no re-rig) |
 | 1.10 | Clavicles receive nothing from the Schwarzerblitz source | open — derive from the upper arm |
@@ -31,6 +34,11 @@ movesets, then arenas and presentation.
 - Every fighter gets their own moveset, stances and guards. No shared defaults
   where a unique version exists.
 - Combos, directional attacks, per-character move lists.
+- **done** — an animation is not interrupted unless the move authorises it.
+  Schwarzerblitz's own `#CANCEL_INTO` / `#FOLLOWUP` frame windows drive it;
+  133 moves carry them and nothing read them before.
+- **done** — a buffered follow-up plays the special it earned instead of the
+  generic jab.
 - **A move-library browser the owner can page through**, so he can look at an
   unsorted clip and say what it is and where it goes. Unsorted clips get a
   holding folder rather than being dropped.
@@ -43,14 +51,18 @@ movesets, then arenas and presentation.
 ## 3. PRESENTATION
 
 - **Preload everything before the select screen** — models and 2D art both.
-  Reported: select-screen 2D images do not show at all, and models take a long
-  time to appear in select and in the fight.
+  The 2D images not showing is **fixed** (`<img src>` was not going through
+  the deploy-base resolver, so every portrait 404'd on the PWA). The PRELOAD
+  itself is still open: models should be resident before the select screen,
+  not fetched when a match starts.
 - **Multiple taunts per character**, usable in match.
 - **Pre-match intro**: the fighters should do an idle and a taunt, shown one
   then the other or both together. Right now they stand there like statues.
 - Announcer, KO / draw / fight callouts, fighter voices.
 - Hit effects, bloom.
-- Start menu from the owner's own MP4 (he has made one and will send it).
+- **done** — start menu from the owner's own MP4. 23.7 MB source baked to a
+  7.3 MB h264 + VP9 pair with the audio split out, a poster frame, and
+  muted autoplay so a phone will actually run it.
 - Fonts and UI that do not read as generic.
 
 ## 4. ARENAS
