@@ -49,6 +49,11 @@ jobs:
           ROCKET_PREVIEW: '1' # static SPA shell, no server runtime
         run: npm run build
 
+      - name: Stamp the service worker's cache version
+        # A constant VERSION meant `activate` never purged a cache, so the app
+        # could not update. The commit makes each deploy its own generation.
+        run: node scripts/stamp-sw-version.mjs dist
+
       - name: SPA fallback
         # Pages has no rewrite rules; a copy of index.html at 404.html is how a
         # client-routed app survives a deep link or a refresh.

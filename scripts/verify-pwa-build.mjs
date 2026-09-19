@@ -118,6 +118,14 @@ function main() {
   );
   if (!registers) problems.push('no bundled code references serviceWorker — nothing registers it');
 
+  // A worker shipped with the placeholder still in it has a cache key that
+  // never changes, which is exactly the bug that stopped the app updating.
+  const swSrc = existsSync(join(dist, 'sw.js')) ? readFileSync(join(dist, 'sw.js'), 'utf8') : '';
+  if (!swSrc) problems.push('no sw.js in the build — the app cannot be installed');
+  else if (swSrc.includes('__BF_SW_VERSION__')) {
+    problems.push('sw.js still carries __BF_SW_VERSION__ — run scripts/stamp-sw-version.mjs');
+  }
+
   if (problems.length) {
     console.error(`[pwa-verify] NOT INSTALLABLE — ${problems.length} problem(s):`);
     for (const p of problems) console.error(`  - ${p}`);

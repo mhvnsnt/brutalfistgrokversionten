@@ -25,7 +25,17 @@
  * subdirectory. Nothing here hardcodes a leading slash.
  */
 
-const VERSION = 'bf-v1';
+/**
+ * STAMPED AT BUILD TIME. This was a constant, and a constant is why the app
+ * would not update: `activate` deletes every cache whose key does not start
+ * with VERSION, so with a fixed VERSION no deploy ever purged anything and a
+ * cache-first asset from the first install was kept forever.
+ *
+ * scripts/stamp-sw-version.mjs rewrites the placeholder with the commit's
+ * short SHA during the Pages build. Left as-is in dev, where nothing is
+ * cached long enough to matter.
+ */
+const VERSION = '__BF_SW_VERSION__';
 const SHELL_CACHE = `${VERSION}-shell`;
 const ASSET_CACHE = `${VERSION}-assets`;
 
@@ -53,19 +63,42 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+/** Content-addressed: the URL itself changes when the bytes do, so never re-check. */
+const IMMUTABLE = /\/assets\/[^/]+-[A-Za-z0-9_-]{6,}\.(js|css|woff2?|png|jpe?g|svg|webp)$/;
+
 /** Long-lived, content-addressed or simply large and static. */
 function isCacheFirst(url) {
   return (
     /\/assets\/[^/]+-[A-Za-z0-9_-]{6,}\.(js|css|woff2?|png|jpe?g|svg|webp)$/.test(url.pathname) ||
     /\.(glb|gltf|bin|ktx2|mp3|ogg|wav|jgz)$/.test(url.pathname) ||
-    /\/(models|motion|portraits|__grok)\//.test(url.pathname)
+    /\/(models|motion|portraits|title|__grok)\//.test(url.pathname)
   );
 }
 
+/**
+ * Cache-first, but REVALIDATE IN THE BACKGROUND.
+ *
+ * Plain cache-first never looks again, which is correct for a content-hashed
+ * bundle file and wrong for everything else this rule covers: a portrait, a
+ * model or a motion clip lives at a STABLE path, so a re-exported one would
+ * never reach a device that had already cached the old bytes. The viewer
+ * still gets the instant cached answer; the next launch gets the new file.
+ */
 async function cacheFirst(request) {
   const cache = await caches.open(ASSET_CACHE);
   const hit = await cache.match(request);
-  if (hit) return hit;
+  if (hit) {
+    if (!IMMUTABLE.test(new URL(request.url).pathname)) {
+      // Never awaited: revalidation must not delay the hit it is refreshing.
+      fetch(request)
+        .then((fresh) => {
+          if (fresh && fresh.ok) return cache.put(request, fresh.clone());
+          return undefined;
+        })
+        .catch(() => {});
+    }
+    return hit;
+  }
   const response = await fetch(request);
   // Opaque responses are cached too: a cross-origin CDN asset is still worth
   // keeping, and an opaque hit is better than a second round trip.
@@ -78,7 +111,14 @@ async function cacheFirst(request) {
 async function networkFirst(request, cacheName) {
   const cache = await caches.open(cacheName);
   try {
-    const response = await fetch(request);
+    // BYPASS THE BROWSER'S OWN HTTP CACHE for navigations. GitHub Pages
+    // serves index.html with a max-age, so a plain fetch here can be answered
+    // from the HTTP cache with the PREVIOUS build's HTML — network-first that
+    // is not actually reaching the network. 'reload' is what makes the
+    // navigation rule mean what it says.
+    const response = await fetch(
+      request.mode === 'navigate' ? new Request(request, { cache: 'reload' }) : request,
+    );
     if (response && response.ok) cache.put(request, response.clone()).catch(() => {});
     return response;
   } catch (err) {
