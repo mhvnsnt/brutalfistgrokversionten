@@ -39,9 +39,10 @@ jobs:
       - name: Production build
         run: npm run build
 
+      - name: Rocket production build
+        run: npm run rocket:build
+
       - name: Rocket preview smoke test
-        env:
-          ROCKET_PREVIEW: "1"
         run: |
           set -euo pipefail
           npm run rocket:preview > /tmp/brutal-fist-rocket.log 2>&1 &
@@ -50,7 +51,11 @@ jobs:
           for i in $(seq 1 60); do
             if curl --fail --silent --show-error --max-time 2 http://127.0.0.1:8080/ -o /tmp/brutal-fist-rocket.html; then
               grep -q 'id="root"' /tmp/brutal-fist-rocket.html
-              grep -q '/src/rocket-main.tsx' /tmp/brutal-fist-rocket.html
+              grep -Eq '/assets/[^"'"' ]+\.js' /tmp/brutal-fist-rocket.html
+              if grep -q '/src/rocket-main.tsx' /tmp/brutal-fist-rocket.html; then
+                echo "Unexpected unbuilt Vite source entry in Rocket production preview"
+                exit 1
+              fi
               # Rocket's embedded preview must receive a plain HTML shell without
               # an HMR client; the runtime is intentionally HMR-free.
               if grep -q '@vite/client' /tmp/brutal-fist-rocket.html; then
