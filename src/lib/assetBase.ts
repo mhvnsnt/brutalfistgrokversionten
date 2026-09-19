@@ -28,7 +28,7 @@
  */
 
 /** The roots this app serves its own assets from. */
-export const ASSET_ROOTS = ['models', 'motion', 'portraits', 'audio', 'stages', '__grok'] as const;
+export const ASSET_ROOTS = ['models', 'motion', 'portraits', 'audio', 'stages', 'title', '__grok'] as const;
 
 const ROOT_RE = new RegExp(`^/(?:${ASSET_ROOTS.join('|')})/`);
 

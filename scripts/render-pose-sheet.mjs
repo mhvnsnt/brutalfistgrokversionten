@@ -16,6 +16,8 @@ const CLIPS = process.argv[3] ?? 'idle,block,attack_1';
 const MODEL = process.argv[4] ?? 'BANNON_rigged.glb';
 const TIMES = process.argv[5] ?? '0,0.25';
 const VIEWS = process.argv[6] ?? '0,90';
+const FOCUS = process.argv[7] ?? 'full';
+const TILE = process.argv[8] ?? '240';
 const BASE = process.env.BF_BASE ?? 'http://127.0.0.1:8080';
 
 const browser = await chromium.launch({
@@ -30,7 +32,7 @@ page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
 // The app's router owns every path, so a standalone .html is 404'd. Load any
 // real page for its module graph, then replace the document with the sheet's
 // own root and entry module — Vite still transforms /tools/posesheet/main.ts.
-const url = `${BASE}/?model=${MODEL}&clips=${encodeURIComponent(CLIPS)}&t=${TIMES}&views=${VIEWS}`;
+const url = `${BASE}/?model=${MODEL}&clips=${encodeURIComponent(CLIPS)}&t=${TIMES}&views=${VIEWS}&focus=${FOCUS}&tile=${TILE}`;
 console.log('→', url);
 await page.goto(url, { waitUntil: 'domcontentloaded' });
 // Let the app hydrate FIRST — React replaces document.body on hydration and

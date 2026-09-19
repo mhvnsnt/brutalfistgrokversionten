@@ -24,6 +24,8 @@ const TIMES = (params.get('t') ?? '0,0.25').split(',').map(Number);
 const TILE = Number(params.get('tile') ?? 240);
 /** Camera angle in degrees around the fighter. 0 looks down -X at his front. */
 const VIEWS = (params.get('views') ?? '0,90').split(',').map(Number);
+/** 'upper' frames the torso and arms close, for judging a limb rather than a silhouette. */
+const FOCUS = params.get('focus') ?? 'full';
 
 const app = document.getElementById('app')!;
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -88,13 +90,18 @@ async function main() {
         scene.updateMatrixWorld(true);
 
         const rad = (view * Math.PI) / 180;
+        const close = FOCUS === 'upper';
+        const aim = close
+          ? new THREE.Vector3(centre.x, box.min.y + height * 0.78, centre.z)
+          : centre;
+        const dist = height * (close ? 1.25 : 2.6);
         // View 0 stands in front of a fighter whose bind forward is +X.
         camera.position.set(
-          centre.x + Math.cos(rad) * height * 2.6,
-          centre.y + height * 0.12,
-          centre.z + Math.sin(rad) * height * 2.6,
+          aim.x + Math.cos(rad) * dist,
+          aim.y + height * (close ? 0.05 : 0.12),
+          aim.z + Math.sin(rad) * dist,
         );
-        camera.lookAt(centre);
+        camera.lookAt(aim);
         camera.updateProjectionMatrix();
         renderer.render(scene3, camera);
 

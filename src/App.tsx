@@ -1,3 +1,4 @@
+import { TitleScreen } from './components/TitleScreen';
 import { useEffect, useState } from 'react';
 import { AppScreen } from './types';
 import { BANNON_GLB_PLAYABLE_MODELS } from './data/bannonGlbRoster';
@@ -85,24 +86,7 @@ export default function App() {
 
   // ── Title ──
   if (screen === AppScreen?.Title) {
-    return (
-      <div className="fixed inset-0 bg-black text-white flex items-center justify-center font-mono">
-        <button
-          autoFocus
-          onClick={() => setScreen(AppScreen?.MainMenu)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " " || e.code === "Space") {
-              e.preventDefault();
-              setScreen(AppScreen?.MainMenu);
-            }
-          }}
-          className="text-4xl font-black italic tracking-[0.18em] text-white animate-pulse"
-        >
-          BRUTAL FIST
-          <span className="block mt-8 text-sm tracking-[0.45em] text-yellow-400">PRESS START</span>
-        </button>
-      </div>
-    );
+    return <TitleScreen onStart={() => setScreen(AppScreen?.MainMenu)} />;
   }
 
   // ── Main Menu ──
