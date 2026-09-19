@@ -13,20 +13,30 @@
     "nextCompatibilityEntry": "app/page.tsx"
   },
   "game": {
-    "flow": ["character-select", "stage-select", "vs", "combat"],
+    "flow": [
+      "character-select",
+      "stage-select",
+      "vs",
+      "combat"
+    ],
     "playablePreview": true,
     "pwa": true,
     "doNotCreatePlayRoute": true,
     "preserveExistingRoutes": true
   },
   "assets": {
-    "runtimeDirectories": ["public", "src/assets", "src/generated", "vendor"],
+    "runtimeDirectories": [
+      "public",
+      "src/assets",
+      "src/generated",
+      "vendor"
+    ],
     "followSymlinks": false,
     "includeGeneratedMotionBanks": true
   },
   "build": {
     "install": "npm install",
-    "build": "npm run build",
+    "build": "npm run rocket:build",
     "nextBuild": "npm run next:build",
     "healthcheck": "/"
   }
