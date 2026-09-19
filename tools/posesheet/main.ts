@@ -15,6 +15,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 
 import { runCharacterPipeline } from '../../src/engine/pipeline/CharacterPipeline';
+import { JOINT_LIMITS } from '../../src/engine/retarget/SkeletalLimits';
 
 const params = new URLSearchParams(location.search);
 const MODEL = params.get('model') ?? 'BANNON_rigged.glb';
@@ -105,6 +106,11 @@ async function main() {
       }
     }
   }
+  // Published so scripts/audit-joint-rotation.mjs can measure the SHIPPING
+  // pipeline's output rather than re-deriving it and drifting from it.
+  (window as unknown as { __POSESHEET: unknown }).__POSESHEET = {
+    THREE, scene, mixer, actionFor, limits: JOINT_LIMITS,
+  };
   (window as unknown as { __POSESHEET_READY: boolean }).__POSESHEET_READY = true;
 }
 

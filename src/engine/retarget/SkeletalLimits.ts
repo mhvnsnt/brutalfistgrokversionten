@@ -89,6 +89,22 @@ export const JOINT_LIMITS: Readonly<Record<string, JointLimit>> = {
   mixamorigRightLeg:      { bend: 150, twist: 12 },
   mixamorigLeftShoulder:  { bend: 35, twist: 25 },
   mixamorigRightShoulder: { bend: 35, twist: 25 },
+  // A hip rotates about 45 degrees in and out. MEASURED on the Bannon bank's
+  // BOX_IDLE, which is what the owner was looking at when he said the idle
+  // "twists his body all up": RightUpLeg carried 171 degrees of AXIAL roll and
+  // LeftUpLeg 165, near-constant across the whole clip (range under 4). That
+  // is not motion, it is a convention offset — and because the twist axis IS
+  // the bone's length, it does not move the knee at all. The leg looks placed
+  // correctly in silhouette while the thigh mesh is wound almost backwards.
+  // Nothing caught it because neither thigh had a limit.
+  mixamorigLeftUpLeg:     { bend: 120, twist: 50 },
+  mixamorigRightUpLeg:    { bend: 120, twist: 50 },
+  mixamorigLeftFoot:      { bend: 55, twist: 30 },
+  mixamorigRightFoot:     { bend: 55, twist: 30 },
+  // The shoulder joint itself swings almost anywhere, but its axial range is
+  // about 90 degrees each way; past that the deltoid shears.
+  mixamorigLeftArm:       { bend: 170, twist: 90 },
+  mixamorigRightArm:      { bend: 170, twist: 90 },
 };
 
 const _p = new THREE.Vector3();
