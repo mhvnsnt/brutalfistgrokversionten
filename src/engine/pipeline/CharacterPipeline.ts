@@ -74,6 +74,7 @@ import { measureRestCorrection, needsCorrection } from '../retarget/RestPoseOffs
 import {
   SPINE_CHAIN,
   clampToJointLimits,
+  constrainHinges,
   redistributeChain,
 } from '../retarget/SkeletalLimits';
 import { bindClipTracksToTargetBones } from '../retarget/AnimationRetargeter';
@@ -728,6 +729,7 @@ export async function extractAndRetargetAnimations(
   // So keep BOTH rests and hand each bank the one that matches it. The mesh,
   // the skinning and the bind matrices are untouched either way.
   let limitHits = 0;
+  let hingeHits = 0;
   const limitWorst = new Map<string, { bone: string; bend: number; twist: number }>();
   const restCorrection = measureRestCorrection(targetScene);
   const tPoseRestMap = new Map(restMap);
@@ -768,6 +770,12 @@ export async function extractAndRetargetAnimations(
     // of about 35 — the owl-neck the owner reported. Spread the chain, then
     // hold every limited joint inside a human range. See SkeletalLimits.
     redistributeChain(relative, SPINE_CHAIN, targetRest);
+    // Hinges first: an elbow folded the wrong way is not a magnitude problem,
+    // and clamping magnitude cannot see it. MEASURED, the two banks disagree
+    // about which way an elbow bends, which is what "folding backwards
+    // towards his shoulder blade" is. See SkeletalLimits.HINGE_JOINTS.
+    const hinged = constrainHinges(relative, targetRest);
+    if (hinged.length > 0) hingeHits += hinged.length;
     const clamped = clampToJointLimits(relative, targetRest);
     if (clamped.length > 0) {
       limitHits += clamped.length;
@@ -944,6 +952,9 @@ export async function extractAndRetargetAnimations(
     modelName
   );
 
+  if (hingeHits > 0) {
+    console.log(`[CharacterPipeline] 🦵 "${modelName}" ${hingeHits} hinge track(s) put back on their axis`);
+  }
   if (limitHits > 0) {
     const worst = [...limitWorst.values()]
       .sort((a, b) => b.twist - a.twist)

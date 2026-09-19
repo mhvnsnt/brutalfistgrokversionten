@@ -5,11 +5,14 @@ import { test } from 'node:test';
 import * as THREE from 'three';
 
 import {
+  HINGE_JOINTS,
   JOINT_LIMITS,
   SPINE_CHAIN,
   angleDeg,
   clampToJointLimits,
+  constrainHinges,
   redistributeChain,
+  signedAngleAbout,
   swingTwist,
 } from './SkeletalLimits.ts';
 
@@ -120,4 +123,72 @@ test('a chain the source already drives in full is left alone', () => {
   const before = clip.tracks.map((t) => Array.from(t.values));
   assert.equal(redistributeChain(clip, SPINE_CHAIN, rest), false);
   assert.deepEqual(clip.tracks.map((t) => Array.from(t.values)), before);
+});
+
+const Z = new THREE.Vector3(0, 0, 1);
+
+test('an elbow folded the wrong way is put back — magnitude clamping cannot see this', () => {
+  // Owner, on the BOXING clip: "his arm is folding backwards towards his
+  // shoulder blade". A 60 degree bend is well inside any magnitude limit; it
+  // is the DIRECTION that is impossible.
+  const bone = 'mixamorigLeftForeArm';
+  const bind = new THREE.Quaternion();
+  const backwards = new THREE.Quaternion().setFromAxisAngle(Z, THREE.MathUtils.degToRad(60));
+  const clip = new THREE.AnimationClip('BACKFOLD', 1, [quatTrack(bone, [bind.clone(), backwards])]);
+
+  // Prove the point: the magnitude clamp passes it.
+  const magnitudeOnly = clampToJointLimits(
+    new THREE.AnimationClip('X', 1, [quatTrack(bone, [bind.clone(), backwards])]),
+    new Map([[bone, bind]]),
+  );
+  assert.equal(magnitudeOnly.length, 0, '60 degrees is inside the magnitude limit, as expected');
+
+  const v = constrainHinges(clip, new Map([[bone, bind]]));
+  assert.equal(v.length, 1);
+  const out = clip.tracks[0].values;
+  const after = new THREE.Quaternion(out[4], out[5], out[6], out[7]);
+  const angle = signedAngleAbout(after, Z);
+  assert.ok(
+    angle <= HINGE_JOINTS[bone].max + 0.5 && angle >= HINGE_JOINTS[bone].min - 0.5,
+    `elbow left at ${angle.toFixed(1)} deg, outside [${HINGE_JOINTS[bone].min}, ${HINGE_JOINTS[bone].max}]`,
+  );
+});
+
+test('a hinge bending its own way, in range, is untouched', () => {
+  const bone = 'mixamorigLeftForeArm';
+  const bind = new THREE.Quaternion();
+  const flexed = new THREE.Quaternion().setFromAxisAngle(Z, THREE.MathUtils.degToRad(-90));
+  const clip = new THREE.AnimationClip('FLEX', 1, [quatTrack(bone, [bind.clone(), flexed])]);
+  const before = Array.from(clip.tracks[0].values);
+  assert.equal(constrainHinges(clip, new Map([[bone, bind]])).length, 0);
+  assert.deepEqual(Array.from(clip.tracks[0].values), before);
+});
+
+test('a knee bending sideways is pulled back onto its axis', () => {
+  const bone = 'mixamorigLeftLeg';
+  const bind = new THREE.Quaternion();
+  const sideways = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), THREE.MathUtils.degToRad(70));
+  const clip = new THREE.AnimationClip('SIDEKNEE', 1, [quatTrack(bone, [bind.clone(), sideways])]);
+  const v = constrainHinges(clip, new Map([[bone, bind]]));
+  assert.equal(v.length, 1);
+  assert.ok(v[0].worstOffAxis > 60, 'the violation must report the off-axis swing it saw');
+  const out = clip.tracks[0].values;
+  const after = new THREE.Quaternion(out[4], out[5], out[6], out[7]);
+  const { swing } = swingTwist(after, Z);
+  assert.ok(
+    angleDeg(swing) <= HINGE_JOINTS[bone].maxOffAxis + 0.5,
+    `knee still ${angleDeg(swing).toFixed(1)} deg off its hinge`,
+  );
+});
+
+test('elbow and knee flex in OPPOSITE directions on this rig, and that is measured', () => {
+  // Derived over 9,647 samples per bone across both banks: the two banks
+  // disagreed about the sign, Schwarzerblitz is the reference, and it puts
+  // elbow flexion negative about Z and knee flexion positive.
+  assert.ok(HINGE_JOINTS.mixamorigLeftForeArm.min < 0 && HINGE_JOINTS.mixamorigLeftForeArm.max <= 10);
+  assert.ok(HINGE_JOINTS.mixamorigLeftLeg.max > 0 && HINGE_JOINTS.mixamorigLeftLeg.min >= -10);
+  for (const [bone, h] of Object.entries(HINGE_JOINTS)) {
+    assert.ok(h.min < h.max, `${bone} has an empty range`);
+    assert.ok(h.maxOffAxis > 0 && h.maxOffAxis < 45, `${bone} off-axis allowance is not a hinge`);
+  }
 });

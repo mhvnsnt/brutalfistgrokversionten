@@ -276,3 +276,142 @@ export function redistributeChain(
   }
   return true;
 }
+
+/**
+ * ELBOWS AND KNEES ARE HINGES. They bend one way, about one axis.
+ *
+ * Owner, on the BOXING clip: "his arm is folding backwards towards his
+ * shoulder blade ... and then the other arm is like twisting out towards the
+ * wrong direction." That is a hinge with no hinge constraint. Capping the
+ * MAGNITUDE of a bend, which clampToJointLimits does, cannot stop a fold in
+ * the wrong direction or a knee bending sideways — only a 1-DOF constraint can.
+ *
+ * DERIVED FROM THE DATA, not assumed. Across both banks (9,647 samples per
+ * bone), the rotation of every forearm and shin concentrates on LOCAL Z:
+ *
+ *   LeftForeArm   Z 51%  X 28%  Y 22%        LeftLeg   Z 44%  X 34%  Y 22%
+ *   RightForeArm  Z 55%  X 34%  Y 12%        RightLeg  Z 50%  X 32%  Y 18%
+ *
+ * So Z is the hinge. And the signed range over the banks was -180 to +180 —
+ * these joints were bending the whole way round, in both directions.
+ *
+ * WHICH DIRECTION IS FLEXION had to be measured too, because THE TWO BANKS
+ * DISAGREE, and that disagreement is the bug:
+ *
+ *   LeftForeArm   Bannon 62% positive   Schwarzerblitz 85% negative
+ *   LeftLeg       Bannon 77% negative   Schwarzerblitz 94% positive
+ *
+ * One of them is hinging backwards. Schwarzerblitz is the reference: it is
+ * authored fighting animation on one consistent rig, and it is the set whose
+ * stances and strikes the owner confirmed look right, while the Bannon-bank
+ * BOXING is the clip he reported folding backwards. So flexion is NEGATIVE
+ * about Z at the elbow and POSITIVE about Z at the knee, and a clip that
+ * disagrees is corrected rather than believed.
+ *
+ * OFF-AXIS is capped hard as well: measured p95 of the off-hinge swing ran
+ * 44 to 116 degrees, and a knee has essentially none.
+ */
+export interface HingeJoint {
+  /** The joint's one axis of rotation, in its own local space. */
+  axis: THREE.Vector3;
+  /** Signed flexion range about that axis, degrees. */
+  min: number;
+  max: number;
+  /** How far off the hinge the joint may swing at all, degrees. */
+  maxOffAxis: number;
+}
+
+const HINGE_Z = () => new THREE.Vector3(0, 0, 1);
+
+export const HINGE_JOINTS: Readonly<Record<string, HingeJoint>> = {
+  // Elbow: flexion is negative about Z here; a few degrees the other way is
+  // the normal slack in a straight arm, not hyperextension.
+  mixamorigLeftForeArm:  { axis: HINGE_Z(), min: -150, max: 8, maxOffAxis: 18 },
+  mixamorigRightForeArm: { axis: HINGE_Z(), min: -150, max: 8, maxOffAxis: 18 },
+  // Knee: flexion is positive about Z.
+  mixamorigLeftLeg:      { axis: HINGE_Z(), min: -8, max: 150, maxOffAxis: 18 },
+  mixamorigRightLeg:     { axis: HINGE_Z(), min: -8, max: 150, maxOffAxis: 18 },
+};
+
+/** Signed rotation about `axis`, degrees, in (-180, 180]. */
+export function signedAngleAbout(q: THREE.Quaternion, axis: THREE.Vector3): number {
+  const v = new THREE.Vector3(q.x, q.y, q.z).dot(axis);
+  let deg = (2 * Math.atan2(v, q.w) * 180) / Math.PI;
+  while (deg > 180) deg -= 360;
+  while (deg <= -180) deg += 360;
+  return deg;
+}
+
+export interface HingeViolation {
+  bone: string;
+  /** Worst signed flexion seen before correction, degrees. */
+  worstAngle: number;
+  /** Worst off-hinge swing seen before correction, degrees. */
+  worstOffAxis: number;
+  /** How many keys were outside the hinge. */
+  keys: number;
+}
+
+/**
+ * Hold every hinge joint on its own axis and inside its own direction.
+ *
+ * Runs on the FINAL bind-relative clip, so the reference is the fighter's own
+ * rest. Modified in place; the violations are returned so a bake can report
+ * what it corrected rather than silently repairing bad data.
+ */
+export function constrainHinges(
+  clip: THREE.AnimationClip,
+  restMap: Map<string, THREE.Quaternion>,
+  hinges: Readonly<Record<string, HingeJoint>> = HINGE_JOINTS,
+): HingeViolation[] {
+  const out: HingeViolation[] = [];
+  for (const track of clip.tracks) {
+    if (!track.name.endsWith('.quaternion')) continue;
+    const bone = track.name.slice(0, -'.quaternion'.length);
+    const hinge = hinges[bone];
+    const bind = restMap.get(bone);
+    if (!hinge || !bind) continue;
+
+    const bindInv = bind.clone().invert();
+    const values = track.values;
+    let worstAngle = 0;
+    let worstOffAxis = 0;
+    let keys = 0;
+
+    for (let i = 0; i + 3 < values.length; i += 4) {
+      const rel = bindInv.clone().multiply(
+        new THREE.Quaternion(values[i], values[i + 1], values[i + 2], values[i + 3]),
+      );
+      const { swing, twist } = swingTwist(rel, hinge.axis);
+      const angle = signedAngleAbout(twist, hinge.axis);
+      const offAxis = angleDeg(swing);
+      if (Math.abs(angle) > Math.abs(worstAngle)) worstAngle = angle;
+      if (offAxis > worstOffAxis) worstOffAxis = offAxis;
+
+      const wanted = Math.min(hinge.max, Math.max(hinge.min, angle));
+      const overOff = offAxis > hinge.maxOffAxis;
+      if (wanted === angle && !overOff) continue;
+
+      const flex = new THREE.Quaternion().setFromAxisAngle(
+        hinge.axis, (wanted * Math.PI) / 180,
+      );
+      const off = overOff ? capped(swing, hinge.maxOffAxis) : swing;
+      const fixed = bind.clone().multiply(off).multiply(flex);
+      values[i] = fixed.x;
+      values[i + 1] = fixed.y;
+      values[i + 2] = fixed.z;
+      values[i + 3] = fixed.w;
+      keys++;
+    }
+
+    if (keys > 0) {
+      out.push({
+        bone,
+        worstAngle: +worstAngle.toFixed(1),
+        worstOffAxis: +worstOffAxis.toFixed(1),
+        keys,
+      });
+    }
+  }
+  return out;
+}
