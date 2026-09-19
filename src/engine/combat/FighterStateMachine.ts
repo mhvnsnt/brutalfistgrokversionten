@@ -53,6 +53,15 @@ export interface CrossfadeState {
   duration: number;
 }
 
+/** A move this one may be cancelled or continued into, and when. */
+export interface MoveLink {
+  /** The target move's id, as SchwarzerblitzSpecials names it. */
+  move: string;
+  /** Seconds from the start of THIS move during which the link is open. */
+  from: number;
+  to: number;
+}
+
 export interface MoveWindow {
   startup: number;
   active: number;
@@ -67,6 +76,22 @@ export interface MoveWindow {
    * like a generic heavy.
    */
   clip?: string;
+  /**
+   * WHICH MOVES MAY INTERRUPT THIS ONE, AND WHEN.
+   *
+   * Owner: "we need to do a thing where we don't interrupt the animations
+   * unless they're meant to be interrupted." That is a cancel window, and
+   * Schwarzerblitz already ships one per move — 133 moves carry `cancelInto`
+   * and `followups` with frame ranges, and until now NOTHING in the engine
+   * read either. `window` is in SECONDS from the start of the move, converted
+   * from the source's 24 fps frames at import.
+   *
+   * Absent means the move cannot be cancelled at all, which is the correct
+   * default: a move plays to its end unless it was authored otherwise.
+   */
+  cancelInto?: MoveLink[];
+  /** Moves that CONTINUE this one, reachable only inside their window. */
+  followups?: MoveLink[];
   hitboxStartFrame?: number;
   hitboxEndFrame?: number;
   totalFrames?: number;
@@ -101,6 +126,12 @@ export interface SpecialMoveDefinition {
    * engine has always had, and it stays exactly as it was.
    */
   sequence: Array<keyof FighterInput>;
+  /**
+   * A combo ender or link that the source marks FOLLOWUP_ONLY. It exists in
+   * the list so a cancel window can name it, and is invisible to matching
+   * from neutral — otherwise a finisher could be thrown standing still.
+   */
+  followupOnly?: boolean;
   /**
    * A MOTION COMMAND — `d/f+2`, `b,f+P`, `2 1 4 P`. Optional, so every existing
    * button-sequence special is untouched. Matched against the command buffer
@@ -287,6 +318,12 @@ interface BufferEntry {
 // ── Queued input during recovery ──────────────────────────────────────────────
 interface QueuedAction {
   type: 'light' | 'heavy' | 'guard' | 'grapple' | 'commandThrow';
+  /**
+   * The special the player actually earned, when they earned one. Without
+   * this a buffered follow-up always came out as the generic jab, which is
+   * most of why a combo felt like the same move twice.
+   */
+  special?: SpecialMoveDefinition;
 }
 
 // ── Hitbox active window result ───────────────────────────────────────────────
@@ -892,7 +929,23 @@ export class FighterStateMachine {
       this.moveTimer = Math.max(0, this.moveTimer - dt);
       this.moveElapsed += dt;
 
+      // ── CANCEL WINDOWS ──────────────────────────────────────────────────
+      // An animation runs to its end UNLESS the move itself says otherwise.
+      // Schwarzerblitz authors that per move as `cancelInto` and `followups`
+      // with frame ranges; a move with neither cannot be interrupted at all,
+      // which is the correct default and is why a tap no longer restarts a
+      // swing halfway through.
+      const cancel = this.detectCancel(now);
+      if (cancel) {
+        this.walkVelocity = { forward: 0, strafe: 0 };
+        return this.beginAttack(cancel.move.animation, cancel.move);
+      }
+
       if (this.isRecovering) {
+        // Recovery still BUFFERS anything — that is the input window, not an
+        // interruption, and the queued move fires when the current one ends.
+        const buffered = this.detectSpecialMove(now);
+        if (buffered && !this.queuedAction) this.queuedAction = { type: 'light', special: buffered };
         if (risingLight && !this.queuedAction) this.queuedAction = { type: 'light' };
         if (risingHeavy && !this.queuedAction) this.queuedAction = { type: 'heavy' };
         if (risingGuard && !this.queuedAction) this.queuedAction = { type: 'guard' };
@@ -1336,6 +1389,12 @@ export class FighterStateMachine {
   }
 
   private executeQueuedAction(queued: QueuedAction): FighterMotionState {
+    // A buffered SPECIAL comes out as that special. Falling through to the
+    // generic jab here is what made every combo end in the same punch.
+    if (queued.special) {
+      this.walkVelocity = { forward: 0, strafe: 0 };
+      return this.beginAttack(queued.special.move.animation, queued.special.move);
+    }
     switch (queued.type) {
       case 'light':
         return this.beginAttack('lightAttack', DEFAULT_MOVE_WINDOWS.lightAttack);
@@ -1359,6 +1418,32 @@ export class FighterStateMachine {
     const cutoff = now - this.BUFFER_WINDOW_MS;
     this.inputBuffer = this.inputBuffer.filter(e => e.timestamp >= cutoff);
     if (this.inputBuffer.length > 8) this.inputBuffer.shift();
+  }
+
+  /**
+   * Is the player asking for a move THIS move is allowed to be cancelled into,
+   * right now?
+   *
+   * The link's window is authored per move, so the answer is the move's own,
+   * not a global rule. Returns null when nothing is asked for, when the move
+   * asked for is not a legal cancel, or when it is legal but the window has
+   * not opened or has already closed — and in every one of those cases the
+   * current animation keeps running, which is the whole point.
+   */
+  private detectCancel(now: number): SpecialMoveDefinition | null {
+    const from = this.currentMove;
+    if (!from) return null;
+    const links = [...(from.cancelInto ?? []), ...(from.followups ?? [])];
+    if (links.length === 0) return null;
+
+    const open = links.filter((l) => this.moveElapsed >= l.from && this.moveElapsed <= l.to);
+    if (open.length === 0) return null;
+
+    // Followup-only moves are included HERE and nowhere else: a cancel window
+    // is the only way they are meant to be reachable.
+    const wanted = this.detectMotionCommand(now, true);
+    if (!wanted) return null;
+    return open.some((l) => l.move === wanted.id) ? wanted : null;
   }
 
   private detectSpecialMove(now: number): SpecialMoveDefinition | null {
@@ -1391,13 +1476,14 @@ export class FighterStateMachine {
    * `matchCommand` does longest-match-wins and stance gating; consuming the
    * buffer on a hit is what stops one motion firing the same special twice.
    */
-  private detectMotionCommand(now: number): SpecialMoveDefinition | null {
+  private detectMotionCommand(now: number, includeFollowupOnly = false): SpecialMoveDefinition | null {
     const buffer = this.commandBuffer;
     if (!buffer) return null;
 
     const candidates: Array<MatchableMove & { def: SpecialMoveDefinition }> = [];
     for (const special of this.specialMoves) {
       if (!special.command?.length) continue;
+      if (special.followupOnly && !includeFollowupOnly) continue;
       candidates.push({
         name: special.id,
         input: special.command,

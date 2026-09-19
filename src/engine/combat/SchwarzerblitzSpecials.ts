@@ -38,6 +38,7 @@
 // sets allowImportingTsExtensions and Vite/esbuild resolve them unchanged.
 import type { SpecialMoveDefinition } from './FighterStateMachine.ts';
 import type { CommandStep } from './CommandInput.ts';
+import type { MoveLink } from './FighterStateMachine.ts';
 import {
   SCHWARZERBLITZ_MOVE_GRAPH,
   type SbMove,
@@ -102,10 +103,11 @@ function isPlayable(move: SbMove): boolean {
   // stance change or a step — real, but not a special the player "does".
   if (!move.input.length) return false;
   if (!move.hitboxes.length) return false;
-  // FOLLOWUP_ONLY moves are reachable only inside another move's window, which
-  // the engine does not model yet. Importing them as free specials would make
-  // a combo ender available from neutral.
-  if (move.flags.includes('FOLLOWUP_ONLY')) return false;
+  // FOLLOWUP_ONLY moves ARE imported now that cancel windows are modelled —
+  // they are most of what a cancel points at, and excluding them left 18 of
+  // 30 authored links in chara_tutor pointing at nothing. They carry
+  // `followupOnly`, so only a cancel window can reach them and a combo ender
+  // still cannot be thrown from neutral.
   // A single bare button is not a command — it is the jab the engine already
   // has, and registering it would shadow every normal attack.
   const steps = move.input;
@@ -132,7 +134,41 @@ export function motionStateFor(move: SbMove): 'lightAttack' | 'heavyAttack' | 'l
   return heavy ? 'heavyAttack' : 'lightAttack';
 }
 
-export function moveWindowFor(move: SbMove) {
+/**
+ * The source's frame windows, in seconds from the start of the move.
+ *
+ * `#FOLLOWUP` and `#CANCEL_INTO` in moves.txt each carry a frame range at the
+ * engine's own 24 fps. Those ranges are the whole cancel system: a move with
+ * no links cannot be interrupted, and one with links can only be interrupted
+ * by the moves it names, inside the frames it names. 133 moves carry this and
+ * nothing read it until now.
+ */
+function linksOf(
+  list: SbMove['followups'] | SbMove['cancelInto'],
+  /**
+   * The set the link's target lives in. A link names a RAW move name
+   * ('Rotary_Kick') while a special's id is namespaced by its set
+   * ('sb_chara_tutor_Rotary_Kick'); without this the ids never match and
+   * every authored cancel window is silently dead.
+   */
+  setName: string,
+): MoveLink[] {
+  const out: MoveLink[] = [];
+  for (const link of list ?? []) {
+    const [a, b] = link.window ?? [0, 0];
+    if (!link.move) continue;
+    out.push({
+      move: `sb_${setName}_${link.move}`,
+      from: Math.max(0, a / SOURCE_FPS),
+      // A zero-length window would never be open on any frame; give a link
+      // with no range the rest of the move rather than dropping it.
+      to: b > a ? b / SOURCE_FPS : Number.POSITIVE_INFINITY,
+    });
+  }
+  return out;
+}
+
+export function moveWindowFor(move: SbMove, setName = '') {
   const [a, b] = move.frames ?? [0, 4];
   const startup = Math.max(0.04, a / SOURCE_FPS);
   const active = Math.max(0.04, (b - a) / SOURCE_FPS);
@@ -152,6 +188,8 @@ export function moveWindowFor(move: SbMove) {
     damage,
     isSpecial: true,
     specialName: (move.displayName ?? move.name).replace(/_/g, ' '),
+    cancelInto: linksOf(move.cancelInto, setName),
+    followups: linksOf(move.followups, setName),
   };
 }
 
@@ -191,7 +229,8 @@ export function schwarzerblitzSpecials(setName = 'chara_tutor'): SpecialMoveDefi
       sequence: [], // motion-only: the button path is not how this is reached
       command,
       stance: move.stance,
-      move: moveWindowFor(move),
+      followupOnly: move.flags.includes('FOLLOWUP_ONLY'),
+      move: moveWindowFor(move, setName),
     });
   }
   return out;
