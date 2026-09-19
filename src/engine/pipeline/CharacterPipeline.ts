@@ -826,7 +826,13 @@ export async function extractAndRetargetAnimations(
         const idx = processedClips.findIndex(
           (c) => String((c as THREE.AnimationClip & { userData?: { semanticState?: string } }).userData?.semanticState) === semanticState,
         );
-        if (idx >= 0) processedClips[idx] = converted;
+        // TAKE the state, do not DELETE the clip that held it. Actions are
+        // registered in order and the first clip for a semantic wins, so
+        // inserting ahead of the old owner is enough — and the displaced clip
+        // stays reachable BY NAME, which the move library and the moveset
+        // editor need, and which owner law requires (generated content is
+        // never dropped without asking).
+        if (idx >= 0) processedClips.splice(idx, 0, converted);
         else processedClips.push(converted);
       } else {
         processedClips.push(converted);

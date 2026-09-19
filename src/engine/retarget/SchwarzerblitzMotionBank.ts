@@ -85,6 +85,21 @@ export function schwarzerblitzSourceRest(): Map<string, THREE.Quaternion> {
  * attack_2 keeps HURRICANE_KICK, which is a real spinning kick.
  */
 export const SCHWARZERBLITZ_COMBAT_SLOTS: Record<string, string> = {
+  // THE IDLE. Owner, looking at it: "his feet are like really close together,
+  // he's leaning like he's doing the Michael Jackson lean, one of his arms are
+  // out forward and one of his arms are like weirdly out backward."
+  //
+  // MEASURED, hand position relative to the hips (this rig's forward is +X):
+  //   BOX_IDLE  LH [ 0.229, 0.232, 0.311]   RH [-0.225, -0.025, 0.036]
+  //   STANCE    LH [ 0.307, 0.505, 0.219]   RH [ 0.215,  0.278, -0.141]
+  //
+  // BOX_IDLE puts one hand 0.23 FORWARD and the other 0.23 BEHIND him, at hip
+  // height — his description exactly. It is a Mixamo shadowboxing loop being
+  // sampled at a moment that happens to look like that, on a bank that is
+  // mixed-convention (its legs measure closer to the Mixamo rest, its
+  // shoulders closer to ours). STANCE is an authored fighting stance: both
+  // hands forward, both at chest height, feet planted.
+  idle:      'STANCE',
   attack_1:  'GRAFQUICKJAB',    // 0.46s jab, vs BOXING's 1.73s loop
   attack_rp: 'GYAKUZUKI',       // 0.42s reverse punch, vs BOXING__2_'s 4.23s
   attack_lk: 'QUICKKICK',       // 0.25s
