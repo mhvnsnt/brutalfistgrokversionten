@@ -59,3 +59,35 @@ export function schwarzerblitzSourceRest(): Map<string, THREE.Quaternion> {
   const rest = SCHWARZERBLITZ_MOTION_BANK[SCHWARZERBLITZ_REST_CLIP] as BannonMotionClipData | undefined;
   return rest ? eulerBankRestPose(rest) : new Map<string, THREE.Quaternion>();
 }
+
+/**
+ * THE COMBAT SLOTS THAT MUST BE A SINGLE STRIKE, NOT A DEMONSTRATION LOOP.
+ *
+ * MEASURED — this is why "it's the same moves for every button". The Bannon
+ * bank is Mixamo, and the clips that had claimed the attack slots are
+ * multi-second demo loops of somebody shadowboxing:
+ *
+ *   attack_1  BOXING        1.73s   ("Boxing.fbx")
+ *   attack_rp BOXING__2_    4.23s   ("Boxing (2).fbx")  -- four seconds
+ *   attack_rk CROSS_JUMPS   2.03s   ("Cross Jumps.fbx") -- jumping jacks
+ *   block     CENTER_BLOCK  1.77s
+ *
+ * A move's window is a few hundred milliseconds, so only the first fraction
+ * of the loop ever plays — and the first fraction of one shadowboxing clip
+ * looks like the first fraction of another. RENDERED, attack_rk folded the
+ * fighter double because that is what frame 12 of a jumping jack looks like.
+ *
+ * The Schwarzerblitz set is authored single strikes at fighting-game lengths,
+ * and every one of these was sitting in the pool unused. Durations measured
+ * from the bank, not assumed.
+ *
+ * Only slots where the Mixamo pick is demonstrably wrong are overridden;
+ * attack_2 keeps HURRICANE_KICK, which is a real spinning kick.
+ */
+export const SCHWARZERBLITZ_COMBAT_SLOTS: Record<string, string> = {
+  attack_1:  'GRAFQUICKJAB',    // 0.46s jab, vs BOXING's 1.73s loop
+  attack_rp: 'GYAKUZUKI',       // 0.42s reverse punch, vs BOXING__2_'s 4.23s
+  attack_lk: 'QUICKKICK',       // 0.25s
+  attack_rk: 'ROUNDHOUSEKICK',  // 0.96s, vs CROSS_JUMPS
+  block:     'GUARD',           // 0.17s hold, vs CENTER_BLOCK's 1.77s
+};

@@ -8,6 +8,7 @@ import { makeClipBindRelative } from './BindRelativeMotion.ts';
 import { neutralizeHipYaw, neutralizeRootRestQuaternion } from './neutralizeRootMotion.ts';
 import {
   SCHWARZERBLITZ_REST_CLIP,
+  SCHWARZERBLITZ_COMBAT_SLOTS,
   schwarzerblitzSourceRest,
   buildSchwarzerblitzMotionClips,
 } from './SchwarzerblitzMotionBank.ts';
@@ -152,4 +153,22 @@ test('hip-yaw neutralisation removes the authored facing but keeps a spin', () =
   assert.ok(Math.abs(read(1).y - 1.0) < 1e-5, 'mid-clip yaw change must survive');
   assert.ok(Math.abs(read(2).y - 2.0) < 1e-5, 'the full turn must survive');
   assert.ok(Math.abs(read(1).x - 0.15) < 1e-5, 'lean is untouched');
+});
+
+test('every combat slot is filled by a single strike, not a demonstration loop', () => {
+  // A move window is a few hundred milliseconds. A 1.7 to 4.2 second Mixamo
+  // shadowboxing loop only ever shows its first fraction, and the first
+  // fraction of one loop looks like the first fraction of another — which is
+  // what "the same moves for every button" actually was.
+  const clips = new Map(buildSchwarzerblitzMotionClips().map((c) => [c.name, c]));
+  const LONGEST_SINGLE_STRIKE_S = 1.0;
+  for (const [slot, name] of Object.entries(SCHWARZERBLITZ_COMBAT_SLOTS)) {
+    const clip = clips.get(name);
+    assert.ok(clip, `${slot} points at ${name}, which is not in the bank`);
+    assert.ok(
+      clip.duration > 0 && clip.duration <= LONGEST_SINGLE_STRIKE_S,
+      `${slot} -> ${name} is ${clip.duration.toFixed(2)}s; a strike must be one motion, not a loop`,
+    );
+    assert.ok(clip.tracks.length > 0, `${slot} -> ${name} has no tracks`);
+  }
 });

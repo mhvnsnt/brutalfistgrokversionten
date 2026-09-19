@@ -76,6 +76,7 @@ import { loadBannonClipsFromPublic, loadBannonMotionBankVariants } from '../reta
 import {
   buildSchwarzerblitzMotionClips,
   schwarzerblitzSourceRest,
+  SCHWARZERBLITZ_COMBAT_SLOTS,
 } from '../retarget/SchwarzerblitzMotionBank';
 import {
   AnimationSourceRegistry,
@@ -844,13 +845,29 @@ export async function extractAndRetargetAnimations(
     // rest as TPOSE (arms rx -1.5720 / +1.5859, a clean +/-pi/2), so subtract
     // THAT and an absolute pose stays absolute.
     const sbRest = schwarzerblitzSourceRest();
+    // Which Schwarzerblitz clip, if any, should TAKE a combat slot off the
+    // Mixamo bank. See SCHWARZERBLITZ_COMBAT_SLOTS for the measurement: the
+    // clips being displaced are 1.7 to 4.2 second demonstration loops on
+    // moves whose window is a few hundred milliseconds.
+    const slotOwner = new Map<string, string>();
+    for (const [semantic, clipName] of Object.entries(SCHWARZERBLITZ_COMBAT_SLOTS)) {
+      slotOwner.set(clipName, semantic);
+    }
     let sbBound = 0;
+    let sbSlots = 0;
     for (const clip of buildSchwarzerblitzMotionClips()) {
       if (processedClips.some((c) => c.name === clip.name)) continue;
       const before = bankBound;
+      const slot = slotOwner.get(clip.name);
       const sem = String((clip as THREE.AnimationClip & { userData?: { semanticState?: string } }).userData?.semanticState ?? '');
-      ingestNamed(sem || clip.name, clip, false, sbRest, tPoseRestMap);
-      if (bankBound > before) sbBound++;
+      ingestNamed(slot ?? sem ?? clip.name, clip, Boolean(slot), sbRest, tPoseRestMap);
+      if (bankBound > before) {
+        sbBound++;
+        if (slot) sbSlots++;
+      }
+    }
+    if (sbSlots > 0) {
+      console.log(`[CharacterPipeline] 🥊 "${modelName}" ${sbSlots} combat slot(s) taken by single-strike clips`);
     }
     if (sbBound > 0) console.log(`[CharacterPipeline] ✅ "${modelName}" Schwarzerblitz set: ${sbBound} clip(s)`);
     if (bankBound > 0) {
