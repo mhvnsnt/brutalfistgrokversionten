@@ -5,6 +5,8 @@
  */
 import * as THREE from 'three';
 
+import { neutralizeRootRestQuaternion } from './neutralizeRootMotion.ts';
+
 const _delta = new THREE.Quaternion();
 const _out = new THREE.Quaternion();
 const _euler = new THREE.Euler();
@@ -244,13 +246,30 @@ export function collectRestMap(root: THREE.Object3D): Map<string, THREE.Quaterni
 
 /**
  * Replay a Mixamo/Euler clip as motion on the LIVE bind:
- *   q(t) = q_bind * q_src(0)^-1 * q_src(t)
- * t=0 stays on the planted pose (hunched Cipher stays hunched).
+ *   q(t) = q_bind * q_rest_src^-1 * q_src(t)
+ *
+ * `q_rest_src` is the SOURCE RIG'S rest. Without one it falls back to the
+ * clip's own frame 0, which pins t=0 to the planted pose (hunched Cipher stays
+ * hunched) — right for a MOTION, and fatal for a POSE.
+ *
+ * MEASURED, and it is the whole reason every fighter stood identically: with
+ * frame 0 as the reference, `q(0) == q_bind` for EVERY clip by construction.
+ * A fighting stance is an absolute arrangement of the arms, so subtracting its
+ * own first frame subtracts exactly the thing it is. All eleven Schwarzerblitz
+ * stances, both guards and both crouches flattened onto the bind, and — with
+ * the A-pose rest correction composed on top — that bind is a T-POSE. Hands
+ * 0.641 out to the side and 0.324 above the hips, held for the entire clip.
+ * That is the "stuck in T-pose while they're fighting" the owner reported.
+ *
+ * Pass the source rig's rest (Schwarzerblitz ships it as its TPOSE clip) and
+ * an absolute pose stays absolute.
+ *
  * Drop non-quaternion tracks — hip translation is instance-owned.
  */
 export function makeClipBindRelative(
   clip: THREE.AnimationClip,
   restMap: Map<string, THREE.Quaternion>,
+  sourceRest?: Map<string, THREE.Quaternion> | null,
 ): THREE.AnimationClip | null {
   const tracks: THREE.KeyframeTrack[] = [];
   for (const track of clip.tracks) {
@@ -260,7 +279,11 @@ export function makeClipBindRelative(
     if (!bind) continue;
     const values = track.values;
     if (values.length < 4) continue;
-    _qRest.set(values[0], values[1], values[2], values[3]).normalize();
+    // The rest must sit in the SAME space as the tracks, and the tracks have
+    // already been through sanitizeMotionClip's hip-yaw neutralisation.
+    const srcRest = sourceRest?.get(bone);
+    if (srcRest) _qRest.copy(neutralizeRootRestQuaternion(bone, srcRest)).normalize();
+    else _qRest.set(values[0], values[1], values[2], values[3]).normalize();
     if (_qRest.lengthSq() < 1e-8) continue;
     _qInv.copy(_qRest).invert();
     const out = new Float32Array(values.length);

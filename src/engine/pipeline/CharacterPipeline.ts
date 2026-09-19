@@ -73,7 +73,10 @@ import { fillBindRelativeGaps, makeClipBindRelative, collectRestMap } from '../r
 import { measureRestCorrection, needsCorrection } from '../retarget/RestPoseOffset';
 import { bindClipTracksToTargetBones } from '../retarget/AnimationRetargeter';
 import { loadBannonClipsFromPublic, loadBannonMotionBankVariants } from '../retarget/BannonClipJsonAdapter';
-import { buildSchwarzerblitzMotionClips } from '../retarget/SchwarzerblitzMotionBank';
+import {
+  buildSchwarzerblitzMotionClips,
+  schwarzerblitzSourceRest,
+} from '../retarget/SchwarzerblitzMotionBank';
 import {
   AnimationSourceRegistry,
   validateRegistryCompleteness,
@@ -680,34 +683,58 @@ export async function extractAndRetargetAnimations(
   const registry = new AnimationSourceRegistry();
   const restMap = collectRestMap(targetScene);
 
-  // ── A-POSE / T-POSE CORRECTION ────────────────────────────────────────
+  // ── A-POSE / T-POSE CORRECTION — PER SOURCE BANK, NEVER GLOBALLY ──────
   // MEASURED across the shipped roster: 60 of 77 models rest in an A-pose,
-  // arms a median 57 degrees below horizontal, while both motion banks are
-  // keyed on MIXAMO bone names and Mixamo's convention is T-pose. Composing
-  // the source's motion onto an A-pose rest preserves that 57-degree gap, so
-  // a punch authored from a horizontal arm finishes at the hip.
+  // arms a median 57 degrees below horizontal. A clip authored on a T-POSE
+  // rig, replayed from an A-pose rest, keeps that 57-degree gap: a punch that
+  // should travel from a horizontal arm travels from a hanging one.
   //
-  // Correcting the REST MAP is enough: makeClipBindRelative measures every
-  // delta from it, so one change fixes every clip, and the mesh, the skinning
-  // and the bind matrices are all untouched. A rig already in a T-pose
-  // measures under the threshold and is left exactly alone.
+  // BUT THE CORRECTION ONLY BELONGS TO A T-POSE SOURCE. Applying it to every
+  // bank is what put the fighters in a T-pose with their arms out to the side
+  // for the whole match — the state the owner reported. The banks disagree
+  // about their rest and each one has to be measured on its own:
+  //
+  //   Schwarzerblitz — a genuine T-pose source (its own TPOSE clip reads
+  //     rx -1.5720 / +1.5859). Needs the correction. RENDERED: its stances
+  //     come out upright, knees bent, fists at chin height.
+  //   Bannon bank    — already retargeted onto THESE rigs before it was
+  //     banked ('Box Idle.fbx' in the index is the ORIGINAL Mixamo animation's
+  //     name, not the space the keys are in). Needs no correction and no
+  //     foreign rest. RENDERED with the Mixamo rest instead: the fighter lies
+  //     down at 45 degrees, because the Mixamo skeleton faces +Z with left on
+  //     +X while every shipped rig faces +X with left on +Z.
+  //
+  // So keep BOTH rests and hand each bank the one that matches it. The mesh,
+  // the skinning and the bind matrices are untouched either way.
   const restCorrection = measureRestCorrection(targetScene);
+  const tPoseRestMap = new Map(restMap);
   if (needsCorrection(restCorrection)) {
     for (const [boneName, fix] of restCorrection.corrections) {
-      const bind = restMap.get(boneName);
-      if (bind) restMap.set(boneName, bind.clone().multiply(fix));
+      const bind = tPoseRestMap.get(boneName);
+      if (bind) tPoseRestMap.set(boneName, bind.clone().multiply(fix));
     }
     const summary = restCorrection.measured
       .map((m) => `${m.bone.replace('mixamorig', '')} ${m.restDeg}->${m.correctedDeg}deg`)
       .join(', ');
-    console.log(`[CharacterPipeline] 🅰️ "${modelName}" A-pose rest corrected for T-pose clips: ${summary}`);
+    console.log(`[CharacterPipeline] 🅰️ "${modelName}" T-pose rest available for T-pose-authored banks: ${summary}`);
   }
 
-  const ingest = (clip: THREE.AnimationClip, semantic?: string): THREE.AnimationClip | null => {
+  const ingest = (
+    clip: THREE.AnimationClip,
+    semantic?: string,
+    /**
+     * The SOURCE rig's rest. Given one, an absolute pose survives the
+     * conversion; without one the deltas come off the clip's own frame 0 and
+     * every pose collapses onto the bind. See makeClipBindRelative.
+     */
+    sourceRest?: Map<string, THREE.Quaternion> | null,
+    /** The rest the result is expressed FROM. Defaults to the model's bind. */
+    targetRest: Map<string, THREE.Quaternion> = restMap,
+  ): THREE.AnimationClip | null => {
     const bound = bindClipTracksToTargetBones(clip, rig.boneNames);
     if (bound.resolvedTracks === 0) return null;
     sanitizeMotionClip(bound.clip);
-    const relative = makeClipBindRelative(bound.clip, restMap);
+    const relative = makeClipBindRelative(bound.clip, targetRest, sourceRest);
     if (!relative) return null;
     const ud = (relative as THREE.AnimationClip & { userData: Record<string, unknown> }).userData;
     const sem = semantic || String(ud.semanticState ?? resolveClipSemanticState(relative.name) ?? '');
@@ -732,8 +759,14 @@ export async function extractAndRetargetAnimations(
     const bank = await loadBannonClipsFromPublic();
     const variants = await loadBannonMotionBankVariants();
     let bankBound = 0;
-    const ingestNamed = (semanticState: string, clip: THREE.AnimationClip, replaceSemantic: boolean) => {
-      const converted = ingest(clip, semanticState);
+    const ingestNamed = (
+      semanticState: string,
+      clip: THREE.AnimationClip,
+      replaceSemantic: boolean,
+      sourceRest?: Map<string, THREE.Quaternion> | null,
+      targetRest: Map<string, THREE.Quaternion> = restMap,
+    ) => {
+      const converted = ingest(clip, semanticState, sourceRest, targetRest);
       if (!converted) return;
       let travel = 0;
       const qA = new THREE.Quaternion();
@@ -760,14 +793,30 @@ export async function extractAndRetargetAnimations(
       }
       bankBound++;
     };
+    // THE BANNON BANK HOLDS ABSOLUTE LOCAL ROTATIONS ALREADY IN THESE RIGS'
+    // SPACE, so its rest is the model's own bind and the clip plays as
+    // authored: q(t) = bind * bind^-1 * S(t) = S(t).
+    //
+    // MEASURED, because the index's `src` field ("Box Idle.fbx") invites the
+    // opposite conclusion and I drew it once: the keys are NOT in raw Mixamo
+    // space. xbot.glb, the one shipped model bind_pose.mjs calls T-POSE, has
+    // its toes pointing +Z and its left hand on +X; every roster rig has toes
+    // on +X and the left hand on +Z. Subtracting the Mixamo rest therefore
+    // puts the whole body over on its side — RENDERED, the fighter lies at
+    // roughly 45 degrees for idle, block and attack_1 alike. Subtracting the
+    // model's own bind renders an upright guard.
+    //
+    // Frame 0 is NOT usable as the rest here either: it forces q(0) == q_bind
+    // and flattens every absolute pose in the bank onto the target's bind.
+    const bannonRest = restMap;
     for (const [semanticState, clip] of bank) {
-      ingestNamed(semanticState, clip, true);
+      ingestNamed(semanticState, clip, true, bannonRest);
     }
     for (const [key, clip] of variants) {
       const already = processedClips.some((c) => c.name === clip.name || c.name === key);
       if (already) continue;
       const sem = String((clip as THREE.AnimationClip & { userData?: { semanticState?: string } }).userData?.semanticState ?? '');
-      ingestNamed(sem || key, clip, false);
+      ingestNamed(sem || key, clip, false, bannonRest);
     }
 
     // ── The Schwarzerblitz set ────────────────────────────────────────────
@@ -787,12 +836,20 @@ export async function extractAndRetargetAnimations(
     // bound to the target's bones and made BIND-RELATIVE. That is what keeps
     // a borrowed animation from firing in the wrong direction on a rig it was
     // not authored for.
+    //
+    // ITS REST COMES FROM ITS OWN TPOSE CLIP, not from each clip's frame 0.
+    // MEASURED: with frame 0 as the reference `q(0) == q_bind` by construction,
+    // so every one of these stances, guards and crouches flattened onto the
+    // bind and all eleven looked like one pose. The bank ships its skeleton's
+    // rest as TPOSE (arms rx -1.5720 / +1.5859, a clean +/-pi/2), so subtract
+    // THAT and an absolute pose stays absolute.
+    const sbRest = schwarzerblitzSourceRest();
     let sbBound = 0;
     for (const clip of buildSchwarzerblitzMotionClips()) {
       if (processedClips.some((c) => c.name === clip.name)) continue;
       const before = bankBound;
       const sem = String((clip as THREE.AnimationClip & { userData?: { semanticState?: string } }).userData?.semanticState ?? '');
-      ingestNamed(sem || clip.name, clip, false);
+      ingestNamed(sem || clip.name, clip, false, sbRest, tPoseRestMap);
       if (bankBound > before) sbBound++;
     }
     if (sbBound > 0) console.log(`[CharacterPipeline] ✅ "${modelName}" Schwarzerblitz set: ${sbBound} clip(s)`);

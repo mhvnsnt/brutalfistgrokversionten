@@ -72,6 +72,41 @@ function makeClip(
   return clip;
 }
 
+/**
+ * The SOURCE RIG'S OWN REST POSE, read out of a bank's reference clip.
+ *
+ * WHY THIS EXISTS. `makeClipBindRelative` measured every delta from the CLIP'S
+ * OWN FRAME 0, which forces `q(0) = q_bind` for every clip in the bank. For a
+ * motion that is fine. For a POSE it is fatal: a fighting stance is an absolute
+ * arrangement of the arms, so measuring it from its own first frame subtracts
+ * exactly the thing it is, and all eleven Schwarzerblitz stances collapsed onto
+ * the bind — which is why every fighter stood identically no matter which
+ * stance was assigned.
+ *
+ * MEASURED: the Schwarzerblitz bank ships its skeleton's rest as a clip named
+ * TPOSE, and its arms read rx -1.5720 / +1.5859 — a clean +/-pi/2, a T-pose.
+ * Every other clip in that bank is an absolute local rotation in the same rig,
+ * so TPOSE is the rest those rotations are relative to.
+ *
+ * Built through the SAME bone resolution and the SAME XYZ Euler order the
+ * clips are built with, so a rest can never disagree with the motion it is
+ * subtracted from.
+ */
+export function eulerBankRestPose(data: BannonMotionClipData): Map<string, THREE.Quaternion> {
+  const rest = new Map<string, THREE.Quaternion>();
+  const first = data.keys[0];
+  if (!first) return rest;
+  for (const [rawBone, e] of Object.entries(first.bones)) {
+    const runtimeBone = resolveRuntimeBone(rawBone);
+    if (!runtimeBone || rest.has(runtimeBone)) continue;
+    rest.set(
+      runtimeBone,
+      new THREE.Quaternion().setFromEuler(new THREE.Euler(e.rx, e.ry, e.rz, 'XYZ')),
+    );
+  }
+  return rest;
+}
+
 const BANNON_SOURCE: EulerBankSource = {
   clipSourceType: 'BANNON_OWNER_MOTION',
   source: 'mhvnsnt/Bannon/assets/moves/clips',

@@ -5,7 +5,11 @@
 import * as THREE from 'three';
 
 import { SCHWARZERBLITZ_MOTION_BANK } from '../../generated/SchwarzerblitzMotionBank.generated.ts';
-import { buildClipsFromEulerBank, type BannonMotionClipData } from './BannonMotionBank.ts';
+import {
+  buildClipsFromEulerBank,
+  eulerBankRestPose,
+  type BannonMotionClipData,
+} from './BannonMotionBank.ts';
 
 /**
  * The owner-granted Schwarzerblitz fighting set, imported from
@@ -32,4 +36,26 @@ export function buildSchwarzerblitzMotionClips(): THREE.AnimationClip[] {
       sourceConvention: 'schwarzerblitz',
     },
   );
+}
+
+/** The reference clip that holds the source skeleton's rest pose. */
+export const SCHWARZERBLITZ_REST_CLIP = 'TPOSE';
+
+/**
+ * The Schwarzerblitz rig's OWN rest, so an absolute pose stays absolute.
+ *
+ * MEASURED: `TPOSE` holds RightArm rx -1.5720 and LeftArm rx +1.5859 — a clean
+ * +/-pi/2 about the forward axis, i.e. arms straight out. Every other clip in
+ * the bank is an absolute local rotation on that same skeleton, so this is the
+ * rest they are relative to. Without it the deltas are measured from each
+ * clip's own frame 0 and every STANCE, GUARD and CROUCH in the set flattens
+ * onto the target's bind — which is exactly why eleven distinct stances all
+ * looked like one.
+ *
+ * Empty map (rather than a throw) if the reference clip is ever absent: the
+ * bank then behaves exactly as it did before, instead of taking the game down.
+ */
+export function schwarzerblitzSourceRest(): Map<string, THREE.Quaternion> {
+  const rest = SCHWARZERBLITZ_MOTION_BANK[SCHWARZERBLITZ_REST_CLIP] as BannonMotionClipData | undefined;
+  return rest ? eulerBankRestPose(rest) : new Map<string, THREE.Quaternion>();
 }

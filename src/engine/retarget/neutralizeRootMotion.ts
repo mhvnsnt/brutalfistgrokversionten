@@ -61,6 +61,32 @@ export function neutralizeHipYaw(clip: THREE.AnimationClip): THREE.AnimationClip
   return clip;
 }
 
+/**
+ * The same Y-zeroing `neutralizeHipYaw` does to a track, applied to ONE
+ * quaternion — so a REST can be brought into the same space as the tracks
+ * whose deltas are measured from it.
+ *
+ * WHY THIS HAS TO EXIST. `makeClipBindRelative` subtracts a source rest from
+ * every key. The tracks reaching it have already been neutralized; a rest read
+ * straight out of the bank has not. MEASURED on the Schwarzerblitz set, whose
+ * skeleton carries a -90 degree coordinate yaw in its hips: the mismatch left
+ * exactly that yaw in the delta, so every clip in the set spun the whole
+ * fighter 90 degrees off his facing — punches thrown across his own chest
+ * instead of at the opponent. Whatever is done to the tracks must be done to
+ * the rest, or the subtraction is between two different spaces.
+ *
+ * Non-root bones are returned untouched: only the root's yaw is neutralized.
+ */
+export function neutralizeRootRestQuaternion(
+  boneName: string,
+  q: THREE.Quaternion,
+): THREE.Quaternion {
+  if (!isRootBone(boneFromTrack(boneName))) return q;
+  _e.setFromQuaternion(q, 'YXZ');
+  _e.y = 0;
+  return new THREE.Quaternion().setFromEuler(_e);
+}
+
 export function sanitizeMotionClip(clip: THREE.AnimationClip): THREE.AnimationClip {
   stripRootPositionTracks(clip);
   neutralizeHipYaw(clip);
