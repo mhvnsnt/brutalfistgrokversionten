@@ -1,5 +1,5 @@
 // `.ts` extensions on purpose — the repo's runner resolves them literally.
-import { clipCanStand } from '../retarget/BakedMotionBank.ts';
+import { clipCanStand, clipIsAuthoredPose } from '../retarget/BakedMotionBank.ts';
 
 /**
  * THE INTRO BEFORE THE BELL — one fighter at a time, with a pose and a line.
@@ -206,7 +206,9 @@ export function resetIntroCycles(): void {
  */
 export function introPoseFor(fighterId: string, demeanour: Demeanour): string {
   const all = INTRO_POSES[demeanour];
-  const usable = all.filter(clipCanStand);
+  // A HELD CLOSE-UP IS THE WORST PLACE FOR A STARFISH. Both gates: on the
+  // mat, and an authored pose rather than the rig with its arms out.
+  const usable = all.filter((c) => clipCanStand(c) && clipIsAuthoredPose(c));
   const pool = usable.length ? usable : all;
   const n = cycle.get(fighterId) ?? 0;
   cycle.set(fighterId, n + 1);

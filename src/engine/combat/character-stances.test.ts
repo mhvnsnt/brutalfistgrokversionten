@@ -15,7 +15,7 @@ import { SCHWARZERBLITZ_MOTION_BANK } from '../../generated/SchwarzerblitzMotion
 import { BANNON_MOTION_BANK } from '../../generated/BannonMotionBank.generated.ts';
 import { existsSync, readFileSync } from 'node:fs';
 import {
-  applyStandability, resetBakedMotionBankForTest, type BakedManifestEntry,
+  applyStandability, markTPoses, resetBakedMotionBankForTest, type BakedManifestEntry,
 } from '../retarget/BakedMotionBank.ts';
 
 const BANKS: Record<string, Record<string, unknown>> = {
@@ -274,5 +274,58 @@ describe('a stance kit only ever names clips with feet on the floor', () => {
     resetBakedMotionBankForTest();
     const kit = stanceKitFor('BANNON', 'Power Wrestling');
     assert.ok(kit.idle.length > 0, 'a checkout with no bake must still get a stance');
+  });
+});
+
+/**
+ * A STANCE MUST BE A POSE, NOT THE RIG WITH ITS ARMS OUT.
+ *
+ * Owner, looking at four stances rendered side by side: "stance wide, stance
+ * bladed, taunt flex, and guard high, they're all happening the same ...
+ * making him stretch out into like a T pose and do like a fucking starfish
+ * thing." He was right, and it is a SECOND defect on top of the floor one —
+ * those four stand perfectly on the mat and are still a starfish.
+ */
+describe('a stance kit never hands out a T-pose', () => {
+  const INDEX = 'public/motion/baked/index.json';
+  const hasBake = existsSync(INDEX);
+
+  it('measures the starfish clips as T-poses and the real stances as poses', { skip: !hasBake }, () => {
+    const manifest = JSON.parse(readFileSync(INDEX, 'utf8')) as Record<string, BakedManifestEntry>;
+    const tposes = markTPoses(manifest);
+    for (const name of ['TPOSE', 'STANCE_WIDE', 'STANCE_BLADED', 'TAUNT_FLEX', 'GUARD_HIGH']) {
+      if (!manifest[name]) continue;
+      assert.ok(tposes.has(name), `${name} is a starfish and was not caught`);
+    }
+    // GRAFSTANCE2 spreads as wide as GUARD_HIGH and is a REAL pose, because
+    // the hands are forward. It is the case that proves one axis is not
+    // enough, so it is asserted by name.
+    for (const name of ['STANCE', 'GUARD', 'LOWSTANCE', 'JOHNSON_STANCE', 'TIGERSTANCE', 'GRAFSTANCE2']) {
+      if (!manifest[name]) continue;
+      assert.equal(tposes.has(name), false, `${name} is a real pose and was thrown away`);
+    }
+  });
+
+  it('no fighter is ever assigned one', { skip: !hasBake }, () => {
+    const manifest = JSON.parse(readFileSync(INDEX, 'utf8')) as Record<string, BakedManifestEntry>;
+    const tposes = markTPoses(manifest);
+    applyStandability(manifest);
+    try {
+      const offenders: string[] = [];
+      const styles = ['Power Wrestling', 'Technical Hybrid', 'Speed Assassin', 'Electric Striker',
+        'Aerial Showman', 'Street Chaos', 'Phantom Psychology'];
+      for (const style of styles) {
+        for (let i = 0; i < 40; i++) {
+          const kit = stanceKitFor(`fighter_${style}_${i}`, style);
+          for (const [slot, clip] of Object.entries(kit)) {
+            if (slot === 'archetype') continue;
+            if (tposes.has(clip)) offenders.push(`${style} ${slot} -> ${clip}`);
+          }
+        }
+      }
+      assert.deepEqual([...new Set(offenders)].slice(0, 5), [], 'a kit handed out a starfish');
+    } finally {
+      resetBakedMotionBankForTest();
+    }
   });
 });

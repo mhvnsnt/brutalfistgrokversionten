@@ -64,10 +64,37 @@ export interface BakedManifestEntry {
    * cap because its pose is wrong in some other way.
    */
   floorGap?: number;
+  /** Median sideways reach of the arms. A T-pose starfish approaches 1. */
+  armSpread?: number;
+  /** Median forward reach of the arms. A guard is up; a T-pose is not. */
+  armForward?: number;
 }
 
 /** Past this, a clip's feet never reach the ground and it cannot be a stance. */
 export const STANDABLE_FLOOR_GAP_M = 0.08;
+
+/**
+ * A clip is THE RIG STANDING THERE, not a pose, when the arms are flung
+ * sideways and level and the hands are not out in front.
+ *
+ * Owner, looking at four stances side by side: "stance wide, stance bladed,
+ * taunt flex, and guard high, they're all happening the same ... making him
+ * stretch out into like a T pose and do like a fucking starfish thing."
+ *
+ * MEASURED at bake time, median over each clip (sideways reach / forward
+ * reach):
+ *     TPOSE          0.97 / 0.14      STANCE         0.13 / 0.62
+ *     STANCE_WIDE    0.90 / 0.10      JOHNSON_STANCE 0.11 / 0.63
+ *     STANCE_BLADED  0.89 / 0.09      LOWSTANCE      0.11 / 0.61
+ *     TAUNT_POINT    0.82 / 0.22      TIGERSTANCE    0.14 / 0.51
+ *     GUARD_HIGH     0.56 / 0.30      GRAFSTANCE2    0.50 / 0.67
+ *
+ * BOTH CONDITIONS, and GRAFSTANCE2 is why: it spreads as wide as GUARD_HIGH
+ * and is a real pose, because the hands are FORWARD. Spread alone would
+ * throw away a good stance.
+ */
+export const TPOSE_SPREAD_MIN = 0.5;
+export const TPOSE_FORWARD_MAX = 0.35;
 
 const INDEX_URL = '/motion/baked/index.json';
 const BASE = '/motion/baked/';
@@ -76,6 +103,39 @@ let cached: Map<string, THREE.AnimationClip> | null = null;
 let attempted = false;
 /** Clips the bake measured as unable to stand on the floor. */
 let notStandable: Set<string> = new Set();
+/** Clips the bake measured as a T-pose rather than an authored pose. */
+let notAPose: Set<string> = new Set();
+
+/**
+ * IS THIS AN AUTHORED POSE, or the rig with its arms out?
+ *
+ * Kept separate from `clipCanStand` on purpose: they are different defects.
+ * A clip can stand perfectly on the mat and still be a starfish, which is
+ * exactly what the four stances the owner spotted were doing after the leg
+ * correction put them on the floor.
+ *
+ * Unknown clips are allowed, so a checkout with no bake behaves as before.
+ */
+export function clipIsAuthoredPose(name: string): boolean {
+  return !notAPose.has(name);
+}
+
+/** For tests: the clips the last manifest ruled out as T-poses. */
+export function tposeClips(): ReadonlySet<string> {
+  return notAPose;
+}
+
+/** Decide, from a manifest, which clips are the rig rather than a pose. */
+export function markTPoses(manifest: Record<string, BakedManifestEntry>): Set<string> {
+  const out = new Set<string>();
+  for (const [name, entry] of Object.entries(manifest)) {
+    const spread = entry.armSpread;
+    const forward = entry.armForward;
+    if (spread === undefined || forward === undefined) continue;
+    if (spread > TPOSE_SPREAD_MIN && forward < TPOSE_FORWARD_MAX) out.add(name);
+  }
+  return out;
+}
 
 /**
  * CAN A FIGHTER STAND IN THIS CLIP?
@@ -102,6 +162,7 @@ export function unstandableClips(): ReadonlySet<string> {
 /** Install a manifest's standability verdicts. Used by the loader and by tests. */
 export function applyStandability(manifest: Record<string, BakedManifestEntry>): Set<string> {
   notStandable = markStandability(manifest);
+  notAPose = markTPoses(manifest);
   return notStandable;
 }
 
@@ -240,4 +301,5 @@ export function resetBakedMotionBankForTest(): void {
   cached = null;
   attempted = false;
   notStandable = new Set();
+  notAPose = new Set();
 }

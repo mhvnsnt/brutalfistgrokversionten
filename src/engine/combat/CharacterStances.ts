@@ -25,7 +25,7 @@
  * way on a rig it was not authored for.
  */
 
-import { clipCanStand } from '../retarget/BakedMotionBank.ts';
+import { clipCanStand, clipIsAuthoredPose } from '../retarget/BakedMotionBank.ts';
 
 /** Largest rotation from the first key that still reads as a held pose. */
 export const STANCE_PEAK_LIMIT_DEG = 50;
@@ -216,9 +216,20 @@ export function stanceKitFor(fighterId: string, fightingStyle?: string): StanceK
   // FALLS BACK TO THE FULL LIST if nothing survives, because a fighter with
   // no stance at all is worse than one standing slightly high, and a checkout
   // that has not run the bake knows nothing about any clip.
+  // TWO GATES, because they are two different defects. A clip has to reach
+  // the mat AND be an authored pose rather than the rig with its arms out.
+  // Owner, on four stances that all played the same after the floor fix:
+  // "they're all happening the same ... making him stretch out into like a T
+  // pose and do like a fucking starfish thing." STANCE_WIDE, STANCE_BLADED,
+  // TAUNT_FLEX and GUARD_HIGH all measure as T-poses; STANCE, LOWSTANCE,
+  // JOHNSON_STANCE and TIGERSTANCE do not.
   const standable = (list: string[]) => {
-    const ok = list.filter(clipCanStand);
-    return ok.length ? ok : list;
+    const ok = list.filter((c) => clipCanStand(c) && clipIsAuthoredPose(c));
+    if (ok.length) return ok;
+    // Fall back one gate at a time rather than straight to the raw list: a
+    // pose that merely sits high still beats a starfish.
+    const posed = list.filter(clipIsAuthoredPose);
+    return posed.length ? posed : list;
   };
   const pick = (list: string[], salt: number) => {
     const usable = standable(list);

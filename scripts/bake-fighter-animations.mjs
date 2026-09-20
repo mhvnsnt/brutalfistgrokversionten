@@ -206,6 +206,40 @@ function measurePosture() {
   // value means the foot is above the pelvis: the leg is folded up over the
   // torso, which is the defect that reads as "feet above the head" while the
   // spine measures perfectly upright.
+  // WHERE ARE THE HANDS RELATIVE TO THE SHOULDERS?
+  //
+  // TWO AXES, BECAUSE ONE IS NOT ENOUGH AND MY FIRST VERSION USED THE WRONG
+  // ONE. This roster faces +X, so a T-pose extends the arms along ±Z and a
+  // fighting guard brings them FORWARD along X. Measuring |x| alone scored
+  // the real STANCE at 0.62 and the starfish at 0.09 — a usable signal,
+  // pointing the opposite way to its name.
+  //   armForward  hands out in front, which is what a guard is.
+  //   armSpread   hands straight out to the sides and level, which is a
+  //               T-pose and is what the owner means by "a starfish".
+  let armForward = 0;
+  let armSpread = 0;
+  let armCount = 0;
+  const sh = new THREE.Vector3();
+  const hd = new THREE.Vector3();
+  for (const [shoulder, hand] of [
+    ['mixamorigLeftArm', 'mixamorigLeftHand'],
+    ['mixamorigRightArm', 'mixamorigRightHand'],
+  ]) {
+    const a = boneObjects.get(shoulder);
+    const b = boneObjects.get(hand);
+    if (!a || !b) continue;
+    a.getWorldPosition(sh);
+    b.getWorldPosition(hd);
+    const arm = hd.clone().sub(sh);
+    if (arm.lengthSq() < 1e-9) continue;
+    arm.normalize();
+    // Sideways share of a level arm: big when the arm is out and flat.
+    armForward += Math.abs(arm.x) * (1 - Math.abs(arm.y));
+    armSpread += Math.abs(arm.z) * (1 - Math.abs(arm.y));
+    armCount++;
+  }
+  if (armCount) { armForward /= armCount; armSpread /= armCount; }
+
   let legDown = 0;
   const lf = boneObjects.get('mixamorigLeftFoot');
   const rf = boneObjects.get('mixamorigRightFoot');
@@ -220,6 +254,8 @@ function measurePosture() {
   if (n) legDown /= n;
   return {
     spineUp,
+    armForward,
+    armSpread,
     legDown,
     /** A standing body carries its head above its pelvis. */
     headAboveHips: h.y - p.y,
@@ -401,9 +437,13 @@ function groundingOffset(clip) {
   // doing its job.
   const ups = postures.filter(Boolean).map((x) => x.spineUp).sort((a, b) => a - b);
   const legs = postures.filter(Boolean).map((x) => x.legDown).sort((a, b) => a - b);
+  const arms = postures.filter(Boolean).map((x) => x.armForward).sort((a, b) => a - b);
+  const spread = postures.filter(Boolean).map((x) => x.armSpread).sort((a, b) => a - b);
   if (posture) {
     posture.medianSpineUp = ups.length ? ups[Math.floor(ups.length / 2)] : 0;
     posture.medianLegDown = legs.length ? legs[Math.floor(legs.length / 2)] : 0;
+    posture.medianArmForward = arms.length ? arms[Math.floor(arms.length / 2)] : 0;
+    posture.medianArmSpread = spread.length ? spread[Math.floor(spread.length / 2)] : 0;
   }
   const raw = airborne ? Math.min(0, -minLift) : -minLift;
   const capped = Math.abs(raw) > MAX_GROUND_SHIFT_M;
@@ -640,6 +680,8 @@ for (const src of sources()) {
     owns: Boolean(slot),
     airborne: clipAirborne,
     floorGap: ground?.floorGap ?? 0,
+    armForward: ground?.posture?.medianArmForward ?? 0,
+    armSpread: ground?.posture?.medianArmSpread ?? 0,
   };
   if (slot) report.slotOwners = (report.slotOwners ?? 0) + 1;
   report.baked++;
@@ -688,6 +730,14 @@ if (report.legFixes.length) {
 if (report.legsUnfixed.length) {
   console.log(`    NOT CORRECTED ${report.legsUnfixed.length}: no flip improved them, left exactly as authored`);
   console.log(`      ` + report.legsUnfixed.slice(0, 6).map((f) => `${f.name} ${f.before.toFixed(2)}`).join(', '));
+}
+{
+  const arms = Object.entries(manifest)
+    .map(([n, m]) => [n, m.armSpread ?? 0])
+    .sort((a, b) => b[1] - a[1]);
+  const vals = arms.map((a) => a[1]).sort((a, b) => a - b);
+  console.log(`  ARMS SPREAD SIDEWAYS median ${vals[Math.floor(vals.length / 2)].toFixed(2)} (a T-pose starfish is near 1.00)`);
+  console.log(`    most splayed: ` + arms.slice(0, 10).map(([n, v]) => `${n} ${v.toFixed(2)}`).join(', '));
 }
 report.legBaseline.sort((a, b) => a - b);
 if (report.legBaseline.length) {
