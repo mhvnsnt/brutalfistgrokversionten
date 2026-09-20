@@ -2,11 +2,17 @@
 // (`node --experimental-strip-types --test`) resolve these modules. tsconfig
 // sets allowImportingTsExtensions and Vite/esbuild resolve them unchanged.
 import type { FighterMotionState } from '../retarget/AnimationController.ts';
+import {
+  applyAirHit, applyLaunch, freshJuggle, juggleScale, reactionFor, tickJuggle,
+  type JuggleState, type ReactionEffect,
+} from './HitReactions.ts';
 
 // ── Action States ─────────────────────────────────────────────────────────────
 export type ActionState =
   | 'Idle' | 'Walking' | 'Backdashing' | 'Attacking' | 'Stunned' | 'Crumple' |'Guard' | 'Knockdown' | 'WakeupTechRoll' | 'WakeupBackrise' | 'WakeupQuickStand'
-  | 'HitStun' | 'CommandThrow' | 'ThrowWhiff' | 'Jumping';
+  | 'HitStun' | 'CommandThrow' | 'ThrowWhiff' | 'Jumping'
+  /** Launched and airborne — the state a juggle happens in. */
+  | 'Juggled';
 
 // ── Wakeup option buffered during knockdown recovery ─────────────────────────
 export type WakeupOption = 'techRoll' | 'backrise' | 'quickStand' | null;
@@ -437,6 +443,15 @@ export class FighterStateMachine {
   // ── Stun/crumple timer ────────────────────────────────────────────────────
   private stunTimer = 0;
 
+  // ── Juggle state — the airborne string a launcher opens ───────────────────
+  //
+  // THE DATA FOR THIS SHIPPED LONG AGO AND NOTHING READ IT. The imported
+  // Schwarzerblitz graph marks 20 moves with the `Flight` reaction and 3 with
+  // `StandFlight` — launchers — plus one `Smackdown`. Grepping the engine for
+  // any of those names returned nothing outside the generated file. See
+  // HitReactions for the measurement and the mapping.
+  private juggle: JuggleState = freshJuggle();
+
   // ── Knockdown / wakeup state ──────────────────────────────────────────────
   private knockdownTimer = 0;
   private wakeupBuffered: WakeupOption = null;
@@ -655,6 +670,77 @@ export class FighterStateMachine {
     }
   }
 
+  /**
+   * TAKE A HIT, AND LET THE MOVE DECIDE WHAT THAT MEANS.
+   *
+   * Everything before this treated every hit as either a stagger or a
+   * knockdown, which is why the game had no juggles: a launcher and a jab
+   * did the same thing to the body. The reaction comes from the move's own
+   * hitbox data, so a launcher launches because the data says `Flight`, not
+   * because anyone listed it.
+   */
+  applyReaction(reactionName: string | undefined, sourceMove: MoveWindow | null = null): ReactionEffect {
+    const effect = reactionFor(reactionName);
+    switch (effect.kind) {
+      case 'none':
+        return effect;
+      case 'launch': {
+        applyLaunch(this.juggle, effect);
+        this.actionState = 'Juggled';
+        this.motionState = 'knockdown';
+        this.hitStunTimer = effect.stun;
+        this.currentMove = null;
+        this.moveTimer = 0;
+        this.moveElapsed = 0;
+        this.queuedAction = null;
+        this.walkVelocity = { forward: 0, strafe: 0 };
+        this.isBackdashing = false;
+        return effect;
+      }
+      case 'smackdown':
+        if (this.juggle.airborne) {
+          applyAirHit(this.juggle, effect);
+          this.hitStunTimer = effect.stun;
+          return effect;
+        }
+        this.applyKnockdown();
+        return effect;
+      case 'crumple':
+        // AIRBORNE FIRST. A heavy hit on someone already in the air must
+        // extend the juggle, not put them into a standing stagger — that is
+        // what lets a combo continue.
+        if (this.juggle.airborne) { applyAirHit(this.juggle, effect); return effect; }
+        this.applyStun(effect.stun, true);
+        return effect;
+      default:
+        if (this.juggle.airborne) { applyAirHit(this.juggle, effect); return effect; }
+        this.applyHitStun(sourceMove, effect.stun);
+        return effect;
+    }
+  }
+
+  /** Damage multiplier for the hit about to land, from combo scaling. */
+  juggleDamageScale(): number {
+    return this.juggle.airborne ? juggleScale(this.juggle.hits) : 1;
+  }
+
+  get isAirborne(): boolean { return this.juggle.airborne; }
+  /** Height above the mat, in metres — the renderer reads this for Y. */
+  get juggleHeight(): number { return this.juggle.y; }
+  get juggleHits(): number { return this.juggle.hits; }
+
+  /**
+   * Advance the airborne arc. Call once per frame BEFORE the normal update,
+   * and hand off to the knockdown on the frame the body lands — a juggle
+   * that ends standing up is not a juggle.
+   */
+  tickAirborne(dt: number): boolean {
+    if (!this.juggle.airborne) return false;
+    const landed = tickJuggle(this.juggle, dt);
+    if (landed) this.applyKnockdown();
+    return landed;
+  }
+
   applyKnockdown() {
     this.actionState = 'Knockdown';
     this.motionState = 'knockdown';
@@ -670,6 +756,7 @@ export class FighterStateMachine {
     this.isBackdashing = false;
     this.throwComboQueue = [];
     this.throwComboIndex = 0;
+    this.juggle = freshJuggle();
     console.log('[FSM] ⬇️ Knockdown — wakeup buffer open in', (KNOCKDOWN_DURATION - WAKEUP_BUFFER_WINDOW).toFixed(2), 's');
   }
 
