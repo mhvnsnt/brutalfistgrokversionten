@@ -45,9 +45,12 @@ movesets, then arenas and presentation.
   133 moves carry them and nothing read them before.
 - **done** — a buffered follow-up plays the special it earned instead of the
   generic jab.
-- **A move-library browser the owner can page through**, so he can look at an
-  unsorted clip and say what it is and where it goes. Unsorted clips get a
-  holding folder rather than being dropped.
+- **done** — MOVE LIBRARY, on the main menu. All 366 baked clips, one at a
+  time, on any roster model, at 1x / 0.5x / 0.25x. Filters for UNLABELLED,
+  UNASSIGNED (nothing chose it for a slot), AIRBORNE and LABELLED, plus
+  search. Say what a clip is, where it goes, add a note, mark it GOOD /
+  BROKEN / UNSURE, and EXPORT LABELS copies the lot as plain text to paste
+  back so it becomes real slot assignments.
 - Moveset editing and saving, WWE-style: edit, save, reset to default, copy
   another fighter's set.
 - Tekken-style customization: base default set per character plus every unused

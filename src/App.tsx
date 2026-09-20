@@ -30,6 +30,7 @@ const SeasonalTournamentScreen = dynamic(() => import('./components/SeasonalTour
 const MatchmakingQueueScreen = dynamic(() => import('./components/MatchmakingQueueScreen'), { ssr: false, loading: ScreenShell });
 const SpectatorViewerScreen = dynamic(() => import('./components/SpectatorViewerScreen'), { ssr: false, loading: ScreenShell });
 const AnimationTestArena = dynamic(() => import('./components/AnimationTestArena'), { ssr: false, loading: ScreenShell });
+const MoveLibrary = dynamic(() => import('./components/MoveLibrary'), { ssr: false, loading: ScreenShell });
 const PhotoBoothScreen = dynamic(() => import('./components/PhotoBoothScreen'), { ssr: false, loading: ScreenShell });
 const ConceptArtGallery = dynamic(() => import('./components/ConceptArtGallery'), { ssr: false, loading: ScreenShell });
 const PreCombatValidationScreen = dynamic(() => import('./components/PreCombatValidationScreen'), { ssr: false, loading: ScreenShell });
@@ -174,6 +175,13 @@ export default function App() {
               <span className="ml-3 text-[10px] text-zinc-400 tracking-widest">HQ vs SPRITE</span>
             </button>
             <button
+              onClick={() => setScreen('move_library' as any)}
+              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+            >
+              MOVE LIBRARY
+              <span className="ml-3 text-[10px] text-yellow-400 tracking-widest">EVERY CLIP · LABEL THEM</span>
+            </button>
+            <button
               onClick={() => setScreen('anim_test_arena' as any)}
               className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
             >
@@ -226,6 +234,14 @@ export default function App() {
 
   if ((screen as any) === 'art_book') {
     return <ConceptArtGallery onBack={() => setScreen(AppScreen?.MainMenu)} />;
+  }
+
+  // ── Move Library ──
+  // Every baked clip, playable, with somewhere to write down what it is.
+  // This project keeps hitting "I cannot tell what this move is"; the answer
+  // is that a human has to look, so this is where he looks.
+  if ((screen as any) === 'move_library') {
+    return <MoveLibrary onBack={() => setScreen(AppScreen?.MainMenu)} />;
   }
 
   // ── Animation Test Arena ──
