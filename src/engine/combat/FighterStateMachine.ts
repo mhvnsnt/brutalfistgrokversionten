@@ -904,6 +904,7 @@ export class FighterStateMachine {
     const risingLight = resolvedInput.light && !this.prevInput.light;
     const risingHeavy = resolvedInput.heavy && !this.prevInput.heavy;
     const risingGuard = resolvedInput.guard && !this.prevInput.guard;
+    const risingEscape = (resolvedInput.escape ?? false) && !(this.prevInput.escape ?? false);
     const risingGrapple = (resolvedInput.grapple ?? false) && !(this.prevInput.grapple ?? false);
     const risingLp = (resolvedInput.lp ?? false) && !(this.prevInput.lp ?? false);
     const risingRp = (resolvedInput.rp ?? false) && !(this.prevInput.rp ?? false);
