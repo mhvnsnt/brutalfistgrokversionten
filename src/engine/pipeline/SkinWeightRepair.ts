@@ -188,8 +188,13 @@ export function repairSkinnedMesh(
         if (wts[a] <= MIN_INFLUENCE) continue;
         for (let b = a + 1; b < 4; b++) {
           if (wts[b] <= MIN_INFLUENCE) continue;
-          const d = hops[idx[a]]?.[idx[b]];
-          if (d === undefined || !Number.isFinite(d)) continue;
+          const raw = hops[idx[a]]?.[idx[b]];
+          if (raw === undefined) continue;
+          // UNREACHABLE IS THE WORST SPAN THERE IS, NOT AN UNKNOWN ONE.
+          // Skipping it is what left every vertex tied to a stray prop bone
+          // in place — the two joints are in different components, so the
+          // triangle between them stretches to wherever that bone sits.
+          const d = Number.isFinite(raw) ? raw : UNREACHABLE_SPAN;
           if (d > report.worstSpan) report.worstSpan = d;
           if (d > worst) {
             worst = d;
@@ -232,22 +237,53 @@ export function repairSkinnedMesh(
 }
 
 /**
- * Is this skeleton one connected tree?
- *
- * Judged by the SHOULDER-TO-ARM distance where those bones exist, because
- * that pair is adjacent on every humanoid rig and is the cheapest possible
- * lie detector; otherwise by whether most joints can reach each other at all.
+ * How big is the skeleton's LARGEST connected component, as a share of its
+ * bones? 1.0 is one clean tree.
  */
-export function skeletonIsConnected(hops: number[][]): boolean {
-  if (hops.length < 2) return false;
-  let reachable = 0;
-  let total = 0;
+export function largestComponentShare(hops: number[][]): number {
+  if (hops.length < 2) return 0;
+  let best = 0;
   for (const row of hops) {
-    for (const d of row) { total++; if (Number.isFinite(d)) reachable++; }
+    let reach = 0;
+    for (const d of row) if (Number.isFinite(d)) reach++;
+    if (reach > best) best = reach;
   }
-  // A humanoid skeleton is fully connected. Allow a little slack for a stray
-  // prop bone, but a graph in pieces is not something to prune against.
-  return total > 0 && reachable / total > 0.9;
+  return best / hops.length;
+}
+
+/**
+ * Is this skeleton a BODY with some bits attached, or is it shattered?
+ *
+ * THIS GUARD IS WHY THE REPAIR NEVER LANDED, AND THE OWNER WAS RIGHT ABOUT
+ * IT: "a lot of the models are still stretching. You didn't do the universal
+ * fix. You didn't get it obvious on the front end on the actual models."
+ *
+ * It required 90% of every joint PAIR to be mutually reachable, and then
+ * refused the whole mesh when that failed — silently, with no log line.
+ * MEASURED on ONYX_straightjacket, one of the models in his screenshots:
+ * 58 bones, of which six are stray props named `bone_10`, `bone_11`,
+ * `bone_12`, `bone_17`, `bone_18`, `bone_19`, parented outside the body.
+ * 52 of 58 bones reach each other, which is 52x52 of 58x58 = 0.80, under
+ * the bar — so the repair bailed out and the plank stayed on her chest.
+ * The audit names the culprit outright: `RightUpLeg ~ bone_12, 11 hops`.
+ *
+ * A STRAY BONE IS NOT A REASON TO GIVE UP; IT IS THE DEFECT. A vertex
+ * weighted to both a thigh and a bone floating outside the hierarchy has an
+ * INFINITE span, not an unknown one, and it drags a triangle to wherever
+ * that bone sits. Cross-component pairs are pruned now, not skipped.
+ *
+ * The case the old guard was written for is different and still refused:
+ * xbot.glb's bones are not parented into a hierarchy AT ALL, so every
+ * distance is meaningless and there is no body to prune against. That shows
+ * up as no dominant component, which is what this measures.
+ */
+export const MIN_BODY_COMPONENT = 0.6;
+
+/** The span reported for two joints in different components. */
+export const UNREACHABLE_SPAN = 99;
+
+export function skeletonIsConnected(hops: number[][]): boolean {
+  return largestComponentShare(hops) >= MIN_BODY_COMPONENT;
 }
 
 /**

@@ -4,7 +4,8 @@ import { describe, it } from 'node:test';
 import * as THREE from 'three';
 
 import {
-  MAX_JOINT_SPAN_HOPS, jointHopMatrix, repairSkinnedMesh,
+  MAX_JOINT_SPAN_HOPS, jointHopMatrix, largestComponentShare, repairSkinnedMesh,
+  skeletonIsConnected,
 } from './SkinWeightRepair.ts';
 
 /**
@@ -127,5 +128,51 @@ describe('skin weight repair — the wrist-to-hip webbing', () => {
     const r = repairSkinnedMesh(mesh, hops);
     assert.equal(r.repaired, 0);
     assert.equal(r.verts, 0);
+  });
+});
+
+/**
+ * A STRAY PROP BONE MUST NOT DISABLE THE REPAIR.
+ *
+ * Owner: "a lot of the models are still stretching. You didn't do the
+ * universal fix." The guard required 90% of every joint PAIR to be mutually
+ * reachable and then refused the whole mesh, silently, when that failed.
+ * ONYX_straightjacket carries six stray bones (`bone_10` .. `bone_19`)
+ * parented outside the hierarchy, which puts it at 0.80 — so the repair
+ * bailed out on one of the models in his screenshots and logged nothing.
+ */
+describe('a skeleton that is a body plus some bits', () => {
+  /** n bones where the first `body` of them form one chain and the rest float. */
+  const hopsWith = (n: number, body: number): number[][] => {
+    const hops: number[][] = Array.from({ length: n }, () => new Array<number>(n).fill(Infinity));
+    for (let i = 0; i < n; i++) hops[i][i] = 0;
+    for (let a = 0; a < body; a++) for (let b = 0; b < body; b++) hops[a][b] = Math.abs(a - b);
+    return hops;
+  };
+
+  it('is repaired, not refused, when a few prop bones float free', () => {
+    const hops = hopsWith(12, 10);
+    assert.ok(largestComponentShare(hops) > 0.8, 'the body component should dominate');
+    assert.equal(skeletonIsConnected(hops), true, 'a body with two prop bones was refused');
+  });
+
+  it('is still refused when nothing is parented to anything', () => {
+    // xbot.glb's case: every distance is meaningless, so there is no body to
+    // prune against and pruning would hollow out real blends.
+    assert.equal(skeletonIsConnected(hopsWith(12, 1)), false);
+  });
+
+  it('treats two joints in different components as the worst span there is', () => {
+    // A vertex tied to a thigh AND a bone outside the hierarchy drags its
+    // triangle to wherever that bone sits. Skipping the pair as "unknown" is
+    // what left every one of those in place.
+    const bones = makeSkeleton();
+    const stray = new THREE.Bone();
+    stray.name = 'bone_12';
+    const hops = jointHopMatrix([...bones, stray]);
+    const mesh = makeMesh([...bones, stray], [0, 8, 0, 0], [0.6, 0.4, 0, 0]);
+    const report = repairSkinnedMesh(mesh, hops, MAX_JOINT_SPAN_HOPS);
+    assert.equal(report.repaired, 1, 'the cross-component influence was not pruned');
+    assert.equal(weightsOf(mesh)[1], 0, 'the stray joint still carries weight');
   });
 });
