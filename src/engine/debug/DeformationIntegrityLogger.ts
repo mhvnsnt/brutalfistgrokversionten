@@ -109,6 +109,11 @@ function sampleVertexPositions(mesh: THREE.SkinnedMesh, count: number): THREE.Ve
 
   const total = posAttr.count;
   const step = Math.max(1, Math.floor(total / count));
+  const skinned = Boolean(
+    mesh.skeleton?.bones?.length &&
+    mesh.geometry.attributes.skinIndex &&
+    mesh.geometry.attributes.skinWeight,
+  );
 
   for (let i = 0; i < total && positions.length < count; i += step) {
     const local = new THREE.Vector3(
@@ -116,7 +121,27 @@ function sampleVertexPositions(mesh: THREE.SkinnedMesh, count: number): THREE.Ve
       posAttr.getY(i),
       posAttr.getZ(i),
     );
-    // Transform to world space using the mesh's world matrix
+    // APPLY THE SKELETON, or this measures nothing at all.
+    //
+    // THE BUG THIS REPLACES. The old version read `geometry.attributes
+    // .position` — the BIND-POSE vertex buffer, which skinning never writes
+    // to — and multiplied it by `mesh.matrixWorld`, the mesh NODE's matrix.
+    // Skinning happens in the vertex shader from `skeleton.boneMatrices`, so
+    // NEITHER of those two things changes when a bone moves. The check could
+    // only ever report displacement when an animation moved the mesh node
+    // itself, which is root motion, not deformation.
+    //
+    // MEASURED CONSEQUENCE, in the shipped build: VIPER — animating
+    // correctly, 58 joints, rig continuity WHOLE — failed
+    // FIRST_FRAME_DISPLACEMENT and the console printed "COMBAT FROZEN". A
+    // check that cannot express the failure it is named after is worse than
+    // no check: it condemns working assets and vouches for broken ones.
+    //
+    // `applyBoneTransform` is the CPU form of exactly what the shader does:
+    // bindMatrix, then the weighted sum of bone.matrixWorld * boneInverse,
+    // then bindMatrixInverse. The caller has already run
+    // updateMatrixWorld(true), which is all it needs.
+    if (skinned) mesh.applyBoneTransform(i, local);
     local.applyMatrix4(mesh.matrixWorld);
     positions.push(local);
   }
@@ -580,7 +605,7 @@ export function runDeformationIntegrityTest(
 
   if (verdict === 'BLOCKED') {
     console.error(
-      `[DeformationIntegrity] COMBAT FROZEN — ${characterName} failed: [${failingChecks.join(', ')}]`
+      `[DeformationIntegrity] BLOCKED — ${characterName} failed: [${failingChecks.join(', ')}]`
     );
   }
 

@@ -9,13 +9,15 @@
     }
   ],
   "hingeCorrections": 1334,
-  "limitCorrections": 1889,
+  "conventionTwistCorrections": 161,
+  "limitCorrections": 1735,
   "spineRedistributed": 166,
-  "grounded": 289,
-  "groundedTotal": 90.06408307271938,
+  "grounded": 338,
+  "groundedTotal": 87.5435004388157,
   "airborne": 229,
-  "cappedShift": 62,
+  "cappedShift": 72,
   "cappedClips": [
+    "HURRICANE_KICK",
     "FALLING_FLAT_IMPACT",
     "TAU_BUTTSLAP",
     "TAU_GENERALFEMALE",
@@ -31,8 +33,11 @@
     "HAMMERTHROW",
     "CHOKESLAM",
     "CEMETERYDRIVE",
+    "SHOULDERBAG",
+    "ASSISTEDREVERSEGOOZLECHOP",
     "ASSISTEDCUTTER",
     "SNAPPILEDRIVERS",
+    "STEREOSUPERKICK",
     "FALL_B_LOOP",
     "ZONE_SLIDE_IN_A",
     "ZONE_SLIDE_IN_B",
@@ -77,51 +82,15 @@
     "CAPITALPUNISHMENT",
     "DEFAULTJUMPPUNCH",
     "DEFAULTJUMPPUNCH2",
-    "JUMP2"
+    "JUMP2",
+    "LOWSTANCEGUARD",
+    "LOWSTANCENEW",
+    "SPINJUMPB",
+    "SPINJUMPBFAST",
+    "SPINJUMPF",
+    "SPINJUMPFFAST"
   ],
   "worst": [
-    {
-      "clip": "CROUCH_TORCH_WALK_RIGHT",
-      "bone": "mixamorigLeftUpLeg",
-      "bend": 93.5,
-      "twist": 180
-    },
-    {
-      "clip": "CLIMBING_UP_WALL",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 115.3,
-      "twist": 180
-    },
-    {
-      "clip": "BASEBALL_HIT",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 88,
-      "twist": 180
-    },
-    {
-      "clip": "DYING_BACKWARDS",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 76.1,
-      "twist": 180
-    },
-    {
-      "clip": "GINGA_FORWARD",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 105.5,
-      "twist": 180
-    },
-    {
-      "clip": "CORKSCREW_KIP_UP",
-      "bone": "mixamorigLeftUpLeg",
-      "bend": 105.2,
-      "twist": 180
-    },
-    {
-      "clip": "BREAKDANCE_UPROCK_TO_GROUND",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 66.6,
-      "twist": 180
-    },
     {
       "clip": "GINGA_BACKWARD",
       "bone": "mixamorigRightUpLeg",
@@ -132,66 +101,6 @@
       "clip": "BRACED_HANG_HOP_UP",
       "bone": "mixamorigRightUpLeg",
       "bend": 114.5,
-      "twist": 179.9
-    },
-    {
-      "clip": "CROSS_JUMPS",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 54.4,
-      "twist": 179.9
-    },
-    {
-      "clip": "CLIMBING_A_ROPE__1_",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 94.5,
-      "twist": 179.9
-    },
-    {
-      "clip": "DRUNK_WALK",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 58.1,
-      "twist": 179.9
-    },
-    {
-      "clip": "HIT_ON_SIDE_OF_HEAD",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 112.5,
-      "twist": 179.9
-    },
-    {
-      "clip": "CAN_CAN",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 122.8,
-      "twist": 179.9
-    },
-    {
-      "clip": "CAPOEIRA__1_",
-      "bone": "mixamorigLeftUpLeg",
-      "bend": 61.3,
-      "twist": 179.9
-    },
-    {
-      "clip": "BROOKLYN_UPROCK",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 75.7,
-      "twist": 179.9
-    },
-    {
-      "clip": "INJURED_HURTING_IDLE",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 97.6,
-      "twist": 179.9
-    },
-    {
-      "clip": "BREAKDANCE_FREEZES",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 117.8,
-      "twist": 179.9
-    },
-    {
-      "clip": "DOUBLE_LEG_TAKEDOWN___VICTIM",
-      "bone": "mixamorigLeftUpLeg",
-      "bend": 58.4,
       "twist": 179.9
     },
     {
@@ -207,18 +116,6 @@
       "twist": 179.9
     },
     {
-      "clip": "DOUBLE_LEG_TAKEDOWN___VICTIM__1_",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 96.3,
-      "twist": 179.8
-    },
-    {
-      "clip": "DANCING_RUNNING_MAN",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 80.5,
-      "twist": 179.8
-    },
-    {
       "clip": "SHARPSHOOTER",
       "bone": "mixamorigLeftUpLeg",
       "bend": 150.7,
@@ -231,27 +128,9 @@
       "twist": 179.8
     },
     {
-      "clip": "INJURED_RUN_BACKWARDS_RIGHT_TURN",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 68.9,
-      "twist": 179.7
-    },
-    {
-      "clip": "DWARF_WALK",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 54.9,
-      "twist": 179.7
-    },
-    {
       "clip": "BIG_JUMP",
       "bone": "mixamorigRightShoulder",
       "bend": 120.1,
-      "twist": 179.7
-    },
-    {
-      "clip": "IDLE",
-      "bone": "mixamorigLeftUpLeg",
-      "bend": 29.2,
       "twist": 179.7
     },
     {
@@ -273,18 +152,6 @@
       "twist": 179.7
     },
     {
-      "clip": "INJURED_TURN_RIGHT",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 44.1,
-      "twist": 179.6
-    },
-    {
-      "clip": "CROUCH_TORCH_WALK_RIGHT",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 106.5,
-      "twist": 179.6
-    },
-    {
       "clip": "CAPOEIRA__1_",
       "bone": "mixamorigRightUpLeg",
       "bend": 132.9,
@@ -303,22 +170,166 @@
       "twist": 179.6
     },
     {
-      "clip": "DRUNK_RUN_FORWARD",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 101.3,
-      "twist": 179.5
-    },
-    {
-      "clip": "CLIMBING_A_ROPE__1_",
-      "bone": "mixamorigLeftUpLeg",
-      "bend": 93.2,
-      "twist": 179.5
-    },
-    {
       "clip": "CORKSCREW_EVADE",
       "bone": "mixamorigRightUpLeg",
       "bend": 136.2,
       "twist": 179.5
+    },
+    {
+      "clip": "OVREHEADPRESS",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 148.8,
+      "twist": 179.5
+    },
+    {
+      "clip": "BRACED_HANG_HOP_UP",
+      "bone": "mixamorigRightShoulder",
+      "bend": 124.3,
+      "twist": 179.4
+    },
+    {
+      "clip": "BIG_JUMP",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 136.7,
+      "twist": 179.4
+    },
+    {
+      "clip": "BIG_BODY_BLOW",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 133,
+      "twist": 179.4
+    },
+    {
+      "clip": "JUNGLE_JUICE__RECV",
+      "bone": "mixamorigRightShoulder",
+      "bend": 127,
+      "twist": 179.4
+    },
+    {
+      "clip": "REVERSEGOOZLEDIVFOOTSTOMP",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 168.3,
+      "twist": 179.3
+    },
+    {
+      "clip": "BREAKDANCE_FOOTWORK_3",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 72.4,
+      "twist": 179.2
+    },
+    {
+      "clip": "BREAKDANCE_FOOTWORK_3__1_",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 72.4,
+      "twist": 179.2
+    },
+    {
+      "clip": "SPINTORTURERACKBOMB",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 160.1,
+      "twist": 179.2
+    },
+    {
+      "clip": "ZONE_SLIDE_IN_B",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 168.9,
+      "twist": 179.2
+    },
+    {
+      "clip": "TAUNT_CALLOUT",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 178.2,
+      "twist": 179.2
+    },
+    {
+      "clip": "TAU_HEADCRACK",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 153.6,
+      "twist": 179.1
+    },
+    {
+      "clip": "HURRICANERANA",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 162.1,
+      "twist": 179.1
+    },
+    {
+      "clip": "OVREHEADPRESS",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 156.4,
+      "twist": 179.1
+    },
+    {
+      "clip": "DOUBLESUPLEX",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 151.9,
+      "twist": 179.1
+    },
+    {
+      "clip": "BREAKDANCE_UPROCK_TO_GROUND",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 62.4,
+      "twist": 179.1
+    },
+    {
+      "clip": "JUNGLE_JUICE__RECV",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 169.2,
+      "twist": 179.1
+    },
+    {
+      "clip": "TIGERSCARLETSCREW",
+      "bone": "mixamorigLeftArm",
+      "bend": 160.5,
+      "twist": 179.1
+    },
+    {
+      "clip": "TAUNT",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 143.5,
+      "twist": 179
+    },
+    {
+      "clip": "ZONE_ROLL_OUT_A",
+      "bone": "mixamorigRightFoot",
+      "bend": 163.8,
+      "twist": 179
+    },
+    {
+      "clip": "ZONE_SLIDE_OUT",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 171.9,
+      "twist": 179
+    },
+    {
+      "clip": "BREAKDANCE_FREEZES",
+      "bone": "mixamorigRightShoulder",
+      "bend": 119.5,
+      "twist": 178.9
+    },
+    {
+      "clip": "QUESHADA_2",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 110.4,
+      "twist": 178.9
+    },
+    {
+      "clip": "LOCO_STALK",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 178.4,
+      "twist": 178.9
+    },
+    {
+      "clip": "AU",
+      "bone": "mixamorigRightShoulder",
+      "bend": 112.9,
+      "twist": 178.8
+    },
+    {
+      "clip": "TIGER_FEINT_KICK__RECV",
+      "bone": "mixamorigRightShoulder",
+      "bend": 159.1,
+      "twist": 178.8
     }
   ],
   "slotOwners": 6

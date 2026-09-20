@@ -124,33 +124,9 @@ if (needsCorrection(correction)) {
 }
 
 /**
- * The vertical offset that keeps this clip's feet on the floor, per key.
- *
- * MEASURED: a per-CLIP offset is not enough. STANCE touches the floor at one
- * frame and is 23 cm above it at another — it BOBS, which is precisely the
- * wobble the owner described. Shifting the whole clip by its smallest lift
- * leaves that bob untouched.
- *
- * So a GROUNDED clip is lowered per key, which is the vertical half of foot
- * IK and is what "planted" means. An AIRBORNE clip is not: a jump has to
- * leave the floor, so it keeps its arc and is only shifted by its minimum so
- * that its lowest moment lands. The two are told apart by MEASUREMENT, not by
- * name — the median lift across the clip. A move that spends most of itself
- * near the floor is a grounded move whatever it is called.
- *
- * Only ever lowers. A clip already reaching the floor is untouched, and one
- * that goes THROUGH the floor is left alone — that is a different defect and
- * raising it would hide it.
- */
-/**
- * Above this PEAK lift a clip is not a fighter standing up, so its arc is
- * left alone and the floor lock only ever lowers it.
- *
- * The measure is the maximum, not the median, and that correction matters.
- * The median missed every clip that starts on the floor and ends in the air —
- * a throw, a takedown, a big hit — because half its frames are grounded.
- * MEASURED with a median rule: BIG_BODY_BLOW, JAYKICK, POWERBOMBWHIP and
- * STEREOSUPERKICK were all classed grounded while reaching 147 to 161 cm.
+ * Above this PEAK lift, both feet have left the floor and the clip is a jump,
+ * a dive or a throw — something that is airborne on purpose and must not be
+ * dragged back down.
  *
  * The lift tracked is the LOWEST foot's, so a high kick does not trip this —
  * the support foot stays down. It only rises when BOTH feet leave the floor,
@@ -160,7 +136,7 @@ if (needsCorrection(correction)) {
 const AIRBORNE_PEAK_M = Number(process.env.BF_AIRBORNE_M ?? 0.5);
 
 /**
- * The most the floor lock may move a body, in metres.
+ * The most the grounding offset may move a body, in metres.
  *
  * A fighter is 1.85 m. No legitimate grounding correction is a large
  * fraction of that, so anything past this is not a grounding problem — it is
@@ -172,25 +148,69 @@ const AIRBORNE_PEAK_M = Number(process.env.BF_AIRBORNE_M ?? 0.5);
  */
 const MAX_GROUND_SHIFT_M = 0.6;
 const MEDIANS = [];
+/** Names given in BF_GROUND_DEBUG get their raw floor measurement printed. */
+const DEBUG_GROUND = new Set((process.env.BF_GROUND_DEBUG ?? '').split(',').filter(Boolean));
 
-function groundingTrack(clip) {
-  // DENSER THAN THE KEYS. The offset track is interpolated linearly while the
-  // foot's height is not, so between two keys the foot can dip below the
-  // floor — measured at 25 cm on a roundhouse, which is a leg through the mat.
-  // Sampling between the keys closes that; it costs nothing offline.
+/**
+ * ONE CONSTANT vertical offset that puts this clip's feet on the floor.
+ *
+ * THIS IS NOT THE OLD FLOOR LOCK AND MUST NOT BECOME IT AGAIN. The earlier
+ * version emitted a DIFFERENT pelvis height at every key, which translated
+ * the whole root while the authored knees and feet were already solving the
+ * gait — two systems moving the same body, which is what produced the
+ * leaning, sliding legs. It was removed for that reason, and removing it was
+ * right about the mechanism and wrong about the remedy: MEASURED with no
+ * offset at all, STANCE floats 23.3 cm, GRAFQUICKJAB 31.9 cm and every
+ * combat slot 18-32 cm, so nobody's feet touch the ground.
+ *
+ * A CONSTANT offset has neither problem. The clip is authored at the wrong
+ * height; moving it once fixes the height and leaves every frame's relative
+ * motion — the bob, the weight shift, the step — exactly as authored. It is
+ * the offline equivalent of authoring the clip on the floor in the first
+ * place, and it is a single key, so the runtime's constant-translation rule
+ * (see BakedMotionBank) keeps it while still rejecting per-frame chasing.
+ *
+ * WHICH CONSTANT: the clip's MINIMUM lift, so the lowest the foot ever gets
+ * is exactly the floor. Using the mean or the max would bury the low frames
+ * in the mat. A negative minimum (a foot already through the floor) raises
+ * the clip by the same rule, in the same direction.
+ *
+ * An AIRBORNE clip is only ever LOWERED: a victim dips below the floor at
+ * the instant of a slam and that is the animation doing its job; raising the
+ * whole throw to accommodate one frame would leave it hovering.
+ */
+function groundingOffset(clip) {
+  // DENSER THAN THE KEYS, still: the minimum has to be the true minimum of
+  // the motion, not of the sparse keys, or a clip dips through the mat
+  // between two samples.
   const times = new Set([0]);
   for (const track of clip.tracks) for (const t of track.times) times.add(t);
   const dur = clip.duration || 0;
   const steps = Math.min(240, Math.max(24, Math.round(dur * 60)));
   for (let i = 0; i <= steps; i++) times.add((dur * i) / steps);
   const sorted = [...times].sort((a, b) => a - b);
+  // RESET TO BIND ONCE, BEFORE THE MIXER EXISTS — never between samples.
+  //
+  // THE BUG THIS REPLACES, AND IT WAS SILENT. restPose() writes bone
+  // quaternions directly, behind the mixer's back. three.js PropertyMixer
+  // .apply() keeps a copy of what it last wrote and SKIPS binding.setValue
+  // when the new accumulated value matches it — so on any sample where the
+  // clip's value happened to equal the previous sample's, the mixer wrote
+  // nothing and the measurement read the bind pose I had just forced.
+  // MEASURED on QUICKKICK: samples 1-4 came back at exactly 0.0000 lift,
+  // which is bind by definition, and that false zero became the clip's
+  // minimum — so its grounding offset was computed as 0 and the clip shipped
+  // floating 19 cm in the air while the bake reported it planted.
+  //
+  // A fresh mixer per clip is what stops one clip inheriting another's
+  // bones; resetting mid-sample was never what did that.
+  restPose();
   const sampler = new THREE.AnimationMixer(skeleton.root);
   const action = sampler.clipAction(clip);
   action.play();
 
   const lift = [];
   for (const t of sorted) {
-    restPose();
     sampler.setTime(t);
     skeleton.root.updateMatrixWorld(true);
     lift.push(lowestFootY() - BIND_FLOOR);
@@ -199,38 +219,37 @@ function groundingTrack(clip) {
   sampler.uncacheClip(clip);
   restPose();
 
+  if (DEBUG_GROUND.has(clip.name)) {
+    console.log(`  [lift] ${clip.name} first8=${lift.slice(0, 8).map((v) => v.toFixed(4)).join(' ')}`);
+  }
   if (!lift.length || lift.some((v) => !Number.isFinite(v))) return null;
   MEDIANS.push([clip.name, Math.max(...lift)]);
-  const airborne = Math.max(...lift) > AIRBORNE_PEAK_M;
-  const minLift = Math.min(...lift);
+
   // The VERDICT is returned even when no offset is needed. An airborne clip
   // that happens to touch the floor at one frame needs no correction, and
   // returning null for it used to lose the verdict too — so it was recorded
   // as a grounded clip, and every audit then judged a jump as a failed
   // stance. Measured: BIG_BODY_BLOW at 161 cm, filed as "meant to be on the
   // floor".
-  const verdict = { airborne };
-  // A GROUNDED clip is corrected in BOTH directions: the floor is the floor,
-  // and a foot through the mat is as wrong as a foot in the air. MEASURED
-  // across the whole set with only-lower: 134 clips still put a foot more
-  // than 4 cm through the floor, because `Math.min(0, -v)` discarded every
-  // negative lift it was handed.
-  //
-  // An AIRBORNE clip is still only ever lowered. A victim being slammed dips
-  // below the floor at the moment of impact and that is the animation doing
-  // its job; raising the whole throw to accommodate one frame would float it.
-  const raw = airborne
-    ? lift.map(() => Math.min(0, -minLift))
-    : lift.map((v) => -v);
-  const capped = raw.some((v) => Math.abs(v) > MAX_GROUND_SHIFT_M);
-  const offsets = raw.map((v) => Math.max(-MAX_GROUND_SHIFT_M, Math.min(MAX_GROUND_SHIFT_M, v)));
-  if (offsets.every((v) => Math.abs(v) < 1e-5)) return { ...verdict, capped };
+  const airborne = Math.max(...lift) > AIRBORNE_PEAK_M;
+  const minLift = Math.min(...lift);
+  const raw = airborne ? Math.min(0, -minLift) : -minLift;
+  const capped = Math.abs(raw) > MAX_GROUND_SHIFT_M;
+  const offset = Math.max(-MAX_GROUND_SHIFT_M, Math.min(MAX_GROUND_SHIFT_M, raw));
   return {
-    ...verdict,
+    airborne,
     capped,
-    times: sorted,
-    offsets,
-    worst: Math.max(...offsets.map(Math.abs)),
+    offset,
+    minLift,
+    maxLift: Math.max(...lift),
+    // HOW CLOSE THIS CLIP EVER GETS TO THE FLOOR once the offset is applied.
+    // Zero for anything the offset could fix; what is LEFT for a clip whose
+    // correction hit the cap. It is the number that says "this pose cannot
+    // stand on the ground", and nothing else in the pipeline can express that
+    // — peakDeg says a clip HOLDS a pose, not that the pose has feet on the
+    // floor. STANCE_WIDE passes peakDeg at 10 deg and sits 107 cm in the air.
+    floorGap: +(minLift + offset).toFixed(4),
+    applied: Math.abs(offset) >= 1e-5,
   };
 }
 
@@ -344,23 +363,22 @@ for (const src of sources()) {
     report.worst.push({ clip: src.name, bone: v.bone.replace('mixamorig', ''), ...v });
   }
 
-  // Measure the clip against the canonical floor, but DO NOT inject a
-  // per-frame Hips.position track. That old "floor lock" was the source of
-  // the ghostly legs/leaning: it translated the entire pelvis independently
-  // at every sample while the authored knees/feet were already solving their
-  // own gait. Tekken/Schwarzerblitz-style locomotion keeps the animation on
-  // one authored skeleton and lets the character controller own world
-  // translation; jump/throw clips are allowed to leave the floor.
-  const ground = groundingTrack(relative);
+  // Measure the clip against the canonical floor. The correction is ONE
+  // constant key, never a per-frame track — see groundingOffset for why the
+  // per-frame version had to go and why removing it outright was not the fix.
+  const ground = groundingOffset(relative);
+  if (DEBUG_GROUND.has(src.name)) {
+    console.log(`  [ground] ${src.name} min=${(ground?.minLift ?? NaN).toFixed(4)} max=${(ground?.maxLift ?? NaN).toFixed(4)} offset=${(ground?.offset ?? 0).toFixed(4)} airborne=${ground?.airborne}`);
+  }
   const clipAirborne = Boolean(ground?.airborne);
   if (clipAirborne) report.airborne++;
   if (ground?.capped) {
     report.cappedShift++;
     report.cappedClips.push(src.name);
   }
-  if (ground?.times) {
+  if (ground?.applied) {
     report.grounded++;
-    report.groundedTotal += ground.worst;
+    report.groundedTotal += Math.abs(ground.offset);
   }
 
   const tracks = {};
@@ -382,6 +400,18 @@ for (const src of sources()) {
   if (Object.keys(tracks).length === 0) {
     report.skipped.push({ name: src.name, why: 'no tracks after constraints' });
     continue;
+  }
+
+  // PUT THE CLIP ON THE FLOOR — once, as a single key. Applied ON TOP of any
+  // pelvis translation the clip already authored (a wide stance sits lower on
+  // purpose), never instead of it; if that authored track is itself variable
+  // the runtime drops the pair and we are no worse off than with no offset.
+  if (ground?.applied) {
+    const existing = positions[HIPS];
+    const baseX = existing ? existing.p[0] : round(hipsBindPosition.x);
+    const baseY = existing ? existing.p[1] : round(hipsBindPosition.y);
+    const baseZ = existing ? existing.p[2] : round(hipsBindPosition.z);
+    positions[HIPS] = { t: [0], p: [baseX, round(baseY + ground.offset), baseZ] };
   }
 
   const slot = SLOT_OWNER.get(src.name);
@@ -409,6 +439,7 @@ for (const src of sources()) {
     semantic,
     owns: Boolean(slot),
     airborne: clipAirborne,
+    floorGap: ground?.floorGap ?? 0,
   };
   if (slot) report.slotOwners = (report.slotOwners ?? 0) + 1;
   report.baked++;
@@ -432,14 +463,25 @@ console.log(`  hinge corrections    ${report.hingeCorrections} track(s)`);
 console.log(`  convention twist    ${report.conventionTwistCorrections} track(s)`);
 console.log(`  limit corrections    ${report.limitCorrections} track(s)`);
 console.log(`  combat slots owned   ${report.slotOwners ?? 0}`);
-console.log(`  planted on the floor ${report.grounded} clip(s), worst drop avg ${
-  report.grounded ? ((report.groundedTotal / report.grounded) * 100).toFixed(1) : '0'} cm`);
+console.log(`  planted on the floor ${report.grounded} clip(s) moved, avg shift ${
+  report.grounded ? ((report.groundedTotal / report.grounded) * 100).toFixed(1) : '0'} cm (ONE constant key each)`);
 if (process.env.BF_MEDIANS) {
   const sorted = MEDIANS.map(([, m]) => m).sort((a, b) => a - b);
   const q = (f) => (sorted[Math.floor(sorted.length * f)] * 100).toFixed(1);
   console.log(`  peak-lift distribution (cm): p10 ${q(0.1)}  p25 ${q(0.25)}  p50 ${q(0.5)}  p75 ${q(0.75)}  p90 ${q(0.9)}  max ${(sorted[sorted.length-1]*100).toFixed(1)}`);
 }
 console.log(`  kept airborne        ${report.airborne} clip(s) (peak lift over ${AIRBORNE_PEAK_M * 100} cm)`);
+// NAME THE CLIPS THAT STILL HOVER. A clip the offset could not bring down is
+// not a grounding problem, it is a pose authored at the wrong height, and it
+// must not quietly become somebody's stance — the runtime refuses it, and
+// this is where the source fix gets its target list.
+const stillHovering = Object.entries(manifest)
+  .filter(([, m]) => (m.floorGap ?? 0) > 0.08)
+  .sort((a, b) => b[1].floorGap - a[1].floorGap);
+if (stillHovering.length) {
+  console.log(`  NEVER REACH THE MAT  ${stillHovering.length} clip(s) — pose authored at the wrong height, refused as stances`);
+  console.log('    ' + stillHovering.slice(0, 8).map(([n, m]) => `${n} ${(m.floorGap * 100).toFixed(0)}cm`).join(', '));
+}
 if (report.cappedShift > 0) {
   console.log(`  SHIFT CAPPED         ${report.cappedShift} clip(s) asked for more than ${MAX_GROUND_SHIFT_M * 100} cm — their pose is wrong for another reason`);
   console.log(`    ${report.cappedClips.slice(0, 8).join(', ')}`);

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import * as THREE from 'three';
 
-import { clipFromBaked, type BakedClipFile, type BakedManifestEntry } from './BakedMotionBank.ts';
+import { clipFromBaked, markStandability, type BakedClipFile, type BakedManifestEntry } from './BakedMotionBank.ts';
 import { HINGE_JOINTS, JOINT_LIMITS, angleDeg, signedAngleAbout, swingTwist, removeConstantConventionTwist } from './SkeletalLimits.ts';
 import { loadCanonicalSkeleton } from './CanonicalSkeleton.ts';
 
@@ -256,4 +256,73 @@ test('the airborne verdict survives a clip that needs no correction', { skip: !h
   for (const name of ['STANCE', 'GRAFQUICKJAB', 'GUARD']) {
     if (manifest[name]) assert.equal(manifest[name].airborne, false, `${name} should be grounded`);
   }
+});
+
+/**
+ * THE FLOOR, AND THE TWO WAYS IT HAS ALREADY GONE WRONG.
+ *
+ * First a per-frame Hips.position track planted the feet and fought the
+ * authored gait — the pelvis being translated at every sample while the knees
+ * were already solving their own step. Then that track was deleted outright
+ * and NOBODY'S FEET TOUCHED THE GROUND: measured on the shipped bake, STANCE
+ * floated 23.3 cm, GRAFQUICKJAB 31.9 cm, every combat slot 18-32 cm.
+ *
+ * The shape that is neither: ONE constant key. It moves the clip to the right
+ * height once and leaves every frame's relative motion alone.
+ */
+test('grounding is a single constant key, never a per-frame track', { skip: !hasBake }, () => {
+  const files = readdirSync(BAKED).filter((f) => f.endsWith('.json') && f !== 'index.json');
+  assert.ok(files.length > 100, 'expected a full bake');
+  const offenders: string[] = [];
+  let withOffset = 0;
+  for (const f of files) {
+    const data = JSON.parse(readFileSync(join(BAKED, f), 'utf8')) as BakedClipFile;
+    for (const [bone, track] of Object.entries(data.positions ?? {})) {
+      if (track.t.length > 1) offenders.push(`${data.name}:${bone} has ${track.t.length} keys`);
+      else withOffset++;
+    }
+  }
+  assert.deepEqual(offenders.slice(0, 5), [], 'a multi-key translation track is the old floor lock');
+  assert.ok(withOffset > 100, `expected most clips to carry a grounding offset, got ${withOffset}`);
+});
+
+/**
+ * A clip whose feet never reach the floor cannot be somebody's stance, and
+ * the pool's only other measurement cannot say so: peakDeg asks whether a
+ * clip HOLDS a pose, not where the pose is. STANCE_WIDE scores 10 deg and
+ * stands 107 cm in the air.
+ */
+test('standability is decided by the measured floor gap, not by name', () => {
+  const manifest: Record<string, BakedManifestEntry> = {
+    ON_THE_FLOOR: { file: 'a.json', bank: 'b', dur: 1, bones: 20, floorGap: 0 },
+    A_LITTLE_HIGH: { file: 'b.json', bank: 'b', dur: 1, bones: 20, floorGap: 0.02 },
+    HOVERING: { file: 'c.json', bank: 'b', dur: 1, bones: 20, floorGap: 1.07 },
+    A_JUMP: { file: 'd.json', bank: 'b', dur: 1, bones: 20, airborne: true, floorGap: 0 },
+    A_CROUCH: { file: 'f.json', bank: 'b', dur: 1, bones: 20, airborne: true, floorGap: 0.041 },
+    UNMEASURED: { file: 'e.json', bank: 'b', dur: 1, bones: 20 },
+  };
+  const out = markStandability(manifest);
+  assert.equal(out.has('ON_THE_FLOOR'), false);
+  assert.equal(out.has('A_LITTLE_HIGH'), false);
+  assert.equal(out.has('HOVERING'), true, 'a clip a metre off the mat is not a stance');
+  assert.equal(out.has('A_JUMP'), false, 'a peak lift says nothing — only never coming down does');
+  assert.equal(out.has('A_CROUCH'), false, 'a crouch lifts a foot past the airborne peak and still plants');
+  assert.equal(out.has('UNMEASURED'), false, 'an unmeasured clip must behave exactly as before');
+});
+
+/** The shipped bake must agree: every clip a stance pool can hand out stands. */
+test('no shipped stance clip is left hovering', { skip: !hasBake }, () => {
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  const unstandable = markStandability(manifest);
+  // NAMED, not silenced. These are Bannon-bank single-pose clips whose hips
+  // sit ~1.5 m too high in the source; the bake caps the correction at 60 cm
+  // and the kit refuses them, so no fighter stands in one. They are kept
+  // (generated content is never deleted) and listed here so the source fix
+  // has a target. Anything NEW joining this list is a regression.
+  const KNOWN_HOVERING = ['GUARD_HIGH', 'GUARD_LOW', 'STANCE_BLADED', 'STANCE_CROUCH', 'STANCE_WIDE'];
+  const posePools = new Set([...KNOWN_HOVERING, 'STANCE', 'GUARD', 'CENTER_BLOCK', 'CROUCHING',
+    'GRAFSTANCE2', 'GRAFSTANCE3', 'JOHNSON_STANCE', 'LOWSTANCE', 'LOWSTANCENEW', 'LOWSTANCEGUARD',
+    'SHAZSTANCE', 'TIGERSTANCE', 'TIGERSTANCEUPDATED', 'WALK', 'WALKFAST', 'SHAZWALK', 'DRUNK_WALK']);
+  const hovering = [...unstandable].filter((n) => posePools.has(n)).sort();
+  assert.deepEqual(hovering, KNOWN_HOVERING, 'the set of hovering stance clips changed');
 });

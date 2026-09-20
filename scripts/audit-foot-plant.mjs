@@ -95,6 +95,12 @@ const rows = await page.evaluate(async ({ only }) => {
     const dur = act.getClip().duration || 1;
     let lift = 0;
     let sink = 0;
+    // THE NUMBER THAT MEANS "PLANTED". lift is the PEAK — a jab that steps
+    // has a peak and should. What says a fighter is hovering is that he never
+    // comes DOWN: the closest his lowest foot ever gets to the floor over the
+    // whole clip. Judging on the peak alone condemns every clip with a step
+    // in it and misses a stance that floats at a constant 23 cm.
+    let closest = Infinity;
     for (let k = 0; k <= 16; k++) {
       resetBind();
       act.reset().play();
@@ -103,6 +109,7 @@ const rows = await page.evaluate(async ({ only }) => {
       const d = lowest() - floor;
       if (d > lift) lift = d;
       if (d < sink) sink = d;
+      if (d < closest) closest = d;
     }
     // An action name is often an ALIAS ('grapple', 'throw'); the clip's own
     // name is what the bake recorded, and it is what decides intent.
@@ -111,28 +118,34 @@ const rows = await page.evaluate(async ({ only }) => {
       source: act.getClip().name,
       lift: +lift.toFixed(3),
       sink: +sink.toFixed(3),
+      closest: +(Number.isFinite(closest) ? closest : 0).toFixed(3),
     });
   }
   return { floor: +floor.toFixed(3), out };
 }, { only: CLIPS.split(',').filter(Boolean) });
 
 if (rows.error) { console.error(rows.error); await browser.close(); process.exit(1); }
-rows.out.sort((a, b) => b.lift - a.lift);
+rows.out.sort((a, b) => b.closest - a.closest);
 console.log(`bind floor at y = ${rows.floor}`);
-console.log('CLIP'.padEnd(34) + 'foot LIFT'.padStart(12) + 'foot SINK'.padStart(12));
+console.log('CLIP'.padEnd(34) + 'NEVER CLOSER'.padStart(14) + 'peak LIFT'.padStart(12) + 'foot SINK'.padStart(12));
 for (const r of rows.out.slice(0, 15)) {
-  console.log(r.clip.padEnd(34) + `${(r.lift * 100).toFixed(1)} cm`.padStart(12) + `${(r.sink * 100).toFixed(1)} cm`.padStart(12));
+  console.log(
+    r.clip.padEnd(34) +
+    `${(r.closest * 100).toFixed(1)} cm`.padStart(14) +
+    `${(r.lift * 100).toFixed(1)} cm`.padStart(12) +
+    `${(r.sink * 100).toFixed(1)} cm`.padStart(12),
+  );
 }
 // Split by what the bake INTENDED. A jump in the air and a victim dipping at
 // impact are not defects; a standing move doing either is.
 const grounded = rows.out.filter((r) => !airborne.has(r.source ?? r.clip));
-const floating = grounded.filter((r) => r.lift > TOLERANCE_M);
+const floating = grounded.filter((r) => r.closest > TOLERANCE_M);
 const sinking = grounded.filter((r) => r.sink < -TOLERANCE_M);
 console.log(`\nactions measured: ${rows.out.length}  (${grounded.length} meant to be on the floor)`);
-console.log(`GROUNDED clips more than 4 cm off the floor:   ${floating.length}`);
+console.log(`GROUNDED clips that NEVER touch the floor:     ${floating.length}`);
 console.log(`GROUNDED clips more than 4 cm through it:      ${sinking.length}`);
 for (const r of [...floating, ...sinking].slice(0, 8)) {
-  console.log(`  ${r.clip.padEnd(28)} ${(r.source ?? '').padEnd(26)} lift ${(r.lift * 100).toFixed(1)}  sink ${(r.sink * 100).toFixed(1)}`);
+  console.log(`  ${r.clip.padEnd(28)} ${(r.source ?? '').padEnd(26)} closest ${(r.closest * 100).toFixed(1)}  peak ${(r.lift * 100).toFixed(1)}  sink ${(r.sink * 100).toFixed(1)}`);
 }
 console.log(`(airborne by design, not counted: ${rows.out.length - grounded.length})`);
 await browser.close();

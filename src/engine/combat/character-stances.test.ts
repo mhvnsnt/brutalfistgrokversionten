@@ -13,6 +13,10 @@ import {
 } from './CharacterStances.ts';
 import { SCHWARZERBLITZ_MOTION_BANK } from '../../generated/SchwarzerblitzMotionBank.generated.ts';
 import { BANNON_MOTION_BANK } from '../../generated/BannonMotionBank.generated.ts';
+import { existsSync, readFileSync } from 'node:fs';
+import {
+  applyStandability, resetBakedMotionBankForTest, type BakedManifestEntry,
+} from '../retarget/BakedMotionBank.ts';
 
 const BANKS: Record<string, Record<string, unknown>> = {
   schwarzerblitz: SCHWARZERBLITZ_MOTION_BANK as Record<string, unknown>,
@@ -222,5 +226,53 @@ describe('preferences are additive', () => {
   it('an unknown state returns nothing, so the generic table still decides', () => {
     assert.deepEqual(stancePreferences(kit, 'lightAttack'), []);
     assert.deepEqual(stancePreferences(kit, 'knockdown'), []);
+  });
+});
+
+/**
+ * A KIT MUST NEVER HAND OUT A CLIP THE FIGHTER CANNOT STAND IN.
+ *
+ * The pool's original gate, peakDeg, asks whether a clip HOLDS a pose and is
+ * silent about where the pose is. MEASURED on the shipped bake: STANCE_WIDE
+ * scores 10 deg — the second stillest entry in the pool — and its lowest foot
+ * never comes within 107 cm of the mat. It is the FIRST choice for the
+ * `power` archetype, so six roster fighters stood a metre in the air.
+ *
+ * The table still lists it (generated content is not deleted), and the kit
+ * refuses it, on the bake's measurement rather than on its name.
+ */
+describe('a stance kit only ever names clips with feet on the floor', () => {
+  const INDEX = 'public/motion/baked/index.json';
+  const hasBake = existsSync(INDEX);
+
+  it('skips a hovering clip and still returns a stance', { skip: !hasBake }, () => {
+    const manifest = JSON.parse(readFileSync(INDEX, 'utf8')) as Record<string, BakedManifestEntry>;
+    const unstandable = applyStandability(manifest);
+    try {
+      assert.ok(unstandable.size > 0, 'the bake measured nothing as unstandable');
+      const styles = [
+        'Power Wrestling', 'Technical Hybrid', 'Speed Assassin', 'Electric Striker',
+        'Aerial Showman', 'Street Chaos', 'Phantom Psychology',
+      ];
+      const offenders: string[] = [];
+      for (const style of styles) {
+        for (let i = 0; i < 40; i++) {
+          const kit = stanceKitFor(`fighter_${style}_${i}`, style);
+          for (const [slot, clip] of Object.entries(kit)) {
+            if (slot === 'archetype') continue;
+            if (unstandable.has(clip)) offenders.push(`${style} ${slot} -> ${clip}`);
+          }
+        }
+      }
+      assert.deepEqual(offenders.slice(0, 5), [], 'a kit named a clip that cannot reach the floor');
+    } finally {
+      resetBakedMotionBankForTest();
+    }
+  });
+
+  it('falls back to the full list when nothing has been measured', () => {
+    resetBakedMotionBankForTest();
+    const kit = stanceKitFor('BANNON', 'Power Wrestling');
+    assert.ok(kit.idle.length > 0, 'a checkout with no bake must still get a stance');
   });
 });

@@ -25,6 +25,8 @@
  * way on a rig it was not authored for.
  */
 
+import { clipCanStand } from '../retarget/BakedMotionBank.ts';
+
 /** Largest rotation from the first key that still reads as a held pose. */
 export const STANCE_PEAK_LIMIT_DEG = 50;
 
@@ -201,7 +203,27 @@ export interface StanceKit {
 export function stanceKitFor(fighterId: string, fightingStyle?: string): StanceKit {
   const archetype = archetypeForStyle(fightingStyle);
   const h = hashId(fighterId);
-  const pick = (list: string[], salt: number) => list[(h >>> salt) % list.length];
+  // A STANCE HAS TO HAVE FEET ON THE FLOOR, and that is measured, not listed.
+  //
+  // peakDeg — the only gate this pool had — asks whether a clip HOLDS a pose.
+  // It cannot ask where the pose IS. MEASURED: STANCE_WIDE scores 10 deg, the
+  // second stillest clip here, and stands 107 cm above the mat; it is the
+  // first choice for every power fighter on the roster, so six characters
+  // were hovering. The bake already measures each clip's distance to the
+  // floor, so the pool consults that rather than having a name struck off it
+  // by hand — a new clip disqualifies itself the day it is added.
+  //
+  // FALLS BACK TO THE FULL LIST if nothing survives, because a fighter with
+  // no stance at all is worse than one standing slightly high, and a checkout
+  // that has not run the bake knows nothing about any clip.
+  const standable = (list: string[]) => {
+    const ok = list.filter(clipCanStand);
+    return ok.length ? ok : list;
+  };
+  const pick = (list: string[], salt: number) => {
+    const usable = standable(list);
+    return usable[(h >>> salt) % usable.length];
+  };
   return {
     archetype,
     idle: pick(ARCHETYPE_STANCES[archetype], 0),

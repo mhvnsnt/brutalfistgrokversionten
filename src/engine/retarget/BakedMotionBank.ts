@@ -57,13 +57,68 @@ export interface BakedManifestEntry {
   semantic?: string;
   owns?: boolean;
   airborne?: boolean;
+  /**
+   * How close this clip's lowest foot EVER gets to the floor, in metres,
+   * after the constant grounding offset has been applied. 0 for anything the
+   * offset could fix; what is left over for a clip whose correction hit the
+   * cap because its pose is wrong in some other way.
+   */
+  floorGap?: number;
 }
+
+/** Past this, a clip's feet never reach the ground and it cannot be a stance. */
+export const STANDABLE_FLOOR_GAP_M = 0.08;
 
 const INDEX_URL = '/motion/baked/index.json';
 const BASE = '/motion/baked/';
 
 let cached: Map<string, THREE.AnimationClip> | null = null;
 let attempted = false;
+/** Clips the bake measured as unable to stand on the floor. */
+let notStandable: Set<string> = new Set();
+
+/**
+ * CAN A FIGHTER STAND IN THIS CLIP?
+ *
+ * The one thing `peakDeg` — the stance pool's only other measurement — cannot
+ * express. peakDeg asks whether a clip HOLDS a pose; it says nothing about
+ * where that pose is. MEASURED: STANCE_WIDE scores 10 deg, the second
+ * stillest clip in the pool, and floats 107 cm above the mat. It is the
+ * default idle for every power fighter on the roster.
+ *
+ * Answered from the bake's own numbers so a new clip classifies itself and
+ * nothing has to be struck off a list by hand. Unknown clips are allowed:
+ * a checkout with no bake must behave exactly as before.
+ */
+export function clipCanStand(name: string): boolean {
+  return !notStandable.has(name);
+}
+
+/** For tests: the clips the last loaded manifest ruled out, and why. */
+export function unstandableClips(): ReadonlySet<string> {
+  return notStandable;
+}
+
+/** Install a manifest's standability verdicts. Used by the loader and by tests. */
+export function applyStandability(manifest: Record<string, BakedManifestEntry>): Set<string> {
+  notStandable = markStandability(manifest);
+  return notStandable;
+}
+
+/** Decide standability from a manifest without needing the network. */
+export function markStandability(manifest: Record<string, BakedManifestEntry>): Set<string> {
+  const out = new Set<string>();
+  for (const [name, entry] of Object.entries(manifest)) {
+    // floorGap ONLY. `airborne` is a PEAK — the highest the lowest foot ever
+    // gets — and my first version of this rule used it, which was wrong and
+    // the stance test caught it: CROUCHING, LOWSTANCE, LOWSTANCENEW and
+    // LOWSTANCEGUARD all plant perfectly (gap 0.0-4.1 cm) and were being
+    // thrown out for lifting a foot past 50 cm somewhere in the clip, which
+    // is what a crouch does. What disqualifies a stance is never coming DOWN.
+    if ((entry.floorGap ?? 0) > STANDABLE_FLOOR_GAP_M) out.add(name);
+  }
+  return out;
+}
 
 /** Turn one baked file into a clip. Exported so a test can check it directly. */
 export function clipFromBaked(data: BakedClipFile): THREE.AnimationClip | null {
@@ -137,6 +192,7 @@ export async function loadBakedMotionBank(): Promise<Map<string, THREE.Animation
     const res = await fetch(assetUrl(INDEX_URL));
     if (!res.ok) throw new Error(`index HTTP ${res.status}`);
     const manifest = (await res.json()) as Record<string, BakedManifestEntry>;
+    applyStandability(manifest);
     // SLOT OWNERS FIRST. Actions register in order and the first clip for a
     // semantic wins, so the clip the bake chose for a combat state has to be
     // seen before any clip that merely infers the same state from its name.
@@ -177,4 +233,11 @@ export async function loadBakedMotionBank(): Promise<Map<string, THREE.Animation
 /** For tests and for the pipeline's own reporting. */
 export function bakedBankIsLoaded(): boolean {
   return cached !== null && cached.size > 0;
+}
+
+/** For tests: forget the loaded bank and its standability verdicts. */
+export function resetBakedMotionBankForTest(): void {
+  cached = null;
+  attempted = false;
+  notStandable = new Set();
 }
