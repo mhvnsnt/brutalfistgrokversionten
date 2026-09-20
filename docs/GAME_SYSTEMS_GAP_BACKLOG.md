@@ -22,9 +22,25 @@ Animation/rig correctness is gameplay infrastructure, not cosmetic polish.
 
 # 1. Highest-priority fighting-game spine
 
-- [ ] **Live command-input integration** — connect imported command/move data to actual runtime combat; do not leave authored move graphs as inert data.
+- [ ] **Live command-input integration** — `PARTIAL`. The graph reaches the
+      matcher and directional commands fire in a live match (see below), but
+      only 3 authored sets exist for the whole roster and several inputs
+      still resolve to a generic `lightAttack` rather than a character move.
 - [ ] **Per-character movelist authority** — each fighter owns a complete move table.
-- [ ] **Four distinct limb inputs** — LP/RP/LK/RK must remain distinct through matching, buffering, move resolution, UI, and tests.
+- [x] **Four distinct limb inputs** — `IMPLEMENTED / VERIFIED`. They were
+      collapsing: `commandButtonsFor` returned `{P: lp||rp, K: lk||rk}`, so
+      `4+LP` and `4+RP` were one command and half a four-button vocabulary
+      did not exist. Buttons are per-limb now; the imported corpus's `P`/`K`
+      survive as WILDCARDS (either fist / either foot) so all 16-17 imported
+      commands per fighter keep working.
+      EVIDENCE: `scripts/probe-command-moves.mjs` in a live match —
+      `4+P -> Double Hammer`, `6+P -> Dynamo Punch`, `6+RK -> Knee Commando`,
+      `2+LK -> Left Kick`; 0 of 12 inputs dead, 7 distinct moves.
+      INSTRUMENT WARNING, worth keeping: that probe USED TO LIE. Two runs of
+      one unchanged build reported 0/12 and 4/12 because it slept a fixed
+      1.4 s between inputs, so each press landed at a random point in the
+      previous move's recovery. It waits for the fighter to be free now.
+      Never quote a number from it from before that fix.
 - [ ] **Directional normals** — standing, crouching, forward, back, down-forward, down-back and other authored directional attacks.
 - [ ] **Input priority rules** — deterministic precedence for simultaneous/special/string/normal commands.
 - [ ] **Simultaneous-input buffering** — prevent multi-button commands from collapsing into independent normals.
@@ -53,7 +69,35 @@ Animation/rig correctness is gameplay infrastructure, not cosmetic polish.
 - [ ] **Crouch**
 - [ ] **Crouch walk**
 - [ ] **Jump / landing**
-- [ ] **Sidestep / evade**
+- [x] **Sidestep path is a real orbit** — `IMPLEMENTED / VERIFIED`.
+      `LocomotionSystem.targetedSidestepVelocity` walks the tangent around the
+      opponent and holds a target gap. MEASURED live while holding sidestep:
+      P1 travelled z 0.09 -> 1.38 with x near -2.2 and the gap held 1.5-1.9 m.
+- [x] **The body turns to face the opponent** — `IMPLEMENTED`, needs a
+      render check at other angles. Owner: "it doesn't keep making them face
+      straight ahead when they sidestep ... right now it's kind of like
+      chessboard pieces, like a piece going to the side looking straight
+      forward." `p1RotationY` / `p2RotationY` were the CONSTANTS
+      `COMBAT_P1_YAW` / `COMBAT_P2_YAW`, so the arc above was invisible.
+      `faceOpponentYaw` points the body down the real bearing and reproduces
+      the image-tested locked table exactly when the pair are level on Z
+      (`src/engine/v7-orientation.test.ts`).
+      OPEN: combat facing is still binary +/-1 and hitboxes read it, so a
+      deep orbit has the mesh and the hitbox disagreeing. See section 2's
+      side/back-turn items — that is the same gap.
+- [x] **The camera no longer swings with the axis** — `IMPLEMENTED`, needs
+      the owner's eye. Owner: "the camera does like a 45 degree tilt towards
+      your character and pretty much stops showing your opponent." TWO
+      causes, both measured: the camera aimed at `midZ * 0.15`, 85% of the
+      way back to the lane, while its POSITION tracked `midZ` in full; and
+      it sat perpendicular to the pair's axis at every instant, so a 50 deg
+      axis swing during a sidestep rotated the shot 50 deg. The aim follows
+      the real midpoint now and the axis is followed 30% of the way, which
+      is closer to how Tekken and Schwarzerblitz keep a side-on shot while
+      the fighter travels across the frame.
+      EVIDENCE: `__BF_DEBUG.onScreen()` projects both bodies to NDC; both
+      read IN for every frame of a held sidestep.
+- [ ] **Sidestep / evade** — the rest of it (below) is still missing.
 - [ ] **Sidestep tracking rules**
 - [ ] **Linear attack classification**
 - [ ] **Half-circular left/right tracking**
@@ -496,6 +540,68 @@ Do not remove completed work. Change its status and add:
 26. Advanced audio/VFX.
 27. Optional assist/partner systems.
 28. Additional experimental mechanics.
+
+## 21b. Findings banked this pass (measured, with the instrument named)
+
+Recorded here rather than left in chat, per the rule below.
+
+- **The pelvis was pinned and the feet paddled.** Owner: "instead of the
+  pelvis doing a natural bob, it's like the pelvis is locked in position and
+  the idle motion is picking the feet up off the ground." The banks are
+  ROTATION-ONLY — no authored hips translation anywhere in the corpus — and
+  the bake wrote the floor offset as ONE constant key from the first sample,
+  so 324 of 324 grounded clips had a pelvis that could not move vertically.
+  In pure FK the pelvis is the root, so the legs could only answer by lifting
+  the feet. Grounding follows the floor per frame now, clamped to 2 m/s so a
+  run's flight phase cannot haul the hips up after the lowest foot.
+  MEASURED after: STANCE 4.9 cm bob, GUARD 4.6, BOX_IDLE 4.0, WALK 2.5;
+  172 clips have a moving pelvis where none did.
+
+- **A "universal fix" that refused most of the roster, silently.**
+  `skeletonIsConnected` required 90% of joint PAIRS to be mutually reachable
+  and returned from the repair without a log line when they were not.
+  ONYX_straightjacket carries six stray prop bones outside the hierarchy —
+  52 of 58 bones reach each other, 0.80, under the bar — so one of the
+  models in the owner's screenshots was never repaired at all. Cross-component
+  pairs are the WORST span, not an unknown one. After: 468 webbed vertices
+  pruned on that model.
+  STILL OPEN: the plank across ONYX's chest is NOT skin webbing. Reproduced,
+  repaired, re-rendered — identical.
+
+- **One dropped request killed every animation for a session.**
+  `loadBakedMotionBank` latched `attempted` on its first call and returned an
+  empty Map for the rest of the session, so a single flaky fetch of
+  index.json left every fighter with none of its 366 baked clips and no way
+  back. A running load is joined; a failed one is retried; only success is
+  permanent.
+
+- **DEV AND THE BUILD DISAGREED ABOUT WHERE ASSETS LIVE.** `/motion/...`
+  404'd on the dev server while `/public/motion/...` returned 200. The built
+  output was always correct, so this was dev-only — and it meant every local
+  probe of models, clips and manifests was measuring a game with no assets
+  in it. `publicDir` is pinned now. Suspect this before believing any local
+  "the asset is missing" result.
+
+- **CLIPS THE OWNER NAMED, MEASURED.** NECKBREAKER starts with its head at
+  0.02 of standing height — it is a grapple's RECEIVING half, exactly as he
+  said. CROTCHCHOP and RAPIDCHESTBEATING are taunts and play HORIZONTAL
+  (spine -0.03 and -0.06); a whole-body rotation does not stand them up, so
+  they need a different source. DROP_KICK and AU are 2.90 s multi-action
+  DEMONSTRATION clips where the fighter turns his back partway.
+
+- **A CORRECTION THAT MEASURED CLEAN AND WAS WRONG.** Rotating the root to
+  stand up flat clips, keeping only results that raised the spine AND hung
+  the legs down, "fixed" three clips that were already right — a takedown
+  victim and a kip-up, both of which belong on the floor. Reverted. A
+  self-verifying correction is only as good as the thing it verifies
+  against.
+
+- **MAIN ARRIVED RED and was repaired in the merge.** `incomingThrowBreak`
+  was assigned and never declared, so the file did not typecheck; and the
+  throw-combo router ran ABOVE the CommandThrow tick, found a queued route
+  with an unarmed timer, binned it, and left the fighter stuck in
+  CommandThrow. Both verified failing on a clean checkout of origin/main
+  before being touched.
 
 ## 22. Agent instruction
 

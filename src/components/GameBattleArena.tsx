@@ -1246,6 +1246,56 @@ export default function GameBattleArena({
         }),
         renderY: () => ({ p1: p1YRef.current, p2: p2YRef.current }),
         /**
+         * WHERE THE BODIES ARE AND WHICH WAY THEY POINT.
+         *
+         * Owner, twice: "the sidestepping is not radial ... when they
+         * sidestep they still do a straight sidestep. And the camera does
+         * like a 45 degree tilt towards your character and pretty much
+         * stops showing your opponent." Reading the code cannot settle
+         * that — `targetedSidestepVelocity` computes a real tangent around
+         * the opponent, so the PATH should already arc. What decides
+         * whether it READS as radial is the path, the facing and the shot
+         * together, so all three are reported here.
+         */
+        positions: () => ({
+          // FACING IS DERIVED AND BINARY. There is no yaw state anywhere —
+          // it is recomputed as +/-1 from who is left of whom, which is the
+          // ORIENTATION LOCKED rule this codebase is built on. Reported as
+          // it really is, because a body that can only face +X or -X cannot
+          // turn to keep an orbiting opponent in front of it however
+          // correct the sidestep PATH is.
+          p1: {
+            x: p1XRef.current, z: p1ZRef.current, y: p1YRef.current,
+            facing: p1XRef.current <= p2XRef.current ? 1 : -1,
+          },
+          p2: {
+            x: p2XRef.current, z: p2ZRef.current, y: p2YRef.current,
+            facing: p2XRef.current <= p1XRef.current ? 1 : -1,
+          },
+          gap: Math.hypot(p2XRef.current - p1XRef.current, p2ZRef.current - p1ZRef.current),
+        }),
+        /**
+         * ARE BOTH FIGHTERS ACTUALLY ON SCREEN?
+         *
+         * "Pretty much stops showing your opponent" is a claim about the
+         * FRAME, so it has to be measured in the frame. Each body is
+         * projected to normalised device coordinates: |x| and |y| under 1
+         * is on screen, and anything past that is out of shot.
+         */
+        onScreen: () => {
+          const THREE_NS = (window as unknown as { THREE?: typeof import('three') }).THREE;
+          const cam = (window as unknown as { __BF_CAMERA?: { projectionMatrix: unknown } }).__BF_CAMERA;
+          if (!THREE_NS || !cam) return null;
+          const project = (x: number, z: number) =>
+            new THREE_NS.Vector3(x, 1.0, z).project(cam as never);
+          const a = project(p1XRef.current, p1ZRef.current);
+          const b = project(p2XRef.current, p2ZRef.current);
+          return {
+            p1: { x: +a.x.toFixed(3), y: +a.y.toFixed(3), onScreen: Math.abs(a.x) <= 1 && Math.abs(a.y) <= 1 },
+            p2: { x: +b.x.toFixed(3), y: +b.y.toFixed(3), onScreen: Math.abs(b.x) <= 1 && Math.abs(b.y) <= 1 },
+          };
+        },
+        /**
          * COUNT WEBBED VERTICES ON THE BODIES ACTUALLY ON SCREEN.
          *
          * Every previous check ran runCharacterPipeline directly in a test

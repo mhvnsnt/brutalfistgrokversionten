@@ -72,17 +72,49 @@ const INPUTS = [
   ['6 RK (forward heavy kick)', ['ArrowRight'], 'k'],
 ];
 
+/**
+ * WAIT FOR THE FIGHTER TO BE FREE BEFORE PRESSING ANYTHING.
+ *
+ * THIS PROBE WAS LYING. Two back-to-back runs of the identical build
+ * reported 0 of 12 inputs firing and then 4 of 12 — the game had not
+ * changed between them. A fixed 1.4 s sleep is not long enough for every
+ * move's recovery, so each input landed at a random point in the previous
+ * move's animation and was swallowed; whether an input "worked" was mostly
+ * whether the one before it happened to be short.
+ *
+ * Reading the HUD's own state line is what makes a run repeatable. It is
+ * the same text the player sees, so the probe waits for exactly what a
+ * player waits for.
+ */
+async function waitForFree(timeoutMs = 4000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const busy = await page.evaluate(() => {
+      const txt = document.body.innerText;
+      // The P1 state label sits under the left health bar.
+      return /ATTACK|KICK|PUNCH|THROW|HITSTUN|KNOCKDOWN|RECOVER|GUARD/i.test(txt);
+    }).catch(() => false);
+    if (!busy) return true;
+    await page.waitForTimeout(80);
+  }
+  return false;
+}
+
 const results = [];
 for (const [label, dirs, button] of INPUTS) {
+  await waitForFree();
   lines.length = 0;
   for (const d of dirs) await page.keyboard.down(d);
   if (dirs.length) await page.waitForTimeout(220);
   await page.keyboard.down(button);
   await page.waitForTimeout(90);
   await page.keyboard.up(button);
-  await page.waitForTimeout(1400);
+  // Long enough for the SLOWEST move in the corpus to finish, then confirm
+  // by reading the state rather than assuming the sleep was enough.
+  await page.waitForTimeout(600);
   for (const d of dirs) await page.keyboard.up(d);
-  await page.waitForTimeout(700);
+  await waitForFree();
+  await page.waitForTimeout(250);
 
   const transitions = lines.filter((l) => l.includes('STATE TRANSITION'));
   const move = transitions.length

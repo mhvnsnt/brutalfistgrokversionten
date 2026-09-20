@@ -12,7 +12,7 @@ import { ProceduralStage } from './ProceduralStage';
 import { type StageId, resolveStageConfig } from '../engine/combat/StageConfig';
 import { CHARACTER_BLOOM } from './PostMatchScreen';
 import { createHitEffectPool, spawnHitEffect, tickHitEffectPool, getHitEffectRenderData, getActivePointLights, type HitEffectPool, type HitEffectType, type PointLightFlash,  } from '../engine/combat/HitEffectSystem';
-import { COMBAT_P1_YAW, COMBAT_P2_YAW, COMBAT_FIGHTER_Y, HIT_FX_WORLD_Y, HIT_FX_SCREEN_Y } from '../engine/V7OrientationContract';
+import { COMBAT_P1_YAW, COMBAT_P2_YAW, COMBAT_FIGHTER_Y, HIT_FX_WORLD_Y, HIT_FX_SCREEN_Y, faceOpponentYaw } from '../engine/V7OrientationContract';
 
 // Stage IDs come from StageConfig — every catalog arena is legal here.
 
@@ -128,6 +128,30 @@ function CinematicCamera({
         normalX = -normalX;
         normalZ = -normalZ;
       }
+      // FOLLOW THE AXIS PARTWAY, NOT ALL THE WAY.
+      //
+      // Owner: "the camera does like a 45 degree tilt towards your
+      // character and pretty much stops showing your opponent."
+      //
+      // MEASURED during a held sidestep: P1 orbits to (-2.31, 1.43) while
+      // P2 sits at (-0.91, -0.27), so the pair's axis has swung about 50
+      // degrees off the lane — and this camera was perpendicular to that
+      // axis at every instant, so it swung the same 50 degrees. That is
+      // his 45-degree tilt, and it is the camera doing exactly what it was
+      // told to do.
+      //
+      // The reason it feels wrong is that a fully axis-locked camera makes
+      // the WORLD rotate instead of the character moving across the frame.
+      // Tekken and Schwarzerblitz keep a broadly side-on shot and let the
+      // sidestep read as the fighter travelling around the screen. Blending
+      // most of the way back to the lane normal keeps the parallax that
+      // sells depth while leaving the stage still.
+      const AXIS_FOLLOW = 0.3;
+      normalX *= AXIS_FOLLOW;
+      normalZ = normalZ * AXIS_FOLLOW + (1 - AXIS_FOLLOW);
+      const nLen = Math.max(0.001, Math.hypot(normalX, normalZ));
+      normalX /= nLen;
+      normalZ /= nLen;
       const targetDistance = Math.max(4.5, Math.min(11, dist * 1.05 + 3.0));
       const targetCamX = midX + normalX * targetDistance;
       const targetCamZ = midZ + normalZ * targetDistance;
@@ -140,7 +164,24 @@ function CinematicCamera({
         cam.position.x += shakeOffset.x * 0.01;
         cam.position.y += shakeOffset.y * 0.01;
       }
-      cam.lookAt(midX, 1.1, midZ * 0.15);
+      // LOOK AT WHERE THEY ACTUALLY ARE.
+      //
+      // Owner: "the camera does like a 45 degree tilt towards your
+      // character and pretty much stops showing your opponent."
+      //
+      // The POSITION above already orbits with the pair's axis and tracks
+      // `midZ` in full. The aim did not: `midZ * 0.15` pulled the look
+      // target 85% of the way back to the Z=0 lane, so the further the pair
+      // sidestepped off it the further the camera aimed past them. The
+      // frame swings, and the fighter nearer the lane walks out of it —
+      // which is the tilt he is describing, produced by a camera that is
+      // standing in the right place and looking somewhere else.
+      cam.lookAt(midX, 1.1, midZ);
+      // Published so a probe can project the fighters and ask whether both
+      // are actually in frame — "stops showing your opponent" is a claim
+      // about the FRAME and has to be measured in one.
+      (window as unknown as { __BF_CAMERA?: unknown }).__BF_CAMERA = cam;
+      (window as unknown as { THREE?: unknown }).THREE ??= THREE;
       cam.updateProjectionMatrix();
     } else if (phase === 'victory') {
       const targetX = p1X;
@@ -825,8 +866,12 @@ export default function CombatArena3D({
 
   // Schwarzerblitz / Tekken: X fighting lane. P1 +90° faces P2, P2 −90° faces P1.
   // Camera at +Z is the 3/4. Select yaw is not used. No rest-align to camera.
-  const p1RotationY = COMBAT_P1_YAW;
-  const p2RotationY = COMBAT_P2_YAW;
+  // TURN THE BODY TOWARD THE OPPONENT. These were the two locked constants,
+  // so a fighter orbiting his opponent slid sideways without ever looking at
+  // him — see `faceOpponentYaw` for the measurement and why this reproduces
+  // the image-tested table exactly when the two are level on Z.
+  const p1RotationY = faceOpponentYaw({ x: p1FinalX, z: p1FinalZ }, { x: p2FinalX, z: p2FinalZ }, COMBAT_P1_YAW);
+  const p2RotationY = faceOpponentYaw({ x: p2FinalX, z: p2FinalZ }, { x: p1FinalX, z: p1FinalZ }, COMBAT_P2_YAW);
 
   // ── Stage-specific fog / clear color (training + urban_night stay locked) ─
   const stageCfg = resolveStageConfig(stageId);

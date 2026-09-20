@@ -44,6 +44,44 @@ export const COMBAT_P1_YAW = 0;
 export const COMBAT_P2_YAW = Math.PI;
 
 /**
+ * FACE THE OPPONENT WHEREVER HE ACTUALLY IS, not just left or right.
+ *
+ * Owner, twice: "the sidestepping is not radial ... when they sidestep they
+ * still do a straight sidestep."
+ *
+ * MEASURED in a live match while holding sidestep: the PATH is already a
+ * real orbit — P1 travels z 0.09 -> 1.38 while x holds near -2.2 and the
+ * gap to his opponent stays 1.5-1.9 m, which is exactly what
+ * `targetedSidestepVelocity` is written to do. What never changes is the
+ * BODY: `p1RotationY` was the constant COMBAT_P1_YAW, so the fighter crabs
+ * sideways around his opponent without ever turning to look at him. An arc
+ * you cannot see is a straight line.
+ *
+ * THIS IS THE LOCKED TABLE GENERALISED, not a replacement for it. A yaw of
+ * theta about Y sends the body's local +X to (cos theta, 0, -sin theta), so
+ * pointing +X down the bearing to the opponent is atan2(-dz, dx) — and with
+ * the fighters level on Z that returns 0 for an opponent at +X and PI for
+ * one at -X, the two image-tested values above, exactly.
+ *
+ * COMBAT FACING IS UNCHANGED AND STILL BINARY. Hitboxes, strike direction
+ * and the command matcher all read the +/-1 lane facing; this turns the
+ * mesh only. They agree whenever the fighters are on the lane and diverge
+ * only while someone is orbiting, which is the case the +/-1 facing has no
+ * answer for anyway.
+ */
+export function faceOpponentYaw(
+  self: { x: number; z: number },
+  opponent: { x: number; z: number },
+  fallback: number,
+): number {
+  const dx = opponent.x - self.x;
+  const dz = opponent.z - self.z;
+  // Too close to read a bearing from: keep the lane yaw rather than spin.
+  if (Math.hypot(dx, dz) < 0.05) return fallback;
+  return Math.atan2(-dz, dx);
+}
+
+/**
  * Combat group Y is 0. The clone plants feet with plantFeetOnFloor.
  * Extra group lifts stacked fallback clones into the floor.
  */
