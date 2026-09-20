@@ -72,10 +72,12 @@ export function clipFromBaked(data: BakedClipFile): THREE.AnimationClip | null {
     if (!track?.t?.length || track.q.length !== track.t.length * 4) continue;
     tracks.push(new THREE.QuaternionKeyframeTrack(`${bone}.quaternion`, track.t, track.q));
   }
-  for (const [bone, track] of Object.entries(data.positions ?? {})) {
-    if (!track?.t?.length || track.p.length !== track.t.length * 3) continue;
-    tracks.push(new THREE.VectorKeyframeTrack(`${bone}.position`, track.t, track.p));
-  }
+  // Legacy baked files may still contain per-key Hips.position floor-lock
+  // tracks from older builds. Never load those translations. They were measured
+  // to cause the pelvis to chase individual feet, producing sideways/leaning
+  // legs and floating "ghost" gait. World-floor contact belongs to locomotion;
+  // animation supplies the authored joint rotations only.
+  void data.positions;
   if (tracks.length === 0) return null;
   const clip = new THREE.AnimationClip(data.name, data.dur, tracks);
   (clip as THREE.AnimationClip & { userData: Record<string, unknown> }).userData = {
