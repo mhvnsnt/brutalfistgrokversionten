@@ -79,13 +79,13 @@ describe('the buffer records edges, not frames', () => {
   it('a button press is an edge; holding it is not', () => {
     const b = createCommandBuffer();
     let t = 0;
-    pushInput(b, neutral, { P: true }, P1, (t += 16));
-    pushInput(b, neutral, { P: true }, P1, (t += 16));
-    pushInput(b, neutral, { P: true }, P1, (t += 16));
+    pushInput(b, neutral, { RP: true }, P1, (t += 16));
+    pushInput(b, neutral, { RP: true }, P1, (t += 16));
+    pushInput(b, neutral, { RP: true }, P1, (t += 16));
     assert.equal(b.events.length, 1);
     // Release and press again is a second edge.
-    pushInput(b, neutral, { P: false }, P1, (t += 16));
-    pushInput(b, neutral, { P: true }, P1, (t += 16));
+    pushInput(b, neutral, { RP: false }, P1, (t += 16));
+    pushInput(b, neutral, { RP: true }, P1, (t += 16));
     assert.equal(b.events.length, 2);
   });
 
@@ -116,14 +116,14 @@ const ALL = [JAB, FWD_PUNCH, QCB_PUNCH];
 describe('matching picks the move the player earned', () => {
   it('a bare punch is a jab', () => {
     const b = createCommandBuffer();
-    pushInput(b, { x: 0, y: 0 }, { P: true }, P1, 100);
+    pushInput(b, { x: 0, y: 0 }, { RP: true }, P1, 100);
     const hit = matchCommand(ALL, b, { now: 100 });
     assert.equal(hit?.move.name, 'Jab');
   });
 
   it('forward + punch beats the jab — longest match wins', () => {
     const b = createCommandBuffer();
-    pushInput(b, { x: 1, y: 0 }, { P: true }, P1, 100);
+    pushInput(b, { x: 1, y: 0 }, { RP: true }, P1, 100);
     const hit = matchCommand(ALL, b, { now: 100 });
     assert.equal(hit?.move.name, 'FwdPunch');
   });
@@ -134,7 +134,7 @@ describe('matching picks the move the player earned', () => {
     pushInput(b, { x: 0, y: -1 }, {}, P1, (t += 50));  // 2
     pushInput(b, { x: -1, y: -1 }, {}, P1, (t += 50)); // 1
     pushInput(b, { x: -1, y: 0 }, {}, P1, (t += 50));  // 4
-    pushInput(b, { x: -1, y: 0 }, { P: true }, P1, (t += 50));
+    pushInput(b, { x: -1, y: 0 }, { RP: true }, P1, (t += 50));
     const hit = matchCommand(ALL, b, { now: t });
     assert.equal(hit?.move.name, 'QcbPunch');
     assert.equal(hit?.steps, 4);
@@ -148,7 +148,7 @@ describe('matching picks the move the player earned', () => {
     pushInput(b, { x: 0, y: -1 }, {}, P2, (t += 50));  // 2
     pushInput(b, { x: 1, y: -1 }, {}, P2, (t += 50));  // 1 (world +X = back for P2)
     pushInput(b, { x: 1, y: 0 }, {}, P2, (t += 50));   // 4
-    pushInput(b, { x: 1, y: 0 }, { P: true }, P2, (t += 50));
+    pushInput(b, { x: 1, y: 0 }, { RP: true }, P2, (t += 50));
     const hit = matchCommand(ALL, b, { now: t });
     assert.equal(hit?.move.name, 'QcbPunch');
   });
@@ -160,7 +160,7 @@ describe('matching picks the move the player earned', () => {
     pushInput(b, { x: -1, y: -1 }, {}, P1, (t += 50));
     pushInput(b, { x: -1, y: 0 }, {}, P1, (t += 50));
     t += STEP_WINDOW_MS * 2; // too slow
-    pushInput(b, { x: 0, y: 0 }, { P: true }, P1, t);
+    pushInput(b, { x: 0, y: 0 }, { RP: true }, P1, t);
     const hit = matchCommand(ALL, b, { now: t });
     assert.equal(hit?.move.name, 'Jab', 'a late button is just a jab');
   });
@@ -171,11 +171,11 @@ describe('matching picks the move the player earned', () => {
     pushInput(b, { x: 0, y: -1 }, {}, P1, (t += 50));
     pushInput(b, { x: -1, y: -1 }, {}, P1, (t += 50));
     pushInput(b, { x: -1, y: 0 }, {}, P1, (t += 50));
-    pushInput(b, { x: -1, y: 0 }, { P: true }, P1, (t += 50));
+    pushInput(b, { x: -1, y: 0 }, { RP: true }, P1, (t += 50));
     assert.equal(matchCommand(ALL, b, { now: t })?.move.name, 'QcbPunch');
     consumeCommand(b);
-    pushInput(b, { x: -1, y: 0 }, { P: false }, P1, (t += 20));
-    pushInput(b, { x: -1, y: 0 }, { P: true }, P1, (t += 20));
+    pushInput(b, { x: -1, y: 0 }, { RP: false }, P1, (t += 20));
+    pushInput(b, { x: -1, y: 0 }, { RP: true }, P1, (t += 20));
     assert.equal(matchCommand(ALL, b, { now: t })?.move.name, 'Jab');
   });
 });
@@ -189,14 +189,14 @@ describe('stance and followup gating', () => {
 
   it('a move only comes out in its own stance', () => {
     const b = createCommandBuffer();
-    pushInput(b, { x: 0, y: 0 }, { P: true }, P1, 100);
+    pushInput(b, { x: 0, y: 0 }, { RP: true }, P1, 100);
     assert.equal(matchCommand([air, ground], b, { now: 100, stance: 'Ground' })?.move.name, 'Jab');
     assert.equal(matchCommand([air, ground], b, { now: 100, stance: 'Air' })?.move.name, 'AirPunch');
   });
 
   it('a FOLLOWUP_ONLY move needs the window to be open', () => {
     const b = createCommandBuffer();
-    pushInput(b, { x: 0, y: 0 }, { P: true }, P1, 100);
+    pushInput(b, { x: 0, y: 0 }, { RP: true }, P1, 100);
     assert.equal(matchCommand([link], b, { now: 100 }), null, 'not reachable cold');
     const open = matchCommand([link], b, { now: 100, availableFollowups: new Set(['Link2']) });
     assert.equal(open?.move.name, 'Link2');
@@ -304,7 +304,9 @@ describe('the imported Schwarzerblitz move graph is usable as a command list', (
       const forward = ((dir - 1) % 3) - 1;
       const up = Math.floor((dir - 1) / 3) - 1;
       const buttons: Record<string, boolean> = {};
-      for (const btn of step.buttons) buttons[btn] = true;
+      // A step names a PATTERN ('P'); a player presses a BUTTON ('RP').
+      const concrete: Record<string, string> = { P: 'RP', K: 'RK' };
+      for (const btn of step.buttons) buttons[concrete[btn] ?? btn] = true;
       pushInput(b, { x: forward as -1 | 0 | 1, y: up as -1 | 0 | 1 }, buttons, P1, (t += 60));
     }
     assert.equal(scoreMove(multi as MatchableMove, b, { now: t }), multi!.input.length,

@@ -260,31 +260,77 @@ test('the airborne verdict survives a clip that needs no correction', { skip: !h
 });
 
 /**
- * THE FLOOR, AND THE TWO WAYS IT HAS ALREADY GONE WRONG.
+ * THE FLOOR, AND THE THREE WAYS IT HAS GONE WRONG.
  *
  * First a per-frame Hips.position track planted the feet and fought the
- * authored gait — the pelvis being translated at every sample while the knees
- * were already solving their own step. Then that track was deleted outright
- * and NOBODY'S FEET TOUCHED THE GROUND: measured on the shipped bake, STANCE
- * floated 23.3 cm, GRAFQUICKJAB 31.9 cm, every combat slot 18-32 cm.
+ * authored gait. Then that track was deleted outright and NOBODY'S FEET
+ * TOUCHED THE GROUND: STANCE floated 23.3 cm, GRAFQUICKJAB 31.9 cm. Then a
+ * single constant key fixed the float — and pinned the pelvis.
  *
- * The shape that is neither: ONE constant key. It moves the clip to the right
- * height once and leaves every frame's relative motion alone.
+ * Owner, watching an idle: "instead of doing like an idle bob, kind of up
+ * and down of the knees and the hips ... what it's actually doing is the
+ * feet are going up. So instead of the pelvis doing a natural bob, it's
+ * like the pelvis is locked in position and the idle motion is picking the
+ * feet up off the ground."
+ *
+ * He read it exactly. THE BANKS ARE ROTATION-ONLY — measured, there is no
+ * authored hips translation anywhere in the corpus — so in pure FK the
+ * pelvis is the ROOT and bending the knees lifts the FEET rather than
+ * lowering the body. A constant offset can only be right at ONE instant of
+ * a clip, the deepest one, and every other frame floats by the difference.
+ *
+ * The shape that is none of the three: follow the floor PER FRAME, which
+ * turns the leg bend back into pelvis motion, and clamp the pelvis to a
+ * speed a body can move at, which is what stops a running gait's flight
+ * phase hauling the hips up after the lowest foot.
  */
-test('grounding is a single constant key, never a per-frame track', { skip: !hasBake }, () => {
+test('a grounded clip carries a pelvis that follows the floor', { skip: !hasBake }, () => {
   const files = readdirSync(BAKED).filter((f) => f.endsWith('.json') && f !== 'index.json');
   assert.ok(files.length > 100, 'expected a full bake');
-  const offenders: string[] = [];
-  let withOffset = 0;
+  let animated = 0;
+  let single = 0;
+  const jittery: string[] = [];
+  // SPEED, NOT DISTANCE BETWEEN KEYS — my first version measured the gap and
+  // failed four long clips whose keys are 45-72 ms apart rather than 13. The
+  // bake clamps to 2 m/s; the test allows a little over it for rounding.
+  const MAX_SPEED_MPS = 2.2;
   for (const f of files) {
     const data = JSON.parse(readFileSync(join(BAKED, f), 'utf8')) as BakedClipFile;
     for (const [bone, track] of Object.entries(data.positions ?? {})) {
-      if (track.t.length > 1) offenders.push(`${data.name}:${bone} has ${track.t.length} keys`);
-      else withOffset++;
+      if (track.t.length <= 1) { single++; continue; }
+      animated++;
+      for (let i = 4, k = 1; i + 2 < track.p.length; i += 3, k++) {
+        const dt = Math.max(1 / 240, track.t[k] - track.t[k - 1]);
+        const speed = Math.abs(track.p[i] - track.p[i - 3]) / dt;
+        if (speed > MAX_SPEED_MPS) {
+          jittery.push(`${data.name}:${bone} moves at ${speed.toFixed(1)} m/s`);
+          break;
+        }
+      }
     }
   }
-  assert.deepEqual(offenders.slice(0, 5), [], 'a multi-key translation track is the old floor lock');
-  assert.ok(withOffset > 100, `expected most clips to carry a grounding offset, got ${withOffset}`);
+  assert.deepEqual(jittery.slice(0, 5), [], 'the pelvis is moving faster than a pelvis can');
+  assert.ok(animated > 100, `only ${animated} clips have a pelvis that moves — is the floor follow off?`);
+  assert.ok(single > 0, 'airborne clips should still carry a single constant key');
+});
+
+test('the idle bob is the pelvis, not the feet', { skip: !hasBake }, () => {
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  // The clips a fight spends most of its time in. If these do not bob, the
+  // owner is looking at a statue whose feet paddle.
+  for (const name of ['STANCE', 'GUARD', 'BOX_IDLE', 'WALK']) {
+    const entry = manifest[name];
+    if (!entry) continue;
+    const data = JSON.parse(readFileSync(join(BAKED, entry.file), 'utf8')) as BakedClipFile;
+    const hips = data.positions?.mixamorigHips;
+    assert.ok(hips && hips.t.length > 1, `${name} has a pinned pelvis`);
+    const ys: number[] = [];
+    for (let i = 1; i + 1 < hips!.p.length; i += 3) ys.push(hips!.p[i]);
+    const bob = Math.max(...ys) - Math.min(...ys);
+    // A real idle bob is centimetres, not millimetres and not a squat.
+    assert.ok(bob > 0.005, `${name} bobs only ${(bob * 1000).toFixed(1)} mm`);
+    assert.ok(bob < 0.35, `${name} bobs ${(bob * 100).toFixed(1)} cm — that is not an idle`);
+  }
 });
 
 /**

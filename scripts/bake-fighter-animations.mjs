@@ -346,6 +346,8 @@ function measurePosture() {
  * does not improve the number is not applied on faith.
  */
 const LEG_UP_THRESHOLD = 0.2;
+/** How fast a pelvis may travel vertically, in metres per second. */
+const PELVIS_MAX_SPEED_MPS = 2.0;
 /** Above this the torso is standing, so feet above the pelvis is impossible. */
 const SPINE_UPRIGHT_MIN = 0.7;
 
@@ -852,6 +854,21 @@ function groundingOffset(clip) {
     minLiftFoot: +minLift.toFixed(4),
     minLiftBody: +minBody.toFixed(4),
     applied: Math.abs(offset) >= 1e-5,
+    /**
+     * THE PELVIS BOB, DERIVED. The banks are rotation-only — there is no
+     * authored hips translation anywhere in the corpus — so in pure FK the
+     * pelvis is the ROOT and bending the knees lifts the FEET instead of
+     * lowering the body. That is exactly what the owner reported: "the
+     * pelvis is locked in position and the idle motion is picking the feet
+     * up off the ground instead of doing the downward bob."
+     *
+     * Following the floor PER FRAME turns the leg bend back into pelvis
+     * motion: at every sample the body drops by however far its lowest
+     * contact sits above the mat. A single constant offset can only be
+     * right at one instant of the clip — the deepest one — and every other
+     * frame floats by the difference.
+     */
+    perFrame: sorted.map((t, i) => ({ t, y: -lift[i] })),
     posture,
   };
 }
@@ -1057,16 +1074,83 @@ for (const src of sources()) {
   }
 
 
-  // PUT THE CLIP ON THE FLOOR — once, as a single key. Applied ON TOP of any
-  // pelvis translation the clip already authored (a wide stance sits lower on
-  // purpose), never instead of it; if that authored track is itself variable
-  // the runtime drops the pair and we are no worse off than with no offset.
+  // PUT THE CLIP ON THE FLOOR BY SHIFTING THE PELVIS, NOT BY PINNING IT.
+  //
+  // Owner, watching an idle: "instead of doing like an idle bob, kind of up
+  // and down of the knees and the hips ... what it's actually doing is the
+  // feet are going up. So instead of the pelvis doing a natural bob, it's
+  // like the pelvis is locked in position and the idle motion is picking the
+  // feet up off the ground."
+  //
+  // He read the defect exactly. This wrote ONE key built from the FIRST
+  // sample of the authored track — `existing.p[0..2]` — and threw the rest
+  // of the track away. MEASURED after that: 324 of 324 clips with a hips
+  // position track had it collapsed to a single key, so the pelvis could
+  // not move vertically in ANY clip in the game. The leg rotations still
+  // ask the body to drop, and with the pelvis pinned the only way the rig
+  // can answer is to lift the feet.
+  //
+  // The offset is a CONSTANT; it belongs on every key, not instead of them.
   if (ground?.applied) {
+    // FOLLOW THE FLOOR EVERY FRAME, unless the clip means to leave it.
+    // An airborne clip's feet are SUPPOSED to be off the ground, so it keeps
+    // the single constant offset; pinning a jump to the mat would delete the
+    // jump. Everything that stays grounded gets the bob back.
+    const pf = ground.perFrame;
+    if (!clipAirborne && pf && pf.length > 2) {
+      // A PELVIS CANNOT MOVE FASTER THAN A PELVIS.
+      //
+      // Following the lowest contact every frame is right while a foot is
+      // down, and wrong for the instant a running gait has BOTH feet off
+      // the floor: the lowest contact rises with the body, and the offset
+      // would haul the pelvis up after it. `airborne` is a per-CLIP flag
+      // and cannot see that instant.
+      //
+      // MEASURED per key before the clamp: STANCE moves 2.9 mm, WALK 2.2,
+      // BOX_IDLE 2.2 — a real idle bob, already smooth. RUNNING moves
+      // 64 mm in 13 ms, which is 4.9 m/s of pelvis, and GINGA_SIDEWAYS_2
+      // 110 mm. A person squatting fast moves their hips at well under
+      // 2 m/s, so the cap leaves every idle and walk untouched and only
+      // bites where the curve had stopped being a body.
+      const t = [];
+      const p = [];
+      let prevY = null;
+      let prevT = 0;
+      for (const k of pf) {
+        let y = k.y;
+        if (prevY !== null) {
+          const dt = Math.max(1 / 240, k.t - prevT);
+          const limit = PELVIS_MAX_SPEED_MPS * dt;
+          y = Math.max(prevY - limit, Math.min(prevY + limit, y));
+        }
+        prevY = y;
+        prevT = k.t;
+        t.push(round(k.t));
+        p.push(round(hipsBindPosition.x), round(hipsBindPosition.y + y), round(hipsBindPosition.z));
+      }
+      positions[HIPS] = { t, p };
+    } else {
     const existing = positions[HIPS];
-    const baseX = existing ? existing.p[0] : round(hipsBindPosition.x);
-    const baseY = existing ? existing.p[1] : round(hipsBindPosition.y);
-    const baseZ = existing ? existing.p[2] : round(hipsBindPosition.z);
-    positions[HIPS] = { t: [0], p: [baseX, round(baseY + ground.offset), baseZ] };
+    if (existing && existing.t.length) {
+      // The track `stripRootPositionTracks` leaves is a pure DELTA — zero on
+      // X and Z, and Y measured from the clip's own first frame. The bind
+      // position is the base, the grounding offset rides on top, and the
+      // authored bob survives because it is added per key rather than
+      // sampled once.
+      const p = existing.p.slice();
+      for (let i = 0; i + 2 < p.length; i += 3) {
+        p[i] = round(hipsBindPosition.x + p[i]);
+        p[i + 1] = round(hipsBindPosition.y + p[i + 1] + ground.offset);
+        p[i + 2] = round(hipsBindPosition.z + p[i + 2]);
+      }
+      positions[HIPS] = { t: existing.t, p };
+    } else {
+      positions[HIPS] = {
+        t: [0],
+        p: [round(hipsBindPosition.x), round(hipsBindPosition.y + ground.offset), round(hipsBindPosition.z)],
+      };
+    }
+    }
   }
 
 
@@ -1172,7 +1256,7 @@ console.log(`  convention twist    ${report.conventionTwistCorrections} track(s)
 console.log(`  limit corrections    ${report.limitCorrections} track(s)`);
 console.log(`  combat slots owned   ${report.slotOwners ?? 0}`);
 console.log(`  planted on the floor ${report.grounded} clip(s) moved, avg shift ${
-  report.grounded ? ((report.groundedTotal / report.grounded) * 100).toFixed(1) : '0'} cm (ONE constant key each)`);
+  report.grounded ? ((report.groundedTotal / report.grounded) * 100).toFixed(1) : '0'} cm, added to every pelvis key)`);
 if (process.env.BF_MEDIANS) {
   const sorted = MEDIANS.map(([, m]) => m).sort((a, b) => a - b);
   const q = (f) => (sorted[Math.floor(sorted.length * f)] * 100).toFixed(1);

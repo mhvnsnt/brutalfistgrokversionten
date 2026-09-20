@@ -33,11 +33,45 @@ function isRootBone(bone: string): boolean {
   return /^(hips?|pelvis|root|armature)$/i.test(bone);
 }
 
+/**
+ * DROP THE ROOT'S TRAVEL, KEEP ITS BOB.
+ *
+ * Owner, watching an idle: "instead of doing like an idle bob, kind of up
+ * and down of the knees and the hips ... what it's actually doing is the
+ * feet are going up. So instead of the pelvis doing a natural bob, it's
+ * like the pelvis is locked in position and the idle motion is picking the
+ * feet up off the ground."
+ *
+ * He read it exactly, and this function is where it happened: it DELETED
+ * the whole hips position track. "Drop root translation" is supposed to
+ * mean horizontal travel — the instance owns where the fighter stands —
+ * but the same track carries the VERTICAL motion an animator put in the
+ * pelvis, and that is not the instance's business. MEASURED: 324 of 324
+ * grounded clips reached the bake with no pelvis motion at all, so nothing
+ * in the game could bob. The leg rotations still ask the body to drop, and
+ * with the pelvis pinned the only way the rig can answer is to lift the
+ * feet off the floor.
+ *
+ * X AND Z GO, Y STAYS — AS A DELTA FROM THE FIRST FRAME, never as the
+ * clip's absolute hip height. That is the double-count in note 2 of this
+ * file's header: a mesh already planted at bind-pose height plus an
+ * authored 0.91 m pelvis equals a fighter hovering. A delta starts at zero
+ * by construction, so frame 0 lands exactly where the bind does and only
+ * the MOTION survives.
+ */
 export function stripRootPositionTracks(clip: THREE.AnimationClip): THREE.AnimationClip {
-  clip.tracks = clip.tracks.filter((track) => {
-    if (!track.name.endsWith('.position')) return true;
-    return !isRootBone(boneFromTrack(track.name));
-  });
+  for (const track of clip.tracks) {
+    if (!track.name.endsWith('.position')) continue;
+    if (!isRootBone(boneFromTrack(track.name))) continue;
+    const v = track.values;
+    if (v.length < 3) continue;
+    const y0 = v[1];
+    for (let i = 0; i + 2 < v.length; i += 3) {
+      v[i] = 0;
+      v[i + 1] = v[i + 1] - y0;
+      v[i + 2] = 0;
+    }
+  }
   return clip;
 }
 

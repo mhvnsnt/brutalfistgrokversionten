@@ -10,7 +10,7 @@ import {
   motionStateFor, moveSetForFighter, moveWindowFor, scaleDamage, schwarzerblitzSpecials,
 } from './SchwarzerblitzSpecials.ts';
 import { SCHWARZERBLITZ_MOVE_GRAPH } from '../../generated/SchwarzerblitzMoveGraph.generated.ts';
-import { createCommandBuffer, matchCommand, pushInput, type Facing } from './CommandInput.ts';
+import { buttonSatisfies, createCommandBuffer, matchCommand, pushInput, type Facing } from './CommandInput.ts';
 
 const P1: Facing = 1;
 const P2: Facing = -1;
@@ -133,14 +133,41 @@ describe('the graph becomes executable specials', () => {
   });
 });
 
-describe('our four buttons drive a three-button command list', () => {
-  it('either punch satisfies P, either kick satisfies K', () => {
-    assert.deepEqual(commandButtonsFor({ lp: true }), { P: true, K: false, T: false });
-    assert.deepEqual(commandButtonsFor({ rp: true }), { P: true, K: false, T: false });
-    assert.deepEqual(commandButtonsFor({ lk: true }), { P: false, K: true, T: false });
-    assert.deepEqual(commandButtonsFor({ rk: true }), { P: false, K: true, T: false });
-    assert.deepEqual(commandButtonsFor({ grapple: true }), { P: false, K: false, T: true });
-    assert.deepEqual(commandButtonsFor({}), { P: false, K: false, T: false });
+describe('our four buttons reach the matcher as four buttons', () => {
+  /**
+   * Owner: "I can't press back and right kick at the same time to do a
+   * different move than just pressing right kick at once."
+   *
+   * This used to return `{P: lp||rp, K: lk||rk}` — four buttons collapsed
+   * into two before anything could tell them apart, so `4+LP` and `4+RP`
+   * were one move and half a four-button fighter's vocabulary did not
+   * exist. The imported corpus is written in P/K and cannot express the
+   * difference; that is a limit of the source, not of our matcher.
+   */
+  const only = (...on: string[]) => {
+    const out: Record<string, boolean> = { LP: false, RP: false, LK: false, RK: false, T: false };
+    for (const b of on) out[b] = true;
+    return out;
+  };
+
+  it('keeps the limbs apart', () => {
+    assert.deepEqual(commandButtonsFor({ lp: true }), only('LP'));
+    assert.deepEqual(commandButtonsFor({ rp: true }), only('RP'));
+    assert.deepEqual(commandButtonsFor({ lk: true }), only('LK'));
+    assert.deepEqual(commandButtonsFor({ rk: true }), only('RK'));
+    assert.deepEqual(commandButtonsFor({ grapple: true }), only('T'));
+    assert.deepEqual(commandButtonsFor({}), only());
+  });
+
+  it('still lets either fist satisfy an imported P, and either foot a K', () => {
+    assert.equal(buttonSatisfies('P', ['LP']), true);
+    assert.equal(buttonSatisfies('P', ['RP']), true);
+    assert.equal(buttonSatisfies('K', ['LK']), true);
+    assert.equal(buttonSatisfies('K', ['RK']), true);
+    // And a per-limb step is exact, which is the whole point.
+    assert.equal(buttonSatisfies('RK', ['LK']), false);
+    assert.equal(buttonSatisfies('LP', ['RP']), false);
+    assert.equal(buttonSatisfies('P', ['LK']), false);
   });
 });
 
@@ -155,8 +182,12 @@ describe('an imported special actually comes out when you input it', () => {
       const up = (Math.floor((dir - 1) / 3) - 1) as -1 | 0 | 1;
       // A world stick: for P2 forward is screen-LEFT, so invert.
       const x = (forward * facing) as -1 | 0 | 1;
+      // A STEP NAMES A PATTERN; A PLAYER PRESSES A BUTTON. The corpus asks
+      // for 'P', and a player answers it with a specific fist — so the test
+      // has to choose one, exactly as the pad does.
+      const concrete: Record<string, string> = { P: 'RP', K: 'RK' };
       const buttons: Record<string, boolean> = {};
-      for (const b of step.buttons) buttons[b] = true;
+      for (const b of step.buttons) buttons[concrete[b] ?? b] = true;
       pushInput(buffer, { x, y: up }, buttons, facing, (t += 60));
       // Release, so the next step's press is a fresh edge.
       pushInput(buffer, { x, y: up }, {}, facing, (t += 20));
@@ -197,7 +228,7 @@ describe('an imported special actually comes out when you input it', () => {
 
   it('a lone button does NOT fire a special — the jab still works', () => {
     const buffer = createCommandBuffer();
-    pushInput(buffer, { x: 0, y: 0 }, { P: true }, P1, 500);
+    pushInput(buffer, { x: 0, y: 0 }, { RP: true }, P1, 500);
     const hit = matchCommand(
       specials.map((x) => ({ name: x.id, input: x.command!, stance: x.stance })),
       buffer,

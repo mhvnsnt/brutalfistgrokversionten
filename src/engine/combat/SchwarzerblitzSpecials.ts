@@ -37,7 +37,7 @@
 // (`node --experimental-strip-types --test`) resolve these modules. tsconfig
 // sets allowImportingTsExtensions and Vite/esbuild resolve them unchanged.
 import type { SpecialMoveDefinition } from './FighterStateMachine.ts';
-import type { CommandStep } from './CommandInput.ts';
+import type { CommandButton, CommandStep } from './CommandInput.ts';
 import type { MoveLink } from './FighterStateMachine.ts';
 import {
   SCHWARZERBLITZ_MOVE_GRAPH,
@@ -83,12 +83,24 @@ export const BUTTON_ALIASES: Record<string, string[]> = {
 };
 
 /** Which of our inputs satisfies a Schwarzerblitz button. */
+/**
+ * THE FOUR BUTTONS REACH THE MATCHER AS FOUR BUTTONS.
+ *
+ * This used to return `{P: lp||rp, K: lk||rk, T: grapple}` — the four
+ * buttons on the HUD collapsed into two before anything could tell them
+ * apart, which is why `forward + right punch` and `forward + left punch`
+ * were the same move and why the owner could not build a command list.
+ * A step asking for the imported corpus's 'P' or 'K' still matches either
+ * fist or either foot, so nothing that worked stops working.
+ */
 export function commandButtonsFor(input: {
   lp?: boolean; rp?: boolean; lk?: boolean; rk?: boolean; grapple?: boolean;
-}): { P: boolean; K: boolean; T: boolean } {
+}): Partial<Record<CommandButton, boolean>> {
   return {
-    P: Boolean(input.lp || input.rp),
-    K: Boolean(input.lk || input.rk),
+    LP: Boolean(input.lp),
+    RP: Boolean(input.rp),
+    LK: Boolean(input.lk),
+    RK: Boolean(input.rk),
     T: Boolean(input.grapple),
   };
 }
@@ -197,7 +209,10 @@ export function moveWindowFor(move: SbMove, setName = '') {
 function normaliseStep(step: CommandStep): CommandStep {
   return {
     dirs: step.dirs.filter((d) => d >= 1 && d <= 9),
-    buttons: step.buttons.filter((b) => b === 'P' || b === 'K' || b === 'T'),
+    // 'P' and 'K' are kept as WILDCARDS, not widened here: the matcher
+    // satisfies them with either fist or either foot. Per-limb steps ('LP',
+    // 'RK') pass through for commands we author ourselves.
+    buttons: step.buttons.filter((b) => ['LP', 'RP', 'LK', 'RK', 'P', 'K', 'T'].includes(b)),
     hold: step.hold,
   };
 }

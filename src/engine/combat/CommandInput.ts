@@ -30,8 +30,45 @@
 /** +1 faces +X (P1's combat facing), -1 faces -X (P2's). */
 export type Facing = 1 | -1;
 
-/** The three attack buttons Schwarzerblitz commands are written in. */
-export type CommandButton = 'P' | 'K' | 'T';
+/**
+ * THE FOUR BUTTONS THE PLAYER ACTUALLY HAS, PLUS THROW.
+ *
+ * Owner: "I can't press back and right kick at the same time to do a
+ * different move than just pressing right kick at once. Or I can't press
+ * forward and right kick or forward and right punch ... You're making my
+ * game simple and boring and unplayable."
+ *
+ * He is describing a real hole. The HUD has four attack buttons — 1 LP,
+ * 2 RP, 3 LK, 4 RK, the Tekken layout — and `commandButtonsFor` collapsed
+ * them into two before the matcher ever saw them:
+ *     P: lp || rp      K: lk || rk
+ * So `4+LP` and `4+RP` were the same command, and half the vocabulary of a
+ * four-button fighter did not exist. The imported Schwarzerblitz corpus is
+ * written in P/K/T and CANNOT express the difference — that is a limit of
+ * the source, not a reason to keep the limit in our matcher.
+ *
+ * 'P' and 'K' stay, as WILDCARDS: a step asking for 'P' is satisfied by
+ * either fist, 'K' by either foot. Every imported move keeps working
+ * unchanged, and a per-limb command can now be written on top.
+ */
+export type CommandButton = 'LP' | 'RP' | 'LK' | 'RK' | 'T';
+
+/** A button a command STEP may ask for: a specific limb, or either of a pair. */
+export type CommandButtonPattern = CommandButton | 'P' | 'K';
+
+/** Which concrete buttons satisfy a step's button. */
+const BUTTON_ALTERNATIVES: Record<string, readonly CommandButton[]> = {
+  LP: ['LP'], RP: ['RP'], LK: ['LK'], RK: ['RK'], T: ['T'],
+  P: ['LP', 'RP'],
+  K: ['LK', 'RK'],
+};
+
+/** Does a pressed button satisfy what a step asked for? */
+export function buttonSatisfies(pattern: string, pressed: readonly CommandButton[]): boolean {
+  const alts = BUTTON_ALTERNATIVES[pattern];
+  if (!alts) return false;
+  return alts.some((b) => pressed.includes(b));
+}
 
 export interface StickReading {
   /** World X: +1 = screen right (+X), -1 = screen left, 0 = neutral. */
@@ -119,7 +156,7 @@ export function pushInput(
 ): CommandEvent | null {
   const numpad = numpadFor(stick, facing);
   const pressed: CommandButton[] = [];
-  for (const b of ['P', 'K', 'T'] as const) {
+  for (const b of ['LP', 'RP', 'LK', 'RK', 'T'] as const) {
     const down = buttons[b] === true;
     if (down && !buffer.heldButtons.has(b)) pressed.push(b);
     if (down) buffer.heldButtons.add(b);
@@ -167,7 +204,7 @@ function stepMatches(step: CommandStep, event: CommandEvent): boolean {
   // Every button the step names must have gone down on this same event, which
   // is what makes `6+P` a simultaneous press rather than a sequence.
   for (const b of step.buttons) {
-    if (!event.buttons.includes(b as CommandButton)) return false;
+    if (!buttonSatisfies(b, event.buttons)) return false;
   }
   return true;
 }
