@@ -364,3 +364,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+
+## Living Game Systems Backlog
+
+For substantial game work, read `docs/GAME_SYSTEMS_GAP_BACKLOG.md` before changing combat, movement, animation, rigging, assets, stages, controls, AI, training, replay, or presentation. When new requirements, missing systems, regressions, research findings, or pipeline gates are discovered, update that backlog in the same workstream. Never rely on chat memory for requirements. Do not mark an item VERIFIED without concrete test/probe/runtime evidence.
