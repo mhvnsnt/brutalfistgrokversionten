@@ -89,7 +89,7 @@ function CinematicCamera({
     cam.updateProjectionMatrix();
   }, [camera, fov]);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const cam = camera as THREE.PerspectiveCamera;
     phaseTimeRef.current += delta;
 
@@ -181,6 +181,15 @@ function CinematicCamera({
       // are actually in frame — "stops showing your opponent" is a claim
       // about the FRAME and has to be measured in one.
       (window as unknown as { __BF_CAMERA?: unknown }).__BF_CAMERA = cam;
+      // AND THE SCENE, so the skin-bleed probe walks the bodies actually on
+      // screen. It was reading `window.__scenes`, which nothing publishes,
+      // so it returned "no webbing" for the best possible reason: it never
+      // found a body to look at. A probe that cannot fail loudly is worse
+      // than no probe.
+      // `state.scene`, not `cam.parent` — an R3F default camera is not
+      // parented into the scene graph, so the parent is null and the probe
+      // reported "no scene" from inside a running match.
+      (window as unknown as { __BF_SCENE?: unknown }).__BF_SCENE = state.scene;
       (window as unknown as { THREE?: unknown }).THREE ??= THREE;
       cam.updateProjectionMatrix();
     } else if (phase === 'victory') {

@@ -36,9 +36,46 @@ export interface MoveLabel {
   note?: string;
   /** A quick verdict, so a sweep can be done without typing. */
   verdict?: 'good' | 'broken' | 'unsure';
+  /**
+   * WHAT KIND OF ANIMATION THIS IS, tapped rather than typed.
+   *
+   * Owner: "add a thing at the bottom ... an animation pool, and if you put
+   * like a little check boxes for every type of move or animation we have —
+   * whether it be locomotion, movement, grapple, attack, reaction or some
+   * shit, or taunt — then put a little check box next to it and I'll
+   * literally be able to just tap the checkbox of what kind of animation it
+   * is, and that'll help the whole pipeline."
+   *
+   * It is the missing ground truth. Every physical measurement in this repo
+   * fails the same way: a body being THROWN extends a limb forward exactly
+   * like a body punching, so filtering 366 clips on reach, plant, facing and
+   * uprightness still returns SHARKNADO_REACTION and GRAFTHROWREACTION in a
+   * list of "punches". No number here separates a strike from a reaction.
+   * A person can, in one tap.
+   */
+  kinds?: MoveKind[];
   /** When it was written, so a later pass can tell what is new. */
   at: number;
 }
+
+/**
+ * THE TAGS, in the order they are shown.
+ *
+ * Deliberately short and deliberately about what the BODY is doing, not
+ * about which slot it might fill — the slot is a separate field, and asking
+ * for both at once is what makes tagging slow. `junk` is here so a clip can
+ * be dismissed in one tap without typing a verdict.
+ */
+export const MOVE_KINDS = [
+  'attack', 'punch', 'kick', 'grapple', 'throw',
+  'reaction', 'knockdown', 'getup', 'locomotion', 'idle',
+  'taunt', 'victory', 'aerial', 'junk',
+] as const;
+
+export type MoveKind = (typeof MOVE_KINDS)[number];
+
+/** Which kinds mean "this is somebody being hit, not somebody hitting". */
+export const RECEIVING_KINDS: readonly MoveKind[] = ['reaction', 'knockdown', 'getup'];
 
 export type MoveLabelMap = Record<string, MoveLabel>;
 
@@ -158,4 +195,63 @@ export function clipsLabelledFor(slot: string, labels: MoveLabelMap = loadMoveLa
     .filter(([, l]) => l.verdict !== 'broken' && l.slot && canonicalSlot(l.slot) === want)
     .sort((a, b) => (b[1].at ?? 0) - (a[1].at ?? 0))
     .map(([clip]) => clip);
+}
+
+
+/** Toggle one kind on a clip. Returns the new map. */
+export function toggleMoveKind(clip: string, kind: MoveKind): MoveLabelMap {
+  const all = loadMoveLabels();
+  const have = new Set(all[clip]?.kinds ?? []);
+  if (have.has(kind)) have.delete(kind);
+  else have.add(kind);
+  // Ordered by MOVE_KINDS so two clips tagged the same read the same.
+  const kinds = MOVE_KINDS.filter((k) => have.has(k));
+  return setMoveLabel(clip, { ...all[clip], kinds });
+}
+
+/** The kinds tapped for a clip. */
+export function kindsOf(clip: string, labels: MoveLabelMap = loadMoveLabels()): readonly MoveKind[] {
+  return labels[clip]?.kinds ?? [];
+}
+
+export function clipHasKind(clip: string, kind: MoveKind, labels: MoveLabelMap = loadMoveLabels()): boolean {
+  return kindsOf(clip, labels).includes(kind);
+}
+
+/**
+ * IS THIS CLIP SOMEBODY BEING HIT?
+ *
+ * The one question no measurement in this repo can answer, and the reason
+ * per-character movelists are blocked: filtering all 366 baked clips on
+ * every physical gate that exists returns SHARKNADO_REACTION,
+ * AMYTHROW_REACTION, GRAFTHROWREACTION, HIT_TO_BODY and BIG_RIB_HIT in a
+ * list of "punches", because a thrown body extends a limb forward just like
+ * a punching one.
+ *
+ * A clip he tagged as an attack is an attack even if it is also tagged as a
+ * reaction — some captures genuinely carry both halves, and the attacking
+ * reading is the one an attack slot wants.
+ */
+export function isReceivingClip(clip: string, labels: MoveLabelMap = loadMoveLabels()): boolean {
+  const kinds = kindsOf(clip, labels);
+  if (kinds.length === 0) return false;           // untagged: unknown, not refused
+  if (kinds.includes('attack') || kinds.includes('punch') || kinds.includes('kick')) return false;
+  return RECEIVING_KINDS.some((k) => kinds.includes(k));
+}
+
+/** Clips tagged with every one of these kinds. The classifier's input. */
+export function clipsTagged(
+  kinds: readonly MoveKind[],
+  labels: MoveLabelMap = loadMoveLabels(),
+): string[] {
+  return Object.entries(labels)
+    .filter(([, l]) => l.verdict !== 'broken' && kinds.every((k) => l.kinds?.includes(k)))
+    .map(([clip]) => clip)
+    .sort();
+}
+
+/** How much of the pool he has judged, for a progress line on the screen. */
+export function taggingProgress(all: readonly string[], labels: MoveLabelMap = loadMoveLabels()) {
+  const tagged = all.filter((c) => (labels[c]?.kinds?.length ?? 0) > 0).length;
+  return { tagged, total: all.length };
 }

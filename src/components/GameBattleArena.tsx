@@ -1323,8 +1323,10 @@ export default function GameBattleArena({
           };
           const out: Array<Record<string, unknown>> = [];
           const seen = new Set<unknown>();
-          const scenes = (window as unknown as { __scenes?: Array<{ traverse?: (f: (o: unknown) => void) => void }> }).__scenes ?? [];
-          const scene = scenes[scenes.length - 1];
+          type Walkable = { traverse?: (f: (o: unknown) => void) => void };
+          const w = window as unknown as { __BF_SCENE?: Walkable; __scenes?: Walkable[] };
+          const scene = w.__BF_SCENE ?? w.__scenes?.[w.__scenes.length - 1];
+          if (!scene?.traverse) return { error: 'no scene published — start a match first' };
           scene?.traverse?.((raw: unknown) => {
             const o = raw as Record<string, unknown>;
             if (!o.isSkinnedMesh || seen.has(o.uuid)) return;
@@ -1344,7 +1346,15 @@ export default function GameBattleArena({
               let mx = 0; let pair = '';
               for (let a = 0; a < ix.length; a++) for (let b = a + 1; b < ix.length; b++) {
                 const d = H[ix[a]]?.[ix[b]];
-                if (Number.isFinite(d) && d > mx) { mx = d; pair = `${sk.bones[ix[a]].name}~${sk.bones[ix[b]].name}`; }
+                // UNREACHABLE IS THE WORST SPAN, NOT A PAIR TO SKIP.
+                // This probe had the identical bug the repair had: it
+                // ignored joints in different components, which is exactly
+                // the case that drags a triangle from a hand to a stray
+                // prop bone — the "stick through the torso" the owner
+                // keeps seeing. Skipping it made this report 0 webbing on
+                // models that visibly have it.
+                const span = Number.isFinite(d) ? d : 99;
+                if (span > mx) { mx = span; pair = `${sk.bones[ix[a]].name}~${sk.bones[ix[b]].name}`; }
               }
               if (mx > 4) { bleeding++; worst[pair] = (worst[pair] ?? 0) + 1; }
             }
@@ -2075,15 +2085,54 @@ export default function GameBattleArena({
 
         // ── Feed locomotion positions back to visual state ────────────────
         // Enforce minimum separation so fighters can't overlap
-        const MIN_SEPARATION = 1.2;
+        // KEEPING THEM APART MUST NOT PUSH THEM APART.
+        //
+        // Owner: "you can't move forward and get close enough to your
+        // opponent, you can't even hit them, and you can't move back
+        // anymore."
+        //
+        // MEASURED holding forward in a live match: the gap closes 2.395 ->
+        // 1.200 and then BOUNCES BACK to 1.435 on the next sample. This
+        // clamp recentred BOTH fighters on their midpoint, so the instant
+        // they touched the limit it teleported each of them half the
+        // overlap outward — and with the AI walking in as well, both get
+        // shoved every frame and the pair jitters instead of closing.
+        // Walking into someone should stop you, not launch you both.
+        //
+        // The one who is CLOSING gives way. The other is not moved at all,
+        // so there is nothing to bounce off and no shove to fight.
+        const MIN_SEPARATION = 0.85;
         let newP1X = p1LocoRef.current.position.x;
         let newP2X = p2LocoRef.current.position.x;
 
-        // Clamp: P1 can't cross past P2, P2 can't cross past P1
-        if (newP1X > newP2X - MIN_SEPARATION) {
-          const mid = (newP1X + newP2X) / 2;
-          newP1X = mid - MIN_SEPARATION / 2;
-          newP2X = mid + MIN_SEPARATION / 2;
+        const overlap = MIN_SEPARATION - (newP2X - newP1X);
+        if (overlap > 0) {
+          // NOBODY IS MOVED AGAINST THEIR OWN INPUT.
+          //
+          // Stopping only "the one closing" was still wrong and the probe
+          // caught it: with the AI walking in, P1 lost that contest and got
+          // clamped BACKWARD while the player held forward — his x went
+          // -1.59 -> -1.80 -> -1.71 -> -1.51 while pressing toward his
+          // opponent. Being shoved backwards by your own advance is worse
+          // than not closing.
+          //
+          // Each fighter only ever gives back the ground he took THIS
+          // frame, in proportion to how much of the overlap he caused, and
+          // never ends up behind where he started. Two fighters walking
+          // into each other simply both stop.
+          const p1Gained = Math.max(0, newP1X - p1XRef.current);
+          const p2Gained = Math.max(0, p2XRef.current - newP2X);
+          const caused = p1Gained + p2Gained;
+          if (caused <= 1e-6) {
+            // Neither moved in — they were already overlapping (a throw, a
+            // spawn, a round reset). Ease apart rather than snapping.
+            const ease = Math.min(overlap, 0.05);
+            newP1X -= ease / 2;
+            newP2X += ease / 2;
+          } else {
+            newP1X -= Math.min(p1Gained, (overlap * p1Gained) / caused);
+            newP2X += Math.min(p2Gained, (overlap * p2Gained) / caused);
+          }
           p1LocoRef.current.clampX(newP1X);
           p2LocoRef.current.clampX(newP2X);
         }

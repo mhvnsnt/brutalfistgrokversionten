@@ -123,6 +123,20 @@ Animation/rig correctness is gameplay infrastructure, not cosmetic polish.
 - [ ] **Evade cancel rules**
 - [ ] **Dash/evade movement chains**
 - [ ] **Offensive sidestep/attack movement where appropriate**
+- [x] **Body separation no longer shoves fighters apart** — `IMPLEMENTED`.
+      Owner: "you can't move forward and get close enough to your opponent,
+      you can't even hit them, and you can't move back anymore." MEASURED
+      holding forward: the gap closed 2.395 -> 1.200 and then BOUNCED to
+      1.435. The clamp recentred BOTH fighters on their midpoint, so the
+      instant they touched the limit each was teleported half the overlap
+      outward — and with the AI walking in too, both got shoved every
+      frame. Now each fighter only gives back the ground he took THIS
+      frame, in proportion to how much of the overlap he caused, and never
+      ends up behind where he started. MIN_SEPARATION 1.2 -> 0.85.
+      AFTER: closes to 1.071, back-up reaches 2.86, no teleport.
+      STILL OPEN: the gap oscillates around 1.1-1.3 under AI pressure. That
+      looks like the receiver's give-ground on hits rather than the clamp,
+      but it is NOT isolated yet — do not call the approach fixed.
 - [ ] **Side-switch prevention / arena bounds**
 - [ ] **Side-turn state**
 - [ ] **Back-turn state**
@@ -587,6 +601,37 @@ that silently ignores four spellings in five is worse than no box.
 NEXT, and this is the path off the blocker above: as he labels, the
 labelled clips become the ground truth an "is this an attack" classifier and
 a per-character movelist generator can be built from.
+
+## 21c. Two probes of mine that could not fail, and one that lied
+
+Written down because all three produced a confident answer that was wrong,
+and two of them carried the SAME bug the code they were auditing had.
+
+- **`__BF_DEBUG.skinBleed()` never found a body.** It walked
+  `window.__scenes`, which nothing in this codebase publishes, and returned
+  `[]` — which reads exactly like "no webbing". It also SKIPPED joint pairs
+  in different components, the identical bug that made the skin repair
+  refuse every model with a prop bone. So the one instrument pointed at the
+  owner's most-reported visual defect was blind to that defect twice over.
+  Fixed: the live scene is published, unreachable pairs count as the worst
+  span there is, and it now returns an explicit error instead of an empty
+  list when there is no scene. MEASURED after, on the owner's own pairing
+  (ONYX vs CIPHER, in a live match): **0 bleeding vertices on both bodies.**
+  His screenshots showing the stick through the torso are from a build
+  predating the repair-guard fix.
+
+- **`scripts/probe-command-moves.mjs` reported different results for the
+  same build.** 0 of 12 inputs firing, then 4 of 12, on an unchanged game:
+  it slept a fixed 1.4 s between inputs, so each press landed at a random
+  point in the previous move's recovery. It waits for the fighter to be
+  free now. No number from before that fix means anything.
+
+- A camera published as `cam.parent` was null, because an R3F default
+  camera is not parented into the scene graph. `state.scene` is the answer.
+
+RULE THIS PASS EARNED: a probe that returns an empty result must be able to
+distinguish "nothing wrong" from "nothing looked at", or it will confirm
+whatever you already believe.
 
 ## 21b. Findings banked this pass (measured, with the instrument named)
 

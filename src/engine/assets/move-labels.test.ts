@@ -2,7 +2,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { clipsLabelledFor, labelRefuses, type MoveLabelMap } from './moveLabels.ts';
+import {
+  clipsLabelledFor, clipsTagged, isReceivingClip, labelRefuses, taggingProgress,
+  type MoveLabelMap,
+} from './moveLabels.ts';
 
 /**
  * THE LABELS HAVE TO REACH THE GAME.
@@ -49,5 +52,59 @@ describe('what the owner says a clip is', () => {
     assert.deepEqual(clipsLabelledFor('', labels), []);
     assert.deepEqual(clipsLabelledFor('   ', labels), []);
     assert.deepEqual(clipsLabelledFor('no_such_slot', labels), []);
+  });
+});
+
+/**
+ * THE ANIMATION POOL — the tap that unblocks the pipeline.
+ *
+ * Owner: "add a thing at the bottom ... an animation pool, and if you put
+ * like a little check boxes for every type of move or animation we have ...
+ * I'll literally be able to just tap the checkbox of what kind of animation
+ * it is, and that'll help the whole pipeline."
+ */
+describe('what kind of animation this is', () => {
+  const labels: MoveLabelMap = {
+    GRAFQUICKJAB:       { kinds: ['attack', 'punch'], at: 1 },
+    HEAVYKICK:          { kinds: ['attack', 'kick'], at: 2 },
+    SHARKNADO_REACTION: { kinds: ['reaction'], at: 3 },
+    FALLING_FLAT:       { kinds: ['knockdown'], at: 4 },
+    KIP_UP:             { kinds: ['getup'], at: 5 },
+    WALK:               { kinds: ['locomotion'], at: 6 },
+    // A capture that carries both halves on one skeleton. The attacking
+    // reading is the one an attack slot wants.
+    TIGER_FEINT_KICK:   { kinds: ['attack', 'kick', 'reaction'], at: 7 },
+    NOT_TAGGED_YET:     { name: 'no idea', at: 8 },
+    BROKEN_ONE:         { kinds: ['attack', 'punch'], verdict: 'broken', at: 9 },
+  };
+
+  it('knows a body being hit from a body hitting', () => {
+    assert.equal(isReceivingClip('SHARKNADO_REACTION', labels), true);
+    assert.equal(isReceivingClip('FALLING_FLAT', labels), true);
+    assert.equal(isReceivingClip('KIP_UP', labels), true);
+    assert.equal(isReceivingClip('GRAFQUICKJAB', labels), false);
+    assert.equal(isReceivingClip('HEAVYKICK', labels), false);
+  });
+
+  it('lets an attack tag win when a capture carries both halves', () => {
+    assert.equal(isReceivingClip('TIGER_FEINT_KICK', labels), false);
+  });
+
+  it('treats an untagged clip as unknown, never as refused', () => {
+    // Refusing everything he has not got to yet would empty the game.
+    assert.equal(isReceivingClip('NOT_TAGGED_YET', labels), false);
+    assert.equal(isReceivingClip('NEVER_SEEN_AT_ALL', labels), false);
+  });
+
+  it('collects the pool a classifier can be built from', () => {
+    assert.deepEqual(clipsTagged(['attack', 'kick'], labels), ['HEAVYKICK', 'TIGER_FEINT_KICK']);
+    assert.deepEqual(clipsTagged(['locomotion'], labels), ['WALK']);
+    // A broken clip never joins a pool, whatever it is tagged.
+    assert.deepEqual(clipsTagged(['attack', 'punch'], labels), ['GRAFQUICKJAB']);
+  });
+
+  it('reports how much of the pool has been judged', () => {
+    const all = ['GRAFQUICKJAB', 'WALK', 'NOT_TAGGED_YET', 'NEVER_SEEN_AT_ALL'];
+    assert.deepEqual(taggingProgress(all, labels), { tagged: 2, total: 4 });
   });
 });

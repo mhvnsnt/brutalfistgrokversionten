@@ -20,7 +20,7 @@ import {
 } from '../engine/combat/AnimationIntegrityGate';
 import { COMBAT_STATE_TO_SEMANTIC, SEMANTIC_STATE_ALIASES, inferSemanticStateFromClipName } from '../engine/retarget/SemanticStateAliases';
 import { clipAnimates, clipKeepsFacing, clipStandsUpright, clipStartsStanding, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
-import { clipsLabelledFor, labelRefuses } from '../engine/assets/moveLabels';
+import { clipsLabelledFor, isReceivingClip, labelRefuses } from '../engine/assets/moveLabels';
 import { AnimationBridge } from '../../animation_bridge/retarget';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -387,7 +387,12 @@ function resolveClipName(
     && clipAnimates(c)
     && clipStandsUpright(c)
     && clipStartsStanding(c)
-    && (!forAttack || (clipStrikesForward(c) && clipKeepsFacing(c)));
+    // A CLIP HE TAGGED AS A REACTION IS NEVER AN ATTACK. This is the one
+    // question no measurement here can answer — a thrown body extends a
+    // limb forward exactly like a punching one, which is why filtering all
+    // 366 clips on reach, plant, facing and uprightness still returns
+    // SHARKNADO_REACTION and GRAFTHROWREACTION among the "punches".
+    && (!forAttack || (!isReceivingClip(c) && clipStrikesForward(c) && clipKeepsFacing(c)));
   const attackSlot = /^attack|finisher|overdrive/.test(COMBAT_STATE_TO_SEMANTIC[key] ?? key);
   const pick = (test: (c: string) => boolean): string | undefined =>
     availableClips.find((c) => test(c) && usable(c, attackSlot)) ?? availableClips.find(test);
