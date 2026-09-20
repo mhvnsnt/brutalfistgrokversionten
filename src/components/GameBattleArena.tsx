@@ -405,6 +405,7 @@ export default function GameBattleArena({
   const [p1X, setP1X] = useState(-1.8);
   const [p1Y, setP1Y] = useState(0);
   const [p2X, setP2X] = useState(1.8);
+  const [p2Y, setP2Y] = useState(0);
   const [p1Z, setP1Z] = useState(0);
   const [p2Z, setP2Z] = useState(0);
   const p1XRef = useRef(-1.8);
@@ -1361,11 +1362,17 @@ export default function GameBattleArena({
 
       const p2AIInput: SMInput = buildP2AIInput(
         mapActionToDisplayState(p2SMRef.current.action, p2SMRef.current.current, engine.p2State),
-        engine.p1Health,
-        engine.p2Health,
-        p2XRef.current,
-        p1XRef.current,
+        engine.p1Health, engine.p2Health, p2XRef.current, p1XRef.current,
+        p2ZRef.current, p1ZRef.current, p2Fighter,
       );
+      const p2Facing: Facing = p2XRef.current <= p1XRef.current ? 1 : -1;
+      pushInput(
+        p2CommandRef.current,
+        { x: (p2AIInput.forward ?? 0) > 0 ? p2Facing : (p2AIInput.forward ?? 0) < 0 ? -p2Facing : 0, y: 0 },
+        commandButtonsFor({ lp:p2AIInput.lp, rp:p2AIInput.rp, lk:p2AIInput.lk, rk:p2AIInput.rk, grapple:p2AIInput.grapple }),
+        p2Facing, now,
+      );
+      p2SMRef.current.setCommandStance(p2AIInput.crouch ? 'Crouch' : p2AIInput.jump ? 'Air' : 'Ground');
       const p2NextMotion = p2SM.update(p2AIInput, dt);
       const p2HbWindow = p2SM.getHitboxWindow();
       p2Hb.update(p2HbWindow);
@@ -1695,6 +1702,8 @@ export default function GameBattleArena({
           p1Vel.forward, p1Vel.strafe, dt, p1IsDashing, p1IsBackdashing,
           { x: p2XRef.current, z: p2ZRef.current },
         );
+        if (p2AIInput.jump) p2LocoRef.current.beginJump();
+        else p2LocoRef.current.armJump();
         p2LocoRef.current.update(
           p2Vel.forward, p2Vel.strafe, dt, false, p2IsBackdashing,
           { x: p1XRef.current, z: p1ZRef.current },
@@ -1729,6 +1738,11 @@ export default function GameBattleArena({
         if (Math.abs(newP2X - p2XRef.current) > 0.01) {
           p2XRef.current = newP2X;
           setP2X(newP2X);
+        }
+        const p2JumpY = p2LocoRef.current.airborneY;
+        if (Math.abs(p2JumpY - p2YRef.current) > 0.005) {
+          p2YRef.current = p2JumpY;
+          setP2Y(p2JumpY);
         }
 
         const newP1Z = p1LocoRef.current.position.z;
@@ -2740,58 +2754,45 @@ function mapActionToDisplayState(
   }
 }
 
-/** Reactive AI input for P2 — moves toward P1, attacks when in range, guards when hit */
+/** Character-authored P2 combat brain. */
 function buildP2AIInput(
-  p2State: string,
-  p1Health: number,
-  p2Health: number,
-  p2X: number,
-  p1X: number,
+  p2State: string, p1Health: number, p2Health: number,
+  p2X: number, p1X: number, p2Z: number, p1Z: number,
+  fighter: BannonFighterProfile,
 ): SMInput {
   const now = performance.now();
-  const isAggressive = p2Health < p1Health;
-  const dist = Math.abs(p2X - p1X);
-
-  // Can't act while stunned/knocked down
-  if (p2State === 'Hitstun' || p2State === 'Stunned' || p2State === 'Knockdown' ||
-      p2State === 'WakeupTechRoll' || p2State === 'WakeupBackrise' || p2State === 'WakeupQuickStand') {
-    return { forward: 0, strafe: 0, light: false, heavy: false, guard: false, crouch: false };
+  const style = fighter.fightingStyle.toLowerCase();
+  const personality = fighter.personality.toLowerCase();
+  const distance = Math.hypot(p2X - p1X, p2Z - p1Z);
+  const distZ = Math.abs(p2Z - p1Z);
+  const healthPressure = p2Health < p1Health;
+  const speedStyle = /speed|agility|aerial|electric|technical striking/.test(style);
+  const powerStyle = /power|wrestling|brawler|enforcer|endurance/.test(style);
+  const aerialStyle = /aerial|high-flying|high flying/.test(style);
+  const evasiveStyle = /evasive|misdirection|psychological|agility|speed/.test(style);
+  const aggressive = /aggressive|manic|volatile|relentless|territorial|never stops/.test(personality);
+  if (['Hitstun','Stunned','Knockdown','WakeupTechRoll','WakeupBackrise','WakeupQuickStand'].includes(p2State))
+    return {forward:0,strafe:0,light:false,heavy:false,guard:false,crouch:false,jump:false};
+  if (p2State === 'Blockstun')
+    return {forward:0,strafe:0,light:false,heavy:false,guard:true,crouch:false,jump:false};
+  const cycle = Math.floor(now / 900) % 8;
+  const orbit = evasiveStyle && distZ < 1.25 && cycle % 3 === 0 ? (cycle % 2 === 0 ? 1 : -1) : 0;
+  const preferredGap = speedStyle ? 1.7 : powerStyle ? 1.9 : 1.6;
+  // LOCAL forward: LocomotionSystem multiplies by facing. +1 therefore means
+  // toward the opponent for both P1 and P2; the old P2 AI incorrectly used -1.
+  if (distance > preferredGap)
+    return {forward:1,strafe:orbit,light:false,heavy:false,guard:false,crouch:false,jump:false};
+  if ((aerialStyle || speedStyle) && cycle === 6)
+    return {forward:1,strafe:orbit,light:false,heavy:false,guard:false,crouch:false,jump:true};
+  if (powerStyle && cycle === 5)
+    return {forward:-1,strafe:0,light:false,heavy:false,guard:true,crouch:false,jump:false};
+  if (healthPressure && cycle === 4)
+    return {forward:0,strafe:orbit,light:false,heavy:false,guard:true,crouch:false,jump:false};
+  switch (cycle) {
+    case 0: case 1: return {forward:0,strafe:orbit,light:true,heavy:false,guard:false,crouch:false,jump:false};
+    case 2: return {forward:0,strafe:orbit,light:false,heavy:true,guard:false,crouch:false,jump:false};
+    case 3: return {forward:aggressive ? 1 : 0,strafe:orbit,light:true,heavy:false,guard:false,crouch:false,jump:false};
+    case 7: return {forward:-1,strafe:orbit,light:false,heavy:false,guard:true,crouch:false,jump:false};
+    default: return {forward:0,strafe:orbit,light:false,heavy:false,guard:false,crouch:false,jump:false};
   }
-
-  // Guard briefly after being hit
-  if (p2State === 'Blockstun') {
-    return { forward: 0, strafe: 0, light: false, heavy: false, guard: true, crouch: false };
-  }
-
-  // P2 faces -X (toward P1 at left), so "forward" = -1 moves toward P1
-  // P2 is at +X, P1 is at -X, so P2 needs to move in -X direction (forward = -1 in P2's frame)
-  const ATTACK_RANGE = 1.6;
-  const CLOSE_RANGE = 1.3;
-
-  // Use a time-based decision cycle for varied behavior
-  const cycle = Math.floor(now / 800) % 6;
-
-  if (dist > ATTACK_RANGE) {
-    // Move toward P1 (forward = -1 for P2 since it faces -X)
-    return { forward: -1, strafe: 0, light: false, heavy: false, guard: false, crouch: false };
-  }
-
-  if (dist <= CLOSE_RANGE) {
-    // In attack range — vary attacks
-    switch (cycle) {
-      case 0:
-      case 1: return { forward: 0, strafe: 0, light: true, heavy: false, guard: false, crouch: false };
-      case 2: return { forward: 0, strafe: 0, light: false, heavy: isAggressive, guard: !isAggressive, crouch: false };
-      case 3: return { forward: -1, strafe: 0, light: true, heavy: false, guard: false, crouch: false };
-      case 4: return { forward: 0, strafe: 0, light: false, heavy: true, guard: false, crouch: false };
-      case 5: return { forward: 1, strafe: 0, light: false, heavy: false, guard: true, crouch: false }; // backdash
-      default: return { forward: 0, strafe: 0, light: false, heavy: false, guard: false, crouch: false };
-    }
-  }
-
-  // Medium range — approach and occasionally attack
-  if (cycle % 3 === 0) {
-    return { forward: 0, strafe: 0, light: true, heavy: false, guard: false, crouch: false };
-  }
-  return { forward: -1, strafe: 0, light: false, heavy: false, guard: false, crouch: false };
 }
