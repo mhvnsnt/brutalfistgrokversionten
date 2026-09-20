@@ -523,6 +523,22 @@ for (const src of sources()) {
   const conventionTwists = removeConstantConventionTwist(relative, bind);
   report.conventionTwistCorrections += conventionTwists.length;
 
+  // PUT THE LEGS BACK UNDER THE BODY — a convention fix, so it belongs here
+  // beside the twist and BEFORE the anatomical limits.
+  //
+  // ORDER MATTERS AND I GOT IT WRONG FIRST. I ran this after the limits and
+  // hinges, where it looked fine and the clips stood up — and the bake's own
+  // joint-range test caught 1109 violations, RightUpLeg twisted 116 deg and
+  // bent 148. A correction applied after the constraints is a correction
+  // nothing constrains. Flip first, then let the limits judge the result.
+  const legFix = correctInvertedLegs(relative);
+  if (legFix && !legFix.rejected) {
+    report.legsFlipped++;
+    report.legFixes.push({ name: src.name, ...legFix });
+  } else if (legFix?.rejected) {
+    report.legsUnfixed.push({ name: src.name, before: legFix.before, bestAfter: legFix.best?.after });
+  }
+
   // CONSTRAIN AGAINST THE BODY'S OWN BIND, always — not against the T-pose
   // reference a T-pose-authored bank is RETARGETED through. A joint limit is
   // anatomical: "how far is this joint from where the body rests" only means
@@ -539,17 +555,6 @@ for (const src of sources()) {
   report.limitCorrections += limits.length;
   for (const v of [...hinges, ...limits]) {
     report.worst.push({ clip: src.name, bone: v.bone.replace('mixamorig', ''), ...v });
-  }
-
-  // PUT THE LEGS BACK UNDER THE BODY before looking for the floor. A clip
-  // whose feet are above its head has no meaningful ground height, and
-  // measuring one is what made 55 clips look like they were authored high.
-  const legFix = correctInvertedLegs(relative);
-  if (legFix && !legFix.rejected) {
-    report.legsFlipped++;
-    report.legFixes.push({ name: src.name, ...legFix });
-  } else if (legFix?.rejected) {
-    report.legsUnfixed.push({ name: src.name, before: legFix.before, bestAfter: legFix.best?.after });
   }
 
   // Measure the clip against the canonical floor. The correction is ONE

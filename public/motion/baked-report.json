@@ -10,12 +10,12 @@
   ],
   "hingeCorrections": 1334,
   "conventionTwistCorrections": 161,
-  "limitCorrections": 1735,
+  "limitCorrections": 1685,
   "spineRedistributed": 166,
-  "grounded": 323,
-  "groundedTotal": 63.24001279551079,
-  "airborne": 207,
-  "cappedShift": 33,
+  "grounded": 324,
+  "groundedTotal": 63.41775325941224,
+  "airborne": 193,
+  "cappedShift": 32,
   "cappedClips": [
     "HURRICANE_KICK",
     "FALLING_FLAT_IMPACT",
@@ -39,7 +39,6 @@
     "SNAPPILEDRIVERS",
     "STEREOSUPERKICK",
     "FALL_B_LOOP",
-    "ZONE_SLIDE_IN_B",
     "CAPITALPUNISHMENT",
     "DEFAULTJUMPPUNCH",
     "DEFAULTJUMPPUNCH2",
@@ -54,14 +53,14 @@
   "hoverDiagnosis": [
     {
       "name": "HURRICANE_KICK",
-      "gap": 0.1777,
+      "gap": 0.4411,
       "spineUp": 0.9973178050193016,
-      "legDown": -0.14641809676340212,
+      "legDown": 0.1154869085719218,
       "headAboveHips": 0.5047326909000657,
-      "hipsAboveFeet": 0.3165229882490893,
-      "height": 0.821255679149155,
+      "hipsAboveFeet": 0.05307964058852846,
+      "height": 0.5578123314885941,
       "medianSpineUp": 0.9973187779696243,
-      "medianLegDown": -0.14639895096580832
+      "medianLegDown": 0.11550274830995141
     },
     {
       "name": "FALLING_FLAT_IMPACT",
@@ -208,25 +207,14 @@
     },
     {
       "name": "FALL_B_LOOP",
-      "gap": 0.2449,
-      "spineUp": 0.7949938192935558,
-      "legDown": -0.05769787405356172,
-      "headAboveHips": 0.3901006314873059,
-      "hipsAboveFeet": 0.24933880784128945,
-      "height": 0.6394394393285954,
+      "gap": 0.5616,
+      "spineUp": 0.778254354617213,
+      "legDown": 0.24471729060449077,
+      "headAboveHips": 0.380039768586068,
+      "hipsAboveFeet": -0.06734960832365353,
+      "height": 0.3126901602624145,
       "medianSpineUp": 0.7837618641670503,
-      "medianLegDown": -0.040601844045994
-    },
-    {
-      "name": "ZONE_SLIDE_IN_B",
-      "gap": 0.1289,
-      "spineUp": 0.643789235582658,
-      "legDown": -0.1408986792114992,
-      "headAboveHips": 0.32726848982943707,
-      "hipsAboveFeet": 0.36532761094166966,
-      "height": 0.6925961007711068,
-      "medianSpineUp": 0.6441793950887825,
-      "medianLegDown": 0.47901758645492304
+      "medianLegDown": 0.2458466492840337
     },
     {
       "name": "DEFAULTJUMPPUNCH2",
@@ -254,7 +242,7 @@
     -0.910055025248511,
     -0.7430195569880177,
     -0.7430195569880177,
-    -0.269672824427726,
+    0.21373644234953526,
     -0.6949720013600903,
     -0.7749787603559048,
     -0.8177775629319273,
@@ -317,7 +305,7 @@
     0.3320396323145929,
     0.6825499342185648,
     0.06693807049562547,
-    0.08429366523097417,
+    -0.6409007737197374,
     0.22672377227428633,
     0.38652990516565844,
     0.1142646802906109,
@@ -326,20 +314,20 @@
     0.21177923011304706,
     0.058824154201059686,
     0.5478132355891012,
-    -0.7992818670884067,
+    -0.8323635142081126,
     0.42491577101745653,
-    -0.7992226552834536,
+    -0.9875448417147701,
     0.5120056498632346,
     -0.17646925945147424,
     0.2185534107780636,
     0.8174289803687714,
     0.1832234378260805,
-    -0.5768081415107537,
-    0.1090256262204757,
+    -0.4985922555475314,
+    -0.6707780019838485,
     -0.9917107102358944,
     0.10299235142140367,
     0.4370355847415201,
-    -0.7309848063078961,
+    -0.6189997023271608,
     0.5365208293176513,
     0.6942952799301412,
     0.7727044075956884,
@@ -361,7 +349,7 @@
     -0.5474476844264382,
     -0.6853795338098769,
     -0.5127326348229355,
-    -0.08272153098303922,
+    -0.4421034638985682,
     -0.869511086972911,
     -0.7010965940534784,
     -0.7849236366094959,
@@ -370,54 +358,55 @@
     -0.9886527719303105,
     -0.9896127935392784,
     -0.9927928969823046,
-    -0.9049080684296064,
-    -0.7618033989507937,
-    -0.741058857994588,
-    -0.8492393415819206,
-    -0.413101450648955,
-    -0.74415093794948,
-    -0.7189446806038425,
-    -0.7306287835118878,
-    -0.7619452013739442,
-    -0.7596533683273705,
-    -0.7511616194507802,
+    -0.9230518973474531,
+    -0.6380530421307777,
+    -0.8957675932748682,
+    -0.9702305427069884,
+    -0.9887661521173893,
+    -0.5763521746042621,
+    -0.9345749326273876,
+    -0.9741694325176102,
+    -0.9855509970726877,
+    -0.9744768543145335,
+    -0.980383248135985,
+    -0.9920864433370661,
     0.2023736625335325,
-    -0.6789367764437073,
-    -0.7930012645203923,
-    -0.7056278248817951,
-    -0.6852047472016216,
-    -0.7757145758874087,
-    -0.7985848631424014,
-    -0.7108757655542735,
-    -0.8612792129310624,
+    -0.8826502687498283,
+    -0.8270225626238952,
+    -0.9045050555773211,
+    -0.9809468140241382,
+    -0.9805480997638228,
+    -0.9866042075487257,
+    -0.9580451086000462,
+    -0.916679237106012,
     0.4183830844087896,
-    -0.7599943928298344,
-    -0.736253059511468,
+    -0.9865117099602456,
+    -0.9074428018752957,
     0.32389511544821,
-    -0.6783707646030195,
-    -0.7145871722710886,
-    -0.6414090763705811,
-    -0.7305323380266684,
-    -0.46515745564963507,
-    -0.7844170819133925,
-    -0.6781675888268937,
-    -0.7807056326832733,
-    -0.7679834314328966,
-    -0.7584518801301614,
-    -0.7731098518029398,
-    -0.6351671413072494,
-    -0.7394650267639933,
-    -0.7860088122731461,
-    -0.7281932029099374,
-    -0.7753233211430968,
-    -0.7221676325378241,
-    -0.7172939225459058,
-    -0.4895623153821703,
-    -0.7498022704783022,
-    -0.7340714684030574,
-    -0.5304161962247589,
-    -0.7340714684030574,
-    -0.6884637543057889,
+    -0.7835539646154595,
+    -0.9599400180588249,
+    -0.9707751145766071,
+    -0.956786217846753,
+    -0.2609846885012518,
+    -0.9612535646762688,
+    -0.9140866707192339,
+    -0.9927504326397508,
+    -0.9936561644901136,
+    -0.9881593448120163,
+    -0.9725362766600596,
+    -0.9589889511858909,
+    -0.9872746992218044,
+    -0.9921816566978241,
+    -0.9638866285598445,
+    -0.9892072824132805,
+    -0.8447571616965996,
+    -0.7285442877635796,
+    -0.5381640562473785,
+    0.0570616626419308,
+    -0.9022227998993276,
+    -0.7212310584289388,
+    -0.9022227998993276,
+    -0.6614795087351724,
     -0.691373035987251,
     -0.8319139915177736,
     -0.8167786422762249,
@@ -575,361 +564,402 @@
     -0.914265554249386,
     -0.890632508423118
   ],
-  "legsFlipped": 50,
+  "legsFlipped": 55,
   "legFixes": [
     {
-      "name": "BRACED_HANG_HOP_UP",
-      "before": 0.27078745866473247,
-      "after": -0.2980957255144959,
-      "axis": "x",
+      "name": "HURRICANE_KICK",
+      "before": 0.37798144263398453,
+      "after": -0.4680302162368444,
+      "axis": "z",
       "side": "parent"
     },
     {
-      "name": "SPINTORTURERACKBOMB",
-      "before": 0.4927926771907069,
-      "after": -0.7992819646870297,
-      "axis": "x",
-      "side": "local"
-    },
-    {
-      "name": "NECKBREAKER",
-      "before": 0.5463253456391246,
-      "after": -0.7992010502540333,
-      "axis": "x",
-      "side": "local"
-    },
-    {
-      "name": "OVREHEADPRESS",
-      "before": 0.22650450435146552,
-      "after": -0.5889363910974156,
-      "axis": "x",
-      "side": "local"
-    },
-    {
-      "name": "JAYKICK",
-      "before": 0.5487246261310845,
-      "after": -0.730981984405048,
+      "name": "HURRICANERANA",
+      "before": 0.837809991552225,
+      "after": -0.8844894874447617,
       "axis": "z",
       "side": "local"
     },
     {
-      "name": "ZONE_SLIDE_IN_A",
-      "before": 0.8888789591579107,
-      "after": -0.9041511944174682,
+      "name": "SPINTORTURERACKBOMB",
+      "before": 0.7359165452096994,
+      "after": -0.8857599266290079,
       "axis": "x",
+      "side": "parent"
+    },
+    {
+      "name": "NECKBREAKER",
+      "before": 0.921994696422805,
+      "after": -0.9841676935157484,
+      "axis": "x",
+      "side": "parent"
+    },
+    {
+      "name": "OVREHEADPRESS",
+      "before": 0.6355421809810882,
+      "after": -0.8106576907171581,
+      "axis": "x",
+      "side": "local"
+    },
+    {
+      "name": "FENCETHROW_002",
+      "before": 0.3901500446479601,
+      "after": -0.7804316400941786,
+      "axis": "x",
+      "side": "parent"
+    },
+    {
+      "name": "JAYKICK",
+      "before": 0.456270707334021,
+      "after": -0.8059579828987379,
+      "axis": "x",
+      "side": "parent"
+    },
+    {
+      "name": "FALL_B_LOOP",
+      "before": 0.5828769715731211,
+      "after": -0.6876879849754185,
+      "axis": "z",
+      "side": "parent"
+    },
+    {
+      "name": "CROUCH_IDLE_02_LOOKING_AROUND",
+      "before": 0.22160844579921568,
+      "after": -0.926571811554787,
+      "axis": "z",
+      "side": "parent"
+    },
+    {
+      "name": "ZONE_SLIDE_IN_A",
+      "before": 0.9361621000847119,
+      "after": -0.9111410740436506,
+      "axis": "z",
+      "side": "local"
+    },
+    {
+      "name": "ZONE_SLIDE_IN_B",
+      "before": 0.5221603140491156,
+      "after": -0.8707771736769125,
+      "axis": "z",
       "side": "parent"
     },
     {
       "name": "ZONE_SLIDE_IN_C",
-      "before": 0.6473626601431092,
-      "after": -0.7672509768431859,
-      "axis": "x",
-      "side": "local"
-    },
-    {
-      "name": "ZONE_DUCK_A",
-      "before": 0.578907656945939,
-      "after": -0.7470051687799424,
+      "before": 0.756511436795938,
+      "after": -0.9039823885453617,
       "axis": "z",
       "side": "local"
     },
     {
+      "name": "ZONE_DUCK_A",
+      "before": 0.9566670379604587,
+      "after": -0.9756428320435451,
+      "axis": "x",
+      "side": "local"
+    },
+    {
       "name": "ZONE_DUCK_B",
-      "before": 0.7522881372428878,
-      "after": -0.8499782329147222,
+      "before": 0.987745416721872,
+      "after": -0.988496488511563,
       "axis": "x",
       "side": "local"
     },
     {
       "name": "ZONE_DUCK_C",
-      "before": 0.3364856031170419,
-      "after": -0.4139593257242307,
-      "axis": "z",
-      "side": "parent"
+      "before": 0.5763334676048102,
+      "after": -0.7100491202682495,
+      "axis": "x",
+      "side": "local"
     },
     {
       "name": "ZONE_DROP_A",
-      "before": 0.6081094698398899,
-      "after": -0.741328124956404,
+      "before": 0.9350377942295527,
+      "after": -0.9673176626464548,
       "axis": "x",
       "side": "parent"
     },
     {
       "name": "ZONE_DROP_B",
-      "before": 0.6303284308715025,
-      "after": -0.7189451365988748,
-      "axis": "x",
-      "side": "local"
-    },
-    {
-      "name": "ZONE_DROP_C",
-      "before": 0.6101076783010195,
-      "after": -0.723876198428093,
+      "before": 0.9924438622395619,
+      "after": -0.9893875946983731,
       "axis": "x",
       "side": "parent"
     },
     {
+      "name": "ZONE_DROP_C",
+      "before": 0.9911112020619814,
+      "after": -0.9878877631440531,
+      "axis": "x",
+      "side": "local"
+    },
+    {
       "name": "ZONE_PULLUP_A",
-      "before": 0.6783945573364929,
-      "after": -0.7635895143758703,
+      "before": 0.9832610057986185,
+      "after": -0.9858424082300588,
       "axis": "x",
       "side": "parent"
     },
     {
       "name": "ZONE_PULLUP_B",
-      "before": 0.6149589260074617,
-      "after": -0.7557104889357706,
+      "before": 0.9635940968449298,
+      "after": -0.9858521666491691,
       "axis": "x",
       "side": "parent"
     },
     {
       "name": "ZONE_PULLUP_C",
-      "before": 0.6105935259486717,
-      "after": -0.7513274435598867,
+      "before": 0.9907249835002019,
+      "after": -0.9935145843087337,
+      "axis": "x",
+      "side": "local"
+    },
+    {
+      "name": "ZONE_VAULT_A",
+      "before": 0.8301924112275674,
+      "after": -0.897741905489067,
+      "axis": "z",
+      "side": "parent"
+    },
+    {
+      "name": "ZONE_CLIMB_A",
+      "before": 0.9289042428873149,
+      "after": -0.9654933112788324,
+      "axis": "z",
+      "side": "parent"
+    },
+    {
+      "name": "ZONE_MIDROPE_STEP",
+      "before": 0.9701318034897866,
+      "after": -0.9840252968069537,
+      "axis": "z",
+      "side": "parent"
+    },
+    {
+      "name": "ZONE_MIDROPE_POSE",
+      "before": 0.9829013169641059,
+      "after": -0.9851516907770124,
       "axis": "x",
       "side": "parent"
     },
     {
-      "name": "ZONE_VAULT_A",
-      "before": 0.5710299077183272,
-      "after": -0.6898882025610646,
-      "axis": "x",
-      "side": "local"
-    },
-    {
-      "name": "ZONE_CLIMB_A",
-      "before": 0.6400093797170749,
-      "after": -0.7927261032947028,
-      "axis": "x",
-      "side": "local"
-    },
-    {
-      "name": "ZONE_MIDROPE_STEP",
-      "before": 0.5856277648617605,
-      "after": -0.7110573275570655,
-      "axis": "x",
-      "side": "local"
-    },
-    {
-      "name": "ZONE_MIDROPE_POSE",
-      "before": 0.5869413516881606,
-      "after": -0.686983838986033,
-      "axis": "x",
-      "side": "local"
-    },
-    {
       "name": "ZONE_OVER_TOP_IN",
-      "before": 0.6964369503323051,
-      "after": -0.7645141674422415,
+      "before": 0.9816112312265071,
+      "after": -0.98674435920248,
       "axis": "x",
-      "side": "local"
+      "side": "parent"
     },
     {
       "name": "ZONE_APRON_HOP",
-      "before": 0.6559019452006134,
-      "after": -0.7965109705093056,
+      "before": 0.9791617591267996,
+      "after": -0.9935983638267455,
       "axis": "x",
       "side": "parent"
     },
     {
       "name": "ZONE_VAULT_IN",
-      "before": 0.5891181614305734,
-      "after": -0.7274094571643486,
-      "axis": "x",
+      "before": 0.9937168355367847,
+      "after": -0.9937306511913986,
+      "axis": "z",
       "side": "parent"
     },
     {
       "name": "ZONE_ROLL_IN",
-      "before": 0.7061126390689321,
-      "after": -0.8539945172741517,
+      "before": 0.9188876169043694,
+      "after": -0.9094869222471169,
       "axis": "x",
       "side": "local"
     },
     {
       "name": "ZONE_OVER_TOP_OUT",
-      "before": 0.6124206853241406,
-      "after": -0.7569673292198756,
+      "before": 0.9920522712923399,
+      "after": -0.9860571201411406,
       "axis": "x",
       "side": "parent"
     },
     {
       "name": "ZONE_ROLL_OUT_B",
-      "before": 0.5958049596826323,
-      "after": -0.7486818565139532,
+      "before": 0.890550568841596,
+      "after": -0.9362498614967911,
       "axis": "x",
       "side": "parent"
     },
     {
       "name": "ZONE_CLIMB_B",
-      "before": 0.6181301427815399,
-      "after": -0.6862793515274637,
-      "axis": "x",
+      "before": 0.9882781258042184,
+      "after": -0.9721182935440185,
+      "axis": "z",
       "side": "parent"
     },
     {
       "name": "ZONE_PERCH_POSE",
-      "before": 0.5107290006551343,
-      "after": -0.7158470336415497,
-      "axis": "z",
-      "side": "local"
-    },
-    {
-      "name": "LOCO_STALK",
-      "before": 0.5345782115222685,
-      "after": -0.65280978431588,
+      "before": 0.9927581888396122,
+      "after": -0.9906838612030121,
       "axis": "x",
       "side": "parent"
     },
     {
-      "name": "LOCO_STRUT",
-      "before": 0.5322870976681842,
-      "after": -0.7321112673867147,
+      "name": "LOCO_STALK",
+      "before": 0.9740172415476479,
+      "after": -0.9752667876317507,
       "axis": "z",
-      "side": "local"
+      "side": "parent"
+    },
+    {
+      "name": "LOCO_STRUT",
+      "before": 0.9674073443342814,
+      "after": -0.9736570308320391,
+      "axis": "x",
+      "side": "parent"
     },
     {
       "name": "LOCO_PROWL",
-      "before": 0.3162139855819215,
-      "after": -0.46539503624490336,
-      "axis": "z",
-      "side": "local"
+      "before": 0.8173738926980028,
+      "after": -0.8687362106815182,
+      "axis": "x",
+      "side": "parent"
     },
     {
       "name": "LOCO_LIGHT",
-      "before": 0.6506101793599175,
-      "after": -0.7844170819133925,
+      "before": 0.9776373373616006,
+      "after": -0.9648533489006808,
       "axis": "x",
       "side": "parent"
     },
     {
       "name": "LOCO_LUMBER",
-      "before": 0.6036030320272772,
-      "after": -0.6827004579829749,
-      "axis": "x",
+      "before": 0.9590702682289969,
+      "after": -0.9621377117411908,
+      "axis": "z",
       "side": "parent"
     },
     {
       "name": "STANCE_WIDE",
-      "before": 0.598845440597459,
-      "after": -0.7807117512881618,
-      "axis": "z",
+      "before": 0.9925960083407828,
+      "after": -0.9939528416811398,
+      "axis": "x",
       "side": "local"
     },
     {
       "name": "STANCE_CROUCH",
-      "before": 0.5567384328933884,
-      "after": -0.7665142284244535,
-      "axis": "z",
+      "before": 0.9804828469196305,
+      "after": -0.9933986168491211,
+      "axis": "x",
       "side": "local"
     },
     {
       "name": "STANCE_BLADED",
-      "before": 0.6102094781855838,
-      "after": -0.7579860634284343,
+      "before": 0.9961127220140729,
+      "after": -0.9890296774243899,
       "axis": "x",
       "side": "parent"
     },
     {
       "name": "GUARD_HIGH",
-      "before": 0.5606376215828025,
-      "after": -0.773267176332934,
+      "before": 0.9610898643038759,
+      "after": -0.99419937862181,
       "axis": "x",
       "side": "parent"
     },
     {
       "name": "GUARD_LOW",
-      "before": 0.4677186710796727,
-      "after": -0.6368856150959412,
-      "axis": "x",
-      "side": "local"
+      "before": 0.9572781409382167,
+      "after": -0.9676179644890273,
+      "axis": "z",
+      "side": "parent"
     },
     {
       "name": "TAUNT_CALLOUT",
-      "before": 0.6119245077616732,
-      "after": -0.737734602714555,
+      "before": 0.9808057128612124,
+      "after": -0.9930672656618875,
       "axis": "x",
       "side": "local"
     },
     {
       "name": "TAUNT_ARMS_WIDE",
-      "before": 0.6168163013844591,
-      "after": -0.7854019279710864,
+      "before": 0.9879475305128232,
+      "after": -0.9935986501724388,
       "axis": "x",
       "side": "parent"
     },
     {
       "name": "TAUNT_POINT",
-      "before": 0.6482916733445765,
-      "after": -0.7282888405627497,
+      "before": 0.9867532086623912,
+      "after": -0.9843695338427757,
       "axis": "x",
       "side": "local"
     },
     {
       "name": "TAUNT_FLEX",
-      "before": 0.6188852801127273,
-      "after": -0.7753013511517736,
+      "before": 0.9938670520179405,
+      "after": -0.9930944384282934,
       "axis": "z",
       "side": "local"
     },
     {
       "name": "TIGER_FEINT_KICK",
-      "before": 0.5191231377219969,
-      "after": -0.722234453590126,
+      "before": 0.8367904769628489,
+      "after": -0.7915423304695508,
       "axis": "x",
       "side": "local"
     },
     {
       "name": "TIGER_FEINT_KICK__RECV",
-      "before": 0.5623020088051133,
-      "after": -0.7096250656071694,
+      "before": 0.8997841099055623,
+      "after": -0.8610107944106495,
       "axis": "x",
-      "side": "local"
+      "side": "parent"
     },
     {
       "name": "JUNGLE_JUICE",
-      "before": 0.32195530107704073,
-      "after": -0.5319340677750503,
+      "before": 0.8094833475102474,
+      "after": -0.8234135862533389,
       "axis": "x",
-      "side": "local"
+      "side": "parent"
     },
     {
       "name": "JUNGLE_JUICE__RECV",
-      "before": 0.5066126770807455,
-      "after": -0.7440068191412952,
-      "axis": "x",
-      "side": "local"
+      "before": 0.912109663161462,
+      "after": -0.8890124077431488,
+      "axis": "z",
+      "side": "parent"
     },
     {
       "name": "TZ_SCOOP_SLAM",
-      "before": 0.6737417882694662,
-      "after": -0.7193006677625791,
+      "before": 0.9817464797817015,
+      "after": -0.9616506177729984,
       "axis": "x",
-      "side": "local"
+      "side": "parent"
     },
     {
       "name": "TZ_SCOOP_SLAM__RECV",
-      "before": 0.4326184491228181,
-      "after": -0.5288644973555899,
+      "before": 0.6977920244985443,
+      "after": -0.7140543352862481,
       "axis": "x",
       "side": "local"
     },
     {
       "name": "TZ_TILT_WHIRL_SLAM",
-      "before": 0.6737417882694662,
-      "after": -0.7193006677625791,
+      "before": 0.9817464797817015,
+      "after": -0.9616506177729984,
       "axis": "x",
-      "side": "local"
+      "side": "parent"
     },
     {
       "name": "TZ_TILT_WHIRL_SLAM__RECV",
-      "before": 0.39043134014113834,
-      "after": -0.6884637543057889,
-      "axis": "x",
-      "side": "local"
+      "before": 0.7905012629094722,
+      "after": -0.8229617859615908,
+      "axis": "z",
+      "side": "parent"
     }
   ],
   "legsUnfixed": [],
   "worst": [
+    {
+      "clip": "ZONE_MIDROPE_STEP",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 21.1,
+      "twist": 180
+    },
     {
       "clip": "GINGA_BACKWARD",
       "bone": "mixamorigRightUpLeg",
@@ -955,15 +985,57 @@
       "twist": 179.9
     },
     {
+      "clip": "FENCETHROW_002",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 86,
+      "twist": 179.9
+    },
+    {
+      "clip": "ZONE_SLIDE_IN_A",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 81.4,
+      "twist": 179.9
+    },
+    {
+      "clip": "GUARD_LOW",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 29.4,
+      "twist": 179.9
+    },
+    {
+      "clip": "TZ_TILT_WHIRL_SLAM__RECV",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 115.7,
+      "twist": 179.9
+    },
+    {
       "clip": "SHARPSHOOTER",
       "bone": "mixamorigLeftUpLeg",
       "bend": 150.7,
       "twist": 179.8
     },
     {
+      "clip": "ZONE_SLIDE_IN_A",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 63.5,
+      "twist": 179.8
+    },
+    {
       "clip": "ZONE_RUN_SLIDE_IN",
       "bone": "mixamorigLeftUpLeg",
       "bend": 173.3,
+      "twist": 179.8
+    },
+    {
+      "clip": "ZONE_CLIMB_B",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 41.6,
+      "twist": 179.8
+    },
+    {
+      "clip": "TZ_TILT_WHIRL_SLAM__RECV",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 141.7,
       "twist": 179.8
     },
     {
@@ -991,6 +1063,24 @@
       "twist": 179.7
     },
     {
+      "clip": "ZONE_SLIDE_IN_C",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 64.8,
+      "twist": 179.7
+    },
+    {
+      "clip": "ZONE_VAULT_A",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 82.5,
+      "twist": 179.7
+    },
+    {
+      "clip": "LOCO_LUMBER",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 38.3,
+      "twist": 179.7
+    },
+    {
       "clip": "CAPOEIRA__1_",
       "bone": "mixamorigRightUpLeg",
       "bend": 132.9,
@@ -1000,6 +1090,18 @@
       "clip": "SHARPSHOOTER",
       "bone": "mixamorigRightUpLeg",
       "bend": 157.2,
+      "twist": 179.6
+    },
+    {
+      "clip": "ZONE_SLIDE_IN_C",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 59.8,
+      "twist": 179.6
+    },
+    {
+      "clip": "ZONE_CLIMB_A",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 52.6,
       "twist": 179.6
     },
     {
@@ -1015,9 +1117,9 @@
       "twist": 179.5
     },
     {
-      "clip": "OVREHEADPRESS",
+      "clip": "JAYKICK",
       "bone": "mixamorigLeftUpLeg",
-      "bend": 148.8,
+      "bend": 82.9,
       "twist": 179.5
     },
     {
@@ -1039,6 +1141,12 @@
       "twist": 179.4
     },
     {
+      "clip": "FENCETHROW_002",
+      "bone": "mixamorigLeftUpLeg",
+      "bend": 80.8,
+      "twist": 179.4
+    },
+    {
       "clip": "JUNGLE_JUICE__RECV",
       "bone": "mixamorigRightShoulder",
       "bend": 127,
@@ -1048,6 +1156,12 @@
       "clip": "REVERSEGOOZLEDIVFOOTSTOMP",
       "bone": "mixamorigRightUpLeg",
       "bend": 168.3,
+      "twist": 179.3
+    },
+    {
+      "clip": "ZONE_SLIDE_IN_B",
+      "bone": "mixamorigRightUpLeg",
+      "bend": 84.4,
       "twist": 179.3
     },
     {
@@ -1063,39 +1177,9 @@
       "twist": 179.2
     },
     {
-      "clip": "SPINTORTURERACKBOMB",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 160.1,
-      "twist": 179.2
-    },
-    {
-      "clip": "ZONE_SLIDE_IN_B",
-      "bone": "mixamorigLeftUpLeg",
-      "bend": 168.9,
-      "twist": 179.2
-    },
-    {
-      "clip": "TAUNT_CALLOUT",
-      "bone": "mixamorigLeftUpLeg",
-      "bend": 178.2,
-      "twist": 179.2
-    },
-    {
       "clip": "TAU_HEADCRACK",
       "bone": "mixamorigRightUpLeg",
       "bend": 153.6,
-      "twist": 179.1
-    },
-    {
-      "clip": "HURRICANERANA",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 162.1,
-      "twist": 179.1
-    },
-    {
-      "clip": "OVREHEADPRESS",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 156.4,
       "twist": 179.1
     },
     {
@@ -1109,66 +1193,6 @@
       "bone": "mixamorigLeftUpLeg",
       "bend": 62.4,
       "twist": 179.1
-    },
-    {
-      "clip": "JUNGLE_JUICE__RECV",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 169.2,
-      "twist": 179.1
-    },
-    {
-      "clip": "TIGERSCARLETSCREW",
-      "bone": "mixamorigLeftArm",
-      "bend": 160.5,
-      "twist": 179.1
-    },
-    {
-      "clip": "TAUNT",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 143.5,
-      "twist": 179
-    },
-    {
-      "clip": "ZONE_ROLL_OUT_A",
-      "bone": "mixamorigRightFoot",
-      "bend": 163.8,
-      "twist": 179
-    },
-    {
-      "clip": "ZONE_SLIDE_OUT",
-      "bone": "mixamorigLeftUpLeg",
-      "bend": 171.9,
-      "twist": 179
-    },
-    {
-      "clip": "BREAKDANCE_FREEZES",
-      "bone": "mixamorigRightShoulder",
-      "bend": 119.5,
-      "twist": 178.9
-    },
-    {
-      "clip": "QUESHADA_2",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 110.4,
-      "twist": 178.9
-    },
-    {
-      "clip": "LOCO_STALK",
-      "bone": "mixamorigRightUpLeg",
-      "bend": 178.4,
-      "twist": 178.9
-    },
-    {
-      "clip": "AU",
-      "bone": "mixamorigRightShoulder",
-      "bend": 112.9,
-      "twist": 178.8
-    },
-    {
-      "clip": "TIGER_FEINT_KICK__RECV",
-      "bone": "mixamorigRightShoulder",
-      "bend": 159.1,
-      "twist": 178.8
     }
   ],
   "slotOwners": 6

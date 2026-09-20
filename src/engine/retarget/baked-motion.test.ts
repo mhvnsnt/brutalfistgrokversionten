@@ -314,12 +314,15 @@ test('standability is decided by the measured floor gap, not by name', () => {
 test('no shipped stance clip is left hovering', { skip: !hasBake }, () => {
   const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
   const unstandable = markStandability(manifest);
-  // NAMED, not silenced. These are Bannon-bank single-pose clips whose hips
-  // sit ~1.5 m too high in the source; the bake caps the correction at 60 cm
-  // and the kit refuses them, so no fighter stands in one. They are kept
-  // (generated content is never deleted) and listed here so the source fix
-  // has a target. Anything NEW joining this list is a regression.
-  const KNOWN_HOVERING = ['GUARD_HIGH', 'GUARD_LOW', 'STANCE_BLADED', 'STANCE_CROUCH', 'STANCE_WIDE'];
+  // EMPTY, AND IT USED TO NAME FIVE. GUARD_HIGH, GUARD_LOW, STANCE_BLADED,
+  // STANCE_CROUCH and STANCE_WIDE were all "authored too high" — they were
+  // not. Their thighs were folded up over the torso, so the lowest foot sat
+  // a metre in the air. The bake puts the legs back down (see
+  // correctInvertedLegs) and all five now stand on the mat.
+  //
+  // This stays as a GATE: any stance-pool clip that cannot reach the floor
+  // is a regression, and the list is the evidence.
+  const KNOWN_HOVERING: string[] = [];
   const posePools = new Set([...KNOWN_HOVERING, 'STANCE', 'GUARD', 'CENTER_BLOCK', 'CROUCHING',
     'GRAFSTANCE2', 'GRAFSTANCE3', 'JOHNSON_STANCE', 'LOWSTANCE', 'LOWSTANCENEW', 'LOWSTANCEGUARD',
     'SHAZSTANCE', 'TIGERSTANCE', 'TIGERSTANCEUPDATED', 'WALK', 'WALKFAST', 'SHAZWALK', 'DRUNK_WALK']);
