@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import * as THREE from 'three';
 
-import { clipFromBaked, markFrozen, markSlotOwners, markStandability, type BakedClipFile, type BakedManifestEntry } from './BakedMotionBank.ts';
+import { clipFromBaked, markBackwardStrikes, markFrozen, markSlotOwners, markStandability, type BakedClipFile, type BakedManifestEntry } from './BakedMotionBank.ts';
 import { HINGE_JOINTS, JOINT_LIMITS, angleDeg, signedAngleAbout, swingTwist, removeConstantConventionTwist } from './SkeletalLimits.ts';
 import { loadCanonicalSkeleton } from './CanonicalSkeleton.ts';
 
@@ -383,15 +383,22 @@ test('the frozen set stays small — a wide net here would mute real moves', { s
  * window a fraction of its length, and both kick slots played
  * HURRICANE_KICK, which moves one bone of 22.
  */
-test('every combat slot has an owner, and it is a real single strike', { skip: !hasBake }, () => {
+test('a slot owner, where there is one, is a real forward single strike', { skip: !hasBake }, () => {
   const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
   const owners = markSlotOwners(manifest);
   const frozen = markFrozen(manifest);
+  const backward = markBackwardStrikes(manifest);
 
-  for (const slot of ['attack_1', 'attack_rp', 'attack_rk', 'block', 'idle']) {
-    const owner = owners.get(slot);
-    assert.ok(owner, `${slot} has no owner — the runtime will fall back to alias order`);
+  // NOT "every slot has an owner" — that was the earlier assertion and it is
+  // wrong. SCHWARZERBLITZ_COMBAT_SLOTS names ROUNDHOUSEKICK for attack_rk and
+  // ROUNDHOUSEKICK strikes at -0.96 against a body facing +0.74, so the bake
+  // now REFUSES that ownership and the runtime falls through to alias order,
+  // which lands on HEAVYKICK. A slot with no owner is a slot whose named
+  // owner failed the measurement, and that is the system working.
+  assert.ok(owners.size > 0, 'no slot has an owner at all — is `owns` being written?');
+  for (const [slot, owner] of owners) {
     assert.equal(frozen.has(owner), false, `${slot} is owned by a frozen clip: ${owner}`);
+    assert.equal(backward.has(owner), false, `${slot} is owned by a backward-striking clip: ${owner}`);
   }
 });
 
@@ -406,5 +413,47 @@ test('an attack slot is never owned by a multi-second demonstration clip', { ski
     if (!owner) continue;
     const dur = manifest[owner]?.dur ?? 0;
     assert.ok(dur <= LONGEST_SINGLE_STRIKE_S, `${slot} owner ${owner} is ${dur}s — that is a demonstration, not a strike`);
+  }
+});
+
+/**
+ * AN ATTACK MUST TRAVEL TOWARD THE OPPONENT.
+ *
+ * Owner, on attack_rk: "it's going off to the side, off to the left of the
+ * character ... he's not rotating his body to do it towards the character
+ * he's fighting."
+ *
+ * MEASURED as the direction the fastest limb travels at its quickest frame,
+ * expressed in the body's own frame — +1 is straight down the fighter's
+ * forward axis. ROUNDHOUSEKICK struck at -0.962, BOXING at -0.999,
+ * COMBO_PUNCH at -1.00: directly AWAY from the opponent, which from a
+ * fighter facing right reads as a kick off to the left.
+ */
+test('an attack whose strike fights its own body is refused, not shipped', { skip: !hasBake }, () => {
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  const backward = markBackwardStrikes(manifest);
+
+  // THE CLIPS ARE STILL THERE ON PURPOSE. Generated content is never deleted,
+  // and I tried the other thing first: yawing them 180 degrees made the
+  // strike forward and the BODY backward, so the fighter turned his back and
+  // punched over his shoulder. 50 of 94 attack clips went that way. They are
+  // refused as attacks instead.
+  assert.ok(backward.has('BOXING'), 'BOXING strikes at -1.00 against a body facing +0.91 and was not caught');
+  assert.ok(backward.size >= 20, `only ${backward.size} caught — has the measurement stopped working?`);
+
+  // And a known-good clip must NOT be caught, or the rule is too wide.
+  for (const good of ['GRAFQUICKJAB', 'GYAKUZUKI', 'QUICKKICK']) {
+    if (!manifest[good]) continue;
+    assert.equal(backward.has(good), false, `${good} is a clean forward strike and was refused`);
+  }
+});
+
+test('every slot owner strikes forward, moves, and is short', { skip: !hasBake }, () => {
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  for (const [name, m] of Object.entries(manifest)) {
+    if (!m.owns || !/^attack/.test(m.semantic ?? '')) continue;
+    assert.ok((m.strike?.fwd ?? 0) > 0.3, `${m.semantic} owner ${name} strikes at ${m.strike?.fwd}`);
+    assert.ok((m.movingBones ?? 0) >= 3, `${m.semantic} owner ${name} barely moves`);
+    assert.ok((m.dur ?? 9) <= 1.2, `${m.semantic} owner ${name} is ${m.dur}s — a demonstration, not a strike`);
   }
 });

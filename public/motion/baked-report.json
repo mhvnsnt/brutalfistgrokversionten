@@ -776,6 +776,12 @@
     }
   ],
   "legsUnfixed": [],
+  "turnedAround": 0,
+  "turnedList": [],
+  "turnRejected": [],
+  "rejectedOwners": [
+    "attack_rk:ROUNDHOUSEKICK strike -0.96 vs body 0.74"
+  ],
   "worst": [
     {
       "clip": "ZONE_MIDROPE_STEP",
@@ -1018,5 +1024,5 @@
       "twist": 179.1
     }
   ],
-  "slotOwners": 6
+  "slotOwners": 5
 }

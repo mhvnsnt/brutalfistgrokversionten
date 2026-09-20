@@ -19,7 +19,7 @@ import {
   type AnimationIntegrityReport,
 } from '../engine/combat/AnimationIntegrityGate';
 import { COMBAT_STATE_TO_SEMANTIC, SEMANTIC_STATE_ALIASES, inferSemanticStateFromClipName } from '../engine/retarget/SemanticStateAliases';
-import { clipAnimates, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
+import { clipAnimates, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
 import { AnimationBridge } from '../../animation_bridge/retarget';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -361,8 +361,10 @@ function resolveClipName(
    * A frozen clip still beats NO clip — that would be a bind pose — so this
    * only ever reorders preferences, never removes the last option.
    */
+  /** Usable = it moves, and its strike goes the way the body faces. */
+  const usable = (c: string) => clipAnimates(c) && clipStrikesForward(c);
   const pick = (test: (c: string) => boolean): string | undefined =>
-    availableClips.find((c) => test(c) && clipAnimates(c)) ?? availableClips.find(test);
+    availableClips.find((c) => test(c) && usable(c)) ?? availableClips.find(test);
 
   /**
    * ALIAS ORDER IS PRIORITY, AND IT WAS BEING IGNORED.
@@ -382,7 +384,7 @@ function resolveClipName(
     for (const pass of [true, false]) {
       for (const alias of aliases) {
         const hit = availableClips.find(
-          (c) => c.toLowerCase() === alias.toLowerCase() && (!pass || clipAnimates(c)),
+          (c) => c.toLowerCase() === alias.toLowerCase() && (!pass || usable(c)),
         );
         if (hit) return hit;
       }
@@ -391,7 +393,7 @@ function resolveClipName(
   };
 
   for (const want of preferred) {
-    if (actions[want] && clipAnimates(want)) return want;
+    if (actions[want] && usable(want)) return want;
     const ci = pick((c) => c.toLowerCase() === want.toLowerCase());
     if (ci) return ci;
   }
@@ -410,7 +412,7 @@ function resolveClipName(
     // jab played BOXING inside an attack window a fraction of its length.
     const owner = slotOwnerFor(semanticState);
     if (owner && actions[owner]) return owner;
-    if (actions[semanticState] && clipAnimates(semanticState)) return semanticState;
+    if (actions[semanticState] && usable(semanticState)) return semanticState;
     const aliases = SEMANTIC_STATE_ALIASES[semanticState] ?? [semanticState];
     const semanticFound = byAliasOrder(aliases);
     if (semanticFound) return semanticFound;

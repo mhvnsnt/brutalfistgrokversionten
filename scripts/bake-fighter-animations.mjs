@@ -73,6 +73,31 @@ const round = (v) => +v.toFixed(PRECISION);
  * INFERS `idle` from its name takes the idle slot, and the authored fighting
  * stance loses it to a Mixamo shadowboxing loop again.
  */
+/**
+ * A SLOT OWNER HAS TO PASS THE SAME GATES AS ANY OTHER CANDIDATE.
+ *
+ * SCHWARZERBLITZ_COMBAT_SLOTS names ROUNDHOUSEKICK as attack_rk's owner, and
+ * ROUNDHOUSEKICK strikes at -0.96 while its body faces +0.74 — the fighter
+ * faces you and kicks behind himself. That is exactly the kick the owner
+ * reported going "off to the left". A hand-written table is a preference,
+ * not a guarantee; the measurement decides.
+ *
+ * A FUNCTION, not an inline expression, because the first version read
+ * `boneCount` and `movingBones` before they were declared and the bake died
+ * with a temporal-dead-zone error — after deleting its output directory, so
+ * the test suite silently SKIPPED its 20 bake-gated tests and still reported
+ * green. Declaration order is not something to leave to luck.
+ */
+function ownerFailsMeasurement(name, strike, movingBones, boneCount, claimed) {
+  if (!claimed) return null;
+  if (/^attack/.test(claimed) && strike
+      && Math.abs(strike.forward) > 0.3 && strike.forward * strike.bodyFaces < 0) {
+    return `strike ${strike.forward.toFixed(2)} vs body ${strike.bodyFaces.toFixed(2)}`;
+  }
+  if (boneCount >= 8 && movingBones < 3) return `${movingBones}/${boneCount} bones move`;
+  return null;
+}
+
 const SLOT_OWNER = new Map(
   Object.entries(SCHWARZERBLITZ_COMBAT_SLOTS).map(([semantic, clip]) => [clip, semantic]),
 );
@@ -166,6 +191,7 @@ const AIRBORNE_PEAK_M = Number(process.env.BF_AIRBORNE_M ?? 0.5);
  */
 const MAX_GROUND_SHIFT_M = Number(process.env.BF_MAX_SHIFT ?? 0.9);
 const MEDIANS = [];
+const strikeOf = new Map();
 /** A bone that turns less than this across a whole clip has not moved. */
 const MOVING_BONE_DEG = 5;
 /** Names given in BF_GROUND_DEBUG get their raw floor measurement printed. */
@@ -314,6 +340,116 @@ function measurePosture() {
 const LEG_UP_THRESHOLD = 0.2;
 /** Above this the torso is standing, so feet above the pelvis is impossible. */
 const SPINE_UPRIGHT_MIN = 0.7;
+
+/**
+ * WHICH WAY DOES THE STRIKE ACTUALLY GO?
+ *
+ * Owner, on attack_rk: "it's going off to the side, off to the left of the
+ * character, pretty much he's doing like a super kick off to the left, but
+ * off to the left isn't towards the character — he's not rotating his body
+ * to do it towards the left, towards the character he's fighting."
+ *
+ * A strike is a limb travelling fast in one direction. This finds the frame
+ * where the fastest hand or foot is moving quickest, and reports that
+ * direction in the BODY'S OWN FRAME: +1 is straight down the fighter's
+ * forward axis (this roster faces +X), 0 is square sideways, -1 is
+ * backwards. A clip whose strike runs sideways will read near 0 however
+ * good it looks in isolation, because the fighter does not turn to throw it.
+ *
+ * Measured on the limb, not the hips, on purpose: the hips can face forward
+ * while the leg swings across the body, which is exactly the super-kick
+ * silhouette described.
+ */
+function measureStrikeDirection(clip) {
+  const dur = clip.duration || 0;
+  const steps = Math.min(60, Math.max(12, Math.round(dur * 30)));
+  restPose();
+  const sampler = new THREE.AnimationMixer(skeleton.root);
+  sampler.clipAction(clip).play();
+  const LIMBS = ['mixamorigLeftHand', 'mixamorigRightHand', 'mixamorigLeftFoot', 'mixamorigRightFoot'];
+  const prev = new Map();
+  const hp = new THREE.Vector3();
+  const lp = new THREE.Vector3();
+  let best = { speed: 0, forward: 0, limb: null, bodyFaces: 0 };
+  // WHICH WAY THE BODY FACES, from the shoulder line: a human is far wider
+  // across the shoulders than front-to-back, so the body faces perpendicular
+  // to that line. Measured alongside the strike because turning a clip round
+  // must not trade a backwards strike for a backwards BODY.
+  const ls = new THREE.Vector3();
+  const rs = new THREE.Vector3();
+  let faceSum = 0;
+  let faceN = 0;
+  for (let i = 0; i <= steps; i++) {
+    sampler.setTime((dur * i) / steps);
+    skeleton.root.updateMatrixWorld(true);
+    const hips = boneObjects.get(HIPS);
+    if (!hips) break;
+    hips.getWorldPosition(hp);
+    const L = boneObjects.get('mixamorigLeftShoulder');
+    const R = boneObjects.get('mixamorigRightShoulder');
+    if (L && R) {
+      L.getWorldPosition(ls); R.getWorldPosition(rs);
+      const across = rs.clone().sub(ls);
+      // Forward is the shoulder line turned 90 deg about Y.
+      const fwd = new THREE.Vector3(-across.z, 0, across.x);
+      if (fwd.lengthSq() > 1e-9) { faceSum += fwd.normalize().x; faceN++; }
+    }
+    for (const name of LIMBS) {
+      const b = boneObjects.get(name);
+      if (!b) continue;
+      b.getWorldPosition(lp);
+      // RELATIVE TO THE HIPS, so walking the body across the floor does not
+      // read as a strike.
+      const rel = lp.clone().sub(hp);
+      const before = prev.get(name);
+      prev.set(name, rel.clone());
+      if (!before) continue;
+      const step = rel.clone().sub(before);
+      const speed = step.length();
+      if (speed <= best.speed) continue;
+      const flat = new THREE.Vector3(step.x, 0, step.z);
+      if (flat.lengthSq() < 1e-9) continue;
+      flat.normalize();
+      best = { speed, forward: flat.x, limb: name.replace('mixamorig', '') };
+    }
+  }
+  sampler.stopAllAction();
+  sampler.uncacheClip(clip);
+  restPose();
+  best.bodyFaces = faceN ? faceSum / faceN : 0;
+  return best;
+}
+
+/**
+ * A BACKWARD STRIKE IS A BROKEN CLIP, NOT A FACING CONVENTION.
+ *
+ * Owner, on attack_rk: "it's going off to the side, off to the left of the
+ * character ... he's not rotating his body to do it towards the character
+ * he's fighting."
+ *
+ * MY FIRST FIX WAS WRONG AND THE MEASUREMENT CAUGHT IT. I read
+ * ROUNDHOUSEKICK at -0.962, BOXING at -0.999 and COMBO_PUNCH at -1.00 and
+ * assumed a facing convention — clips authored the other way round — so I
+ * yawed them 180 degrees. Measuring the BODY as well as the strike showed
+ * what that actually did:
+ *
+ *     BOXING   before  body +0.91  strike -1.00
+ *              after   body -0.91  strike +1.00
+ *
+ * The body and the strike DISAGREE in these clips either way round. Before,
+ * the fighter faced you and punched behind himself; after, he had his back
+ * to you and punched over his shoulder. 50 of 94 attack clips went that way.
+ * Turning them round traded one wrong thing for a worse one.
+ *
+ * (It is the same defect the owner reported long ago in the shadowboxing
+ * loop: "the right arm is going backwards towards the shoulder blade.")
+ *
+ * So the correction is not a rotation. A clip whose strike travels away from
+ * the direction its own body faces is simply not an attack, and is refused
+ * as one — the same gate shape as a frozen clip or a T-pose. Nothing is
+ * deleted; it stays in the library and cannot win an attack slot.
+ */
+const BACKWARD_STRIKE = -0.3;
 
 /** Median over the clip of a posture field, sampled through the real mixer. */
 function measurePostureMedian(clip, field) {
@@ -570,6 +706,10 @@ const report = {
   legsFlipped: 0,
   legFixes: [],
   legsUnfixed: [],
+  turnedAround: 0,
+  turnedList: [],
+  turnRejected: [],
+  rejectedOwners: [],
   worst: [],
 };
 
@@ -644,6 +784,7 @@ for (const src of sources()) {
   // constant key, never a per-frame track — see groundingOffset for why the
   // per-frame version had to go and why removing it outright was not the fix.
   const ground = groundingOffset(relative);
+  strikeOf.set(src.name, measureStrikeDirection(relative));
   if (DEBUG_GROUND.has(src.name)) {
     console.log(`  [ground] ${src.name} min=${(ground?.minLift ?? NaN).toFixed(4)} max=${(ground?.maxLift ?? NaN).toFixed(4)} offset=${(ground?.offset ?? 0).toFixed(4)} airborne=${ground?.airborne}`);
   }
@@ -685,35 +826,6 @@ for (const src of sources()) {
     continue;
   }
 
-  // PUT THE CLIP ON THE FLOOR — once, as a single key. Applied ON TOP of any
-  // pelvis translation the clip already authored (a wide stance sits lower on
-  // purpose), never instead of it; if that authored track is itself variable
-  // the runtime drops the pair and we are no worse off than with no offset.
-  if (ground?.applied) {
-    const existing = positions[HIPS];
-    const baseX = existing ? existing.p[0] : round(hipsBindPosition.x);
-    const baseY = existing ? existing.p[1] : round(hipsBindPosition.y);
-    const baseZ = existing ? existing.p[2] : round(hipsBindPosition.z);
-    positions[HIPS] = { t: [0], p: [baseX, round(baseY + ground.offset), baseZ] };
-  }
-
-  const slot = SLOT_OWNER.get(src.name);
-  const semantic = slot ?? inferSemanticFromMotionKey(src.name);
-  writeFileSync(
-    join(OUT, `${src.name}.json`),
-    JSON.stringify({
-      name: src.name,
-      bank: src.bank,
-      dur: +relative.duration.toFixed(4),
-      semantic,
-      airborne: clipAirborne,
-      positions,
-      // A slot owner is loaded FIRST, because the first clip for a semantic
-      // wins when actions are registered.
-      owns: Boolean(slot),
-      tracks,
-    }),
-  );
   // HOW MANY BONES ACTUALLY MOVE. A clip where nothing moves is not an
   // animation, and several are shipped as if they were: eight Mixamo
   // character rest poses (Y_BOT, PALADIN_J_NORDSTROM, CH44_NONPBR and
@@ -733,6 +845,42 @@ for (const src of sources()) {
     if (widest > MOVING_BONE_DEG) movingBones++;
   }
 
+
+  // PUT THE CLIP ON THE FLOOR — once, as a single key. Applied ON TOP of any
+  // pelvis translation the clip already authored (a wide stance sits lower on
+  // purpose), never instead of it; if that authored track is itself variable
+  // the runtime drops the pair and we are no worse off than with no offset.
+  if (ground?.applied) {
+    const existing = positions[HIPS];
+    const baseX = existing ? existing.p[0] : round(hipsBindPosition.x);
+    const baseY = existing ? existing.p[1] : round(hipsBindPosition.y);
+    const baseZ = existing ? existing.p[2] : round(hipsBindPosition.z);
+    positions[HIPS] = { t: [0], p: [baseX, round(baseY + ground.offset), baseZ] };
+  }
+
+
+  const claimedOwner = SLOT_OWNER.get(src.name);
+  const ownerFault = ownerFailsMeasurement(
+    src.name, strikeOf.get(src.name), movingBones, boneCount, claimedOwner,
+  );
+  if (ownerFault) report.rejectedOwners.push(`${claimedOwner}:${src.name} ${ownerFault}`);
+  const slot = ownerFault ? undefined : claimedOwner;
+  const semantic = slot ?? inferSemanticFromMotionKey(src.name);
+  writeFileSync(
+    join(OUT, `${src.name}.json`),
+    JSON.stringify({
+      name: src.name,
+      bank: src.bank,
+      dur: +relative.duration.toFixed(4),
+      semantic,
+      airborne: clipAirborne,
+      positions,
+      // A slot owner is loaded FIRST, because the first clip for a semantic
+      // wins when actions are registered.
+      owns: Boolean(slot),
+      tracks,
+    }),
+  );
   manifest[src.name] = {
     movingBones,
     boneCount,
@@ -746,6 +894,7 @@ for (const src of sources()) {
     floorGap: ground?.floorGap ?? 0,
     minLiftFoot: ground?.minLiftFoot ?? 0,
     minLiftBody: ground?.minLiftBody ?? 0,
+    strike: (() => { const d = strikeOf.get(src.name); return d ? { fwd: +d.forward.toFixed(3), limb: d.limb, body: +d.bodyFaces.toFixed(3) } : undefined; })(),
     armForward: ground?.posture?.medianArmForward ?? 0,
     armSpread: ground?.posture?.medianArmSpread ?? 0,
   };
@@ -782,6 +931,16 @@ if (process.env.BF_MEDIANS) {
   const dead = Object.entries(manifest).filter(([, m]) => (m.boneCount ?? 0) >= 8 && (m.movingBones ?? 0) <= 2);
   console.log(`  NOTHING MOVES        ${dead.length} clip(s) where 2 or fewer bones turn at all — not animations`);
   if (dead.length) console.log('    ' + dead.slice(0, 8).map(([n, m]) => `${n} ${m.movingBones}/${m.boneCount}`).join(', '));
+}
+{
+  const bad = Object.entries(manifest).filter(([, m]) =>
+    m.strike && (m.strike.fwd ?? 0) * (m.strike.body ?? 0) < 0 && Math.abs(m.strike.fwd ?? 0) > 0.3);
+  console.log(`  STRIKE FIGHTS BODY   ${bad.length} clip(s) strike away from the way they face — refused as attacks`);
+  if (bad.length) console.log('    ' + bad.slice(0, 6).map(([n, m]) => `${n} strike ${m.strike.fwd} body ${m.strike.body}`).join(', '));
+}
+if (report.rejectedOwners.length) {
+  console.log(`  OWNER REJECTED       ${report.rejectedOwners.length} named slot owner(s) failed the measurement`);
+  console.log('    ' + report.rejectedOwners.join(', '));
 }
 console.log(`  kept airborne        ${report.airborne} clip(s) (peak lift over ${AIRBORNE_PEAK_M * 100} cm)`);
 // NAME THE CLIPS THAT STILL HOVER. A clip the offset could not bring down is

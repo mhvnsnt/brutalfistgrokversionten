@@ -72,6 +72,11 @@ export interface BakedManifestEntry {
   movingBones?: number;
   /** How many bones it drives at all. */
   boneCount?: number;
+  /**
+   * Which way the strike travels in the body's own frame: +1 is straight at
+   * the opponent, 0 square sideways, -1 directly away.
+   */
+  strike?: { fwd: number; limb?: string; body?: number };
 }
 
 /** Past this, a clip's feet never reach the ground and it cannot be a stance. */
@@ -135,6 +140,58 @@ let notAPose: Set<string> = new Set();
 let notAnimated: Set<string> = new Set();
 /** semantic state -> the clip the bake chose to OWN it. */
 let slotOwners: Map<string, string> = new Map();
+/** Attack clips whose strike travels away from the way the body faces. */
+let strikesBackwards: Set<string> = new Set();
+
+/**
+ * DOES THIS CLIP'S STRIKE GO THE WAY THE BODY IS FACING?
+ *
+ * Owner, on attack_rk: "it's going off to the side, off to the left of the
+ * character ... he's not rotating his body to do it towards the character
+ * he's fighting."
+ *
+ * MEASURED as the fastest limb's travel direction against the direction the
+ * shoulders say the body faces. When those disagree, the fighter is facing
+ * you and swinging behind himself:
+ *
+ *     ROUNDHOUSEKICK  strike -0.96  body +0.74
+ *     BOXING          strike -1.00  body +0.91
+ *     COMBO_PUNCH     strike -1.00  body +0.93
+ *
+ * 50 of 94 attack clips do this. It is the same defect the owner reported
+ * in the shadowboxing loop long ago — "the right arm is going backwards
+ * towards the shoulder blade".
+ *
+ * I FIRST TRIED TO ROTATE THEM and it was wrong: yawing the clip 180
+ * degrees made the strike forward and the BODY backward, so the fighter
+ * turned his back and punched over his shoulder. The measurement caught it.
+ * A clip whose strike fights its own body is not a facing convention, it is
+ * a broken attack, and it is refused as one.
+ *
+ * ONLY ATTACKS ARE JUDGED. A backward run or a hit reaction moves limbs
+ * backwards because that is the move.
+ */
+export function clipStrikesForward(name: string): boolean {
+  return !strikesBackwards.has(name);
+}
+
+/** For tests: the attack clips ruled out for striking the wrong way. */
+export function backwardStrikes(): ReadonlySet<string> {
+  return strikesBackwards;
+}
+
+/** Decide, from a manifest, which attacks strike away from their own facing. */
+export function markBackwardStrikes(manifest: Record<string, BakedManifestEntry>): Set<string> {
+  const out = new Set<string>();
+  for (const [name, entry] of Object.entries(manifest)) {
+    if (!/^attack/.test(entry.semantic ?? '')) continue;
+    const fwd = entry.strike?.fwd;
+    const body = entry.strike?.body;
+    if (fwd === undefined || body === undefined) continue;
+    if (Math.abs(fwd) > 0.3 && fwd * body < 0) out.add(name);
+  }
+  return out;
+}
 
 /**
  * THE CLIP THE BAKE CHOSE FOR THIS COMBAT STATE.
@@ -150,7 +207,13 @@ let slotOwners: Map<string, string> = new Map();
  * something at runtime.
  */
 export function slotOwnerFor(semantic: string): string | null {
-  return slotOwners.get(semantic) ?? null;
+  const owner = slotOwners.get(semantic);
+  if (!owner) return null;
+  // EVEN THE BAKE'S OWN PICK HAS TO PASS THE GATES. ROUNDHOUSEKICK is the
+  // named owner of attack_rk and strikes away from the way the body faces,
+  // which is precisely the kick the owner reported going the wrong way.
+  if (strikesBackwards.has(owner) || notAnimated.has(owner)) return null;
+  return owner;
 }
 
 /** Decide, from a manifest, which clip owns each semantic state. */
@@ -249,6 +312,7 @@ export function applyStandability(manifest: Record<string, BakedManifestEntry>):
   notAPose = markTPoses(manifest);
   notAnimated = markFrozen(manifest);
   slotOwners = markSlotOwners(manifest);
+  strikesBackwards = markBackwardStrikes(manifest);
   return notStandable;
 }
 
@@ -390,4 +454,5 @@ export function resetBakedMotionBankForTest(): void {
   notAPose = new Set();
   notAnimated = new Set();
   slotOwners = new Map();
+  strikesBackwards = new Set();
 }
