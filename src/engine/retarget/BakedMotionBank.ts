@@ -72,12 +72,42 @@ export function clipFromBaked(data: BakedClipFile): THREE.AnimationClip | null {
     if (!track?.t?.length || track.q.length !== track.t.length * 4) continue;
     tracks.push(new THREE.QuaternionKeyframeTrack(`${bone}.quaternion`, track.t, track.q));
   }
-  // Legacy baked files may still contain per-key Hips.position floor-lock
-  // tracks from older builds. Never load those translations. They were measured
-  // to cause the pelvis to chase individual feet, producing sideways/leaning
-  // legs and floating "ghost" gait. World-floor contact belongs to locomotion;
-  // animation supplies the authored joint rotations only.
-  void data.positions;
+  // Legacy baked files can contain Hips.position floor-lock tracks. The
+  // old runtime rule dropped ALL translations, but that is too blunt: some
+  // authored poses carry a CONSTANT pelvis offset (for example a wide stance)
+  // that is part of the pose, not per-frame floor chasing. Dropping that
+  // constant offset leaves the pelvis tens of centimetres too high and makes
+  // the knees/feet look like they are shooting sideways even though the
+  // quaternion tracks are correct.
+  //
+  // Rule:
+  //   - CONSTANT translation (<= 2 mm total variation) -> keep it.
+  //   - VARIABLE translation -> drop it; world locomotion owns dynamic root
+  //     travel and the old per-key grounding track must never fight it.
+  //
+  // This preserves authored static pelvis placement without resurrecting the
+  // per-frame floor-lock bug.
+  let constantPositionTracks = 0;
+  for (const [bone, track] of Object.entries(data.positions ?? {})) {
+    if (!track?.t?.length || track.p.length !== track.t.length * 3) continue;
+    let minX = Infinity, minY = Infinity, minZ = Infinity;
+    let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+    for (let i = 0; i + 2 < track.p.length; i += 3) {
+      const x = track.p[i], y = track.p[i + 1], z = track.p[i + 2];
+      if (![x, y, z].every(Number.isFinite)) continue;
+      minX = Math.min(minX, x); minY = Math.min(minY, y); minZ = Math.min(minZ, z);
+      maxX = Math.max(maxX, x); maxY = Math.max(maxY, y); maxZ = Math.max(maxZ, z);
+    }
+    const variation = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
+    if (!Number.isFinite(variation) || variation > 0.002) continue;
+    const p = track.p.slice(0, 3);
+    tracks.push(new THREE.VectorKeyframeTrack(
+      `${bone}.position`,
+      [track.t[0] ?? 0],
+      p,
+    ));
+    constantPositionTracks++;
+  }
   if (tracks.length === 0) return null;
   const clip = new THREE.AnimationClip(data.name, data.dur, tracks);
   (clip as THREE.AnimationClip & { userData: Record<string, unknown> }).userData = {
@@ -86,6 +116,7 @@ export function clipFromBaked(data: BakedClipFile): THREE.AnimationClip | null {
     ownerGranted: true,
     ...(data.semantic ? { semanticState: data.semantic } : {}),
     owns: Boolean(data.owns),
+    constantPositionTracks,
     // Already on the skeleton: nothing downstream should retarget it again.
     baked: true,
   };
