@@ -136,13 +136,13 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   guardLow:          ['guardLow', 'GuardLow', 'lowBlock', 'LowBlock', 'crouchBlock', 'CrouchBlock', 'guard', 'Guard', 'block', 'Block'],
   // ── Light Attack ────────────────────────────────────────────────────────────
   light:             ['light', 'Light', 'punch', 'Punch', 'attack', 'Attack', 'jab', 'Jab', 'lightAttack', 'LightAttack', 'LP', 'lp'],
-  lightAttack:       ['lightAttack', 'LightAttack', 'light', 'Light', 'punch', 'Punch', 'jab', 'Jab', 'attack', 'Attack', 'hit', 'Hit', 'strike', 'Strike', 'quickPunch', 'QuickPunch', 'punch1', 'Punch1', 'LP', 'lp', 'SBW_lightAttack', 'SBW_jab', 'T_jab', 'T_1', 'bf_jab', 'bf_chop', 'punchingLeft', 'punchingRight', 'attack_1', 'BOXING', 'BODY_JAB_CROSS'],
-  Startup:           ['lightAttack', 'LightAttack', 'attack', 'Attack', 'punch', 'Punch', 'jab', 'Jab', 'attack_1', 'BOXING'],
+  lightAttack:       ['lightAttack', 'LightAttack', 'light', 'Light', 'punch', 'Punch', 'jab', 'Jab', 'attack', 'Attack', 'strike', 'Strike', 'quickPunch', 'QuickPunch', 'punch1', 'Punch1', 'LP', 'lp', 'SBW_lightAttack', 'SBW_jab', 'T_jab', 'T_1', 'bf_jab', 'bf_chop', 'punchingLeft', 'punchingRight', 'attack_1'],
+  Startup:           ['lightAttack', 'LightAttack', 'attack', 'Attack', 'punch', 'Punch', 'jab', 'Jab', 'attack_1'],
   Active:            ['lightAttack', 'LightAttack', 'attack', 'Attack', 'punch', 'Punch', 'kick', 'Kick'],
   crouchLightAttack: ['crouchLightAttack', 'CrouchLightAttack', 'crouchPunch', 'CrouchPunch', 'lowPunch', 'LowPunch', 'lightAttack', 'LightAttack', 'jab', 'Jab'],
   // ── Heavy Attack / kicks ────────────────────────────────────────────────────
   heavy:             ['heavy', 'Heavy', 'strong', 'Strong', 'heavyAttack', 'HeavyAttack', 'cross', 'Cross'],
-  heavyAttack:       ['heavyAttack', 'HeavyAttack', 'heavy', 'Heavy', 'strong', 'Strong', 'cross', 'Cross', 'attack_rp', 'COMBO_PUNCH', 'ILLEGAL_ELBOW_PUNCH', 'RP', 'rp', 'SBW_heavyAttack', 'SBW_cross', 'T_cross', 'T_2', 'bf_cross', 'bf_elbow', 'bf_uppercut'],
+  heavyAttack:       ['heavyAttack', 'HeavyAttack', 'heavy', 'Heavy', 'strong', 'Strong', 'cross', 'Cross', 'attack_rp', 'ILLEGAL_ELBOW_PUNCH', 'RP', 'rp', 'SBW_heavyAttack', 'SBW_cross', 'T_cross', 'T_2', 'bf_cross', 'bf_elbow', 'bf_uppercut'],
   lightKick:         ['lightKick', 'LightKick', 'attack_lk', 'DROP_KICK', 'ILLEGAL_KNEE', 'TIGER_FEINT_KICK', 'LK', 'lk', 'T_3', 'kick', 'Kick', 'kickingLeft'],
   heavyKick:         ['heavyKick', 'HeavyKick', 'attack_rk', 'HURRICANE_KICK', 'AU', 'CAPOEIRA', 'BASH', 'RK', 'rk', 'T_4', 'kickingRight', 'kickingForward'],
   crouchHeavyAttack: ['crouchHeavyAttack', 'CrouchHeavyAttack', 'crouchKick', 'CrouchKick', 'lowKick', 'LowKick', 'heavyAttack', 'HeavyAttack', 'kick', 'Kick'],
@@ -250,11 +250,13 @@ const DEFAULT_FADE = 0.083;
 // States that loop continuously
 // ─────────────────────────────────────────────────────────────────────────────
 const LOOP_STATES = new Set([
+  // Only states whose source clips are authored as continuous loops belong here.
+  // Guard/block/knockdown/wakeup are held or one-shot actions: looping their
+  // short authored clips makes GUARD fire "guard, guard, guard" and makes a
+  // knockdown replay its fall instead of holding the final pose.
   'idle', 'Neutral', 'walk', 'walkForward', 'walkBackward', 'Walking',
   'strafeLeft', 'strafeRight', 'sidestepLeft', 'sidestepRight',
-  'guard', 'Guard', 'block', 'Blockstun',
   'run', 'dash', 'dashForward', 'crouch',
-  'Knockdown', 'WakeupTechRoll', 'WakeupBackrise', 'WakeupQuickStand',
   'Backdashing',
 ]);
 
@@ -290,16 +292,24 @@ const MIN_CROSSFADE_HOLD_S = 0.05; // 3 frames at 60fps
 // Resolve the best matching clip name from available actions
 // ─────────────────────────────────────────────────────────────────────────────
 function buildClipsByState(actions: Record<string, THREE.AnimationAction>): Map<string, THREE.AnimationClip> {
+  // Ownership is explicit. The baked bank marks the measured source-of-truth
+  // clip for a combat semantic with userData.owns=true. Do not let object
+  // insertion order accidentally select BOXING/COMBO_PUNCH/CROSS_JUMPS before
+  // the authored single-strike GUARD/JAB/ROUNDHOUSE owner.
   const clipsByState = new Map<string, THREE.AnimationClip>();
+  const owned = new Map<string, THREE.AnimationClip>();
   for (const [name, action] of Object.entries(actions)) {
     const clip = action.getClip();
     const semantic = (clip as any).userData?.semanticState
       ?? inferSemanticStateFromClipName(clip.name || name)
       ?? inferSemanticStateFromClipName(name);
-    if (semantic && !clipsByState.has(semantic)) {
-      clipsByState.set(semantic, clip);
+    if (!semantic) continue;
+    if ((clip as any).userData?.owns === true && !owned.has(semantic)) {
+      owned.set(semantic, clip);
     }
+    if (!clipsByState.has(semantic)) clipsByState.set(semantic, clip);
   }
+  for (const [semantic, clip] of owned) clipsByState.set(semantic, clip);
   return clipsByState;
 }
 
