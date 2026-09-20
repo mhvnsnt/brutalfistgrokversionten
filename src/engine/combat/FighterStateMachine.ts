@@ -468,6 +468,15 @@ export class FighterStateMachine {
 
   // ── Knockdown / wakeup state ──────────────────────────────────────────────
   private knockdownTimer = 0;
+  /**
+   * THE DEFENDER'S THROW-BREAK WINDOW, and the outcome waiting to be read.
+   *
+   * These were assigned by `beginIncomingThrowBreak` and friends and never
+   * DECLARED, so the whole file stopped typechecking the moment the throw
+   * break landed. Declaring them is the fix; the behaviour is unchanged.
+   */
+  private incomingThrowBreak: ThrowBreakState | null = null;
+  private incomingThrowBreakOutcome: 'broken' | 'committed' | null = null;
   private wakeupBuffered: WakeupOption = null;
   private wakeupActionTimer = 0;
   private wakeupActionState: WakeupOption = null;
@@ -983,6 +992,23 @@ export class FighterStateMachine {
     if (this.throwComboQueue.length > 0 && this.throwComboIndex < this.throwComboQueue.length) {
       if (this.actionState === 'Attacking') return this.motionState;
 
+      // THE WINDOW OPENS WHEN THE THROW ENDS, NOT WHEN IT STARTS.
+      //
+      // The route is queued by `beginCommandThrow`, but the input window is
+      // armed by the CommandThrow tick further down — the moment the throw
+      // finishes. This block sits ABOVE that tick and returns early, so on
+      // the first frame of a throw it found a queued route with a timer
+      // still at zero, declared the window expired and threw the route
+      // away. The throw then never reached its own tick to finish, and the
+      // fighter stayed stuck in CommandThrow: measured by the two
+      // throw-follow-up tests, which fail on this code without the guard.
+      if (this.actionState === 'CommandThrow' || this.throwComboTimer <= 0) {
+        if (this.actionState !== 'CommandThrow') {
+          this.throwComboQueue = [];
+          this.throwComboIndex = 0;
+        }
+      } else {
+
       this.throwComboTimer = Math.max(0, this.throwComboTimer - dt);
       if (this.throwComboTimer <= 0) {
         console.log('[FSM] ⛓️ Throw combo chain expired — follow-up dropped');
@@ -1002,6 +1028,7 @@ export class FighterStateMachine {
         }
       }
       return this.motionState;
+      }
     } else if (this.throwComboQueue.length > 0 && this.throwComboIndex >= this.throwComboQueue.length) {
       this.throwComboQueue = [];
       this.throwComboIndex = 0;
