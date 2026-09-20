@@ -54,7 +54,7 @@ jobs:
           for i in $(seq 1 60); do
             if curl --fail --silent --show-error --max-time 2 http://127.0.0.1:8080/ -o /tmp/brutal-fist-rocket.html; then
               grep -q 'id="root"' /tmp/brutal-fist-rocket.html
-              grep -Eq '/assets/[^"'"' ]+\.js' /tmp/brutal-fist-rocket.html
+              grep -Eq '/assets/[^"]+\.js' /tmp/brutal-fist-rocket.html
               if grep -q '/src/rocket-main.tsx' /tmp/brutal-fist-rocket.html; then
                 echo "Unexpected unbuilt Vite source entry in Rocket production preview"
                 exit 1
