@@ -123,6 +123,49 @@ test('a baked file becomes a playable clip', { skip: !hasBake && 'bake not run' 
   assert.equal(ud.baked, true);
 });
 
+test('baked clips keep constant authored pelvis offsets but drop variable floor-lock motion', () => {
+  const base: BakedClipFile = {
+    name: 'POSITION_POLICY',
+    bank: 'bannon',
+    dur: 1,
+    tracks: {
+      mixamorigHips: {
+        t: [0, 1],
+        q: [0, 0, 0, 1, 0, 0, 0, 1],
+      },
+    },
+    positions: {
+      mixamorigHips: {
+        t: [0, 1],
+        p: [0, -0.435, 0, 0, -0.435, 0],
+      },
+    },
+  };
+  const constant = clipFromBaked(base);
+  assert.ok(constant);
+  assert.ok(constant.tracks.some((t) => t.name === 'mixamorigHips.position'));
+  assert.equal(
+    (constant as THREE.AnimationClip & { userData: Record<string, unknown> }).userData.constantPositionTracks,
+    1,
+  );
+
+  const variable = clipFromBaked({
+    ...base,
+    positions: {
+      mixamorigHips: {
+        t: [0, 1],
+        p: [0, -0.435, 0, 0, -0.20, 0],
+      },
+    },
+  });
+  assert.ok(variable);
+  assert.equal(variable.tracks.some((t) => t.name === 'mixamorigHips.position'), false);
+  assert.equal(
+    (variable as THREE.AnimationClip & { userData: Record<string, unknown> }).userData.constantPositionTracks,
+    0,
+  );
+});
+
 test('the floor lock moves only the hips, and only an airborne clip is protected from being raised', { skip: !hasBake && 'bake not run' }, () => {
   // MEASURED before it existed: every clip lifted both feet 21 to 32 cm off
   // the floor, the idle included — a fighter standing on air, which is the
