@@ -61,6 +61,43 @@ function worldPosition(obj: THREE.Object3D): THREE.Vector3 {
   return new THREE.Vector3().setFromMatrixPosition(obj.matrixWorld);
 }
 
+function normalizedBoneName(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+/** Resolve the arm chain universally across common GLB naming conventions. */
+function findArmBone(root: THREE.Object3D, side: 'Left' | 'Right'): THREE.Object3D | null {
+  const wanted = side === 'Left'
+    ? [
+        'mixamorigleftarm', 'leftarm', 'leftupperarm', 'upperarml', 'arml',
+        'lupperarm', 'larm', 'jshoulderl', 'armaturearmr',
+      ]
+    : [
+        'mixamorightrarm', 'mixamorigrightarm', 'rightarm', 'rightupperarm',
+        'upperarmr', 'armr', 'rupperarm', 'rarm', 'jshoulderr', 'armaturearml',
+      ];
+  let found: THREE.Object3D | null = null;
+  root.traverse((child) => {
+    if (found || !child.name) return;
+    const n = normalizedBoneName(child.name);
+    if (wanted.includes(n)) found = child;
+  });
+  return found;
+}
+
+function findArmTip(root: THREE.Object3D, side: 'Left' | 'Right'): THREE.Object3D | null {
+  const wanted = side === 'Left'
+    ? ['mixamoriglefthand', 'lefthand', 'lhand', 'jwristr', 'armaturewristr']
+    : ['mixamorigrighthand', 'righthand', 'rhand', 'jwristr', 'armaturewristl'];
+  let found: THREE.Object3D | null = null;
+  root.traverse((child) => {
+    if (found || !child.name) return;
+    const n = normalizedBoneName(child.name);
+    if (wanted.includes(n)) found = child;
+  });
+  return found;
+}
+
 /** Angle of a vector BELOW horizontal, in degrees. 0 = level, 90 = straight down. */
 export function angleBelowHorizontal(v: THREE.Vector3): number {
   const horizontal = Math.hypot(v.x, v.z);
@@ -82,8 +119,9 @@ export function measureRestCorrection(scene: THREE.Object3D): RestCorrection {
   const measured: RestCorrection['measured'] = [];
 
   for (const boneName of ARM_CHAIN_BONES) {
-    const bone = scene.getObjectByName(boneName);
-    const tip = scene.getObjectByName(ARM_TIPS[boneName] ?? '');
+    const side: 'Left' | 'Right' = boneName.includes('Left') ? 'Left' : 'Right';
+    const bone = findArmBone(scene, side);
+    const tip = findArmTip(scene, side);
     if (!bone || !tip) continue;
 
     const from = worldPosition(bone);
@@ -112,7 +150,9 @@ export function measureRestCorrection(scene: THREE.Object3D): RestCorrection {
     (bone.parent ?? scene).getWorldQuaternion(parentWorldQuat);
     const localFix = parentWorldQuat.clone().invert().multiply(worldFix).multiply(parentWorldQuat);
 
-    corrections.set(boneName, localFix);
+    // Store under the ACTUAL target bone name. This is critical for non-Bannon
+    // GLBs whose authored Mixamo-equivalent bones have namespaces/synonyms.
+    corrections.set(bone.name, localFix);
 
     // Verify by applying it and re-measuring — the number in `measured` is what
     // the correction ACHIEVES, not what it was asked to achieve.
