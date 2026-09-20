@@ -114,3 +114,27 @@
     display: none;
   }
 }
+
+/*
+ * EVENT BANNERS LEAVE THE SCREEN.
+ *
+ * RING OUT and the floor-break notice hold, then fade, rather than sitting
+ * over the middle of the fight until the round ends. The hold is most of the
+ * window so the banner is readable; the fade is the last fifth so it reads as
+ * leaving rather than blinking out. Timing matched to how long the same beat
+ * holds in the fighters this game is built against.
+ */
+@keyframes bfNoticeOut {
+  0%   { opacity: 0; transform: scale(1.15); }
+  8%   { opacity: 1; transform: scale(1); }
+  78%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.97); }
+}
+
+/* A banner must never animate away for someone who asked motion to stop. */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes bfNoticeOut {
+    0%, 78% { opacity: 1; }
+    100%    { opacity: 0; }
+  }
+}

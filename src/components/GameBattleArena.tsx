@@ -401,6 +401,40 @@ export default function GameBattleArena({
   const [wallShatterLeft, setWallShatterLeft] = useState(false);
   const [wallShatterRight, setWallShatterRight] = useState(false);
   const [hazardBounceNotice, setHazardBounceNotice] = useState<string>('');
+
+  /**
+   * HOW LONG AN EVENT BANNER STAYS ON SCREEN.
+   *
+   * Owner: "ring out pops up on screen, and when you break through the
+   * floor, it pops up ... give it a fade out timer so it actually goes away
+   * because it gets stuck on the screen and covers up the whole fight."
+   *
+   * MEASURED IN THE CODE: `hazardBounceNotice` already cleared itself after
+   * 1.5 s at both of its call sites. `ringOutNotice` and `floorBreakNotice`
+   * are set at SIX call sites between them and cleared at NONE — the only
+   * `setRingOutNotice(null)` in the file is the round reset. So a ring-out
+   * banner sat over the middle of the fight until the round ended.
+   *
+   * Cleared HERE rather than at each call site on purpose: six setters is
+   * six chances to forget, and a seventh is one more. One effect per notice
+   * covers every site including any added later.
+   */
+  const NOTICE_DURATION_MS = 1800;
+  /** The tail of that window spent fading, so it leaves rather than blinks. */
+  const NOTICE_FADE_MS = 400;
+
+  useEffect(() => {
+    if (!ringOutNotice) return;
+    const t = window.setTimeout(() => setRingOutNotice(null), NOTICE_DURATION_MS);
+    return () => window.clearTimeout(t);
+    // Keyed on count, not identity: a second ring-out restarts the clock.
+  }, [ringOutNotice?.count]);
+
+  useEffect(() => {
+    if (!floorBreakNotice) return;
+    const t = window.setTimeout(() => setFloorBreakNotice(null), NOTICE_DURATION_MS);
+    return () => window.clearTimeout(t);
+  }, [floorBreakNotice?.count]);
   const hazardBounceNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // P1 Y position for track detection (subway stage)
   const p1YRef = useRef(0);
@@ -2389,6 +2423,9 @@ export default function GameBattleArena({
             <div
               key={ringOutNotice.count}
               className="absolute z-50 pointer-events-none inset-0 flex items-center justify-center"
+              style={{
+                animation: `bfNoticeOut ${NOTICE_DURATION_MS}ms ease-out forwards`,
+              }}
             >
               <div
                 className="px-6 py-3 text-2xl font-black tracking-[0.3em] uppercase animate-bounce"
@@ -2409,6 +2446,9 @@ export default function GameBattleArena({
             <div
               key={floorBreakNotice.count}
               className="absolute z-50 pointer-events-none inset-0 flex items-center justify-center"
+              style={{
+                animation: `bfNoticeOut ${NOTICE_DURATION_MS}ms ease-out forwards`,
+              }}
             >
               <div
                 className="px-6 py-3 text-xl font-black tracking-[0.25em] uppercase"
