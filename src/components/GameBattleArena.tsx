@@ -1371,7 +1371,13 @@ export default function GameBattleArena({
       pushInput(
         p2CommandRef.current,
         { x: (p2AIInput.forward ?? 0) > 0 ? p2Facing : (p2AIInput.forward ?? 0) < 0 ? -p2Facing : 0, y: 0 },
-        commandButtonsFor({ lp:p2AIInput.lp, rp:p2AIInput.rp, lk:p2AIInput.lk, rk:p2AIInput.rk, grapple:p2AIInput.grapple }),
+        commandButtonsFor({
+          lp: p2AIInput.lp ?? p2AIInput.light,
+          rp: p2AIInput.rp ?? p2AIInput.heavy,
+          lk: p2AIInput.lk,
+          rk: p2AIInput.rk,
+          grapple: p2AIInput.grapple,
+        }),
         p2Facing, now,
       );
       p2SMRef.current.setCommandStance(p2AIInput.crouch ? 'Crouch' : p2AIInput.jump ? 'Air' : 'Ground');
