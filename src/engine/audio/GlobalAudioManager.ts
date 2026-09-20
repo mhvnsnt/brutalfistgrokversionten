@@ -37,13 +37,13 @@ export type BGMTrack =
 // ── SFX event IDs ─────────────────────────────────────────────────────────────
 export type SFXEvent =
   | 'whiff'
-  | 'block' |'light_hit' |'heavy_hit' |'counter_hit' |'floor_slam' |'wall_splat' |'throw_connect' |'throw_break' |'heat_burst_activate' |'power_crush_absorb' |'rage_art_activate'
+  | 'block' |'light_hit' |'heavy_hit' |'counter_hit' |'floor_slam' |'wall_splat' |'throw_connect' |'throw_break' |'overdrive_activate' |'super_armor_absorb' |'finisher_move_activate'
   | 'train_horn'
   | (string & {});
 
 // ── VOX event IDs ─────────────────────────────────────────────────────────────
 export type VOXEvent =
-  | 'attack_grunt' |'pain_grunt' |'ko_scream' |'heat_burst_yell' |'rage_art_yell';
+  | 'attack_grunt' |'pain_grunt' |'ko_scream' |'overdrive_yell' |'finisher_move_yell';
 
 // ── UI sound IDs ──────────────────────────────────────────────────────────────
 export type UISound = 'cursor_move' | 'lock_in' | 'menu_back' | 'menu_confirm';
@@ -158,15 +158,15 @@ class ProceduralAudio {
     this.playNoise(0.08, 0.5, 2000, 4);
     this.playTone(440, 0.1, 0.4, 'square', 220);
   }
-  heatBurstActivate() {
+  overdriveActivate() {
     this.playTone(220, 0.3, 0.7, 'sawtooth', 440);
     setTimeout(() => this.playNoise(0.2, 0.8, 1000, 3), 100);
   }
-  powerCrushAbsorb() {
+  superArmorAbsorb() {
     this.playNoise(0.1, 0.6, 800, 3);
     this.playTone(160, 0.12, 0.5, 'square', 80);
   }
-  rageArtActivate() {
+  finisherActivate() {
     this.playTone(55, 0.6, 0.9, 'sine', 20);
     this.playNoise(0.5, 1.2, 200, 1);
     setTimeout(() => this.playTone(880, 0.8, 0.5, 'sine', 440), 80);
@@ -245,9 +245,9 @@ class GlobalAudioManagerClass {
       wall_splat: '/audio/sfx/wall_splat.mp3',
       throw_connect: '/audio/sfx/throw_connect.mp3',
       throw_break: '/audio/sfx/throw_break.mp3',
-      heat_burst_activate: '/audio/sfx/heat_burst_activate.mp3',
-      power_crush_absorb: '/audio/sfx/power_crush_absorb.mp3',
-      rage_art_activate: '/audio/sfx/rage_art_activate.mp3',
+      overdrive_activate: '/audio/sfx/overdrive_activate.mp3',
+      super_armor_absorb: '/audio/sfx/super_armor_absorb.mp3',
+      finisher_move_activate: '/audio/sfx/finisher_move_activate.mp3',
     };
     for (const [id, src] of Object.entries(sfxMap)) {
       try {
@@ -279,8 +279,8 @@ class GlobalAudioManagerClass {
         attack_grunt: '/audio/vox/attack_grunt.mp3',
         pain_grunt: '/audio/vox/pain_grunt.mp3',
         ko_scream: '/audio/vox/ko_scream.mp3',
-        heat_burst_yell: '/audio/vox/heat_burst_yell.mp3',
-        rage_art_yell: '/audio/vox/rage_art_yell.mp3',
+        overdrive_yell: '/audio/vox/overdrive_yell.mp3',
+        finisher_move_yell: '/audio/vox/finisher_move_yell.mp3',
       };
       for (const [id, src] of Object.entries(voxMap)) {
         if (!this.howlerVOX.has(id)) {
@@ -379,9 +379,9 @@ class GlobalAudioManagerClass {
       case 'wall_splat': this.procedural.wallSplat(); break;
       case 'throw_connect': this.procedural.throwConnect(); break;
       case 'throw_break': this.procedural.throwBreak(); break;
-      case 'heat_burst_activate': this.procedural.heatBurstActivate(); break;
-      case 'power_crush_absorb': this.procedural.powerCrushAbsorb(); break;
-      case 'rage_art_activate': this.procedural.rageArtActivate(); break;
+      case 'overdrive_activate': this.procedural.overdriveActivate(); break;
+      case 'super_armor_absorb': this.procedural.superArmorAbsorb(); break;
+      case 'finisher_move_activate': this.procedural.finisherActivate(); break;
     }
   }
 
@@ -398,8 +398,8 @@ class GlobalAudioManagerClass {
       case 'attack_grunt': this.procedural.attackGrunt(); break;
       case 'pain_grunt': this.procedural.painGrunt(); break;
       case 'ko_scream': this.procedural.koScream(); break;
-      case 'heat_burst_yell': this.procedural.heatBurstActivate(); break;
-      case 'rage_art_yell': this.procedural.rageArtActivate(); break;
+      case 'overdrive_yell': this.procedural.overdriveActivate(); break;
+      case 'finisher_move_yell': this.procedural.finisherActivate(); break;
     }
   }
 
@@ -446,7 +446,7 @@ class GlobalAudioManagerClass {
         draw: 'Draw!',
         p1_wins: 'Player 1 Wins!',
         p2_wins: 'Player 2 Wins!',
-        ki_charge: 'Ki Charge!',
+        ki_charge: 'MOMENTUM!',
         chicken: 'Chicken!',
       };
       const text = textMap[line];

@@ -10,12 +10,12 @@
  *  "Get ready for the next battle." → pre-match / VS screen
  *  "Round 1 / 2 / 3!"→ start of each round *"Fight!"→ player control unlocked *"Final Round."                   → match point for both players
  *  "K.O.!"→ one player HP hits 0 *"Double K.O.!"→ both players HP hit 0 same frame *"Perfect!"→ winner took 0 damage *"Great!"→ winner won with ≤5% HP *"Time Up!"→ round timer hits 0 *"Draw."                          → timer 0 + equal HP, or double KO final round
- *  "[Name] Wins!"→ post-match victory cinematic *"Ki Charge!"→ 1+2+3+4 pressed *"Chicken!"                       → reversal of a reversal
+ *  "[Name] Wins!"→ post-match victory cinematic *"MOMENTUM!"→ 1+2+3+4 pressed *"Chicken!"                       → reversal of a reversal
  */
 
 export type AnnouncerLine =
   | 'getReady' |'round1'| 'round2' | 'round3' | 'finalRound' |'fight' |'ko' | 'doubleKo'
-  | 'perfect'| 'great' |'timeUp'| 'draw' |'p1Wins'| 'p2Wins' |'kiCharge' |'chicken';
+  | 'perfect'| 'great' |'timeUp'| 'draw' |'p1Wins'| 'p2Wins' |'momentumCharge' |'chicken';
 
 export interface AnnouncerConfig {
   enabled: boolean;
@@ -48,7 +48,7 @@ const ANNOUNCER_SCRIPT: Record<AnnouncerLine, string> = {
   draw:        'Draw.',
   p1Wins:      '', // filled dynamically
   p2Wins:      '', // filled dynamically
-  kiCharge:    'Ki Charge!',
+  momentumCharge:    'MOMENTUM!',
   chicken:     'Chicken!',
 };
 
@@ -63,7 +63,7 @@ const LINE_COOLDOWN_MS: Partial<Record<AnnouncerLine, number>> = {
   p1Wins:    3000,
   p2Wins:    3000,
   fight:     2000,
-  kiCharge:  2500,
+  momentumCharge:  2500,
   chicken:   2000,
 };
 
@@ -157,7 +157,7 @@ export class AnnouncerSystem {
       case 'perfect':   return 1.0;
       case 'great':     return 1.1;
       case 'timeUp':    return 1.0;
-      case 'kiCharge':  return 1.2;
+      case 'momentumCharge':  return 1.2;
       case 'p1Wins': case'p2Wins':    return 0.95;
       default:          return 1.0;
     }
@@ -170,7 +170,7 @@ export class AnnouncerSystem {
       case 'doubleKo':  return 0.65;
       case 'perfect':   return 1.3;  // Triumphant
       case 'great':     return 1.1;
-      case 'kiCharge':  return 1.15;
+      case 'momentumCharge':  return 1.15;
       case 'p1Wins': case'p2Wins':    return 0.9;
       default:          return 0.85; // Default deep voice
     }
@@ -193,7 +193,7 @@ export class AnnouncerSystem {
       great:    [440, 554, 659],
       timeUp:   [330, 294, 262],
       draw:     [330, 330],
-      kiCharge: [440, 550, 660],
+      momentumCharge: [440, 550, 660],
     };
 
     const freqs = patterns[line] ?? [440];

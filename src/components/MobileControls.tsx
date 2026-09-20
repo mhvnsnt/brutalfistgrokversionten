@@ -17,7 +17,7 @@ interface MobileControlsProps { inputRef: RefObject<InputBitmask>; }
  * Combination inputs (multi-touch simultaneous press):
  *   1+3 (LP+LK) → Left Throw
  *   2+4 (RP+RK) → Right Throw
- *   2+3 (RP+LK) → Heat Burst
+ *   2+3 (RP+LK) → Overdrive
  *   1+2 (LP+RP) → Parry / Heavy Strike
  *   3+4 (LK+RK) → Heavy Kick Combo
  *
@@ -69,7 +69,7 @@ export function MobileControls({ inputRef }: MobileControlsProps) {
       guard:  dirs.has('guard'),
       grapple: dirs.has('grapple'),
       lp, rp, lk, rk,
-      heatBurst: rpLkSimult,
+      overdrive: rpLkSimult,
       leftThrow:  lpLkSimult && !rpLkSimult,
       rightThrow: rpRkSimult && !rpLkSimult,
       heavy: rp || rk || lpRpSimult || lkRkSimult,
@@ -90,7 +90,7 @@ export function MobileControls({ inputRef }: MobileControlsProps) {
     if (snapshot.heavy)      activeInputs.push('HEAVY');
     if (snapshot.guard)      activeInputs.push('GUARD');
     if (snapshot.grapple)    activeInputs.push('GRAPPLE');
-    if (snapshot.heatBurst)  activeInputs.push('HEAT_BURST(2+3)');
+    if (snapshot.overdrive)  activeInputs.push('OVERDRIVE(2+3)');
     if (snapshot.leftThrow)  activeInputs.push('LEFT_THROW(1+3)');
     if (snapshot.rightThrow) activeInputs.push('RIGHT_THROW(2+4)');
 
@@ -278,7 +278,7 @@ export function MobileControls({ inputRef }: MobileControlsProps) {
 
         Multi-touch combinations:
           1+3 = Left Throw  |  2+4 = Right Throw
-          2+3 = Heat Burst  |  1+2 = Parry
+          2+3 = Overdrive  |  1+2 = Parry
       */}
       <div
         className="relative w-56 h-48"
@@ -397,7 +397,7 @@ export function MobileControls({ inputRef }: MobileControlsProps) {
           className="absolute -bottom-5 left-0 right-0 text-center text-[5px] text-zinc-600 tracking-wide"
           style={{ pointerEvents: 'none' }}
         >
-          1+3=THROW · 2+4=THROW · 2+3=HEAT
+          1+3=THROW · 2+4=THROW · 2+3=OVERDRIVE
         </div>
       </div>
     </div>

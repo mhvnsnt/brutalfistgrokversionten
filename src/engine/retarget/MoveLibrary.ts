@@ -135,10 +135,10 @@ const TEKKEN_ALIASES: Record<string, FighterMotionState> = {
   'T_rk':                  'heavyAttack',
   // Combination attacks
   'T_1_2':                 'lightAttack',   // Jab-Cross
-  'T_2_3':                 'heatBurst',     // Heat Burst
+  'T_2_3':                 'overdrive',     // Overdrive
   'T_1_3':                 'CommandThrow',  // Left Throw
   'T_2_4':                 'CommandThrow',  // Right Throw
-  'T_df_1_2':              'rageArt',       // Rage Art
+  'T_df_1_2':              'finisher',       // Finisher
   // Hit reactions
   'T_hit':                 'hit',
   'T_hitstun':             'hit',
@@ -286,9 +286,9 @@ const GENERIC_ALIASES: Record<string, FighterMotionState> = {
   'lose':                  'defeat',
   'taunt':                 'taunt',
   'intro':                 'intro',
-  'heatBurst':             'heatBurst',
-  'rageArt':               'rageArt',
-  'powerCrush':            'powerCrush',
+  'overdrive':             'overdrive',
+  'finisher':               'finisher',
+  'superArmor':            'superArmor',
 };
 
 // ── Default frame-data per motion state ──────────────────────────────────────
@@ -341,9 +341,9 @@ const DEFAULT_FRAME_DATA: Record<FighterMotionState, Omit<MoveFrameData, 'motion
   Active:             { startupFrames: 8, activeFrames: 6, recoveryFrames: 12, totalFrames: 26, hitboxStartFrame: 8, hitboxEndFrame: 14, damage: 80, isSpecial: false, durationSeconds: 0.43 },
   Blockstun:          { startupFrames: 0, activeFrames: 0, recoveryFrames: 10, totalFrames: 10, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.17 },
   Hitstun:            { startupFrames: 0, activeFrames: 0, recoveryFrames: 15, totalFrames: 15, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.25 },
-  heatBurst:          { startupFrames: 9, activeFrames: 12, recoveryFrames: 24, totalFrames: 45, hitboxStartFrame: 9, hitboxEndFrame: 21, damage: 120, isSpecial: true, durationSeconds: 0.75 },
-  rageArt:            { startupFrames: 15, activeFrames: 18, recoveryFrames: 36, totalFrames: 69, hitboxStartFrame: 15, hitboxEndFrame: 33, damage: 350, isSpecial: true, durationSeconds: 1.15 },
-  powerCrush:         { startupFrames: 12, activeFrames: 10, recoveryFrames: 28, totalFrames: 50, hitboxStartFrame: 12, hitboxEndFrame: 22, damage: 180, isSpecial: true, durationSeconds: 0.83 },
+  overdrive:          { startupFrames: 9, activeFrames: 12, recoveryFrames: 24, totalFrames: 45, hitboxStartFrame: 9, hitboxEndFrame: 21, damage: 120, isSpecial: true, durationSeconds: 0.75 },
+  finisher:            { startupFrames: 15, activeFrames: 18, recoveryFrames: 36, totalFrames: 69, hitboxStartFrame: 15, hitboxEndFrame: 33, damage: 350, isSpecial: true, durationSeconds: 1.15 },
+  superArmor:         { startupFrames: 12, activeFrames: 10, recoveryFrames: 28, totalFrames: 50, hitboxStartFrame: 12, hitboxEndFrame: 22, damage: 180, isSpecial: true, durationSeconds: 0.83 },
   victory:            { startupFrames: 0, activeFrames: 0, recoveryFrames: 0, totalFrames: 120, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 2.0 },
   defeat:             { startupFrames: 0, activeFrames: 0, recoveryFrames: 0, totalFrames: 120, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 2.0 },
   taunt:              { startupFrames: 0, activeFrames: 0, recoveryFrames: 0, totalFrames: 90, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 1.5 },
@@ -380,9 +380,9 @@ export function resolveClipAlias(clipName: string): { motionState: FighterMotion
   if (lower.includes('run') && lower.includes('attack')) return { motionState: 'runAttack', source: 'generic' };
   if (lower.includes('light') || lower.includes('jab') || lower.includes('punch')) return { motionState: 'lightAttack', source: 'generic' };
   if (lower.includes('heavy') || lower.includes('cross') || lower.includes('kick') || lower.includes('hook') || lower.includes('uppercut')) return { motionState: 'heavyAttack', source: 'generic' };
-  if (lower.includes('heat') && lower.includes('burst')) return { motionState: 'heatBurst', source: 'generic' };
-  if (lower.includes('rage') && lower.includes('art')) return { motionState: 'rageArt', source: 'generic' };
-  if (lower.includes('power') && lower.includes('crush')) return { motionState: 'powerCrush', source: 'generic' };
+  if (lower.includes('heat') && lower.includes('burst')) return { motionState: 'overdrive', source: 'generic' };
+  if (lower.includes('rage') && lower.includes('art')) return { motionState: 'finisher', source: 'generic' };
+  if (lower.includes('power') && lower.includes('crush')) return { motionState: 'superArmor', source: 'generic' };
   if (lower.includes('throw') || lower.includes('grab') || lower.includes('grapple')) return { motionState: 'CommandThrow', source: 'generic' };
   if (lower.includes('hit') || lower.includes('stun') || lower.includes('flinch')) return { motionState: 'hit', source: 'generic' };
   if (lower.includes('knock') || lower.includes('down') || lower.includes('fall')) return { motionState: 'knockdown', source: 'generic' };

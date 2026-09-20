@@ -25,8 +25,8 @@
  *  - Tracking attacks (homing) ignore Z-axis offset
  */
 
-import type { KiChargeState } from './KiChargeSystem';
-import { tickKiCharge, createKiChargeState } from './KiChargeSystem';
+import type { MomentumChargeState } from './MomentumSystem';
+import { tickMomentumCharge, createMomentumChargeState } from './MomentumSystem';
 import {
   tickWallSplat,
   checkWallCollision,
@@ -40,16 +40,16 @@ import {
 } from './WallSystem';
 import {
   tickHeat,
-  tickPowerCrush,
-  tickRageArt,
-  createHeatState,
-  createPowerCrushState,
-  createRageArtState,
-  updateRageArtAvailability,
-  type HeatState,
-  type PowerCrushState,
-  type RageArtState,
-} from './HeatBurstSystem';
+  tickSuperArmor,
+  tickFinisher,
+  createOverdriveState,
+  createSuperArmorState,
+  createFinisherState,
+  updateFinisherAvailability,
+  type OverdriveState,
+  type SuperArmorState,
+  type FinisherState,
+} from './OverdriveSystem';
 import {
   tickThrow,
   createThrowState,
@@ -88,7 +88,7 @@ export interface FighterCombatState {
   position: FighterPosition;
   airborne: AirborneState;
   stun: StunState;
-  kiCharge: KiChargeState;
+  momentumCharge: MomentumChargeState;
   /** Frames since last attack (for frame advantage calculation) */
   attackRecoveryFrames: number;
   /** Whether this fighter is currently in the active hitbox window */
@@ -103,12 +103,12 @@ export interface FighterCombatState {
   isSidestepping: boolean;
   /** Wall-splat state */
   wallSplat: WallSplatState;
-  /** Heat Burst stance state */
-  heat: HeatState;
-  /** Power Crush super armor state */
-  powerCrush: PowerCrushState;
-  /** Rage Art cinematic super state */
-  rageArt: RageArtState;
+  /** Overdrive stance state */
+  heat: OverdriveState;
+  /** super armor super armor state */
+  superArmor: SuperArmorState;
+  /** Finisher cinematic super state */
+  finisher: FinisherState;
   /** Directional throw state */
   throwState: ThrowState;
   /** X velocity for wall knockback */
@@ -159,7 +159,7 @@ export function createFighterCombatState(id: 'p1' | 'p2', maxHealth: number): Fi
       isHitStun: false,
       isKnockdown: false,
     },
-    kiCharge: createKiChargeState(),
+    momentumCharge: createMomentumChargeState(),
     attackRecoveryFrames: 0,
     isAttacking: false,
     frameAdvantageOnBlock: 0,
@@ -167,9 +167,9 @@ export function createFighterCombatState(id: 'p1' | 'p2', maxHealth: number): Fi
     sidestepZ: 0,
     isSidestepping: false,
     wallSplat: createWallSplatState(),
-    heat: createHeatState(),
-    powerCrush: createPowerCrushState(),
-    rageArt: createRageArtState(),
+    heat: createOverdriveState(),
+    superArmor: createSuperArmorState(),
+    finisher: createFinisherState(),
     throwState: createThrowState(),
     velocityX: 0,
   };
@@ -351,9 +351,9 @@ export function tickCombatState(
   const { airborne: p1Airborne, position: p1Pos } = tickAirborne(state.p1.airborne, state.p1.position);
   const { airborne: p2Airborne, position: p2Pos } = tickAirborne(state.p2.airborne, state.p2.position);
 
-  // ── Tick Ki Charge ────────────────────────────────────────────────────────
-  const p1KiCharge = tickKiCharge(state.p1.kiCharge, p1Input, p1Input.attackLanded ?? false, dt);
-  const p2KiCharge = tickKiCharge(state.p2.kiCharge, p2Input, p2Input.attackLanded ?? false, dt);
+  // ── Tick Momentum ────────────────────────────────────────────────────────
+  const p1MomentumCharge = tickMomentumCharge(state.p1.momentumCharge, p1Input, p1Input.attackLanded ?? false, dt);
+  const p2MomentumCharge = tickMomentumCharge(state.p2.momentumCharge, p2Input, p2Input.attackLanded ?? false, dt);
 
   // ── Sidestep Z return ─────────────────────────────────────────────────────
   const p1SidestepZ = state.p1.sidestepZ * (1 - SIDESTEP_RETURN_SPEED * 60 * dt);
@@ -363,17 +363,17 @@ export function tickCombatState(
   const p1WallSplat = tickWallSplat(state.p1.wallSplat);
   const p2WallSplat = tickWallSplat(state.p2.wallSplat);
 
-  // ── Tick Heat Burst states ────────────────────────────────────────────────
+  // ── Tick Overdrive states ────────────────────────────────────────────────
   const p1Heat = tickHeat(state.p1.heat);
   const p2Heat = tickHeat(state.p2.heat);
 
-  // ── Tick Power Crush states ───────────────────────────────────────────────
-  const p1PowerCrush = tickPowerCrush(state.p1.powerCrush);
-  const p2PowerCrush = tickPowerCrush(state.p2.powerCrush);
+  // ── Tick super armor states ───────────────────────────────────────────────
+  const p1SuperArmor = tickSuperArmor(state.p1.superArmor);
+  const p2SuperArmor = tickSuperArmor(state.p2.superArmor);
 
-  // ── Tick Rage Art states ──────────────────────────────────────────────────
-  const p1RageArt = tickRageArt(updateRageArtAvailability(state.p1.rageArt, state.p1.health / state.p1.maxHealth));
-  const p2RageArt = tickRageArt(updateRageArtAvailability(state.p2.rageArt, state.p2.health / state.p2.maxHealth));
+  // ── Tick Finisher states ──────────────────────────────────────────────────
+  const p1Finisher = tickFinisher(updateFinisherAvailability(state.p1.finisher, state.p1.health / state.p1.maxHealth));
+  const p2Finisher = tickFinisher(updateFinisherAvailability(state.p2.finisher, state.p2.health / state.p2.maxHealth));
 
   // ── Tick throw states ─────────────────────────────────────────────────────
   const p1ThrowState = tickThrow(state.p1.throwState);
@@ -415,14 +415,14 @@ export function tickCombatState(
       stun: p1Stun,
       airborne: p1Airborne,
       position: { ...p1FinalPos, z: p1SidestepZ },
-      kiCharge: p1KiCharge,
-      isBlocking: !p1KiCharge.blockingDisabled && state.p1.isBlocking,
+      momentumCharge: p1MomentumCharge,
+      isBlocking: !p1MomentumCharge.blockingDisabled && state.p1.isBlocking,
       sidestepZ: p1SidestepZ,
       isSidestepping: Math.abs(p1SidestepZ) >= SIDESTEP_WHIFF_THRESHOLD * 0.5,
       wallSplat: p1FinalWallSplat,
       heat: p1Heat,
-      powerCrush: p1PowerCrush,
-      rageArt: p1RageArt,
+      superArmor: p1SuperArmor,
+      finisher: p1Finisher,
       throwState: p1ThrowState,
       velocityX: p1FinalVelX,
     },
@@ -431,14 +431,14 @@ export function tickCombatState(
       stun: p2Stun,
       airborne: p2Airborne,
       position: { ...p2FinalPos, z: p2SidestepZ },
-      kiCharge: p2KiCharge,
-      isBlocking: !p2KiCharge.blockingDisabled && state.p2.isBlocking,
+      momentumCharge: p2MomentumCharge,
+      isBlocking: !p2MomentumCharge.blockingDisabled && state.p2.isBlocking,
       sidestepZ: p2SidestepZ,
       isSidestepping: Math.abs(p2SidestepZ) >= SIDESTEP_WHIFF_THRESHOLD * 0.5,
       wallSplat: p2FinalWallSplat,
       heat: p2Heat,
-      powerCrush: p2PowerCrush,
-      rageArt: p2RageArt,
+      superArmor: p2SuperArmor,
+      finisher: p2Finisher,
       throwState: p2ThrowState,
       velocityX: p2FinalVelX,
     },

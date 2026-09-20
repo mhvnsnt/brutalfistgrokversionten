@@ -42,8 +42,8 @@ export interface InputBitmask {
   rp?: boolean;
   lk?: boolean;
   rk?: boolean;
-  heatBurst?: boolean;
-  rageArt?: boolean;
+  overdrive?: boolean;
+  finisher?: boolean;
   leftThrow?: boolean;
   rightThrow?: boolean;
 }

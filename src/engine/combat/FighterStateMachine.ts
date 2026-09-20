@@ -36,10 +36,10 @@ export interface FighterInput {
   /** 4 = Right Kick (RK) */
   rk?: boolean;
   // ── Tekken combination inputs ─────────────────────────────────────────────
-  /** Heat Burst: 2+3 (RP+LK) */
-  heatBurst?: boolean;
-  /** Rage Art: d/f + 1+2 */
-  rageArt?: boolean;
+  /** Overdrive: 2+3 (RP+LK) */
+  overdrive?: boolean;
+  /** Finisher: d/f + 1+2 */
+  finisher?: boolean;
   /** Left Throw: 1+3 (LP+LK) */
   leftThrow?: boolean;
   /** Right Throw: 2+4 (RP+RK) */
@@ -230,8 +230,8 @@ export const RIGHT_THROW_MOVE: MoveWindow = {
   throwComboRoute: [],
 };
 
-/** Heat Burst (2+3): RP+LK — activates Heat State */
-export const HEAT_BURST_MOVE: MoveWindow = {
+/** Overdrive (2+3): RP+LK — activates Overdrive state */
+export const OVERDRIVE_MOVE: MoveWindow = {
   startup: 0.15,
   active: 0.20,
   recovery: 0.40,
@@ -241,11 +241,11 @@ export const HEAT_BURST_MOVE: MoveWindow = {
   totalFrames: 45,
   damage: 120,
   isSpecial: true,
-  specialName: 'Heat Burst',
+  specialName: 'Overdrive',
 };
 
-/** Rage Art (d/f + 1+2): available below 25% HP */
-export const RAGE_ART_MOVE: MoveWindow = {
+/** Finisher (d/f + 1+2): available below 25% HP */
+export const FINISHER_MOVE: MoveWindow = {
   startup: 0.25,
   active: 0.30,
   recovery: 0.60,
@@ -256,7 +256,7 @@ export const RAGE_ART_MOVE: MoveWindow = {
   damage: 350,
   isSpecial: true,
   isUnblockable: true,
-  specialName: 'Rage Art',
+  specialName: 'Finisher',
 };
 
 // ── Command Throw move definition ─────────────────────────────────────────────
@@ -485,14 +485,14 @@ export class FighterStateMachine {
   private crossfadeTimer = 0;
   private crossfadeDuration = 0;
 
-  // ── Heat state (Tekken 8 mechanic) ────────────────────────────────────────
-  private inHeatState = false;
+  // ── Overdrive state (Tekken 8 mechanic) ────────────────────────────────────────
+  private inOverdriveState = false;
   private heatTimer = 0;
-  private readonly HEAT_DURATION = 10.0; // 10 seconds
+  private readonly OVERDRIVE_DURATION = 10.0; // 10 seconds
 
-  // ── Rage Art availability ─────────────────────────────────────────────────
+  // ── Finisher availability ─────────────────────────────────────────────────
   /** Set externally by GameBattleArena based on current HP */
-  private rageArtAvailable = false;
+  private finisherAvailable = false;
 
   // ── Tekken combination press timestamps ──────────────────────────────────
   private lpPressTime = 0;
@@ -516,7 +516,7 @@ export class FighterStateMachine {
     forward: 0, strafe: 0, light: false, heavy: false,
     guard: false, crouch: false, grapple: false, escape: false,
     lp: false, rp: false, lk: false, rk: false,
-    heatBurst: false, rageArt: false, leftThrow: false, rightThrow: false,
+    overdrive: false, finisher: false, leftThrow: false, rightThrow: false,
   };
 
   // ── Forward press timestamp for command throw detection ───────────────────
@@ -537,7 +537,7 @@ export class FighterStateMachine {
   get isKnockedDown(): boolean { return this.actionState === 'Knockdown'; }
   get isInHitStun(): boolean { return this.actionState === 'HitStun'; }
   get isInCommandThrow(): boolean { return this.actionState === 'CommandThrow'; }
-  get isInHeatState(): boolean { return this.inHeatState; }
+  get isInOverdriveState(): boolean { return this.inOverdriveState; }
 
   /** Whether grab range visualization should be shown */
   get showGrabRange(): boolean { return this.grabRangeActive; }
@@ -591,9 +591,9 @@ export class FighterStateMachine {
     };
   }
 
-  /** Set rage art availability based on current HP percentage */
-  setRageArtAvailable(hpPercent: number) {
-    this.rageArtAvailable = hpPercent <= 0.25;
+  /** Set finisher availability based on current HP percentage */
+  setFinisherAvailable(hpPercent: number) {
+    this.finisherAvailable = hpPercent <= 0.25;
   }
 
   /**
@@ -872,12 +872,12 @@ export class FighterStateMachine {
       }
     }
 
-    // ── Heat state tick ───────────────────────────────────────────────────
-    if (this.inHeatState) {
+    // ── Overdrive state tick ───────────────────────────────────────────────────
+    if (this.inOverdriveState) {
       this.heatTimer = Math.max(0, this.heatTimer - dt);
       if (this.heatTimer <= 0) {
-        this.inHeatState = false;
-        console.log('[FSM] 🔥 Heat State expired');
+        this.inOverdriveState = false;
+        console.log('[FSM] 🔥 Overdrive state expired');
       }
     }
 
@@ -1074,18 +1074,18 @@ export class FighterStateMachine {
 
     // ── Idle / Walking — process new inputs ──────────────────────────────────
 
-    // ── Rage Art: available below 25% HP ─────────────────────────────────
-    if (resolvedInput.rageArt && this.rageArtAvailable && this.actionState !== 'Attacking') {
-      console.log('[FSM] 💢 Rage Art activated!');
-      return this.beginAttack('heavyAttack', RAGE_ART_MOVE);
+    // ── Finisher: available below 25% HP ─────────────────────────────────
+    if (resolvedInput.finisher && this.finisherAvailable && this.actionState !== 'Attacking') {
+      console.log('[FSM] 💢 Finisher activated!');
+      return this.beginAttack('heavyAttack', FINISHER_MOVE);
     }
 
-    // ── Heat Burst: 2+3 (RP+LK) ──────────────────────────────────────────
-    if (resolvedInput.heatBurst && !this.inHeatState && this.actionState !== 'Attacking') {
-      console.log('[FSM] 🔥 Heat Burst activated!');
-      this.inHeatState = true;
-      this.heatTimer = this.HEAT_DURATION;
-      return this.beginAttack('heavyAttack', HEAT_BURST_MOVE);
+    // ── Overdrive: 2+3 (RP+LK) ──────────────────────────────────────────
+    if (resolvedInput.overdrive && !this.inOverdriveState && this.actionState !== 'Attacking') {
+      console.log('[FSM] 🔥 Overdrive activated!');
+      this.inOverdriveState = true;
+      this.heatTimer = this.OVERDRIVE_DURATION;
+      return this.beginAttack('heavyAttack', OVERDRIVE_MOVE);
     }
 
     // ── Left Throw (1+3): LP+LK ──────────────────────────────────────────
@@ -1202,7 +1202,7 @@ export class FighterStateMachine {
    *   2+4 (RP+RK) → right throw
    *   1+2 (LP+RP) → parry / heavy strike
    *   3+4 (LK+RK) → heavy kick combo
-   *   2+3 (RP+LK) → heat burst
+   *   2+3 (RP+LK) → overdrive
    */
   private resolveTekkenInputs(input: FighterInput, now: number): FighterInput {
     const resolved = { ...input };
@@ -1226,9 +1226,9 @@ export class FighterStateMachine {
     const rpLkSimult = rpActive && lkActive && Math.abs(this.rpPressTime - this.lkPressTime) <= TEKKEN_COMBO_WINDOW_MS;
 
     // Combination inputs take priority over single presses
-    if (rpLkSimult || input.heatBurst) {
-      // 2+3 = Heat Burst
-      resolved.heatBurst = true;
+    if (rpLkSimult || input.overdrive) {
+      // 2+3 = Overdrive
+      resolved.overdrive = true;
       resolved.light = false;
       resolved.heavy = false;
     } else if (lpLkSimult || input.leftThrow) {

@@ -162,9 +162,9 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   jumpAttack:        ['jumpAttack', 'JumpAttack', 'airAttack', 'AirAttack', 'jumpingPunch', 'JumpingPunch', 'heavyAttack', 'HeavyAttack'],
   runAttack:         ['runAttack', 'RunAttack', 'dashAttack', 'DashAttack', 'runningAttack', 'RunningAttack', 'heavyAttack', 'HeavyAttack'],
   // ── Tekken Specials ─────────────────────────────────────────────────────────
-  heatBurst:         ['heatBurst', 'HeatBurst', 'heat_burst', 'Heat_Burst', 'heavyAttack', 'HeavyAttack', 'special', 'Special'],
-  rageArt:           ['rageArt', 'RageArt', 'rage_art', 'Rage_Art', 'finisher', 'Finisher', 'heavyAttack', 'HeavyAttack'],
-  powerCrush:        ['powerCrush', 'PowerCrush', 'power_crush', 'armorMove', 'ArmorMove', 'heavyAttack', 'HeavyAttack'],
+  overdrive:         ['overdrive', 'Overdrive', 'heavyAttack', 'HeavyAttack', 'special', 'Special'],
+  finisher:           ['finisher', 'Finisher', 'finisher_move', 'Finisher_Move', 'finisher', 'Finisher', 'heavyAttack', 'HeavyAttack'],
+  superArmor:        ['superArmor', 'SuperArmor', 'power_crush', 'armorMove', 'ArmorMove', 'heavyAttack', 'HeavyAttack'],
   // ── Command Throw ───────────────────────────────────────────────────────────
   CommandThrow:      ['heavyAttack', 'HeavyAttack', 'heavy', 'Heavy', 'grab', 'Grab', 'throw', 'Throw', 'grapple', 'Grapple', 'suplex', 'Suplex', 'slam', 'Slam', 'SBW_throw', 'T_1_3', 'T_2_4', 'bf_grab', 'bf_beastMode'],
   ThrowWhiff:        ['idle', 'Idle', 'neutral', 'Neutral'],

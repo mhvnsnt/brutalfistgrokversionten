@@ -9,7 +9,7 @@ export type FighterMotionState =
   // ── Extended combat states ────────────────────────────────────────────────
   | 'Startup' | 'Active' | 'Blockstun' | 'Hitstun'
   // ── Tekken-specific states ────────────────────────────────────────────────
-  | 'heatBurst' | 'rageArt' | 'powerCrush' | 'sidestepLeft' | 'sidestepRight'
+  | 'overdrive' | 'finisher' | 'superArmor' | 'sidestepLeft' | 'sidestepRight'
   | 'jump' | 'jumpForward' | 'jumpBack'
   // ── Post-match states ─────────────────────────────────────────────────────
   | 'victory' | 'defeat' | 'taunt' | 'intro';
@@ -54,9 +54,9 @@ const CROSSFADE_DURATIONS: Partial<Record<FighterMotionState, number>> = {
   Startup:           0.050,
   Active:            0.033,
   // Tekken specials
-  heatBurst:         0.050,
-  rageArt:           0.067,
-  powerCrush:        0.067,
+  overdrive:         0.050,
+  finisher:           0.067,
+  superArmor:        0.067,
   // Hit reactions — very fast
   hit:               0.033,  // 2 frames — snap into hit reaction
   hitLow:            0.033,
@@ -99,7 +99,7 @@ const LOOP_STATES = new Set<FighterMotionState>([
 const ONESHOT_STATES = new Set<FighterMotionState>([
   'lightAttack', 'heavyAttack', 'lightKick', 'heavyKick', 'crouchLightAttack', 'crouchHeavyAttack',
   'jumpAttack', 'runAttack', 'CommandThrow', 'ThrowWhiff',
-  'heatBurst', 'rageArt', 'powerCrush',
+  'overdrive', 'finisher', 'superArmor',
   'hit', 'hitLow', 'hitHigh', 'HitStun', 'Stunned', 'Hitstun',
   'knockdown', 'Crumple',
   'victory', 'defeat', 'taunt', 'intro',
@@ -137,9 +137,9 @@ export function buildAnimationController(
         crouchHeavyAttack: ['heavyAttack', 'crouch'],
         jumpAttack:        ['heavyAttack', 'lightAttack'],
         runAttack:         ['heavyAttack', 'lightAttack'],
-        heatBurst:         ['heavyAttack'],
-        rageArt:           ['heavyAttack'],
-        powerCrush:        ['heavyAttack'],
+        overdrive:         ['heavyAttack'],
+        finisher:           ['heavyAttack'],
+        superArmor:        ['heavyAttack'],
         hitLow:            ['hit'],
         hitHigh:           ['hit'],
         guardLow:          ['guard'],

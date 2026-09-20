@@ -44,8 +44,8 @@ import { createTekkenStick } from '../engine/combat/TekkenInput';
 import { BoneHitboxSystem, HIT_STOP_DURATIONS, HIT_STOP_DEFAULT_MS } from '../engine/locomotion/BoneHitboxSystem';
 // ── Announcer system ──────────────────────────────────────────────────────────
 import { getAnnouncerSystem } from '../engine/announcer/AnnouncerSystem';
-// ── Ki Charge system ──────────────────────────────────────────────────────────
-import { createKiChargeState, tickKiCharge, applyKiChargeCounterHit, type KiChargeState,  } from '../engine/combat/KiChargeSystem';
+// ── Momentum system ──────────────────────────────────────────────────────────
+import { createMomentumChargeState, tickMomentumCharge, applyMomentumChargeCounterHit, type MomentumChargeState,  } from '../engine/combat/MomentumSystem';
 // ── Decoupled combat state tick ───────────────────────────────────────────────
 import { createCombatMatchState, tickCombatState, checkSidestepWhiff, type CombatMatchState,  } from '../engine/combat/CombatStateTick';
 // ── Wall system ───────────────────────────────────────────────────────────────
@@ -66,8 +66,8 @@ import {
   createRoundState, openingAnnouncement, resolveRound, type RoundState,
 } from '../engine/combat/RoundSystem';
 import { commandButtonsFor, moveSetForFighter, schwarzerblitzSpecials } from '../engine/combat/SchwarzerblitzSpecials';
-// ── Heat Burst / Power Crush / Rage Art ──────────────────────────────────────
-import { type HeatState, type PowerCrushState, type RageArtState,  } from '../engine/combat/HeatBurstSystem';
+// ── Overdrive / super armor / Finisher ──────────────────────────────────────
+import { type OverdriveState, type SuperArmorState, type FinisherState,  } from '../engine/combat/OverdriveSystem';
 // ── Directional throw system ──────────────────────────────────────────────────
 import { checkThrowRange, detectThrowInput, getThrowDamage, THROW_CATALOG,  } from '../engine/combat/DirectionalThrowSystem';
 // ── Global Audio Manager ──────────────────────────────────────────────────────
@@ -365,11 +365,11 @@ export default function GameBattleArena({
   const hitStopTimerRef = useRef<number>(0);
   const hitStopActiveRef = useRef<boolean>(false);
 
-  // ── Ki Charge state (one per fighter) ────────────────────────────────────
-  const [p1KiCharge, setP1KiCharge] = useState<KiChargeState>(createKiChargeState());
-  const [p2KiCharge, setP2KiCharge] = useState<KiChargeState>(createKiChargeState());
-  const p1KiChargeRef = useRef<KiChargeState>(createKiChargeState());
-  const p2KiChargeRef = useRef<KiChargeState>(createKiChargeState());
+  // ── Momentum state (one per fighter) ────────────────────────────────────
+  const [p1MomentumCharge, setP1MomentumCharge] = useState<MomentumChargeState>(createMomentumChargeState());
+  const [p2MomentumCharge, setP2MomentumCharge] = useState<MomentumChargeState>(createMomentumChargeState());
+  const p1MomentumChargeRef = useRef<MomentumChargeState>(createMomentumChargeState());
+  const p2MomentumChargeRef = useRef<MomentumChargeState>(createMomentumChargeState());
 
   // ── Decoupled combat state (Night Sky Engine pattern) ────────────────────
   const combatStateRef = useRef<CombatMatchState>(
@@ -581,28 +581,28 @@ export default function GameBattleArena({
   } | undefined>(undefined);
   const wallSplatEventCountRef = useRef(0);
 
-  // ── Heat Burst event state ────────────────────────────────────────────────
-  const [heatBurstEvent, setHeatBurstEvent] = useState<{
+  // ── Overdrive event state ────────────────────────────────────────────────
+  const [overdriveEvent, setOverdriveEvent] = useState<{
     count: number; player: 'p1' | 'p2';
   } | undefined>(undefined);
-  const heatBurstEventCountRef = useRef(0);
+  const overdriveEventCountRef = useRef(0);
 
-  // ── Rage Art event state ──────────────────────────────────────────────────
-  const [rageArtEvent, setRageArtEvent] = useState<{
+  // ── Finisher event state ──────────────────────────────────────────────────
+  const [finisherEvent, setFinisherEvent] = useState<{
     count: number; player: 'p1' | 'p2';
   } | undefined>(undefined);
-  const rageArtEventCountRef = useRef(0);
+  const finisherEventCountRef = useRef(0);
 
   // ── Camera shake offset from hit effect system ────────────────────────────
   const [cameraShakeOffset, setCameraShakeOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // ── Heat / Power Crush / Rage Art HUD state ───────────────────────────────
+  // ── Overdrive / super armor / Finisher HUD state ───────────────────────────────
   const [p1HeatActive, setP1HeatActive] = useState(false);
   const [p2HeatActive, setP2HeatActive] = useState(false);
-  const [p1RageArtAvailable, setP1RageArtAvailable] = useState(false);
-  const [p2RageArtAvailable, setP2RageArtAvailable] = useState(false);
-  const [p1PowerCrushActive, setP1PowerCrushActive] = useState(false);
-  const [p2PowerCrushActive, setP2PowerCrushActive] = useState(false);
+  const [p1FinisherAvailable, setP1FinisherAvailable] = useState(false);
+  const [p2FinisherAvailable, setP2FinisherAvailable] = useState(false);
+  const [p1SuperArmorActive, setP1SuperArmorActive] = useState(false);
+  const [p2SuperArmorActive, setP2SuperArmorActive] = useState(false);
 
   // ── Global Audio Manager ──────────────────────────────────────────────────
   const audioManagerRef = useRef(getGlobalAudioManager());
@@ -850,8 +850,8 @@ export default function GameBattleArena({
         rp: (bitmask as any).rp ?? false,
         lk: (bitmask as any).lk ?? false,
         rk: (bitmask as any).rk ?? false,
-        heatBurst: (bitmask as any).heatBurst ?? false,
-        rageArt: (bitmask as any).rageArt ?? false,
+        overdrive: (bitmask as any).overdrive ?? false,
+        finisher: (bitmask as any).finisher ?? false,
         leftThrow: (bitmask as any).leftThrow ?? false,
         rightThrow: (bitmask as any).rightThrow ?? false,
         jump: cmd.jump,
@@ -888,31 +888,31 @@ export default function GameBattleArena({
       );
       p1SMRef.current.setCommandStance(smInput.crouch ? 'Crouch' : cmd.running ? 'Running' : cmd.jump ? 'Air' : 'Ground');
 
-      // ── Ki Charge detection (1+2+3+4 = all four limbs) ────────────────
-      const p1KiInput = {
+      // ── Momentum detection (1+2+3+4 = all four limbs) ────────────────
+      const p1MomentumInput = {
         lp: smInput.lp, rp: smInput.rp, lk: smInput.lk, rk: smInput.rk,
       };
-      const prevP1KiActive = p1KiChargeRef.current.active;
-      const newP1KiCharge = tickKiCharge(
-        p1KiChargeRef.current,
-        p1KiInput,
+      const prevP1MomentumActive = p1MomentumChargeRef.current.active;
+      const newP1MomentumCharge = tickMomentumCharge(
+        p1MomentumChargeRef.current,
+        p1MomentumInput,
         false, // attackLanded resolved below
         dt,
       );
-      if (!prevP1KiActive && newP1KiCharge.active) {
-        // Just activated Ki Charge — fire announcer
-        announcerRef.current.fire('kiCharge');
-        setSpecialMoveNotice({ name: 'Ki Charge!', player: 'p1', id: ++specialNoticeIdRef.current });
+      if (!prevP1MomentumActive && newP1MomentumCharge.active) {
+        // Just activated Momentum — fire announcer
+        announcerRef.current.fire('momentumCharge');
+        setSpecialMoveNotice({ name: 'MOMENTUM!', player: 'p1', id: ++specialNoticeIdRef.current });
         setTimeout(() => setSpecialMoveNotice(null), 2000);
-        console.log('[Arena] ⚡ P1 Ki Charge activated');
+        console.log('[Arena] ⚡ P1 Momentum activated');
       }
-      p1KiChargeRef.current = newP1KiCharge;
-      setP1KiCharge({ ...newP1KiCharge });
+      p1MomentumChargeRef.current = newP1MomentumCharge;
+      setP1MomentumCharge({ ...newP1MomentumCharge });
 
       // ── Tick decoupled combat state (Night Sky Engine pattern) ─────────
       combatStateRef.current = tickCombatState(
         combatStateRef.current,
-        p1KiInput,
+        p1MomentumInput,
         {},
         dt,
         // The stage's REAL barrier. Without this the wall splat fired at the
@@ -1205,9 +1205,9 @@ export default function GameBattleArena({
         }
       }
 
-      // ── Update rage art availability based on P1 HP ────────────────────
+      // ── Update finisher availability based on P1 HP ────────────────────
       const p1HpPct = prevP1HealthRef.current / p1Fighter.hp;
-      p1SMRef.current.setRageArtAvailable(p1HpPct);
+      p1SMRef.current.setFinisherAvailable(p1HpPct);
 
       // ── Update P1 state machine ────────────────────────────────────────
       const p1SM = p1SMRef.current;
@@ -1298,25 +1298,25 @@ export default function GameBattleArena({
           });
           setTimeout(() => setSpecialMoveNotice(null), 1800);
 
-          // ── Heat Burst activation ─────────────────────────────────────
-          if (move.specialName === 'Heat Burst') {
-            const audioMgrHeat = audioManagerRef.current;
-            audioMgrHeat.playSFX('heat_burst_activate');
-            audioMgrHeat.playVOX('heat_burst_yell');
-            setHeatBurstEvent({ count: ++heatBurstEventCountRef.current, player: 'p1' });
+          // ── Overdrive activation ─────────────────────────────────────
+          if (move.specialName === 'Overdrive') {
+            const audioMgrOverdrive = audioManagerRef.current;
+            audioMgrOverdrive.playSFX('overdrive_activate');
+            audioMgrOverdrive.playVOX('overdrive_yell');
+            setOverdriveEvent({ count: ++overdriveEventCountRef.current, player: 'p1' });
             setP1HeatActive(true);
-            // Heat expires after ~5 seconds
+            // Overdrive expires after ~5 seconds
             setTimeout(() => setP1HeatActive(false), 5000);
           }
 
-          // ── Rage Art activation ───────────────────────────────────────
-          if (move.specialName === 'Rage Art') {
+          // ── Finisher activation ───────────────────────────────────────
+          if (move.specialName === 'Finisher') {
             const audioMgrRage = audioManagerRef.current;
-            audioMgrRage.playSFX('rage_art_activate');
-            audioMgrRage.playVOX('rage_art_yell');
-            audioMgrRage.playAnnouncer('ki_charge'); // announcer reacts to Rage Art
-            setRageArtEvent({ count: ++rageArtEventCountRef.current, player: 'p1' });
-            setP1RageArtAvailable(false);
+            audioMgrRage.playSFX('finisher_move_activate');
+            audioMgrRage.playVOX('finisher_move_yell');
+            audioMgrRage.playAnnouncer('ki_charge'); // announcer reacts to Finisher
+            setFinisherEvent({ count: ++finisherEventCountRef.current, player: 'p1' });
+            setP1FinisherAvailable(false);
           }
         }
       }
@@ -1359,15 +1359,15 @@ export default function GameBattleArena({
         }
       }
 
-      // ── Update Rage Art availability HUD ──────────────────────────────
+      // ── Update Finisher availability HUD ──────────────────────────────
       const p1HpPctForRage = prevP1HealthRef.current / p1Fighter.hp;
       const p2HpPctForRage = prevP2HealthRef.current / p2Fighter.hp;
-      setP1RageArtAvailable(p1HpPctForRage <= 0.25);
-      setP2RageArtAvailable(p2HpPctForRage <= 0.25);
+      setP1FinisherAvailable(p1HpPctForRage <= 0.25);
+      setP2FinisherAvailable(p2HpPctForRage <= 0.25);
 
       // ── Check P1 hitbox vs P2 ──────────────────────────────────────────
       const p2SM = p2SMRef.current;
-      const p2IsBlocking = p2SM.action === 'Guard' && !p2KiChargeRef.current.blockingDisabled;
+      const p2IsBlocking = p2SM.action === 'Guard' && !p2MomentumChargeRef.current.blockingDisabled;
 
       // ── Z-axis sidestep whiff check ────────────────────────────────────
       const p1AttackIsLinear = !(p1HbWindow.move?.isSpecial); // specials track
@@ -1381,13 +1381,13 @@ export default function GameBattleArena({
       );
 
       if (p1Hit) {
-        // ── Ki Charge: apply counter-hit bonus and consume charge ─────────
-        const p1KiActive = p1KiChargeRef.current.active;
-        const isKiCounter = p1KiActive;
-        if (p1KiActive) {
-          // Consume the Ki Charge
-          p1KiChargeRef.current = { ...p1KiChargeRef.current, active: false, framesRemaining: 0, nextAttackIsCounter: false, blockingDisabled: false };
-          setP1KiCharge({ ...p1KiChargeRef.current });
+        // ── Momentum: apply counter-hit bonus and consume charge ─────────
+        const p1MomentumActive = p1MomentumChargeRef.current.active;
+        const isMomentumCounter = p1MomentumActive;
+        if (p1MomentumActive) {
+          // Consume the Momentum
+          p1MomentumChargeRef.current = { ...p1MomentumChargeRef.current, active: false, framesRemaining: 0, nextAttackIsCounter: false, blockingDisabled: false };
+          setP1MomentumCharge({ ...p1MomentumChargeRef.current });
         }
 
         // ── Guard system: check if P2 blocks, apply chip damage or full damage ──
@@ -1396,16 +1396,16 @@ export default function GameBattleArena({
           ? p2SMRef.current.processIncomingHit(p1HitMove)
           : { blocked: false, chipDamage: 0, guardBroken: false, finalDamage: p1Hit.damage };
 
-        // Ki Charge chip damage on block
+        // Momentum chip damage on block
         let effectiveDamage = guardResult.blocked
-          ? (p1KiActive
-              ? Math.round(p1Hit.damage * p1KiChargeRef.current.chipDamageMultiplier)
+          ? (p1MomentumActive
+              ? Math.round(p1Hit.damage * p1MomentumChargeRef.current.chipDamageMultiplier)
               : guardResult.finalDamage)
           : p1Hit.damage;
 
-        // Ki Charge counter-hit bonus
-        if (p1KiActive && !guardResult.blocked) {
-          effectiveDamage = applyKiChargeCounterHit(effectiveDamage);
+        // Momentum counter-hit bonus
+        if (p1MomentumActive && !guardResult.blocked) {
+          effectiveDamage = applyMomentumChargeCounterHit(effectiveDamage);
         }
 
         // ── Combo system: register hit and apply damage scaling ──────────
@@ -2315,8 +2315,8 @@ export default function GameBattleArena({
           onP1BoneHitboxReady={(sys: BoneHitboxSystem) => { p1BoneHitboxRef.current = sys; }}
           onP2BoneHitboxReady={(sys: BoneHitboxSystem) => { p2BoneHitboxRef.current = sys; }}
           wallSplatEvent={wallSplatEvent}
-          heatBurstEvent={heatBurstEvent}
-          rageArtEvent={rageArtEvent}
+          overdriveEvent={overdriveEvent}
+          finisherEvent={finisherEvent}
           cameraShakeOffset={cameraShakeOffset}
         />
       </div>
@@ -2397,8 +2397,8 @@ export default function GameBattleArena({
             p2Color={p2Color}
           />
 
-          {/* ── Ki Charge HUD — glowing aura indicator ── */}
-          {p1KiCharge.active && (
+          {/* ── Momentum HUD — glowing aura indicator ── */}
+          {p1MomentumCharge.active && (
             <div className="absolute z-40 pointer-events-none" style={{ bottom: '28%', left: '12%' }}>
               <div
                 className="px-3 py-1 text-[9px] font-black tracking-widest uppercase animate-pulse"
@@ -2409,7 +2409,7 @@ export default function GameBattleArena({
                   background: 'rgba(0,0,0,0.75)',
                 }}
               >
-                ⚡ KI CHARGE · {Math.ceil(p1KiCharge.framesRemaining / 60 * 10) / 10}s
+                ⚡ MOMENTUM · {Math.ceil(p1MomentumCharge.framesRemaining / 60 * 10) / 10}s
               </div>
               <div className="text-[6px] text-purple-300/70 tracking-widest mt-0.5 text-center">
                 NEXT HIT = COUNTER · NO BLOCK
@@ -2417,7 +2417,7 @@ export default function GameBattleArena({
             </div>
           )}
 
-          {/* ── Heat Burst HUD — stance mode indicator ── */}
+          {/* ── Overdrive HUD — stance mode indicator ── */}
           {p1HeatActive && (
             <div className="absolute z-40 pointer-events-none" style={{ bottom: '22%', left: '8%' }}>
               <div
@@ -2429,7 +2429,7 @@ export default function GameBattleArena({
                   background: 'rgba(0,0,0,0.75)',
                 }}
               >
-                🔥 HEAT STATE
+                ⚡ OVERDRIVE
               </div>
             </div>
           )}
@@ -2444,13 +2444,13 @@ export default function GameBattleArena({
                   background: 'rgba(0,0,0,0.75)',
                 }}
               >
-                🔥 HEAT STATE
+                ⚡ OVERDRIVE
               </div>
             </div>
           )}
 
-          {/* ── Rage Art available indicator ── */}
-          {p1RageArtAvailable && (
+          {/* ── Finisher available indicator ── */}
+          {p1FinisherAvailable && (
             <div className="absolute z-40 pointer-events-none" style={{ bottom: '16%', left: '8%' }}>
               <div
                 className="px-3 py-1 text-[9px] font-black tracking-widest uppercase animate-pulse"
@@ -2461,11 +2461,11 @@ export default function GameBattleArena({
                   background: 'rgba(0,0,0,0.75)',
                 }}
               >
-                💢 RAGE ART READY
+                💢 FINISHER READY
               </div>
             </div>
           )}
-          {p2RageArtAvailable && (
+          {p2FinisherAvailable && (
             <div className="absolute z-40 pointer-events-none" style={{ bottom: '16%', right: '8%' }}>
               <div
                 className="px-3 py-1 text-[9px] font-black tracking-widest uppercase animate-pulse"
@@ -2476,7 +2476,7 @@ export default function GameBattleArena({
                   background: 'rgba(0,0,0,0.75)',
                 }}
               >
-                💢 RAGE ART READY
+                💢 FINISHER READY
               </div>
             </div>
           )}
@@ -2777,8 +2777,8 @@ export default function GameBattleArena({
           {/* Controls legend */}
           <div className="absolute bottom-safe-1 left-3 z-30 text-[7px] text-zinc-500 space-y-0.5 pointer-events-none pr-2">
             <div>ARROWS: MOVE · Z/U: 1(LP) · X/I: 2(RP) · J: 3(LK) · K: 4(RK) · C: GUARD · V: GRAPPLE · Q/E: SIDESTEP</div>
-            <div className="text-zinc-600">COMBOS: U+J=THROW · I+K=THROW · I+J=HEAT BURST · →+C=CMD THROW · SPECIAL: L+L+H or H+H+L</div>
-            <div className="text-purple-500/60">KI CHARGE: U+X+J+K (1+2+3+4) — NEXT HIT = COUNTER · NO BLOCK</div>
+            <div className="text-zinc-600">COMBOS: U+J=THROW · I+K=THROW · I+J=OVERDRIVE · →+C=CMD THROW · SPECIAL: L+L+H or H+H+L</div>
+            <div className="text-purple-500/60">MOMENTUM: U+X+J+K (1+2+3+4) — NEXT HIT = COUNTER · NO BLOCK</div>
           </div>
 
           {/* ── Grab Range Visualization ── */}

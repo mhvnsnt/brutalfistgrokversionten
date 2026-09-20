@@ -548,10 +548,10 @@ export interface CombatArena3DProps {
   onP2BoneHitboxReady?: (system: import('../engine/locomotion/BoneHitboxSystem').BoneHitboxSystem) => void;
   /** Wall-splat event — triggers wall-splat VFX */
   wallSplatEvent?: { count: number; player: 'p1' | 'p2'; wall: 'left' | 'right' };
-  /** Heat Burst activation event */
-  heatBurstEvent?: { count: number; player: 'p1' | 'p2' };
-  /** Rage Art cinematic event */
-  rageArtEvent?: { count: number; player: 'p1' | 'p2' };
+  /** Overdrive activation event */
+  overdriveEvent?: { count: number; player: 'p1' | 'p2' };
+  /** Finisher cinematic event */
+  finisherEvent?: { count: number; player: 'p1' | 'p2' };
   /** Camera shake offset from hit effect system */
   cameraShakeOffset?: { x: number; y: number };
   /**
@@ -604,8 +604,8 @@ export default function CombatArena3D({
   onP1BoneHitboxReady,
   onP2BoneHitboxReady,
   wallSplatEvent,
-  heatBurstEvent,
-  rageArtEvent,
+  overdriveEvent,
+  finisherEvent,
   cameraShakeOffset,
   onDeformationBlocked,
   onFighterReady,
@@ -620,8 +620,8 @@ export default function CombatArena3D({
   const prevDamageEventRef = useRef<typeof damageEvent>(undefined);
   const prevKnockdownEventRef = useRef<typeof knockdownEvent>(undefined);
   const prevWallSplatEventRef = useRef<typeof wallSplatEvent>(undefined);
-  const prevHeatBurstEventRef = useRef<typeof heatBurstEvent>(undefined);
-  const prevRageArtEventRef = useRef<typeof rageArtEvent>(undefined);
+  const prevOverdriveEventRef = useRef<typeof overdriveEvent>(undefined);
+  const prevFinisherEventRef = useRef<typeof finisherEvent>(undefined);
 
   const { speak } = useAnnouncer(announcerEnabled);
 
@@ -733,19 +733,19 @@ export default function CombatArena3D({
     });
   }, [wallSplatEvent, p1Fighter, p2Fighter]);
 
-  // ── Heat Burst activation VFX ─────────────────────────────────────────────
+  // ── Overdrive activation VFX ─────────────────────────────────────────────
   useEffect(() => {
-    if (!heatBurstEvent) return;
-    if (prevHeatBurstEventRef.current?.count === heatBurstEvent.count) return;
-    prevHeatBurstEventRef.current = heatBurstEvent;
+    if (!overdriveEvent) return;
+    if (prevOverdriveEventRef.current?.count === overdriveEvent.count) return;
+    prevOverdriveEventRef.current = overdriveEvent;
 
-    const { player } = heatBurstEvent;
+    const { player } = overdriveEvent;
     const screenX = player === 'p1' ? 0.3 * 800 : 0.7 * 800;
     const screenY = HIT_FX_SCREEN_Y;
     const fighter = player === 'p1' ? p1Fighter : p2Fighter;
     const bloomColor = getCharacterHitBloom(fighter.id, '#ff8800');
 
-    // Spawn multiple sparks for Heat Burst activation
+    // Spawn multiple sparks for Overdrive activation
     setHitEffectPool(prev => {
       let pool = prev;
       for (let i = 0; i < 3; i++) {
@@ -766,20 +766,20 @@ export default function CombatArena3D({
     hitEffectRafRef.current = requestAnimationFrame(() => {
       setHitEffectPool(prev => tickHitEffectPool(prev));
     });
-  }, [heatBurstEvent, p1Fighter, p2Fighter]);
+  }, [overdriveEvent, p1Fighter, p2Fighter]);
 
-  // ── Rage Art cinematic VFX ────────────────────────────────────────────────
+  // ── Finisher cinematic VFX ────────────────────────────────────────────────
   useEffect(() => {
-    if (!rageArtEvent) return;
-    if (prevRageArtEventRef.current?.count === rageArtEvent.count) return;
-    prevRageArtEventRef.current = rageArtEvent;
+    if (!finisherEvent) return;
+    if (prevFinisherEventRef.current?.count === finisherEvent.count) return;
+    prevFinisherEventRef.current = finisherEvent;
 
-    const { player } = rageArtEvent;
+    const { player } = finisherEvent;
     const screenX = player === 'p1' ? 0.3 * 800 : 0.7 * 800;
     const fighter = player === 'p1' ? p1Fighter : p2Fighter;
     const bloomColor = getCharacterHitBloom(fighter.id, '#ff0000');
 
-    // Massive Rage Art spark burst
+    // Massive Finisher spark burst
     setHitEffectPool(prev => {
       let pool = prev;
       for (let i = 0; i < 5; i++) {
@@ -801,7 +801,7 @@ export default function CombatArena3D({
     hitEffectRafRef.current = requestAnimationFrame(() => {
       setHitEffectPool(prev => tickHitEffectPool(prev));
     });
-  }, [rageArtEvent, p1Fighter, p2Fighter]);
+  }, [finisherEvent, p1Fighter, p2Fighter]);
 
   useEffect(() => {
     if (particles.length === 0) return;
