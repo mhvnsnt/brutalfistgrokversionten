@@ -64,6 +64,7 @@
 
 import * as THREE from 'three';
 import { SkeletonUtils } from 'three-stdlib';
+import { repairSkinWeights } from './SkinWeightRepair';
 import { type PsxRenderOptions } from '../../render/psx';
 import { getActiveRenderProfile } from '../../lib/graphicsSettings';
 import { restoreAuthoredTextures } from './restoreAuthoredTextures';
@@ -1129,6 +1130,21 @@ export async function runCharacterPipeline(
   // SkinnedMesh to the correct skeleton instance in the cloned scene.
   const cloned = SkeletonUtils.clone(scene) as THREE.Group;
   restoreAuthoredTextures(cloned, modelUrl);
+
+  // ── STEP 2b: Cut the webbing between the wrist and the hip ───────────────
+  // 53 of the 56 wired models carry vertices weighted to BOTH an arm and the
+  // pelvis, so the triangles between them stretch into a membrane the moment
+  // the arm leaves bind pose. Repaired on the CLONE, after the skeleton is
+  // rebound and before anything measures the body. See SkinWeightRepair for
+  // the measurement, where the weights came from, and why bind pose and
+  // skinqa both vouch for it.
+  const skinRepair = repairSkinWeights(cloned);
+  if (skinRepair.repaired > 0) {
+    console.log(
+      `[CharacterPipeline] ✂️ "${modelName}" — pruned ${skinRepair.repaired}/${skinRepair.verts} ` +
+      `vertices pulled across the body (worst span ${skinRepair.worstSpan} joints)`,
+    );
+  }
 
   // ── STEP 3: Zero the cloned scene's rotation BEFORE any measurement ───────
   // AGENT LAW: The cloned scene's internal rotation must be [0,0,0] so that:
