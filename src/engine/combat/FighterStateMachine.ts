@@ -432,8 +432,16 @@ export class FighterStateMachine {
   private queuedAction: QueuedAction | null = null;
 
   private inputBuffer: BufferEntry[] = [];
-  /** 10-frame input buffer at 60fps = 167ms. Holds inputs during block stun recovery. */
-  private readonly BUFFER_WINDOW_MS = 167;
+  /**
+   * Combo inputs must survive the startup/active portion of the move that is
+   * currently playing. The old 167ms window was shorter than even the light
+   * attack's 440ms total, so a deliberate L,L,H entered through the real
+   * controls expired before recovery was allowed to read it. Keep this as a
+   * bounded input buffer (not an infinite queue): 600ms is 36 frames at 60fps,
+   * enough to span one ordinary attack and still short enough to reject stale
+   * button strings.
+   */
+  private readonly BUFFER_WINDOW_MS = 600;
 
   // ── HitStun state ─────────────────────────────────────────────────────────
   private hitStunTimer = 0;
