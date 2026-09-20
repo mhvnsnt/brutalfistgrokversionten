@@ -123,6 +123,12 @@ import {
   type CommandStep,
   type MatchableMove,
 } from './CommandInput.ts';
+import {
+  attemptThrowBreak,
+  openThrowBreak,
+  tickThrowBreak,
+  type ThrowBreakState,
+} from './ThrowChains.ts';
 
 export interface SpecialMoveDefinition {
   id: string;
@@ -572,6 +578,24 @@ export class FighterStateMachine {
   get isInCommandThrow(): boolean { return this.actionState === 'CommandThrow'; }
   get isInOverdriveState(): boolean { return this.inOverdriveState; }
 
+  /** Arm the defender's reaction window after a throw connects in range. */
+  beginIncomingThrowBreak(depth = 0) {
+    this.incomingThrowBreak = openThrowBreak(depth);
+    this.incomingThrowBreakOutcome = null;
+  }
+
+  /** Consume the committed/broken result once the arena has processed it. */
+  consumeIncomingThrowBreakOutcome(): 'broken' | 'committed' | null {
+    const outcome = this.incomingThrowBreakOutcome;
+    this.incomingThrowBreakOutcome = null;
+    return outcome;
+  }
+
+  /** Whether a throw-break reaction window is currently open. */
+  get isThrowBreakPending(): boolean {
+    return this.incomingThrowBreak !== null;
+  }
+
   /** Whether grab range visualization should be shown */
   get showGrabRange(): boolean { return this.grabRangeActive; }
   /** Grab range radius for visualization */
@@ -923,6 +947,31 @@ export class FighterStateMachine {
     if (this.grabRangeActive) {
       this.grabRangeTimer = Math.max(0, this.grabRangeTimer - dt);
       if (this.grabRangeTimer <= 0) this.grabRangeActive = false;
+    }
+
+    // ── Incoming throw-break reaction ────────────────────────────────────
+    // The arena arms this only after a throw is confirmed in range. The
+    // defender then gets real frames to press Escape. On expiry, the arena
+    // commits the throw and applies its damage/knockdown.
+    if (this.incomingThrowBreak) {
+      if (risingEscape && attemptThrowBreak(this.incomingThrowBreak)) {
+        this.incomingThrowBreak = null;
+        this.incomingThrowBreakOutcome = 'broken';
+        this.actionState = 'Idle';
+        this.motionState = 'idle';
+        this.currentMove = null;
+        this.moveTimer = 0;
+        this.moveElapsed = 0;
+        this.queuedAction = null;
+        this.walkVelocity = { forward: 0, strafe: 0 };
+        return this.motionState;
+      }
+      if (!tickThrowBreak(this.incomingThrowBreak, dt)) {
+        this.incomingThrowBreak = null;
+        this.incomingThrowBreakOutcome = 'committed';
+      } else {
+        return this.motionState;
+      }
     }
 
     // ── Throw combo chain routing ─────────────────────────────────────────
