@@ -602,6 +602,32 @@ NEXT, and this is the path off the blocker above: as he labels, the
 labelled clips become the ground truth an "is this an attack" classifier and
 a per-character movelist generator can be built from.
 
+## 21a2. Hover-to-preview in the moveset creator
+
+`IMPLEMENTED / VERIFIED`. Owner: "when I am hovering over a move, like WWE
+games, it shows the animation from start to finish and keeps replaying it,
+while I'm hovering over each move and animation so I can know what move I'm
+looking at while I'm doing the checkbox list — and then I'll also be able to
+tell you which animations actually look like the animation they're supposed
+to and what parts are being messed up on the ones that don't."
+
+Hovering a clip row previews it immediately and loops it; tapping still
+SELECTS, so scrubbing the list never loses the clip being tagged. On a phone
+there is no hover, so the finger is the pointer — `onPointerEnter` fires for
+a mouse and for a drag down the list.
+
+Two details that matter for the job it has to do:
+- `setLoop(LoopRepeat, Infinity)` is named rather than left to the default.
+  A clip carrying LoopOnce stops on its last frame and reads as a frozen
+  statue — indistinguishable from the broken clips he is here to find.
+- A playhead readout and bar. A looping clip and a frozen one look identical
+  in a still frame, and telling those apart is the whole point. If the bar
+  does not sweep, that is a finding.
+
+EVIDENCE, driven in a browser: 366 clip rows; hovering shows the
+"preview · tap to tag" banner; the playhead advances and WRAPS
+(0.93 -> 0.31 on a 1.42 s clip), which is start-to-finish looping.
+
 ## 21c. Two probes of mine that could not fail, and one that lied
 
 Written down because all three produced a confident answer that was wrong,

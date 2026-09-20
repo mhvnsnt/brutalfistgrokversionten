@@ -57,11 +57,14 @@ function ClipPlayer({
   clip,
   speed,
   onClips,
+  onProgress,
 }: {
   modelUrl: string;
   clip: string | null;
   speed: number;
   onClips: (names: string[]) => void;
+  /** 0..1 through the clip, so the list can show it is really running. */
+  onProgress?: (p: { t: number; dur: number }) => void;
 }) {
   const group = useRef<THREE.Group>(null);
   const [rig, setRig] = useState<{
@@ -98,7 +101,19 @@ function ClipPlayer({
     const action = rig.actions[clip];
     rig.mixer.stopAllAction();
     if (!action) return;
+    // LOOP IT, START TO FINISH, EXPLICITLY.
+    //
+    // Owner: "when I am hovering over a move, like WWE games, it shows the
+    // animation from start to finish and keeps replaying it, so I can know
+    // what move I'm looking at while I'm doing the checkbox list."
+    //
+    // Named rather than left to the default: a clip that arrives with
+    // LoopOnce baked in stops on its last frame and reads as a frozen
+    // statue, which is indistinguishable from the broken clips he is here
+    // to find. This screen must never make a good clip look dead.
     action.reset();
+    action.setLoop(THREE.LoopRepeat, Infinity);
+    action.clampWhenFinished = false;
     action.timeScale = speed;
     action.play();
   }, [rig, clip, speed]);
@@ -110,11 +125,15 @@ function ClipPlayer({
     const tick = (now: number) => {
       rig.mixer.update((now - last) / 1000);
       last = now;
+      if (onProgress && clip) {
+        const a = rig.actions[clip];
+        if (a) onProgress({ t: a.time, dur: a.getClip().duration });
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [rig]);
+  }, [rig, clip, onProgress]);
 
   // FRAME THE WHOLE FIGHTER. A fixed offset put the camera at chest height on
   // a 1.85 m model and cut the head off — and judging a move by its torso is
@@ -152,6 +171,22 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
    */
   const [fighter, setFighter] = useState<string | null>(null);
   const [tab, setTab] = useState<'moves' | 'pool'>('moves');
+  /**
+   * HOVER PLAYS IT. Owner: "when I am hovering over a move, like WWE games,
+   * it shows the animation from start to finish and keeps replaying it,
+   * while I'm hovering over each move and animation so I can know what move
+   * I'm looking at while I'm doing the checkbox list."
+   *
+   * On a phone there IS no hover, and this screen is used on a phone — so
+   * the finger is treated as the pointer: `onPointerEnter` fires for a
+   * mouse, and a drag down the list fires it for touch too. Tapping still
+   * SELECTS, which is what the checkboxes edit; hovering only previews, so
+   * scrubbing the list never loses the clip being tagged.
+   */
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [playhead, setPlayhead] = useState<{ t: number; dur: number }>({ t: 0, dur: 0 });
+  /** What the viewport is showing: the hovered clip if any, else the selected one. */
+  const previewing = hovered ?? selected;
 
   const models = useMemo(() => [...new Set(BANNON_GLB_PLAYABLE_MODELS.map((m) => m.model))], []);
   const [model, setModel] = useState(() => models.find((m) => m.startsWith('BANNON_rigged')) ?? models[0]);
@@ -402,9 +437,15 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
               return (
                 <button
                   key={name}
-                  onClick={() => setSelected(name)}
+                  onClick={() => { setSelected(name); setHovered(null); }}
+                  onPointerEnter={() => setHovered(name)}
+                  onPointerLeave={() => setHovered((h) => (h === name ? null : h))}
                   className={`w-full text-left px-2 py-1 text-[10px] border-l-2 ${
-                    selected === name ? 'bg-white/10 border-yellow-400' : 'border-transparent hover:bg-white/5'
+                    selected === name
+                      ? 'bg-white/10 border-yellow-400'
+                      : hovered === name
+                        ? 'bg-white/5 border-sky-400'
+                        : 'border-transparent hover:bg-white/5'
                   }`}
                 >
                   <span className={l?.verdict === 'broken' ? 'text-red-300' : l ? 'text-emerald-300' : 'text-zinc-200'}>
@@ -438,7 +479,13 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
               <hemisphereLight intensity={2.2} groundColor={0x334455} />
               <directionalLight position={[3, 5, 4]} intensity={2} />
               <Suspense fallback={null}>
-                <ClipPlayer modelUrl={resolveGlbUrl(model)} clip={selected} speed={speed} onClips={setAvailable} />
+                <ClipPlayer
+                  modelUrl={resolveGlbUrl(model)}
+                  clip={previewing}
+                  speed={speed}
+                  onClips={setAvailable}
+                  onProgress={setPlayhead}
+                />
               </Suspense>
               <OrbitControls target={[0, 0, 0]} enablePan={false} />
             </Canvas>
@@ -447,11 +494,42 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
                 this clip does not resolve on {model}
               </div>
             )}
+            {/*
+              SAY WHAT IS PLAYING AND PROVE IT IS PLAYING.
+              A looping clip and a frozen one look identical in a still
+              frame, and telling those apart is the whole job on this
+              screen. The bar is the playhead; if it does not sweep, the
+              clip is not animating and that is a finding, not a glitch.
+            */}
+            <div className="absolute inset-x-0 top-1 px-2 flex items-center gap-2">
+              <span className={`text-[10px] ${hovered ? 'text-sky-300' : 'text-yellow-300'}`}>
+                {previewing ?? '—'}
+              </span>
+              {hovered && hovered !== selected && (
+                <span className="text-[9px] text-zinc-500">preview · tap to tag</span>
+              )}
+              <span className="ml-auto text-[9px] text-zinc-500">
+                {playhead.dur > 0 ? `${playhead.t.toFixed(2)} / ${playhead.dur.toFixed(2)}s` : ''}
+              </span>
+            </div>
+            {playhead.dur > 0 && (
+              <div className="absolute inset-x-2 top-5 h-[2px] bg-white/10">
+                <div
+                  className={hovered ? 'h-full bg-sky-400' : 'h-full bg-yellow-400'}
+                  style={{ width: `${Math.min(100, (playhead.t / playhead.dur) * 100)}%` }}
+                />
+              </div>
+            )}
           </div>
 
           <div className="border-t border-white/10 p-2 space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] text-yellow-300 font-bold">{selected ?? '—'}</span>
+              <span className="text-[10px] text-yellow-300 font-bold">
+                {selected ?? '—'}
+                {hovered && hovered !== selected && (
+                  <span className="ml-1 font-normal text-zinc-500">(tagging this one)</span>
+                )}
+              </span>
               {entry && (
                 <span className="text-[9px] text-zinc-500">
                   {entry.dur.toFixed(2)}s · {entry.bones} bones · {entry.bank}
