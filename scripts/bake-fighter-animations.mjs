@@ -41,6 +41,7 @@ import { sanitizeMotionClip } from '../src/engine/retarget/neutralizeRootMotion.
 import {
   SPINE_CHAIN,
   clampToJointLimits,
+  removeConstantConventionTwist,
   constrainHinges,
   redistributeChain,
 } from '../src/engine/retarget/SkeletalLimits.ts';
@@ -317,6 +318,13 @@ for (const src of sources()) {
     continue;
   }
 
+  // Remove a measured, near-constant thigh roll before anatomical limits.
+  // The Bannon bank contains a ~180° axial convention offset on the upper legs
+  // in many clips. Clamping that offset as if it were authored motion turns the
+  // thighs sideways; normalize the convention first, then constrain true motion.
+  const conventionTwists = removeConstantConventionTwist(relative, bind);
+  report.conventionTwistCorrections += conventionTwists.length;
+
   // CONSTRAIN AGAINST THE BODY'S OWN BIND, always — not against the T-pose
   // reference a T-pose-authored bank is RETARGETED through. A joint limit is
   // anatomical: "how far is this joint from where the body rests" only means
@@ -420,6 +428,7 @@ console.log(`  clips written        ${report.baked}`);
 console.log(`  skipped              ${report.skipped.length}`);
 console.log(`  spine redistributed  ${report.spineRedistributed} clip(s)`);
 console.log(`  hinge corrections    ${report.hingeCorrections} track(s)`);
+console.log(`  convention twist    ${report.conventionTwistCorrections} track(s)`);
 console.log(`  limit corrections    ${report.limitCorrections} track(s)`);
 console.log(`  combat slots owned   ${report.slotOwners ?? 0}`);
 console.log(`  planted on the floor ${report.grounded} clip(s), worst drop avg ${
