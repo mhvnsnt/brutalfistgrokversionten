@@ -181,10 +181,13 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   run:               ['run', 'Run', 'running', 'Running', 'sprint', 'Sprint', 'dash', 'Dash', 'walkForward', 'WalkForward', 'walk', 'Walk', 'DRUNK_RUN_FORWARD'],
   dash:              ['dash', 'Dash', 'dashForward', 'DashForward', 'run', 'Run', 'walkForward', 'WalkForward', 'dash_forward'],
   dashForward:       ['dashForward', 'DashForward', 'dash', 'Dash', 'run', 'Run', 'walkForward', 'WalkForward', 'dash_forward'],
-  jump:              ['jump', 'Jump', 'CROSS_JUMPS', 'jumpForward', 'jumpBack'],
-  jumpForward:       ['jumpForward', 'JumpForward', 'jump', 'Jump', 'CROSS_JUMPS'],
-  jumpBack:          ['jumpBack', 'JumpBack', 'jump', 'Jump', 'CROSS_JUMPS'],
-  Jumping:           ['jump', 'Jump', 'CROSS_JUMPS'],
+  // Real authored jump clips first. CROSS_JUMPS is a source clip but reads as
+  // a jumping-jack loop, so it is a last-resort fallback rather than the normal
+  // jump. World-space forward/back travel comes from LocomotionSystem.
+  jump:              ['BIG_JUMP', 'jump', 'Jump', 'jumpForward', 'jumpBack', 'CROSS_JUMPS'],
+  jumpForward:       ['BIG_JUMP', 'jumpForward', 'JumpForward', 'jump', 'Jump', 'CROSS_JUMPS'],
+  jumpBack:          ['BIG_JUMP', 'jumpBack', 'JumpBack', 'jump', 'Jump', 'CROSS_JUMPS'],
+  Jumping:           ['BIG_JUMP', 'jump', 'Jump', 'CROSS_JUMPS'],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -754,7 +757,10 @@ function FighterMeshInner({
     const attackWindow = isAttack && attackDurationSeconds && attackDurationSeconds > 0
       ? attackDurationSeconds
       : null;
-    nextAction.setEffectiveTimeScale(attackWindow ? clipDuration / attackWindow : 1);
+    const jumpWindow = ['jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey) ? 0.55 : null;
+    nextAction.setEffectiveTimeScale(
+      attackWindow ? clipDuration / attackWindow : jumpWindow ? clipDuration / jumpWindow : 1,
+    );
     nextAction.setEffectiveWeight(1);
     if (isAttack && attackWindow) {
       attackLockUntilRef.current = now + attackWindow;
