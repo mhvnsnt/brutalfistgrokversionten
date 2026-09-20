@@ -91,7 +91,10 @@ export const SEMANTIC_PREFERRED_CLIPS: Record<string, string[]> = {
   hit_reaction:   ['HIT_REACTION', 'HIT_TO_BODY', 'HIT_TO_HEAD', 'BIG_RIB_HIT', 'HIT_ON_THE_BACK', 'HIT_ON_SIDE_OF_HEAD', 'BIG_BODY_BLOW'],
   knockdown:      ['FALLING_FLAT_IMPACT', 'FALLING_FORWARD_DEATH', 'DEFEAT', 'DYING_BACKWARDS'],
   getup:          ['KIP_UP', 'CORKSCREW_KIP_UP', 'ACTION_IDLE_TO_STANDING_IDLE', 'CORKSCREW_EVADE'],
-  grapple:        ['DOUBLE_LEG_TAKEDOWN___VICTIM', 'SUPLEX', 'GERMANSUPLEX', 'DDT', 'CHOKESLAM'],
+  // Deliverer halves first. SUPLEX / GERMANSUPLEX / DDT / CHOKESLAM and
+  // DOUBLE_LEG_TAKEDOWN___VICTIM are the RECEIVER'S halves — they begin
+  // with the head on the mat. See STANDING_START_MIN in BakedMotionBank.
+  grapple:        ['TZ_SCOOP_SLAM', 'TZ_TILT_WHIRL_SLAM', 'JUNGLE_JUICE', 'SUPLEX', 'GERMANSUPLEX', 'DDT', 'CHOKESLAM'],
   crouch:         ['STANCE_CROUCH', 'CROUCH_IDLE_02_LOOKING_AROUND', 'CROUCH_WALK_FORWARD'],
   run:            ['DRUNK_RUN_FORWARD', 'LOCO_LIGHT'],
   dash_forward:   ['DRUNK_RUN_FORWARD', 'LOCO_STRUT'],

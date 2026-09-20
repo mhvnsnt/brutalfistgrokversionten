@@ -19,7 +19,7 @@ import {
   type AnimationIntegrityReport,
 } from '../engine/combat/AnimationIntegrityGate';
 import { COMBAT_STATE_TO_SEMANTIC, SEMANTIC_STATE_ALIASES, inferSemanticStateFromClipName } from '../engine/retarget/SemanticStateAliases';
-import { clipAnimates, clipStandsUpright, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
+import { clipAnimates, clipKeepsFacing, clipStandsUpright, clipStartsStanding, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
 import { AnimationBridge } from '../../animation_bridge/retarget';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -376,7 +376,10 @@ function resolveClipName(
    * taunting played BREAKDANCE_READY.
    */
   const usable = (c: string, forAttack = true) =>
-    clipAnimates(c) && clipStandsUpright(c) && (!forAttack || clipStrikesForward(c));
+    clipAnimates(c)
+    && clipStandsUpright(c)
+    && clipStartsStanding(c)
+    && (!forAttack || (clipStrikesForward(c) && clipKeepsFacing(c)));
   const attackSlot = /^attack|finisher|overdrive/.test(COMBAT_STATE_TO_SEMANTIC[key] ?? key);
   const pick = (test: (c: string) => boolean): string | undefined =>
     availableClips.find((c) => test(c) && usable(c, attackSlot)) ?? availableClips.find(test);

@@ -110,6 +110,15 @@ export interface BakedManifestEntry {
      */
     handReach?: number;
     footReach?: number;
+    /** The worst the body's facing gets at any frame. See FACE_AWAY_MIN. */
+    faceMin?: number;
+    /**
+     * Head height at the first and last frame over the clip's tallest. See
+     * STANDING_START_MIN: this is what tells a grapple's deliverer from its
+     * receiver.
+     */
+    startUp?: number;
+    endUp?: number;
   };
   /**
    * WHICH WAY IS UP FOR THIS BODY, median over the clip. +1 stands, 0 is
@@ -243,11 +252,78 @@ export const HAND_STRIKE_REACH_M = 0.35;
 export const FOOT_STRIKE_REACH_M = 0.60;
 
 /**
+ * A STANDING ATTACK KEEPS THE OPPONENT IN FRONT OF IT THE WHOLE WAY.
+ *
+ * Owner, looking at the move list: "the drop kick doesn't look like it's
+ * jumping into a horizontal kick, it kind of looks like it stays vertical.
+ * Then there's a move with like an AU on the end of it, I don't know what
+ * that move is, it kind of doesn't look like it's doing the animation right
+ * either."
+ *
+ * TRACED, and both are the same thing: they are 2.90 s MULTI-ACTION
+ * DEMONSTRATION clips, not single attacks, and the fighter TURNS ROUND
+ * partway through. Body facing, sampled across each clip:
+ *     DROP_KICK  0.96 -> 1.00 -> -0.76 at t 2.17, left foot 0.98 m BEHIND
+ *     AU         0.85 -> 1.00 ->  0.08 at t 2.54
+ * Nothing measured that. `body` is the MEAN over the clip, so a turn that
+ * lasts a third of it averages away, and DROP_KICK's mean is a healthy
+ * 0.55 while its worst frame is -1.00.
+ *
+ * DROP_KICK also answers the owner's other half by measurement: its median
+ * spine-up is 0.66, and a dropkick that goes horizontal measures near 0.
+ * It is not a dropkick that stays vertical — it is not a dropkick.
+ *
+ * THE THRESHOLD IS ZERO AND IS NOT FITTED TO THESE TWO. Square-on is the
+ * point at which the fighter stops facing his opponent at all, so the rule
+ * is "he turned away", not a number chosen to catch a clip. MEASURED, the
+ * attacks verified by eye stay well clear: GRAFQUICKJAB 0.99, CROUCHINGKICK
+ * 1.00, QUICKKICK 0.98, GRAFJUMPKICK 0.98, AXEKICK 0.92, JUMPAXEKICK 0.90,
+ * DEFAULTJUMPPUNCH 0.80, GYAKUZUKI 0.64, HIGHPUNCH 0.56, HEAVYKICK 0.52,
+ * TIGER_HEAVYKICK 0.39 — against DROP_KICK -1.00, CAPOEIRA__1_ -1.00 and
+ * AU -0.03. 14 attack clips of 94 are refused.
+ */
+export const FACE_AWAY_MIN = 0;
+
+/**
+ * A MAN THROWING A MOVE STARTS ON HIS FEET.
+ *
+ * Owner: "some of them seem to be grapples like neck breaker and it would
+ * be like, you know, have a certain animation reaction probably to it,
+ * like two animation parts for the one, for the deliverer and the receiver
+ * type shit for the grapples."
+ *
+ * He is right, and it is worse than a missing feature — the RECEIVING
+ * halves are being played as the ATTACKER'S animation. MEASURED as head
+ * height at the first frame over the tallest the clip ever stands:
+ *     NECKBREAKER  0.04    DDT         0.04    SUPLEX  0.42
+ *     CHOKESLAM   -0.10    GERMANSUPLEX -0.08
+ * Every one of those is on the `grapple` alias list, so a fighter throwing
+ * a grapple begins the move lying on the mat. NECKBREAKER is the one the
+ * owner picked out, and it renders as a crumpled heap that then stands up.
+ *
+ * THE POPULATION IS BIMODAL with a clean gap: 58 clips at or below 0.58,
+ * 308 at or above 0.61, and nothing in between. The threshold sits in the
+ * gap and keeps every crouch, which is the case that could have been lost
+ * — SHAZLOWRUSH_CROUCH 0.65, GRAFCROUCHEXTENDARM 0.71.
+ *
+ * GETUPS AND KNOCKDOWNS ARE NOT JUDGED. Starting on the floor is what a
+ * getup IS (KIP_UP 0.15, CORKSCREW_KIP_UP 0.61).
+ */
+export const STANDING_START_MIN = 0.6;
+
+/**
  * The semantic slots where the engine hands the clip a fighter who is
  * standing up and expects one back. Grapples, knockdowns, getups and the
  * victim halves of throws are all SUPPOSED to invert and are not judged.
  */
 const UPRIGHT_SEMANTICS = /^(attack|idle|block|walk|strafe|run|dash|backdash|crouch|guard|victory|taunt)/;
+
+/**
+ * The slots where the fighter is on his feet when the clip begins. The
+ * upright set plus grapple — a grapple's DELIVERER stands up to throw it;
+ * only the receiver starts down.
+ */
+const STANDING_START_SEMANTICS = /^(attack|idle|block|walk|strafe|run|dash|backdash|crouch|guard|victory|taunt|grapple|finisher|overdrive)/;
 
 const INDEX_URL = '/motion/baked/index.json';
 const BASE = '/motion/baked/';
@@ -266,6 +342,10 @@ let slotOwners: Map<string, string> = new Map();
 let strikesBackwards: Set<string> = new Set();
 /** Standing-slot clips whose body spends the clip at or past horizontal. */
 let inverted: Set<string> = new Set();
+/** Attack clips where the fighter turns away from his opponent partway. */
+let turnsAway: Set<string> = new Set();
+/** Clips that begin on the mat, so they are somebody's receiving half. */
+let startsDown: Set<string> = new Set();
 
 /**
  * DOES THIS CLIP'S STRIKE GO THE WAY THE BODY IS FACING?
@@ -334,6 +414,67 @@ export function markBackwardStrikes(manifest: Record<string, BakedManifestEntry>
 }
 
 /**
+ * DOES THIS CLIP BEGIN WITH THE FIGHTER ON HIS FEET?
+ *
+ * See STANDING_START_MIN. A clip that starts on the mat is the RECEIVING
+ * half of somebody else's move, and playing it on the man throwing the
+ * move is what made a neckbreaker start as a crumpled heap.
+ *
+ * Unknown clips are allowed, so a checkout with no bake behaves as before.
+ */
+export function clipStartsStanding(name: string): boolean {
+  return !startsDown.has(name);
+}
+
+/** For tests: the clips ruled out for beginning on the mat. */
+export function groundStartClips(): ReadonlySet<string> {
+  return startsDown;
+}
+
+/** Decide, from a manifest, which clips begin on the mat. */
+export function markGroundStarts(manifest: Record<string, BakedManifestEntry>): Set<string> {
+  const out = new Set<string>();
+  for (const [name, entry] of Object.entries(manifest)) {
+    if (!STANDING_START_SEMANTICS.test(entry.semantic ?? '')) continue;
+    const up = entry.strike?.startUp;
+    if (up === undefined) continue;
+    if (up < STANDING_START_MIN) out.add(name);
+  }
+  return out;
+}
+
+/**
+ * DOES THE FIGHTER KEEP FACING HIS OPPONENT THROUGH THIS ATTACK?
+ *
+ * See FACE_AWAY_MIN. Separate from the strike gate on purpose: DROP_KICK
+ * contains a perfectly good forward kick and then turns round, so the
+ * question "is there a strike in it" and the question "does he stay facing
+ * the man" have different answers and different fixes.
+ *
+ * Unknown clips are allowed, so a checkout with no bake behaves as before.
+ */
+export function clipKeepsFacing(name: string): boolean {
+  return !turnsAway.has(name);
+}
+
+/** For tests: the attack clips ruled out for turning away. */
+export function turnedAwayClips(): ReadonlySet<string> {
+  return turnsAway;
+}
+
+/** Decide, from a manifest, which attacks turn the fighter round. */
+export function markTurnsAway(manifest: Record<string, BakedManifestEntry>): Set<string> {
+  const out = new Set<string>();
+  for (const [name, entry] of Object.entries(manifest)) {
+    if (!/^attack/.test(entry.semantic ?? '')) continue;
+    const worst = entry.strike?.faceMin;
+    if (worst === undefined) continue;
+    if (worst < FACE_AWAY_MIN) out.add(name);
+  }
+  return out;
+}
+
+/**
  * IS THE BODY THE RIGHT WAY UP IN THIS CLIP?
  *
  * See UPRIGHT_SPINE_MIN. Separate from `clipCanStand`, which asks whether
@@ -383,7 +524,7 @@ export function slotOwnerFor(semantic: string): string | null {
   // named owner of attack_rk and strikes away from the way the body faces,
   // which is precisely the kick the owner reported going the wrong way.
   if (strikesBackwards.has(owner) || notAnimated.has(owner)) return null;
-  if (inverted.has(owner)) return null;
+  if (inverted.has(owner) || turnsAway.has(owner) || startsDown.has(owner)) return null;
   return owner;
 }
 
@@ -485,6 +626,8 @@ export function applyStandability(manifest: Record<string, BakedManifestEntry>):
   slotOwners = markSlotOwners(manifest);
   strikesBackwards = markBackwardStrikes(manifest);
   inverted = markInverted(manifest);
+  turnsAway = markTurnsAway(manifest);
+  startsDown = markGroundStarts(manifest);
   return notStandable;
 }
 
@@ -628,4 +771,6 @@ export function resetBakedMotionBankForTest(): void {
   slotOwners = new Map();
   strikesBackwards = new Set();
   inverted = new Set();
+  turnsAway = new Set();
+  startsDown = new Set();
 }

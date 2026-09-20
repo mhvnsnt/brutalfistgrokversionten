@@ -62,7 +62,14 @@ export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
   hit_reaction:   ['hit_reaction', 'hit', 'Hit', 'HIT_REACTION', 'HIT_TO_BODY', 'HIT_TO_HEAD', 'BIG_RIB_HIT', 'HIT_ON_THE_BACK', 'HIT_ON_SIDE_OF_HEAD', 'BIG_BODY_BLOW', 'hurt', 'Hurt', 'flinch', 'Flinch', 'hitstun', 'Hitstun', 'SBW_hit', 'T_hit', 'hit_reaction_procedural_placeholder', 'REACTION_HITWEAKHIGH', 'REACTION_HITWEAKMEDIUM', 'REACTION_HITSTRONGHIGH', 'REACTION_HITSTRONGMID'],
   knockdown:      ['knockdown', 'Knockdown', 'FALLING_FLAT_IMPACT', 'FALLING_FORWARD_DEATH', 'DEFEAT', 'DYING_BACKWARDS', 'ko', 'KO', 'fall', 'Fall', 'SBW_knockdown', 'T_knockdown', 'knockdown_procedural_placeholder', 'REACTION_HEAVYHITAIRREVOLT', 'REACTION_HEAVYHITAIRREVOLTBACK', 'SUPINE'],
   getup:          ['getup', 'getUp', 'GetUp', 'KIP_UP', 'CORKSCREW_KIP_UP', 'CORKSCREW_EVADE', 'quickStand', 'QuickStand', 'gettingUp', 'GettingUp', 'T_quickstand', 'getup_procedural_placeholder', 'WAKEUPANIMATION', 'ROLLOUT', 'ROLLOUTRIGHT', 'LAZORFORWARDROLL', 'LAZORBACKROLL'],
-  grapple:        ['grapple', 'grab', 'Grab', 'SUPLEX', 'GERMANSUPLEX', 'DDT', 'CHOKESLAM', 'DOUBLE_LEG_TAKEDOWN___VICTIM', 'throw', 'Throw', 'SBW_throw', 'T_1_3', 'THROWSTART', 'THROWSTART_STEP', 'KNEETHROW', 'GRAFTHROW', 'RENZOTHROW'],
+  // THE FIVE CLIPS THAT USED TO LEAD THIS LIST WERE THE RECEIVER'S HALF.
+  // Measured head height at the first frame, over the clip's tallest:
+  // NECKBREAKER 0.04, DDT 0.04, CHOKESLAM -0.10, GERMANSUPLEX -0.08,
+  // SUPLEX 0.42 — a man throwing a grapple was starting it on the mat.
+  // DOUBLE_LEG_TAKEDOWN___VICTIM is the same thing and says so in its name.
+  // They stay in the bank; they belong to the fighter TAKING the move, and
+  // the deliverer's halves lead now.
+  grapple:        ['grapple', 'grab', 'Grab', 'THROWSTART', 'THROWSTART_STEP', 'TZ_SCOOP_SLAM', 'TZ_TILT_WHIRL_SLAM', 'KNEETHROW', 'GRAFTHROW', 'RENZOTHROW', 'throw', 'Throw', 'SBW_throw', 'T_1_3', 'SUPLEX', 'GERMANSUPLEX', 'DDT', 'CHOKESLAM'],
   crouch:         ['crouch', 'Crouch', 'STANCE_CROUCH', 'CROUCH_IDLE_02_LOOKING_AROUND', 'CROUCH_WALK_FORWARD', 'duck', 'Duck', 'SBW_crouch', 'T_crouch', 'CROUCHING'],
   run:            ['run', 'Run', 'DRUNK_RUN_FORWARD', 'LOCO_LIGHT', 'running', 'Running', 'sprint', 'Sprint', 'RUNNING', 'RUNNINGLOW'],
   dash_forward:   ['dash_forward', 'dashForward', 'DashForward', 'dash', 'Dash', 'DRUNK_RUN_FORWARD', 'SPINJUMPF', 'SPINJUMPFFAST', 'RUNNING'],

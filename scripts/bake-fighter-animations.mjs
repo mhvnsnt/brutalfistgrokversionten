@@ -46,7 +46,7 @@ import {
   redistributeChain,
 } from '../src/engine/retarget/SkeletalLimits.ts';
 import { measureRestCorrection, needsCorrection } from '../src/engine/retarget/RestPoseOffset.ts';
-import { FOOT_STRIKE_REACH_M, HAND_STRIKE_REACH_M } from '../src/engine/retarget/BakedMotionBank.ts';
+import { FACE_AWAY_MIN, FOOT_STRIKE_REACH_M, HAND_STRIKE_REACH_M, STANDING_START_MIN } from '../src/engine/retarget/BakedMotionBank.ts';
 import {
   buildClipsFromEulerBank,
   eulerBankRestPose,
@@ -91,6 +91,13 @@ const round = (v) => +v.toFixed(PRECISION);
  */
 function ownerFailsMeasurement(name, strike, movingBones, boneCount, claimed) {
   if (!claimed) return null;
+  if (strike?.startUp !== undefined && strike.startUp < STANDING_START_MIN
+      && !/^(getup|knockdown|hit_reaction|defeat)/.test(claimed)) {
+    return `starts on the mat (head at ${strike.startUp.toFixed(2)} of standing) — a receiving half`;
+  }
+  if (/^attack/.test(claimed) && strike?.faceMin !== undefined && strike.faceMin < FACE_AWAY_MIN) {
+    return `turns away from the opponent (facing ${strike.faceMin.toFixed(2)})`;
+  }
   if (/^attack/.test(claimed) && strike?.handReach !== undefined
       && strike.handReach < HAND_STRIKE_REACH_M && (strike.footReach ?? 0) < FOOT_STRIKE_REACH_M) {
     return `no limb reaches out (hand ${strike.handReach.toFixed(2)} m, foot ${(strike.footReach ?? 0).toFixed(2)} m)`;
@@ -396,6 +403,19 @@ function measureStrikeDirection(clip) {
   const rs = new THREE.Vector3();
   let faceSum = 0;
   let faceN = 0;
+  // THE WORST THE FACING EVER GETS. A standing attack keeps the opponent in
+  // front of it the whole way through; a multi-action demonstration clip
+  // turns the fighter round partway. See FACE_AWAY_MIN.
+  let faceMin = Infinity;
+  // IS THIS THE DELIVERER'S HALF OR THE RECEIVER'S? A man throwing a move
+  // starts on his feet. A man taking one starts, or finishes, on the mat.
+  // Taken as head height at the first and last frame against the tallest
+  // the clip ever stands.
+  let startHead = null;
+  let endHead = null;
+  let maxHead = 0;
+  const hdp = new THREE.Vector3();
+  const bp = new THREE.Vector3();
   for (let i = 0; i <= steps; i++) {
     sampler.setTime((dur * i) / steps);
     skeleton.root.updateMatrixWorld(true);
@@ -417,7 +437,28 @@ function measureStrikeDirection(clip) {
         faceNow = fwd.x;
         faceSum += faceNow;
         faceN++;
+        if (faceNow < faceMin) faceMin = faceNow;
       }
+    }
+    const headBone = boneObjects.get('mixamorigHead');
+    if (headBone) {
+      headBone.getWorldPosition(hdp);
+      // HOW TALL IS HE STANDING RIGHT NOW: the head above the LOWEST point
+      // of the body, not a raw world Y. My first version used world Y and
+      // it was meaningless — the skeleton's origin is not the floor, head Y
+      // is negative for a third of the bank, and CROTCHCHOP (a standing
+      // taunt) scored 0.076 as if it were lying down. The lowest point is
+      // taken over every bone rather than the feet, because a body on the
+      // mat rests on a shoulder and a hip.
+      let low = Infinity;
+      for (const b of boneObjects.values()) {
+        b.getWorldPosition(bp);
+        if (bp.y < low) low = bp.y;
+      }
+      const tall = hdp.y - low;
+      if (startHead === null) startHead = tall;
+      endHead = tall;
+      if (tall > maxHead) maxHead = tall;
     }
     for (const name of LIMBS) {
       const b = boneObjects.get(name);
@@ -548,6 +589,9 @@ function measureStrikeDirection(clip) {
     if (/Hand$/.test(name)) handOut = Math.max(handOut, t.projMax);
     else footOut = Math.max(footOut, t.projMax);
   }
+  best.faceMin = Number.isFinite(faceMin) ? faceMin : 0;
+  best.startUp = startHead === null || maxHead <= 1e-6 ? 1 : startHead / maxHead;
+  best.endUp = endHead === null || maxHead <= 1e-6 ? 1 : endHead / maxHead;
   best.handReach = Number.isFinite(handOut) ? handOut : 0;
   best.footReach = Number.isFinite(footOut) ? footOut : 0;
   best.footLift = Math.max(
@@ -1056,6 +1100,11 @@ for (const src of sources()) {
          */
         handReach: +(d.handReach ?? 0).toFixed(3),
         footReach: +(d.footReach ?? 0).toFixed(3),
+        /** The worst the body's facing gets at any frame of the clip. */
+        faceMin: +(d.faceMin ?? 0).toFixed(3),
+        /** Head height at the first and last frame, over the clip's tallest. */
+        startUp: +(d.startUp ?? 1).toFixed(3),
+        endUp: +(d.endUp ?? 1).toFixed(3),
       };
     })(),
     armForward: ground?.posture?.medianArmForward ?? 0,
@@ -1109,6 +1158,15 @@ if (process.env.BF_MEDIANS) {
     /^attack/.test(m.semantic ?? '') && m.strike
     && (m.strike.handReach ?? 9) < HAND_STRIKE_REACH_M
     && (m.strike.footReach ?? 9) < FOOT_STRIKE_REACH_M);
+  const down = Object.entries(manifest).filter(([, m]) =>
+    /^(attack|idle|block|walk|strafe|run|dash|backdash|crouch|guard|victory|taunt|grapple|finisher|overdrive)/.test(m.semantic ?? '')
+    && m.strike && (m.strike.startUp ?? 9) < STANDING_START_MIN);
+  console.log(`  STARTS ON THE MAT    ${down.length} clip(s) that begin with the head on the floor — somebody's RECEIVING half`);
+  if (down.length) console.log('    ' + down.slice(0, 8).map(([n, m]) => `${n} ${m.strike.startUp}`).join(', '));
+  const turned = Object.entries(manifest).filter(([, m]) =>
+    /^attack/.test(m.semantic ?? '') && m.strike && (m.strike.faceMin ?? 9) < FACE_AWAY_MIN);
+  console.log(`  TURNS AWAY           ${turned.length} attack clip(s) where the fighter turns past square — refused as attacks`);
+  if (turned.length) console.log('    ' + turned.slice(0, 8).map(([n, m]) => `${n} ${m.strike.faceMin}`).join(', '));
   console.log(`  NO STRIKE IN IT      ${bad.length} attack clip(s) where no hand or foot reaches out — refused as attacks`);
   if (bad.length) console.log('    ' + bad.slice(0, 8).map(([n, m]) => `${n} h${m.strike.handReach} f${m.strike.footReach}`).join(', '));
 }
