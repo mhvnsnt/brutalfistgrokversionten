@@ -93,6 +93,15 @@ const boneObjects = new Map();
 skeleton.root.traverse((o) => { if (o.name) boneObjects.set(o.name, o); });
 const _v = new THREE.Vector3();
 
+/** The lowest point of the WHOLE skeleton, not just the feet. */
+function lowestBoneY() {
+  let y = Infinity;
+  for (const b of boneObjects.values()) {
+    b.getWorldPosition(_v);
+    if (_v.y < y) y = _v.y;
+  }
+  return y;
+}
 function lowestFootY() {
   let y = Infinity;
   for (const n of FOOT_BONES) {
@@ -109,6 +118,7 @@ function restPose() {
 }
 restPose();
 const BIND_FLOOR = lowestFootY();
+const BIND_BODY_FLOOR = lowestBoneY();
 const HIPS = 'mixamorigHips';
 const hipsBindPosition = boneObjects.get(HIPS)?.position.clone() ?? new THREE.Vector3();
 
@@ -138,15 +148,23 @@ const AIRBORNE_PEAK_M = Number(process.env.BF_AIRBORNE_M ?? 0.5);
 /**
  * The most the grounding offset may move a body, in metres.
  *
- * A fighter is 1.85 m. No legitimate grounding correction is a large
- * fraction of that, so anything past this is not a grounding problem — it is
- * a clip whose pose is wrong in some other way, and dropping the body a
- * metre and a half to "plant" it buries the fighter and hides the real
- * defect. MEASURED: GUARD_HIGH asked for -1.453 m.
+ * RAISED 0.6 -> 0.9 BECAUSE ITS ORIGINAL JOB IS DONE. The cap existed to stop
+ * a clip whose pose was wrong in some other way from being buried in the mat
+ * to "plant" it — and the thing that was actually wrong has since been found
+ * and fixed upstream: the thighs were folded up over the torso, so the whole
+ * body measured a metre too high. With the legs put back down and T-poses
+ * refused, what remains is genuine authored height.
  *
- * Clips that hit the cap are counted and named, not silently smeared.
+ * MEASURED across the three candidates:
+ *     0.6 m   26 clips capped, 8 never reach the mat
+ *     0.9 m    1 clip capped,  0 never reach the mat
+ *     1.2 m    0 clips capped
+ * 0.9 is where the curve flattens, and it is still under half the height of
+ * a 1.85 m fighter, so the cap can still catch a genuinely broken pose.
+ *
+ * Clips that hit it are counted and named, not silently smeared.
  */
-const MAX_GROUND_SHIFT_M = 0.6;
+const MAX_GROUND_SHIFT_M = Number(process.env.BF_MAX_SHIFT ?? 0.9);
 const MEDIANS = [];
 /** Names given in BF_GROUND_DEBUG get their raw floor measurement printed. */
 const DEBUG_GROUND = new Set((process.env.BF_GROUND_DEBUG ?? '').split(',').filter(Boolean));
@@ -397,11 +415,26 @@ function groundingOffset(clip) {
   action.play();
 
   const lift = [];
+  const bodyLift = [];
   const postures = [];
   for (const t of sorted) {
     sampler.setTime(t);
     skeleton.root.updateMatrixWorld(true);
-    lift.push(lowestFootY() - BIND_FLOOR);
+    // GROUND BY WHATEVER IS ACTUALLY TOUCHING, not by the feet.
+    //
+    // Owner: "when they get knocked down, they float in the air. They don't
+    // fall down to the ground." MEASURED: FALL_B_LOOP, semantic KNOCKDOWN,
+    // has its body 42 cm BELOW its lowest foot — a man on his back is on his
+    // shoulders and hips with his feet in the air. Planting that clip by the
+    // feet lifts the whole body 42 cm off the mat, which is the float.
+    //
+    // For a standing pose the lowest bone IS a foot, so this changes nothing
+    // there; it only matters for the bodies that are down, which is exactly
+    // where it was wrong.
+    const foot = lowestFootY() - BIND_FLOOR;
+    const body = lowestBoneY() - BIND_BODY_FLOOR;
+    lift.push(Math.min(foot, body));
+    bodyLift.push(body);
     // WHILE THE CLIP IS STILL POSING THE BODY — not after. My first version
     // took this after stopAllAction()/restPose() and every one of the 55
     // hovering clips reported the IDENTICAL posture, which is the bind pose
@@ -432,6 +465,12 @@ function groundingOffset(clip) {
   // that decides whether the pose is sound: if it is not human-shaped there,
   // it is not human-shaped anywhere useful.
   const posture = postures[lift.indexOf(minLift)] ?? null;
+  // WHAT IS ACTUALLY TOUCHING THE MAT. A standing body's lowest point is a
+  // foot; a body lying on its back is on its shoulders and hips, with the
+  // feet somewhere in the air. Planting a prone clip by its FEET lifts the
+  // whole body off the floor, which is precisely "they float when they get
+  // knocked down".
+  const minBody = Math.min(...bodyLift);
   // The MEDIAN over every sample, not one frame. A clip that is upside down
   // from end to end has a convention problem; one that dips and recovers is
   // doing its job.
@@ -461,6 +500,8 @@ function groundingOffset(clip) {
     // — peakDeg says a clip HOLDS a pose, not that the pose has feet on the
     // floor. STANCE_WIDE passes peakDeg at 10 deg and sits 107 cm in the air.
     floorGap: +(minLift + offset).toFixed(4),
+    minLiftFoot: +minLift.toFixed(4),
+    minLiftBody: +minBody.toFixed(4),
     applied: Math.abs(offset) >= 1e-5,
     posture,
   };
@@ -680,6 +721,8 @@ for (const src of sources()) {
     owns: Boolean(slot),
     airborne: clipAirborne,
     floorGap: ground?.floorGap ?? 0,
+    minLiftFoot: ground?.minLiftFoot ?? 0,
+    minLiftBody: ground?.minLiftBody ?? 0,
     armForward: ground?.posture?.medianArmForward ?? 0,
     armSpread: ground?.posture?.medianArmSpread ?? 0,
   };

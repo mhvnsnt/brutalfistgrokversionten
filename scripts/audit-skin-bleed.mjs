@@ -16,7 +16,8 @@
  *   node scripts/audit-skin-bleed.mjs VIPER.glb,JAGER.glb
  *   node scripts/audit-skin-bleed.mjs --gate          # non-zero exit on a regression
  */
-import { readdirSync, readFileSync, existsSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { chromium } from 'playwright';
 
 const ARGS = process.argv.slice(2);
@@ -36,14 +37,28 @@ const TOLERANCE = Number(process.env.BF_BLEED_TOLERANCE ?? 0);
 function wiredModels() {
   if (ONLY) return ONLY.split(',').filter(Boolean);
   const all = readdirSync('public/models').filter((f) => f.endsWith('.glb'));
-  const roster = existsSync('src/data/bannonRoster.ts')
-    ? readFileSync('src/data/bannonRoster.ts', 'utf8')
-    : '';
-  const extra = existsSync('src/data/bannonGlbRoster.ts')
-    ? readFileSync('src/data/bannonGlbRoster.ts', 'utf8')
-    : '';
-  const haystack = roster + extra;
-  return all.filter((f) => haystack.includes(f));
+  // EVERY SOURCE FILE, not two roster tables.
+  //
+  // MY FIRST VERSION READ bannonRoster.ts AND bannonGlbRoster.ts ONLY, and
+  // reported "55 of 55 clean" over a set that did not contain TITAN. The
+  // owner found him still webbed. A model reaches the game through several
+  // routes — the roster, the archetype-body fallback, alt attires, God
+  // Within, stage props — so the only honest test of "is this wired" is
+  // whether its filename appears ANYWHERE the app can read it.
+  const haystack = [];
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue;
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (/\.(ts|tsx|js|jsx|json)$/.test(entry.name)) {
+        try { haystack.push(readFileSync(full, 'utf8')); } catch { /* unreadable, skip */ }
+      }
+    }
+  };
+  walk('src');
+  const text = haystack.join('\n');
+  return all.filter((f) => text.includes(f));
 }
 
 const models = wiredModels();

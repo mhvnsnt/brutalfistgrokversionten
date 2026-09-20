@@ -249,7 +249,12 @@ describe('a stance kit only ever names clips with feet on the floor', () => {
     const manifest = JSON.parse(readFileSync(INDEX, 'utf8')) as Record<string, BakedManifestEntry>;
     const unstandable = applyStandability(manifest);
     try {
-      assert.ok(unstandable.size > 0, 'the bake measured nothing as unstandable');
+      // NO "SOMETHING MUST BE BROKEN" SANITY CHECK. This used to assert the
+      // set was non-empty, to catch a test that passes because it measured
+      // nothing — and then the bake got every clip onto the mat and the
+      // assertion started failing for the right reason. The real invariant
+      // is below: whatever the set contains, a kit must never name one.
+      assert.ok(manifest && Object.keys(manifest).length > 100, 'the bake manifest did not load');
       const styles = [
         'Power Wrestling', 'Technical Hybrid', 'Speed Assassin', 'Electric Striker',
         'Aerial Showman', 'Street Chaos', 'Phantom Psychology',

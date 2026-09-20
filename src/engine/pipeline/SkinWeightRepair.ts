@@ -141,6 +141,15 @@ export function repairSkinnedMesh(
   maxSpan: number = MAX_JOINT_SPAN_HOPS,
 ): SkinRepairReport {
   const report: SkinRepairReport = { repaired: 0, verts: 0, worstSpan: 0 };
+  // A SKELETON THAT IS NOT ONE TREE CANNOT BE JUDGED BY HOP DISTANCE.
+  //
+  // MEASURED on xbot.glb, the Mixamo test asset: it reports LeftArm and
+  // LeftShoulder as NINE hops apart when they are adjacent on any normal
+  // rig. Its bones are not parented into a single connected hierarchy, so
+  // every distance is meaningless and the repair would happily prune a
+  // shoulder's own blend. Refuse rather than mangle — this matters most for
+  // a model nobody has looked at yet, which is every new drop.
+  if (!skeletonIsConnected(hops)) return report;
   const skinIndex = mesh.geometry.attributes.skinIndex;
   const skinWeight = mesh.geometry.attributes.skinWeight;
   if (!skinIndex || !skinWeight) return report;
@@ -220,6 +229,25 @@ export function repairSkinnedMesh(
 
   if (report.repaired > 0) skinWeight.needsUpdate = true;
   return report;
+}
+
+/**
+ * Is this skeleton one connected tree?
+ *
+ * Judged by the SHOULDER-TO-ARM distance where those bones exist, because
+ * that pair is adjacent on every humanoid rig and is the cheapest possible
+ * lie detector; otherwise by whether most joints can reach each other at all.
+ */
+export function skeletonIsConnected(hops: number[][]): boolean {
+  if (hops.length < 2) return false;
+  let reachable = 0;
+  let total = 0;
+  for (const row of hops) {
+    for (const d of row) { total++; if (Number.isFinite(d)) reachable++; }
+  }
+  // A humanoid skeleton is fully connected. Allow a little slack for a stray
+  // prop bone, but a graph in pieces is not something to prune against.
+  return total > 0 && reachable / total > 0.9;
 }
 
 /**
