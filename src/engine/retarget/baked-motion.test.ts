@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import * as THREE from 'three';
 
 import { clipFromBaked, type BakedClipFile, type BakedManifestEntry } from './BakedMotionBank.ts';
-import { HINGE_JOINTS, JOINT_LIMITS, angleDeg, signedAngleAbout, swingTwist } from './SkeletalLimits.ts';
+import { HINGE_JOINTS, JOINT_LIMITS, angleDeg, signedAngleAbout, swingTwist, removeConstantConventionTwist } from './SkeletalLimits.ts';
 import { loadCanonicalSkeleton } from './CanonicalSkeleton.ts';
 
 const BAKED = 'public/motion/baked';
@@ -18,6 +18,38 @@ const hasBake = existsSync(join(BAKED, 'index.json'));
  * output, not the code that made it — if the bake regresses, a fighter bends
  * wrong, and that has to fail here rather than in front of the player.
  */
+
+test('constant thigh convention twist is removed without flattening dynamic motion', () => {
+  const rest = new Map<string, THREE.Quaternion>([
+    ['mixamorigLeftUpLeg', new THREE.Quaternion()],
+  ]);
+  const times = [0, 0.5, 1];
+  const values: number[] = [];
+  for (const deg of [170, 175, 165]) {
+    const q = new THREE.Quaternion().setFromAxisAngle(
+      new THREE.Vector3(0, 1, 0),
+      THREE.MathUtils.degToRad(deg),
+    );
+    values.push(q.x, q.y, q.z, q.w);
+  }
+  const clip = new THREE.AnimationClip('THIGH_CONVENTION', 1, [
+    new THREE.QuaternionKeyframeTrack('mixamorigLeftUpLeg.quaternion', times, values),
+  ]);
+  const corrected = removeConstantConventionTwist(clip, rest);
+  assert.equal(corrected.length, 1);
+  const track = clip.tracks[0] as THREE.QuaternionKeyframeTrack;
+  const first = new THREE.Quaternion(track.values[0], track.values[1], track.values[2], track.values[3]);
+  assert.ok(Math.abs(signedAngleAbout(swingTwist(first, new THREE.Vector3(0, 1, 0)).twist, new THREE.Vector3(0, 1, 0))) < 15);
+
+  const dynamic = new THREE.AnimationClip('DYNAMIC_THIGH', 1, [
+    new THREE.QuaternionKeyframeTrack('mixamorigLeftUpLeg.quaternion', times, [
+      ...new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(170)).toArray(),
+      ...new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(80)).toArray(),
+      ...new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(-80)).toArray(),
+    ]),
+  ]);
+  assert.equal(removeConstantConventionTwist(dynamic, rest).length, 0);
+});
 
 test('the bake exists and covers both source banks', { skip: !hasBake && 'bake not run' }, () => {
   const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
