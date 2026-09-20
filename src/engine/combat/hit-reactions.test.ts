@@ -144,14 +144,14 @@ describe('the state machine actually juggles', () => {
 
     fsm.applyReaction('Flight');
     assert.equal(fsm.isAirborne, true, 'a Flight reaction did not launch');
-    assert.equal(fsm.actionState, 'Juggled');
+    assert.equal(fsm.action, 'Juggled');
     assert.ok(fsm.juggleHeight >= 0);
 
     let landed = false;
     for (let i = 0; i < 600 && !landed; i++) landed = fsm.tickAirborne(1 / 60);
     assert.ok(landed, 'the fighter never came down');
     assert.equal(fsm.isAirborne, false);
-    assert.equal(fsm.actionState, 'Knockdown', 'a juggle must END on the mat, not standing');
+    assert.equal(fsm.action, 'Knockdown', 'a juggle must END on the mat, not standing');
   });
 
   it('scales damage down as the string goes on, and resets after landing', async () => {
@@ -175,7 +175,7 @@ describe('the state machine actually juggles', () => {
     const fsm = new FighterStateMachine();
     fsm.applyReaction('WeakMid');
     assert.equal(fsm.isAirborne, false);
-    assert.equal(fsm.actionState, 'HitStun');
+    assert.equal(fsm.action, 'HitStun');
   });
 
   it('a heavy hit CONTINUES a juggle instead of dropping into a standing stagger', async () => {
@@ -184,14 +184,14 @@ describe('the state machine actually juggles', () => {
     fsm.applyReaction('Flight');
     fsm.applyReaction('StrongMid');
     assert.equal(fsm.isAirborne, true, 'a heavy hit knocked them out of the air state');
-    assert.equal(fsm.actionState, 'Juggled');
+    assert.equal(fsm.action, 'Juggled');
   });
 
   it('a smackdown on a grounded fighter is just a knockdown', async () => {
     const { FighterStateMachine } = await import('./FighterStateMachine.ts');
     const fsm = new FighterStateMachine();
     fsm.applyReaction('Smackdown');
-    assert.equal(fsm.actionState, 'Knockdown');
+    assert.equal(fsm.action, 'Knockdown');
     assert.equal(fsm.isAirborne, false);
   });
 
@@ -199,6 +199,6 @@ describe('the state machine actually juggles', () => {
     const { FighterStateMachine } = await import('./FighterStateMachine.ts');
     const fsm = new FighterStateMachine();
     assert.equal(fsm.tickAirborne(1 / 60), false);
-    assert.equal(fsm.actionState !== 'Knockdown', true, 'a no-op tick knocked someone down');
+    assert.equal(fsm.action !== 'Knockdown', true, 'a no-op tick knocked someone down');
   });
 });
