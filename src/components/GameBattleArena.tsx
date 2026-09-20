@@ -489,6 +489,9 @@ export default function GameBattleArena({
   const [p1AnimTrigger, setP1AnimTrigger] = useState(0);
   const [p2AnimTrigger, setP2AnimTrigger] = useState(0);
   const p1AnimTriggerRef = useRef(0);
+  /** Reactions counted separately from attacks; together they make the trigger. */
+  const p1ReactionCountRef = useRef(0);
+  const p2ReactionCountRef = useRef(0);
   const p2AnimTriggerRef = useRef(0);
   const prevP1AnimRef = useRef<string>('idle');
   const prevP2AnimRef = useRef<string>('idle');
@@ -1242,6 +1245,16 @@ export default function GameBattleArena({
           p2: { airborne: p2SMRef.current?.isAirborne, y: p2SMRef.current?.juggleHeight, hits: p2SMRef.current?.juggleHits },
         }),
         renderY: () => ({ p1: p1YRef.current, p2: p2YRef.current }),
+        /** Attack starts vs the replay trigger the renderer is handed. */
+        triggers: () => ({
+          p1: { attackStarts: p1SMRef.current?.attackStarts ?? 0, trigger: p1AnimTriggerRef.current },
+          p2: { attackStarts: p2SMRef.current?.attackStarts ?? 0, trigger: p2AnimTriggerRef.current },
+        }),
+        /** What each side's state machine says it is doing, for the stuck-pose probe. */
+        states: () => ({
+          p1: { action: p1SMRef.current?.action, motion: p1SMRef.current?.current, clip: p1SMRef.current?.activeClip() },
+          p2: { action: p2SMRef.current?.action, motion: p2SMRef.current?.current, clip: p2SMRef.current?.activeClip() },
+        }),
       };
 
       p1SM.tickAirborne(dt);
@@ -1849,19 +1862,40 @@ export default function GameBattleArena({
         roundTimer,
       });
 
-      // ── Increment animation trigger on ANY state change ──────────────────
-      // Trigger on attacks, hit reactions, knockdowns — any meaningful state change
-      const TRIGGER_STATES = new Set(['lightAttack', 'heavyAttack', 'lightKick', 'heavyKick', 'hit', 'Hitstun', 'HitStun', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple', 'WakeupTechRoll', 'WakeupBackrise', 'WakeupQuickStand', 'jump', 'jumpForward', 'jumpBack']);
-      const p1StateChanged = p1NextMotion !== prevP1AnimRef.current;
-      const p2StateChanged = p2NextMotion !== prevP2AnimRef.current;
-
-      if (p1StateChanged && (TRIGGER_STATES.has(p1NextMotion) || TRIGGER_STATES.has(prevP1AnimRef.current))) {
-        p1AnimTriggerRef.current += 1;
-        setP1AnimTrigger(p1AnimTriggerRef.current);
+      // ── Tell the renderer to replay a clip ───────────────────────────────
+      //
+      // THIS USED TO COMPARE MOTION-STATE STRINGS and it could not see a
+      // repeat. `nextMotion !== prevMotion` is false when you throw the same
+      // attack twice, so the trigger never advanced, and FighterMesh — which
+      // replays a clip only on a fresh trigger — silently dropped the second
+      // attack while the mixer held the first one's clamped final frame.
+      // That is the owner's "stuck in an end punch frame while I'm trying to
+      // attack", and it is why 24 deliberate presses in the harness produced
+      // 2 hits.
+      //
+      // An attack STARTING is a fact the state machine owns, so it counts
+      // them and we read the count. No comparison, nothing to miss.
+      // Reactions still need the string test: being hit twice in a row is
+      // also a repeat, and the FSM has no equivalent counter for it.
+      const REACTION_STATES = new Set(['hit', 'Hitstun', 'HitStun', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple', 'WakeupTechRoll', 'WakeupBackrise', 'WakeupQuickStand', 'jump', 'jumpForward', 'jumpBack']);
+      const p1Reaction = p1NextMotion !== prevP1AnimRef.current
+        && (REACTION_STATES.has(p1NextMotion) || REACTION_STATES.has(prevP1AnimRef.current));
+      const p2Reaction = p2NextMotion !== prevP2AnimRef.current
+        && (REACTION_STATES.has(p2NextMotion) || REACTION_STATES.has(prevP2AnimRef.current));
+      // TWO MONOTONIC COUNTERS ADDED, never a value folded back into itself:
+      // the trigger must only ever go UP, or the renderer's
+      // `trigger <= lastPlayed` test starts swallowing clips again.
+      if (p1Reaction) p1ReactionCountRef.current += 1;
+      if (p2Reaction) p2ReactionCountRef.current += 1;
+      const p1Wanted = p1SM.attackStarts + p1ReactionCountRef.current;
+      const p2Wanted = p2SM.attackStarts + p2ReactionCountRef.current;
+      if (p1Wanted !== p1AnimTriggerRef.current) {
+        p1AnimTriggerRef.current = p1Wanted;
+        setP1AnimTrigger(p1Wanted);
       }
-      if (p2StateChanged && (TRIGGER_STATES.has(p2NextMotion) || TRIGGER_STATES.has(prevP2AnimRef.current))) {
-        p2AnimTriggerRef.current += 1;
-        setP2AnimTrigger(p2AnimTriggerRef.current);
+      if (p2Wanted !== p2AnimTriggerRef.current) {
+        p2AnimTriggerRef.current = p2Wanted;
+        setP2AnimTrigger(p2Wanted);
       }
       prevP1AnimRef.current = p1NextMotion;
       prevP2AnimRef.current = p2NextMotion;

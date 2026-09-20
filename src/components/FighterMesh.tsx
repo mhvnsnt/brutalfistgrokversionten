@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -516,6 +516,42 @@ function FighterMeshInner({
   /** Attack owns the mixer until its authored state-machine window expires. */
   const attackLockUntilRef = useRef(0);
 
+  /**
+   * RE-RUN THE ANIMATION EFFECT WHEN A REFUSED TRANSITION BECOMES LEGAL.
+   *
+   * Owner: "freezing and sticky combat animations, like being stuck in an
+   * end punch frame while I'm trying to attack, and with other moves too."
+   *
+   * THE BUG IS A DROPPED TRANSITION, NOT A STUCK STATE MACHINE. The effect
+   * below refuses a transition for two timing reasons — an attack still owns
+   * the mixer (`attackLockUntilRef`), or the last crossfade was under
+   * MIN_CROSSFADE_HOLD_S ago — and in both cases it just `return`ed. A React
+   * effect only re-runs when its inputs change, so a refusal THREW THE
+   * TRANSITION AWAY. Nothing ever retried it.
+   *
+   * The attack lock runs for the whole attack window, and the state machine
+   * publishes `idle` at exactly that boundary, so whether idle lands inside
+   * or outside the lock is a RACE — which is precisely why it is sticky
+   * sometimes and fine other times. When idle loses that race, the attack's
+   * clamped final frame holds forever, which is the end-punch pose.
+   *
+   * Bumping this counter when the lock expires re-runs the effect with the
+   * same inputs, and the transition it refused a moment ago now happens.
+   */
+  const [deferTick, setDeferTick] = useState(0);
+  const deferTimerRef = useRef<number | null>(null);
+  const deferUntil = useCallback((seconds: number) => {
+    const ms = Math.max(8, Math.ceil(seconds * 1000) + 8);
+    if (deferTimerRef.current !== null) return; // one pending retry is enough
+    deferTimerRef.current = window.setTimeout(() => {
+      deferTimerRef.current = null;
+      setDeferTick((n) => n + 1);
+    }, ms);
+  }, []);
+  useEffect(() => () => {
+    if (deferTimerRef.current !== null) window.clearTimeout(deferTimerRef.current);
+  }, []);
+
   // ── Bone hitbox system ────────────────────────────────────────────────────
   const boneHitboxRef = useRef<BoneHitboxSystem>(new BoneHitboxSystem());
 
@@ -747,6 +783,9 @@ function FighterMeshInner({
     // transitions; the attack action itself owns the mixer until the window
     // expires. A real hit/KO remains an explicit interrupt.
     if (!isAttack && !isDefensiveInterrupt && now < attackLockUntilRef.current) {
+      // DEFER, do not drop. Come back the moment the attack releases the
+      // mixer, or this transition is lost and the last frame holds.
+      deferUntil(attackLockUntilRef.current - now);
       return;
     }
 
@@ -756,6 +795,7 @@ function FighterMeshInner({
     } else if (!isUrgent && isSameClip) {
       return;
     } else if (!isUrgent && now - lastCrossfadeTimeRef.current < MIN_CROSSFADE_HOLD_S) {
+      deferUntil(MIN_CROSSFADE_HOLD_S - (now - lastCrossfadeTimeRef.current));
       return;
     }
     if (isAttack) lastPlayedTriggerRef.current = animationTrigger;
@@ -804,7 +844,11 @@ function FighterMeshInner({
     activeClipRef.current = clipName;
     committedClipRef.current = clipName;
     lastCrossfadeTimeRef.current = now;
-  }, [state, animation, animationTrigger, attackDurationSeconds, normalized, gltfUrl]);
+  // `deferTick` is here so a transition refused for a TIMING reason gets
+  // another go. Without it a refusal is permanent, because an effect does not
+  // re-run on unchanged inputs — see deferUntil.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, animation, animationTrigger, attackDurationSeconds, normalized, gltfUrl, deferTick]);
 
   // Idle kickstart is handled by the bind effect when `normalized` first lands.
   // A second auto-play effect was overwriting punches with breathing idle.

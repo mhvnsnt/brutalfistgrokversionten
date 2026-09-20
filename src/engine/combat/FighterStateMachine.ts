@@ -469,6 +469,8 @@ export class FighterStateMachine {
   private commandThrowTimer = 0;
   private commandThrowSucceeded = false;
   /** Pending combo route after a successful throw */
+  /** Monotonic count of attacks begun — the renderer's replay trigger. */
+  private attackStartCount = 0;
   private throwComboQueue: Array<'light' | 'heavy'> = [];
   private throwComboIndex = 0;
   private throwComboTimer = 0;
@@ -530,6 +532,27 @@ export class FighterStateMachine {
     const recoveryStart = this.currentMove.startup + this.currentMove.active;
     return this.moveElapsed >= recoveryStart;
   }
+  /**
+   * HOW MANY ATTACKS HAVE STARTED. Monotonic, and the renderer's trigger.
+   *
+   * Owner: "freezing and sticky combat animations, like being stuck in an
+   * end punch frame while I'm trying to attack."
+   *
+   * THE TRIGGER WAS DERIVED FROM A STRING COMPARISON:
+   *     const changed = nextMotion !== prevMotion;
+   *     if (changed && TRIGGER_STATES.has(...)) trigger++;
+   * Throw the same attack twice and `nextMotion` is 'lightAttack' both
+   * times, so the trigger never moved — and FighterMesh, which replays a
+   * clip only when the trigger advances, dropped the second attack on the
+   * floor. The mixer kept holding the FIRST attack's clamped final frame.
+   * That is the end-punch pose, and it is also why 24 deliberate button
+   * presses in the harness produced 2 hits.
+   *
+   * An attack starting is a FACT the state machine owns. Counting it here
+   * cannot miss a repeat, because there is no comparison to get wrong.
+   */
+  get attackStarts(): number { return this.attackStartCount; }
+
   get isInAttack(): boolean { return this.actionState === 'Attacking'; }
   get isStunned(): boolean {
     return this.actionState === 'Stunned' || this.actionState === 'Crumple';
@@ -1458,6 +1481,12 @@ export class FighterStateMachine {
   }
 
   private beginAttack(motion: FighterMotionState, move: MoveWindow): FighterMotionState {
+    // EVERY ATTACK THAT STARTS IS A NEW ATTACK, including a repeat of the
+    // one before it. The renderer needs a signal that says "play this
+    // again", and the caller was deriving one by comparing motion-state
+    // STRINGS — which cannot tell two identical jabs apart. See
+    // attackStarts.
+    this.attackStartCount++;
     const prevState = this.motionState;
     this.beginCrossfade(this.motionState, motion, CROSSFADE_ATTACK_FRAMES / this.FPS);
     this.actionState = 'Attacking';
