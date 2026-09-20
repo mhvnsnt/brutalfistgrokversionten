@@ -1329,30 +1329,11 @@ export default function GameBattleArena({
         setP1GrabRangeHit(grabResult.throwSucceeded);
         p1SM.resolveCommandThrow(grabResult.throwSucceeded);
         if (grabResult.throwSucceeded) {
-          // Apply throw to P2 — unblockable, full damage
-          const throwDmg = COMMAND_THROW_MOVE.damage ?? 220;
-          p2SMRef.current.applyKnockdown();
-          p2HitboxRef.current.reset();
-          console.log('[Arena] ✅ Command throw connected — damage:', throwDmg);
-          if (settings.soundEnabled) sfx.playHeavyHit();
-          setDamageEvent({
-            count: ++damageEventCountRef.current,
-            player: 'p2',
-            damage: throwDmg,
-            isCounter: false,
-            factionColor: p2Color,
-          });
-          setFeedbackEvents(prev => [...prev.slice(-6), {
-            id: ++feedbackIdRef.current,
-            moveId: 'commandThrow',
-            moveName: 'Command Throw',
-            damage: throwDmg,
-            isBlocked: false,
-            isCounter: false,
-            player: 'p1',
-            x: 60 + Math.random() * 10,
-            y: 20 + Math.random() * 20,
-          }]);
+          // Do NOT apply damage here. The defender now owns a real reaction
+          // window. P2's FSM consumes Escape during that window; only after it
+          // expires does the arena commit the throw.
+          p2SMRef.current.beginIncomingThrowBreak(0);
+          console.log('[Arena] 🤲 Command throw connected — break window opened');
         }
         // Hide grab range visualization after 400ms
         setTimeout(() => setP1GrabRangeVisible(false), 400);
@@ -1617,6 +1598,46 @@ export default function GameBattleArena({
       }
 
       // ── Update P2 state machine (AI: simple reactive) ─────────────────
+      // ── Commit or break the live command throw ────────────────────────
+      // P1 armed this window before P2's update. This runs after P2 has had
+      // the frame to press Escape, so a real break is possible in the match.
+      const throwBreakOutcome = p2SMRef.current.consumeIncomingThrowBreakOutcome();
+      if (throwBreakOutcome === 'broken') {
+        p1SMRef.current.resolveCommandThrow(false);
+        p2SMRef.current.applyPushback?.(0.35);
+        p2HitboxRef.current.reset();
+        audioManagerRef.current.playSFX('throw_break');
+        setSpecialMoveNotice({ name: 'THROW BREAK!', player: 'p2', id: ++specialNoticeIdRef.current });
+        setTimeout(() => setSpecialMoveNotice(null), 900);
+      } else if (throwBreakOutcome === 'committed') {
+        const throwDmg = COMMAND_THROW_MOVE.damage ?? 220;
+        p2SMRef.current.applyKnockdown();
+        p2LocoRef.current.halt();
+        p2HitboxRef.current.reset();
+        console.log('[Arena] ✅ Command throw committed — damage:', throwDmg);
+        engineRef.current?.applyIncomingHit('p2', throwDmg, false, 0.3);
+        if (settings.soundEnabled) sfx.playHeavyHit();
+        audioManagerRef.current.playSFX('throw_connect');
+        setDamageEvent({
+          count: ++damageEventCountRef.current,
+          player: 'p2',
+          damage: throwDmg,
+          isCounter: false,
+          factionColor: p2Color,
+        });
+        setFeedbackEvents(prev => [...prev.slice(-6), {
+          id: ++feedbackIdRef.current,
+          moveId: 'commandThrow',
+          moveName: 'Command Throw',
+          damage: throwDmg,
+          isBlocked: false,
+          isCounter: false,
+          player: 'p1',
+          x: 60 + Math.random() * 10,
+          y: 20 + Math.random() * 20,
+        }]);
+      }
+
       const p2Hb = p2HitboxRef.current;
 
       const p2AIInput: SMInput = buildP2AIInput(
