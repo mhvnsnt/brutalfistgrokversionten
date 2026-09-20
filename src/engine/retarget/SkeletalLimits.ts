@@ -144,6 +144,85 @@ function capped(q: THREE.Quaternion, maxDeg: number): THREE.Quaternion {
   return new THREE.Quaternion().slerp(q, maxDeg / deg);
 }
 
+/**
+ * Remove a source-convention roll that is effectively constant across a clip.
+ *
+ * Some Bannon motion-bank thigh channels carry an approximately 180° axial
+ * offset in every frame. Treating that as animation and then clamping it to a
+ * 50° anatomical ceiling rotates the whole leg sideways. It is a rest-space
+ * convention mismatch, not authored motion.
+ *
+ * We only remove it when the evidence is strong:
+ *   - the median signed twist is > 120° from zero, and
+ *   - 90% of frames stay within 25° of that baseline.
+ * Dynamic kicks/spins therefore remain untouched.
+ */
+export function removeConstantConventionTwist(
+  clip: THREE.AnimationClip,
+  restMap: Map<string, THREE.Quaternion>,
+  bones: readonly string[] = ['mixamorigLeftUpLeg', 'mixamorigRightUpLeg'],
+): Array<{ bone: string; baselineDeg: number; keys: number }> {
+  const out: Array<{ bone: string; baselineDeg: number; keys: number }> = [];
+
+  for (const track of clip.tracks) {
+    if (!track.name.endsWith('.quaternion')) continue;
+    const bone = track.name.slice(0, -'.quaternion'.length);
+    if (!bones.includes(bone)) continue;
+    const bind = restMap.get(bone);
+    if (!bind) continue;
+
+    const bindInv = bind.clone().invert();
+    const axis = new THREE.Vector3(0, 1, 0);
+    const angles: number[] = [];
+    for (let i = 0; i + 3 < track.values.length; i += 4) {
+      const q = new THREE.Quaternion(
+        track.values[i], track.values[i + 1], track.values[i + 2], track.values[i + 3],
+      );
+      const rel = bindInv.clone().multiply(q);
+      angles.push(signedAngleAbout(swingTwist(rel, axis).twist, axis));
+    }
+    if (!angles.length) continue;
+
+    // Circular mean handles a baseline sitting at +180/-180 without treating
+    // the wrap as a 360° animation.
+    let sx = 0;
+    let sy = 0;
+    for (const deg of angles) {
+      const r = THREE.MathUtils.degToRad(deg);
+      sx += Math.cos(r);
+      sy += Math.sin(r);
+    }
+    const baseline = THREE.MathUtils.radToDeg(Math.atan2(sy, sx));
+    const deviations = angles
+      .map((deg) => Math.abs(((deg - baseline + 180) % 360 + 360) % 360 - 180))
+      .sort((a, b) => a - b);
+    const p90 = deviations[Math.min(deviations.length - 1, Math.floor(deviations.length * 0.9))];
+
+    if (Math.abs(baseline) <= 120 || p90 > 25) continue;
+
+    const remove = new THREE.Quaternion().setFromAxisAngle(
+      axis, THREE.MathUtils.degToRad(-baseline),
+    );
+    for (let i = 0; i + 3 < track.values.length; i += 4) {
+      const q = new THREE.Quaternion(
+        track.values[i], track.values[i + 1], track.values[i + 2], track.values[i + 3],
+      );
+      // q = bind * swing * twist. Axial twists commute, so subtract the
+      // convention offset on the relative side before restoring the bind.
+      const rel = bindInv.clone().multiply(q);
+      const parts = swingTwist(rel, axis);
+      const fixed = bind.clone().multiply(parts.swing).multiply(parts.twist).multiply(remove);
+      track.values[i] = fixed.x;
+      track.values[i + 1] = fixed.y;
+      track.values[i + 2] = fixed.z;
+      track.values[i + 3] = fixed.w;
+    }
+    out.push({ bone, baselineDeg: +baseline.toFixed(1), keys: angles.length });
+  }
+
+  return out;
+}
+
 export interface LimitViolation {
   bone: string;
   /** Worst bend seen, degrees, before clamping. */
