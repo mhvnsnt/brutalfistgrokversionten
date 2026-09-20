@@ -653,6 +653,11 @@ export class FighterStateMachine {
     return this.currentMove?.clip ?? null;
   }
 
+  /** Human-readable move identity for deterministic combat probes and HUD diagnostics. */
+  activeMoveName(): string | null {
+    return this.currentMove?.specialName ?? (this.currentMove ? this.currentMove.animation : null);
+  }
+
   registerSpecialMoves(moves: SpecialMoveDefinition[]) {
     this.specialMoves = [...moves, ...DEFAULT_SPECIAL_MOVES];
   }
