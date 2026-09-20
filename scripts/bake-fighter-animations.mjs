@@ -179,6 +179,157 @@ const DEBUG_GROUND = new Set((process.env.BF_GROUND_DEBUG ?? '').split(',').filt
  * the instant of a slam and that is the animation doing its job; raising the
  * whole throw to accommodate one frame would leave it hovering.
  */
+/**
+ * Is the body shaped like a standing human right now?
+ *
+ * Deliberately crude and deliberately structural: three facts that are true
+ * of every standing pose and false of a folded or inverted one. Nothing here
+ * looks at a clip's NAME.
+ */
+function measurePosture() {
+  const head = boneObjects.get('mixamorigHead');
+  const hips = boneObjects.get(HIPS);
+  if (!head || !hips) return null;
+  const h = new THREE.Vector3();
+  const p = new THREE.Vector3();
+  head.getWorldPosition(h);
+  hips.getWorldPosition(p);
+  const foot = lowestFootY();
+  // WHICH WAY IS THE SPINE POINTING, as a unit vector's Y component. +1 is
+  // straight up, 0 is lying flat, -1 is upside down. Taken over the WHOLE
+  // clip it separates a convention error (inverted the whole way through)
+  // from authored motion (a body that inverts during a move and comes back).
+  const spine = h.clone().sub(p);
+  const spineUp = spine.lengthSq() > 1e-9 ? spine.normalize().y : 0;
+  // WHICH WAY DOES THE LEG HANG? hips -> foot as a unit vector's Y. -1 is a
+  // leg hanging straight down, which is what a standing body does. A POSITIVE
+  // value means the foot is above the pelvis: the leg is folded up over the
+  // torso, which is the defect that reads as "feet above the head" while the
+  // spine measures perfectly upright.
+  let legDown = 0;
+  const lf = boneObjects.get('mixamorigLeftFoot');
+  const rf = boneObjects.get('mixamorigRightFoot');
+  const fp = new THREE.Vector3();
+  let n = 0;
+  for (const f of [lf, rf]) {
+    if (!f) continue;
+    f.getWorldPosition(fp);
+    const leg = fp.clone().sub(p);
+    if (leg.lengthSq() > 1e-9) { legDown += leg.normalize().y; n++; }
+  }
+  if (n) legDown /= n;
+  return {
+    spineUp,
+    legDown,
+    /** A standing body carries its head above its pelvis. */
+    headAboveHips: h.y - p.y,
+    /** ...and its feet below it. */
+    hipsAboveFeet: p.y - foot,
+    /** ...and stands roughly as tall as it is built. */
+    height: h.y - foot,
+  };
+}
+
+/**
+ * THE LEGS ARE ON UPSIDE DOWN.
+ *
+ * MEASURED across the whole bake, as the Y component of the hips->foot
+ * direction: a healthy clip hangs its legs at median -0.75, and all 55 clips
+ * that could never reach the floor sit at +0.55 to +0.97. Their SPINES
+ * measure 0.99-1.00 upright, so the body is standing correctly and the
+ * thighs are folded up over it — which is why "the pose is authored too
+ * high" looked true and was not. The lowest foot was a metre up because the
+ * feet were near the head.
+ *
+ * This is the same family as the thigh convention twist already removed
+ * elsewhere in this bake, and it is the part that pass cannot reach: that one
+ * strips a constant axial ROLL about the bone, which leaves the direction
+ * alone. This is a flip of the direction itself.
+ *
+ * THE CORRECTION IS CHOSEN BY MEASUREMENT, NEVER BY REASONING ABOUT THE
+ * CONVENTION. There are four plausible ways to express "flip this bone" — a
+ * half turn about X or about Z, applied in the parent's space or the bone's
+ * own — and which one a given source rig needs depends on how it was
+ * authored. So all four are tried, the legs are re-measured after each, and
+ * the one that actually puts the feet under the body wins. If none does, the
+ * clip is left exactly as it was and named in the report; a correction that
+ * does not improve the number is not applied on faith.
+ */
+const LEG_UP_THRESHOLD = 0.2;
+/** Above this the torso is standing, so feet above the pelvis is impossible. */
+const SPINE_UPRIGHT_MIN = 0.7;
+
+/** Median over the clip of a posture field, sampled through the real mixer. */
+function measurePostureMedian(clip, field) {
+  const dur = clip.duration || 0;
+  const steps = Math.min(48, Math.max(8, Math.round(dur * 20)));
+  restPose();
+  const sampler = new THREE.AnimationMixer(skeleton.root);
+  const action = sampler.clipAction(clip);
+  action.play();
+  const values = [];
+  for (let i = 0; i <= steps; i++) {
+    sampler.setTime((dur * i) / steps);
+    skeleton.root.updateMatrixWorld(true);
+    const posture = measurePosture();
+    if (posture) values.push(posture[field]);
+  }
+  sampler.stopAllAction();
+  sampler.uncacheClip(clip);
+  restPose();
+  if (!values.length) return 0;
+  values.sort((a, b) => a - b);
+  return values[Math.floor(values.length / 2)];
+}
+
+const THIGHS = ['mixamorigLeftUpLeg', 'mixamorigRightUpLeg'];
+
+function applyThighFlip(clip, axis, side) {
+  const flip = new THREE.Quaternion().setFromAxisAngle(
+    axis === 'x' ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 0, 1),
+    Math.PI,
+  );
+  const q = new THREE.Quaternion();
+  for (const track of clip.tracks) {
+    if (!track.name.endsWith('.quaternion')) continue;
+    const bone = track.name.slice(0, -'.quaternion'.length);
+    if (!THIGHS.includes(bone)) continue;
+    for (let i = 0; i + 3 < track.values.length; i += 4) {
+      q.set(track.values[i], track.values[i + 1], track.values[i + 2], track.values[i + 3]);
+      if (side === 'parent') q.premultiply(flip); else q.multiply(flip);
+      q.normalize();
+      track.values[i] = q.x; track.values[i + 1] = q.y;
+      track.values[i + 2] = q.z; track.values[i + 3] = q.w;
+    }
+  }
+}
+
+function correctInvertedLegs(clip) {
+  const before = measurePostureMedian(clip, 'legDown');
+  if (before <= LEG_UP_THRESHOLD) return null;
+  // LEGS UP IS ONLY IMPOSSIBLE IF THE BODY IS STANDING. A suplex victim, a
+  // takedown victim and anyone mid-throw legitimately has their legs over
+  // their head, and flipping those would break correct animation to fix a
+  // measurement. The test that separates them is the SPINE: a torso that is
+  // upright while the feet are above the pelvis is a pose no body can make.
+  // Anything else is left exactly as authored.
+  const spine = measurePostureMedian(clip, 'spineUp');
+  if (spine < SPINE_UPRIGHT_MIN) return null;
+  let best = null;
+  for (const axis of ['x', 'z']) {
+    for (const side of ['parent', 'local']) {
+      const trial = clip.clone();
+      applyThighFlip(trial, axis, side);
+      const after = measurePostureMedian(trial, 'legDown');
+      if (!best || after < best.after) best = { axis, side, after };
+    }
+  }
+  // Only accept a correction that actually puts the legs underneath the body.
+  if (!best || best.after >= before || best.after > -0.2) return { before, rejected: true, best };
+  applyThighFlip(clip, best.axis, best.side);
+  return { before, after: best.after, axis: best.axis, side: best.side };
+}
+
 function groundingOffset(clip) {
   // DENSER THAN THE KEYS, still: the minimum has to be the true minimum of
   // the motion, not of the sparse keys, or a clip dips through the mat
@@ -210,10 +361,17 @@ function groundingOffset(clip) {
   action.play();
 
   const lift = [];
+  const postures = [];
   for (const t of sorted) {
     sampler.setTime(t);
     skeleton.root.updateMatrixWorld(true);
     lift.push(lowestFootY() - BIND_FLOOR);
+    // WHILE THE CLIP IS STILL POSING THE BODY — not after. My first version
+    // took this after stopAllAction()/restPose() and every one of the 55
+    // hovering clips reported the IDENTICAL posture, which is the bind pose
+    // and the same measurement trap as the sampler bug above. Identical
+    // numbers across different inputs is never a finding.
+    postures.push(measurePosture());
   }
   sampler.stopAllAction();
   sampler.uncacheClip(clip);
@@ -223,6 +381,7 @@ function groundingOffset(clip) {
     console.log(`  [lift] ${clip.name} first8=${lift.slice(0, 8).map((v) => v.toFixed(4)).join(' ')}`);
   }
   if (!lift.length || lift.some((v) => !Number.isFinite(v))) return null;
+
   MEDIANS.push([clip.name, Math.max(...lift)]);
 
   // The VERDICT is returned even when no offset is needed. An airborne clip
@@ -233,6 +392,19 @@ function groundingOffset(clip) {
   // floor".
   const airborne = Math.max(...lift) > AIRBORNE_PEAK_M;
   const minLift = Math.min(...lift);
+  // The frame where the body is CLOSEST to standing on the floor is the one
+  // that decides whether the pose is sound: if it is not human-shaped there,
+  // it is not human-shaped anywhere useful.
+  const posture = postures[lift.indexOf(minLift)] ?? null;
+  // The MEDIAN over every sample, not one frame. A clip that is upside down
+  // from end to end has a convention problem; one that dips and recovers is
+  // doing its job.
+  const ups = postures.filter(Boolean).map((x) => x.spineUp).sort((a, b) => a - b);
+  const legs = postures.filter(Boolean).map((x) => x.legDown).sort((a, b) => a - b);
+  if (posture) {
+    posture.medianSpineUp = ups.length ? ups[Math.floor(ups.length / 2)] : 0;
+    posture.medianLegDown = legs.length ? legs[Math.floor(legs.length / 2)] : 0;
+  }
   const raw = airborne ? Math.min(0, -minLift) : -minLift;
   const capped = Math.abs(raw) > MAX_GROUND_SHIFT_M;
   const offset = Math.max(-MAX_GROUND_SHIFT_M, Math.min(MAX_GROUND_SHIFT_M, raw));
@@ -250,6 +422,7 @@ function groundingOffset(clip) {
     // floor. STANCE_WIDE passes peakDeg at 10 deg and sits 107 cm in the air.
     floorGap: +(minLift + offset).toFixed(4),
     applied: Math.abs(offset) >= 1e-5,
+    posture,
   };
 }
 
@@ -309,6 +482,11 @@ const report = {
   airborne: 0,
   cappedShift: 0,
   cappedClips: [],
+  hoverDiagnosis: [],
+  legBaseline: [],
+  legsFlipped: 0,
+  legFixes: [],
+  legsUnfixed: [],
   worst: [],
 };
 
@@ -363,6 +541,17 @@ for (const src of sources()) {
     report.worst.push({ clip: src.name, bone: v.bone.replace('mixamorig', ''), ...v });
   }
 
+  // PUT THE LEGS BACK UNDER THE BODY before looking for the floor. A clip
+  // whose feet are above its head has no meaningful ground height, and
+  // measuring one is what made 55 clips look like they were authored high.
+  const legFix = correctInvertedLegs(relative);
+  if (legFix && !legFix.rejected) {
+    report.legsFlipped++;
+    report.legFixes.push({ name: src.name, ...legFix });
+  } else if (legFix?.rejected) {
+    report.legsUnfixed.push({ name: src.name, before: legFix.before, bestAfter: legFix.best?.after });
+  }
+
   // Measure the clip against the canonical floor. The correction is ONE
   // constant key, never a per-frame track — see groundingOffset for why the
   // per-frame version had to go and why removing it outright was not the fix.
@@ -379,6 +568,12 @@ for (const src of sources()) {
   if (ground?.applied) {
     report.grounded++;
     report.groundedTotal += Math.abs(ground.offset);
+  }
+  if (ground?.posture && (ground.floorGap ?? 0) <= 0.001) {
+    report.legBaseline.push(ground.posture.medianLegDown ?? 0);
+  }
+  if (ground && (ground.floorGap ?? 0) > 0.08 && ground.posture) {
+    report.hoverDiagnosis.push({ name: src.name, gap: ground.floorGap, ...ground.posture });
   }
 
   const tracks = {};
@@ -478,6 +673,48 @@ console.log(`  kept airborne        ${report.airborne} clip(s) (peak lift over $
 const stillHovering = Object.entries(manifest)
   .filter(([, m]) => (m.floorGap ?? 0) > 0.08)
   .sort((a, b) => b[1].floorGap - a[1].floorGap);
+console.log(`  LEGS PUT BACK DOWN   ${report.legsFlipped} clip(s) whose thighs were folded up over the torso`);
+if (report.legFixes.length) {
+  const byFix = {};
+  for (const f of report.legFixes) { const k = `${f.axis}/${f.side}`; byFix[k] = (byFix[k] ?? 0) + 1; }
+  console.log(`    correction chosen by measurement: ` + Object.entries(byFix).map(([k, v]) => `${v} x ${k}`).join(', '));
+  console.log(`    e.g. ` + report.legFixes.slice(0, 4).map((f) => `${f.name} ${f.before.toFixed(2)} -> ${f.after.toFixed(2)}`).join(', '));
+}
+if (report.legsUnfixed.length) {
+  console.log(`    NOT CORRECTED ${report.legsUnfixed.length}: no flip improved them, left exactly as authored`);
+  console.log(`      ` + report.legsUnfixed.slice(0, 6).map((f) => `${f.name} ${f.before.toFixed(2)}`).join(', '));
+}
+report.legBaseline.sort((a, b) => a - b);
+if (report.legBaseline.length) {
+  console.log(`  LEG BASELINE         grounded clips hang their legs at median ${report.legBaseline[Math.floor(report.legBaseline.length / 2)].toFixed(2)} (a standing leg is -1.00)`);
+}
+if (report.hoverDiagnosis.length) {
+  // WHAT IS THIS CLIP ACTUALLY DOING? The 55 are not one thing, and treating
+  // them as one is what made "authored too high" look like the answer.
+  //   PRONE    lying down — a fall, a ground move. Correct, and it should
+  //            still be ON the mat rather than floating above it.
+  //   TUCKED   airborne with the knees up — a jump or a spinning kick. Also
+  //            correct; it is SUPPOSED to leave the floor.
+  //   INVERTED head below the hips at the clip's most grounded frame. No
+  //            standing move does that; this one is genuinely broken.
+  const classify = (d) => {
+    if (d.height < 0.1) return 'INVERTED';
+    if (d.headAboveHips < 0.25) return 'PRONE';
+    if (d.height < 1.2) return 'TUCKED';
+    return 'UPRIGHT';
+  };
+  const counts = {};
+  for (const d of report.hoverDiagnosis) {
+    d.kind = classify(d);
+    counts[d.kind] = (counts[d.kind] ?? 0) + 1;
+  }
+  console.log(`  HOVER DIAGNOSIS      ${Object.entries(counts).map(([k, v]) => `${v} ${k}`).join(', ')}`);
+  for (const kind of ['UPRIGHT', 'INVERTED', 'PRONE', 'TUCKED']) {
+    const group = report.hoverDiagnosis.filter((d) => d.kind === kind).sort((a, b) => b.gap - a.gap);
+    if (!group.length) continue;
+    console.log(`    ${kind} (${group.length}): ` + group.slice(0, 8).map((d) => `${d.name} ${(d.gap * 100).toFixed(0)}cm spine ${(d.medianSpineUp ?? 0).toFixed(2)} leg ${(d.medianLegDown ?? 0).toFixed(2)}`).join(', '));
+  }
+}
 if (stillHovering.length) {
   console.log(`  NEVER REACH THE MAT  ${stillHovering.length} clip(s) — pose authored at the wrong height, refused as stances`);
   console.log('    ' + stillHovering.slice(0, 8).map(([n, m]) => `${n} ${(m.floorGap * 100).toFixed(0)}cm`).join(', '));
