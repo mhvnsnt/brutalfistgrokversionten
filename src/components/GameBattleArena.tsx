@@ -1245,6 +1245,64 @@ export default function GameBattleArena({
           p2: { airborne: p2SMRef.current?.isAirborne, y: p2SMRef.current?.juggleHeight, hits: p2SMRef.current?.juggleHits },
         }),
         renderY: () => ({ p1: p1YRef.current, p2: p2YRef.current }),
+        /**
+         * COUNT WEBBED VERTICES ON THE BODIES ACTUALLY ON SCREEN.
+         *
+         * Every previous check ran runCharacterPipeline directly in a test
+         * harness and reported clean. The owner says he still sees the
+         * wrist-to-hip webbing, so the question is not whether the repair
+         * works — it is whether the mesh being RENDERED went through it.
+         * This walks the live scene.
+         */
+        skinBleed: () => {
+          type Bone = { parent: unknown; name: string };
+          const hops = (bones: Bone[]): number[][] => {
+            const idx = new Map<unknown, number>();
+            bones.forEach((b, i) => idx.set(b, i));
+            const adj: number[][] = bones.map(() => []);
+            bones.forEach((b, i) => {
+              const par = b.parent;
+              if (par && idx.has(par)) { const j = idx.get(par) as number; adj[i].push(j); adj[j].push(i); }
+            });
+            return bones.map((_, start) => {
+              const d = new Array<number>(bones.length).fill(Infinity);
+              d[start] = 0; const q = [start];
+              for (let h = 0; h < q.length; h++) for (const n of adj[q[h]]) if (d[n] === Infinity) { d[n] = d[q[h]] + 1; q.push(n); }
+              return d;
+            });
+          };
+          const out: Array<Record<string, unknown>> = [];
+          const seen = new Set<unknown>();
+          const scenes = (window as unknown as { __scenes?: Array<{ traverse?: (f: (o: unknown) => void) => void }> }).__scenes ?? [];
+          const scene = scenes[scenes.length - 1];
+          scene?.traverse?.((raw: unknown) => {
+            const o = raw as Record<string, unknown>;
+            if (!o.isSkinnedMesh || seen.has(o.uuid)) return;
+            seen.add(o.uuid);
+            const sk = o.skeleton as { bones: Array<{ parent: unknown; name: string }> } | undefined;
+            const geo = o.geometry as { attributes: Record<string, { count: number; getComponent: (i: number, k: number) => number }> };
+            if (!sk?.bones?.length || !geo?.attributes?.skinIndex) return;
+            const H = hops(sk.bones);
+            let bleeding = 0;
+            const worst: Record<string, number> = {};
+            for (let v = 0; v < geo.attributes.skinIndex.count; v++) {
+              const ix: number[] = []; const wt: number[] = [];
+              for (let k = 0; k < 4; k++) {
+                const w = geo.attributes.skinWeight.getComponent(v, k);
+                if (w > 0.02) { ix.push(geo.attributes.skinIndex.getComponent(v, k)); wt.push(w); }
+              }
+              let mx = 0; let pair = '';
+              for (let a = 0; a < ix.length; a++) for (let b = a + 1; b < ix.length; b++) {
+                const d = H[ix[a]]?.[ix[b]];
+                if (Number.isFinite(d) && d > mx) { mx = d; pair = `${sk.bones[ix[a]].name}~${sk.bones[ix[b]].name}`; }
+              }
+              if (mx > 4) { bleeding++; worst[pair] = (worst[pair] ?? 0) + 1; }
+            }
+            out.push({ name: o.name, verts: geo.attributes.skinIndex.count, bleeding,
+              worst: Object.entries(worst).sort((a, b) => b[1] - a[1]).slice(0, 2) });
+          });
+          return out;
+        },
         /** Attack starts vs the replay trigger the renderer is handed. */
         triggers: () => ({
           p1: { attackStarts: p1SMRef.current?.attackStarts ?? 0, trigger: p1AnimTriggerRef.current },
