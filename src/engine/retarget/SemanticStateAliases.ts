@@ -69,7 +69,14 @@ export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
   // DOUBLE_LEG_TAKEDOWN___VICTIM is the same thing and says so in its name.
   // They stay in the bank; they belong to the fighter TAKING the move, and
   // the deliverer's halves lead now.
-  grapple:        ['grapple', 'grab', 'Grab', 'THROWSTART', 'THROWSTART_STEP', 'TZ_SCOOP_SLAM', 'TZ_TILT_WHIRL_SLAM', 'KNEETHROW', 'GRAFTHROW', 'RENZOTHROW', 'throw', 'Throw', 'SBW_throw', 'T_1_3', 'SUPLEX', 'GERMANSUPLEX', 'DDT', 'CHOKESLAM'],
+  // TZ_SCOOP_SLAM AND TZ_TILT_WHIRL_SLAM LED THIS LIST FOR ONE PASS AND WERE
+  // MY MISTAKE. They measure identically — 17.43 s, 14 of 14 bones, the same
+  // arm spread to three decimals — because they are the same clip under two
+  // names, and RENDERED they hold a T-POSE from end to end. Their spread is
+  // 0.49 against a T-pose gate of 0.50, which is how they slipped through;
+  // seventeen seconds should have been enough on its own. LOOK AT IT, every
+  // time, even when the numbers are clean.
+  grapple:        ['grapple', 'grab', 'Grab', 'THROWSTART', 'THROWSTART_STEP', 'KNEETHROW', 'RENZOTHROW', 'GRAFTHROW', 'throw', 'Throw', 'SBW_throw', 'T_1_3', 'SUPLEX', 'GERMANSUPLEX', 'DDT', 'CHOKESLAM'],
   crouch:         ['crouch', 'Crouch', 'STANCE_CROUCH', 'CROUCH_IDLE_02_LOOKING_AROUND', 'CROUCH_WALK_FORWARD', 'duck', 'Duck', 'SBW_crouch', 'T_crouch', 'CROUCHING'],
   run:            ['run', 'Run', 'DRUNK_RUN_FORWARD', 'LOCO_LIGHT', 'running', 'Running', 'sprint', 'Sprint', 'RUNNING', 'RUNNINGLOW'],
   dash_forward:   ['dash_forward', 'dashForward', 'DashForward', 'dash', 'Dash', 'DRUNK_RUN_FORWARD', 'SPINJUMPF', 'SPINJUMPFFAST', 'RUNNING'],

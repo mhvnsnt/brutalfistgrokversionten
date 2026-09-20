@@ -139,11 +139,43 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
 
   useEffect(() => { setLabels(loadMoveLabels()); }, []);
 
+  // THE LIST CAME UP EMPTY AND SAID "Nothing matches."
+  //
+  // One fetch, no retry, and every failure collapsed to `{}` — which the
+  // list renders as "0 shown · 0 baked" and a filter with no results. That
+  // is indistinguishable from a working screen with nothing in it, and it
+  // is what the owner was looking at when he asked for a live preview that
+  // already existed. Measured in the harness: the title screen's asset warm
+  // aborted the same URL and this screen inherited the failure.
+  //
+  // Retries with a short backoff, and SAYS SO when it cannot load, because
+  // "the manifest did not arrive" and "there are no clips" are different
+  // problems and the screen has to tell them apart.
+  const [manifestError, setManifestError] = useState<string | null>(null);
   useEffect(() => {
-    void fetch(assetUrl('/motion/baked/index.json'))
-      .then((r) => (r.ok ? r.json() : {}))
-      .then((m: Record<string, ManifestEntry>) => setManifest(m))
-      .catch(() => setManifest({}));
+    let live = true;
+    let tries = 0;
+    const pull = () => {
+      void fetch(assetUrl('/motion/baked/index.json'), { cache: 'no-cache' })
+        .then((r) => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json() as Promise<Record<string, ManifestEntry>>;
+        })
+        .then((m) => {
+          if (!live) return;
+          if (!m || Object.keys(m).length === 0) throw new Error('empty index');
+          setManifest(m);
+          setManifestError(null);
+        })
+        .catch((e: unknown) => {
+          if (!live) return;
+          tries += 1;
+          setManifestError(e instanceof Error ? e.message : String(e));
+          if (tries < 5) setTimeout(pull, 400 * tries);
+        });
+    };
+    pull();
+    return () => { live = false; };
   }, []);
 
   const rows = useMemo(() => {
@@ -252,7 +284,15 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
                 </button>
               );
             })}
-            {rows.length === 0 && <div className="p-3 text-[10px] text-zinc-500">Nothing matches.</div>}
+            {rows.length === 0 && (
+              <div className="p-3 text-[10px] text-zinc-500">
+                {manifestError
+                  ? `The baked clip list did not load (${manifestError}). Retrying…`
+                  : Object.keys(manifest).length === 0
+                    ? 'Loading the baked clip list…'
+                    : 'Nothing matches this filter.'}
+              </div>
+            )}
           </div>
         </div>
 

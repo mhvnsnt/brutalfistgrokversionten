@@ -167,6 +167,15 @@ const basePath = process.env.PUBLIC_BASE_PATH ?? "/";
 // AGENTS.md § "First scaffold".
 export default defineConfig(({ command, isPreview }) => ({
   base: basePath,
+  // SET EXPLICITLY BECAUSE DEV AND THE BUILD DISAGREED WITHOUT IT.
+  // MEASURED against the running dev server: `/motion/baked/index.json`
+  // 404'd while `/public/motion/baked/index.json` returned 200, so the
+  // public directory was being served as a literal subpath. The built
+  // output has `motion/` at its root and is correct, which made this a
+  // dev-only discrepancy — and a nasty one, because every local probe of
+  // models, clips and manifests measured a game with no assets in it while
+  // the deployed build was fine.
+  publicDir: join(rootDir, "public"),
   server: {
     host: "0.0.0.0",
     port: 8080,

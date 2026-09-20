@@ -37,13 +37,23 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
    * waits on this — pressing START mid-warm is fine.
    */
   useEffect(() => {
-    const abort = new AbortController();
+    // NO ABORT ON CLEANUP, AND THAT IS THE FIX, NOT AN OVERSIGHT.
+    //
+    // React's development double-effect mounts, unmounts and remounts. The
+    // unmount aborted the warm, the browser reuses an in-flight request for
+    // the same URL, and index.json came back ERR_ABORTED to the BAKED BANK
+    // as well — which used to latch that failure for the whole session and
+    // leave every fighter with none of its 366 clips.
+    //
+    // A prefetch has nothing to cancel: it only fills the HTTP cache, every
+    // failure inside it is already swallowed, and letting it finish costs a
+    // few background requests. Progress is dropped once the screen is gone.
+    let live = true;
     startAssetWarmup(warmupUrls(), {
       concurrency: 3,
-      signal: abort.signal,
-      onProgress: setWarm,
+      onProgress: (p) => { if (live) setWarm(p); },
     });
-    return () => abort.abort();
+    return () => { live = false; };
   }, []);
 
   // Autoplay can still be refused; the poster and the wordmark cover that.

@@ -677,6 +677,36 @@ function applyThighFlip(clip, axis, side) {
   }
 }
 
+/**
+ * A WHOLE-BODY PITCH CORRECTION WAS TRIED HERE AND REVERTED. WRITE IT DOWN.
+ *
+ * Owner: "crotch chop and rapid chest beating are taunts. I can see those
+ * aren't firing off in your thing." Rendered, they DO fire — they play
+ * HORIZONTAL, the fighter flat out for all five seconds of a crotch chop.
+ *
+ * MEASURED: 50 clips sit within 0.3 of horizontal while animating, and 40
+ * of those ALSO have the feet above the pelvis. A torso flat out with its
+ * feet above its hips is not a pose a body can hold, so the obvious reading
+ * is one whole-body rotation, and correctInvertedLegs refuses exactly these
+ * because its guard requires an upright spine.
+ *
+ * THE READING WAS WRONG AND THE ATTEMPT MADE THINGS WORSE. Rotating the root
+ * by +/-90 degrees about X or Z, keeping only results that stood the spine
+ * up AND hung the legs down, corrected THREE clips — and all three were
+ * already right: DOUBLE_LEG_TAKEDOWN___VICTIM (a takedown victim's legs ARE
+ * over his head) and KIP_UP (a getup DOES start on the floor). CROTCHCHOP
+ * and RAPIDCHESTBEATING, the two the owner actually named, were among the
+ * eight it could not stand up at all.
+ *
+ * So those clips are not rotated — they are flat in the source data, and no
+ * rigid transform of the root fixes them. They need a different source or a
+ * fresh capture, and the Move Library is where they get marked BROKEN.
+ *
+ * THE LESSON IS THE GUARD, NOT THE ROTATION: a self-verifying correction
+ * that only keeps results passing a measurement still "fixed" three clips
+ * that needed nothing, because the measurement it verified against could
+ * not tell a prone VICTIM from a broken taunt.
+ */
 function correctInvertedLegs(clip) {
   const before = measurePostureMedian(clip, 'legDown');
   if (before <= LEG_UP_THRESHOLD) return null;

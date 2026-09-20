@@ -329,7 +329,10 @@ const INDEX_URL = '/motion/baked/index.json';
 const BASE = '/motion/baked/';
 
 let cached: Map<string, THREE.AnimationClip> | null = null;
+/** True once a load has been tried, successfully or not. For reporting. */
 let attempted = false;
+/** A load already running, so two fighters join it instead of racing. */
+let inFlight: Promise<Map<string, THREE.AnimationClip>> | null = null;
 /** Clips the bake measured as unable to stand on the floor. */
 let notStandable: Set<string> = new Set();
 /** Clips the bake measured as a T-pose rather than an authored pose. */
@@ -710,9 +713,29 @@ export function clipFromBaked(data: BakedClipFile): THREE.AnimationClip | null {
  */
 export async function loadBakedMotionBank(): Promise<Map<string, THREE.AnimationClip>> {
   if (cached) return cached;
-  if (attempted) return new Map();
-  attempted = true;
+  // ONE FAILED FETCH USED TO KILL EVERY ANIMATION FOR THE WHOLE SESSION.
+  //
+  // `attempted` latched on the first try and every later call returned an
+  // empty Map, so a single aborted or flaky request for index.json left
+  // every fighter on the live retarget path with none of the 366 baked
+  // clips — for the rest of the session, with no way back.
+  //
+  // MEASURED here: React's development double-effect aborts the title
+  // screen's asset warm on its first unmount, the browser reuses the
+  // in-flight request, and index.json comes back ERR_ABORTED. The Move
+  // Library then reads "0 shown · 0 baked" and the game silently loses its
+  // animation set. On a phone, any dropped request does the same thing.
+  //
+  // A load already running is JOINED rather than duplicated; a load that
+  // FAILED is retried by the next caller. Only success is permanent.
+  if (inFlight) return inFlight;
 
+  inFlight = loadBakedMotionBankOnce().finally(() => { inFlight = null; });
+  return inFlight;
+}
+
+async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationClip>> {
+  attempted = true;
   const out = new Map<string, THREE.AnimationClip>();
   try {
     const res = await fetch(assetUrl(INDEX_URL));
@@ -761,10 +784,16 @@ export function bakedBankIsLoaded(): boolean {
   return cached !== null && cached.size > 0;
 }
 
+/** True once a load has been tried. A failed try does not stop a retry. */
+export function bakedBankWasTried(): boolean {
+  return attempted;
+}
+
 /** For tests: forget the loaded bank and its standability verdicts. */
 export function resetBakedMotionBankForTest(): void {
   cached = null;
   attempted = false;
+  inFlight = null;
   notStandable = new Set();
   notAPose = new Set();
   notAnimated = new Set();

@@ -94,7 +94,7 @@ export const SEMANTIC_PREFERRED_CLIPS: Record<string, string[]> = {
   // Deliverer halves first. SUPLEX / GERMANSUPLEX / DDT / CHOKESLAM and
   // DOUBLE_LEG_TAKEDOWN___VICTIM are the RECEIVER'S halves — they begin
   // with the head on the mat. See STANDING_START_MIN in BakedMotionBank.
-  grapple:        ['TZ_SCOOP_SLAM', 'TZ_TILT_WHIRL_SLAM', 'JUNGLE_JUICE', 'SUPLEX', 'GERMANSUPLEX', 'DDT', 'CHOKESLAM'],
+  grapple:        ['THROWSTART', 'KNEETHROW', 'JUNGLE_JUICE', 'SUPLEX', 'GERMANSUPLEX', 'DDT', 'CHOKESLAM'],
   crouch:         ['STANCE_CROUCH', 'CROUCH_IDLE_02_LOOKING_AROUND', 'CROUCH_WALK_FORWARD'],
   run:            ['DRUNK_RUN_FORWARD', 'LOCO_LIGHT'],
   dash_forward:   ['DRUNK_RUN_FORWARD', 'LOCO_STRUT'],
