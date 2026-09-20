@@ -34,5 +34,6 @@ describe('special input survives the move that is buffering it', () => {
 
     assert.equal(motion, 'lightAttack');
     assert.equal(fsm.action, 'Attacking');
+    assert.equal(fsm.activeMoveName(), 'Quick Combo', 'L,L,H must resolve to the special, not a buffered jab');
   });
 });
