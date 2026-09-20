@@ -2089,6 +2089,7 @@ export default function GameBattleArena({
           p1X={p1X}
           p2X={p2X}
           p1Y={p1Y}
+          p2Y={p2Y}
           onP1BoneHitboxReady={(sys: BoneHitboxSystem) => { p1BoneHitboxRef.current = sys; }}
           onP2BoneHitboxReady={(sys: BoneHitboxSystem) => { p2BoneHitboxRef.current = sys; }}
           wallSplatEvent={wallSplatEvent}
