@@ -1370,7 +1370,7 @@ export default function GameBattleArena({
       const p2Facing: Facing = p2XRef.current <= p1XRef.current ? 1 : -1;
       pushInput(
         p2CommandRef.current,
-        { x: (p2AIInput.forward ?? 0) > 0 ? p2Facing : (p2AIInput.forward ?? 0) < 0 ? -p2Facing : 0, y: 0 },
+        { x: ((p2AIInput.forward ?? 0) > 0 ? p2Facing : (p2AIInput.forward ?? 0) < 0 ? -p2Facing : 0) as Facing, y: 0 },
         commandButtonsFor({
           lp: p2AIInput.lp ?? p2AIInput.light,
           rp: p2AIInput.rp ?? p2AIInput.heavy,
