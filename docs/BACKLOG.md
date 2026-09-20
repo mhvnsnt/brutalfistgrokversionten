@@ -33,8 +33,11 @@ movesets, then arenas and presentation.
 
 ## 2. MOVESETS — unique per character
 
-- Every fighter gets their own moveset, stances and guards. No shared defaults
-  where a unique version exists.
+- **done for stances and guards** — 11 distinct idle stances and 5 guards
+  across the 27 fighters, deterministic from the fighter's id and style, and
+  every pool clip is in the baked set. The rest of the moveset is still open.
+- Every fighter gets their own moveset. No shared defaults where a unique
+  version exists.
 - Combos, directional attacks, per-character move lists.
 - **done** — an animation is not interrupted unless the move authorises it.
   Schwarzerblitz's own `#CANCEL_INTO` / `#FOLLOWUP` frame windows drive it;

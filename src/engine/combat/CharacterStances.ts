@@ -47,9 +47,25 @@ export interface StanceClip {
  * the generic every fighter already shared. Leaving them out is what makes the
  * set distinct rather than merely longer.
  */
+/**
+ * BOX_IDLE IS DELIBERATELY NOT HERE, and it used to be.
+ *
+ * `peakDeg` only asks whether a clip HOLDS a pose, and BOX_IDLE holds one
+ * beautifully — 11 degrees, the second stillest in the pool. It is still the
+ * wrong pose. MEASURED, hand position relative to the hips on a rig whose
+ * forward is +X:
+ *   BOX_IDLE  LH [ 0.229, 0.232, 0.311]   RH [-0.225, -0.025, 0.036]
+ * One hand 23 cm in FRONT and the other 23 cm BEHIND, both at hip height. The
+ * owner described it exactly: "his feet are really close together, he's
+ * leaning like he's doing the Michael Jackson lean, one of his arms are out
+ * forward and one of his arms are like weirdly out backward." It is a Mixamo
+ * shadowboxing loop sampled mid-swing, not a fighting stance.
+ *
+ * A PASSING METRIC IS NOT A PASSING CLIP — peakDeg cannot express "the arms
+ * are in the wrong places", so it had to be looked at.
+ */
 export const STANCE_POOL: StanceClip[] = [
   { clip: 'STANCE_WIDE',        bank: 'bannon',        peakDeg: 10, label: 'Wide Base' },
-  { clip: 'BOX_IDLE',           bank: 'bannon',        peakDeg: 11, label: 'Boxer' },
   { clip: 'GRAFSTANCE3',        bank: 'schwarzerblitz', peakDeg: 15, label: 'Still Guard' },
   { clip: 'TIGERSTANCEUPDATED', bank: 'schwarzerblitz', peakDeg: 20, label: 'Tiger' },
   { clip: 'STANCE_BLADED',      bank: 'bannon',        peakDeg: 24, label: 'Bladed' },
@@ -128,7 +144,9 @@ const ARCHETYPE_STANCES: Record<StanceArchetype, string[]> = {
   power:     ['STANCE_WIDE', 'GRAFSTANCE2', 'JOHNSON_STANCE', 'STANCE'],
   technical: ['STANCE_BLADED', 'GRAFSTANCE3', 'STANCE', 'TIGERSTANCEUPDATED'],
   speed:     ['LOWSTANCENEW', 'LOWSTANCE', 'SHAZSTANCE', 'TIGERSTANCE'],
-  striker:   ['BOX_IDLE', 'SHAZSTANCE', 'STANCE_BLADED', 'GRAFSTANCE3'],
+  // 'STANCE' where BOX_IDLE used to be: an orthodox upright guard is what a
+  // striker stands in, and BOX_IDLE is a shadowboxing loop, not a stance.
+  striker:   ['STANCE', 'SHAZSTANCE', 'STANCE_BLADED', 'GRAFSTANCE3'],
   aerial:    ['TIGERSTANCE', 'TIGERSTANCEUPDATED', 'LOWSTANCE', 'LOWSTANCENEW'],
   street:    ['JOHNSON_STANCE', 'GRAFSTANCE2', 'LOWSTANCE', 'STANCE_WIDE'],
   phantom:   ['GRAFSTANCE3', 'STANCE', 'TIGERSTANCEUPDATED', 'STANCE_BLADED'],
