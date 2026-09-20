@@ -202,3 +202,38 @@ describe('the state machine actually juggles', () => {
     assert.equal(fsm.action !== 'Knockdown', true, 'a no-op tick knocked someone down');
   });
 });
+
+describe('choosing a reaction for a hit that landed', () => {
+  it('the move OWN reaction always wins over the threshold', async () => {
+    const { resolveHitReaction } = await import('./HitReactions.ts');
+    assert.equal(resolveHitReaction({ reaction: 'Flight', launch: 0 }), 'Flight');
+    assert.equal(resolveHitReaction({ reaction: 'WeakLow', launch: 0.9 }), 'WeakLow');
+  });
+
+  it('ignores a reaction name it does not know rather than crashing', async () => {
+    const { resolveHitReaction } = await import('./HitReactions.ts');
+    assert.equal(resolveHitReaction({ reaction: 'Nonsense', launch: 0 }), 'WeakMid');
+  });
+
+  it('splits launch into a juggle and a knockdown instead of one threshold', async () => {
+    const { resolveHitReaction } = await import('./HitReactions.ts');
+    // The engine used a single `launch > 0.3` test and sent EVERYTHING past
+    // it to a flat knockdown, which is why the hardest hits in the game
+    // could not start a juggle.
+    // THE THRESHOLD IS READ OFF THE SHIPPED MOVE TABLE, whose launch values
+    // are 0, 0.1, 0.2, 0.4, 0.5 and 0.9. 0.5 is the SPECIAL move — the one
+    // launcher a player can reliably throw — so it MUST launch. A threshold
+    // of 0.55 passed every other test and made juggles unreachable in play.
+    assert.equal(resolveHitReaction({ launch: 0.9 }), 'Flight');
+    assert.equal(resolveHitReaction({ launch: 0.5 }), 'Flight', 'the special must launch');
+    assert.equal(resolveHitReaction({ launch: 0.4 }), 'Smackdown');
+    assert.equal(resolveHitReaction({ launch: 0.1 }), 'WeakMid');
+  });
+
+  it('keeps an airborne victim airborne, so a combo continues', async () => {
+    const { resolveHitReaction, reactionFor } = await import('./HitReactions.ts');
+    const r = resolveHitReaction({ launch: 0.1 }, true);
+    assert.notEqual(reactionFor(r).kind, 'smackdown', 'a light hit should not end the juggle');
+    assert.equal(resolveHitReaction({ launch: 0.9 }, true), 'Flight');
+  });
+});

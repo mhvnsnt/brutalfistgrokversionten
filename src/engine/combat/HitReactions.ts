@@ -287,3 +287,55 @@ export function allThrows(): Array<{ set: string; move: string }> {
   }
   return out;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Choosing a reaction for a hit that just landed
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * At or above this launch value a move is a LAUNCHER and opens a juggle;
+ * between the knockdown floor and here it is a heavy knockdown.
+ *
+ * TWO THRESHOLDS, NOT ONE. The engine had a single `launch > 0.3` test and
+ * sent everything past it to applyKnockdown — so the hardest hits in the
+ * game put people flat on the mat and a juggle was impossible. Splitting it
+ * keeps the heavy knockdowns that already felt right and promotes only the
+ * genuine launchers.
+ *
+ * 0.5 IS READ OFF THE MOVE TABLE, NOT PICKED. The launch values the game
+ * actually ships are 0, 0.1, 0.2, 0.4, 0.5 and 0.9 — and 0.5 is the SPECIAL
+ * move's. I first wrote 0.55, which sat in the gap directly above it and
+ * would have excluded the one launcher the player can reliably throw, so
+ * juggles would have been unreachable in play while every unit test passed.
+ * Measure the distribution before choosing a threshold in it.
+ */
+export const LAUNCH_THRESHOLD = 0.5;
+/** Below this a hit is an ordinary stagger. */
+export const KNOCKDOWN_THRESHOLD = 0.3;
+
+export interface LandedHit {
+  /** How much the move throws the victim upward, 0..1, from the move data. */
+  launch?: number;
+  /** The authored Schwarzerblitz reaction, when the move carries one. */
+  reaction?: string;
+}
+
+/**
+ * What should this hit do?
+ *
+ * THE MOVE'S OWN REACTION WINS whenever it has one — that is the imported
+ * data and it is more specific than any threshold. The launch value is the
+ * fallback for moves that predate the import, so nothing regresses and
+ * nothing has to be re-authored.
+ */
+export function resolveHitReaction(hit: LandedHit, victimAirborne = false): SbReaction {
+  if (hit.reaction && hit.reaction in REACTIONS) return hit.reaction as SbReaction;
+  const launch = hit.launch ?? 0;
+  // ALREADY IN THE AIR: keep them there. A heavy hit mid-juggle must extend
+  // the string rather than reset the victim to a grounded knockdown, which
+  // is the difference between a combo and two separate hits.
+  if (victimAirborne) return launch >= LAUNCH_THRESHOLD ? 'Flight' : 'StrongMid';
+  if (launch >= LAUNCH_THRESHOLD) return 'Flight';
+  if (launch >= KNOCKDOWN_THRESHOLD) return 'Smackdown';
+  return 'WeakMid';
+}

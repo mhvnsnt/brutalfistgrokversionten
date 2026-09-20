@@ -686,6 +686,7 @@ export class FighterStateMachine {
         return effect;
       case 'launch': {
         applyLaunch(this.juggle, effect);
+        console.log(`[FSM] 🚀 LAUNCH — vy=${this.juggle.vy.toFixed(2)} hits=${this.juggle.hits}`);
         this.actionState = 'Juggled';
         this.motionState = 'knockdown';
         this.hitStunTimer = effect.stun;

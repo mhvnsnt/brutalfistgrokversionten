@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import { preFightSequence, type IntroBeat } from '../engine/combat/PreFightIntros';
+import { reactionFor, resolveHitReaction } from '../engine/combat/HitReactions';
 import { type BannonFighterProfile } from '../data/bannonRoster';
 import { GameEngine } from '../engine/GameEngine';
 import { getCharacterMoveSet } from '../engine/CharacterMoveSetSystem';
@@ -1213,6 +1214,37 @@ export default function GameBattleArena({
       const p1Hb = p1HitboxRef.current;
       const prevP1Action = p1SM.action;
 
+      // ADVANCE THE JUGGLE BEFORE THE STATE MACHINE READS ITS OWN STATE.
+      // Landing hands off to applyKnockdown inside tickAirborne, so a body
+      // that hits the mat this frame is already knocked down by the time
+      // update() runs — rather than spending one frame standing.
+      // ── A WAY TO TRIGGER A JUGGLE WITHOUT LANDING ONE ──────────────────
+      //
+      // Verifying the juggle end to end meant landing a SPECIAL, and the
+      // only launcher in the move table is the special's hitbox. Driving
+      // that through a headless harness cost four runs and never connected:
+      // keyboard does nothing (this build is touch-first, the pad binds
+      // pointer events) and the button sequence never came out. 77 state
+      // machine events, 2 hits, 0 launches.
+      //
+      // So the chain gets an instrument instead of another guess.
+      // `__BF_DEBUG.launch('p2')` exercises the real path — the same
+      // applyReaction the hit code calls — so a test can prove FSM -> arc ->
+      // renderer Y without fighting the input system. It is a debug hook in
+      // a fighting game, not a security surface, and it is also the quickest
+      // way for the owner to see a juggle on his own device.
+      (window as unknown as { __BF_DEBUG?: Record<string, unknown> }).__BF_DEBUG = {
+        launch: (who: 'p1' | 'p2' = 'p2') => {
+          (who === 'p1' ? p1SMRef : p2SMRef).current?.applyReaction('Flight');
+        },
+        airborne: () => ({
+          p1: { airborne: p1SMRef.current?.isAirborne, y: p1SMRef.current?.juggleHeight, hits: p1SMRef.current?.juggleHits },
+          p2: { airborne: p2SMRef.current?.isAirborne, y: p2SMRef.current?.juggleHeight, hits: p2SMRef.current?.juggleHits },
+        }),
+        renderY: () => ({ p1: p1YRef.current, p2: p2YRef.current }),
+      };
+
+      p1SM.tickAirborne(dt);
       const p1NextMotion = p1SM.update(smInput, dt);
       const p1HbWindow = p1SM.getHitboxWindow();
       p1Hb.update(p1HbWindow);
@@ -1383,12 +1415,31 @@ export default function GameBattleArena({
         p1ComboRef.current = newP1Combo;
         setP1Combo({ ...newP1Combo });
         if (!guardResult.blocked) {
-          engine.applyIncomingHit('p2', p1ScaledDmg, false, p1Hit.hitstun || 0.3);
+          // COMBO SCALING ON TOP OF THE EXISTING SCALING. registerHit already
+          // scales a ground combo; this is the AIRBORNE scaling, which is a
+          // separate rule and the one that stops a juggle being an infinite.
+          // It is 1.0 for anyone standing, so nothing off the ground changes.
+          const p1Air = p2SMRef.current.juggleDamageScale();
+          engine.applyIncomingHit('p2', Math.max(1, Math.round(p1ScaledDmg * p1Air)), false, p1Hit.hitstun || 0.3);
         }
 
-        // Apply stun/knockdown to P2 state machine
-        const isCrumple = !guardResult.blocked && p1Hit.launch > 0.3;
-        if (isCrumple) {
+        // Apply the move's REACTION to P2 — launch, knockdown or stagger.
+        //
+        // This used to be one test, `launch > 0.3`, straight to
+        // applyKnockdown: the hardest hits in the game put people flat on
+        // the mat, so a juggle was impossible. resolveHitReaction splits it
+        // and prefers the move's own authored reaction when it has one.
+        const p2WasAirborne = p2SMRef.current.isAirborne;
+        const p2Reaction = resolveHitReaction(
+          { launch: p1Hit.launch, reaction: (p1HbWindow.move as { reaction?: string } | undefined)?.reaction },
+          p2WasAirborne,
+        );
+        const p2Effect = reactionFor(p2Reaction);
+        const isCrumple = !guardResult.blocked && p2Effect.kind === 'smackdown' && !p2WasAirborne;
+        if (!guardResult.blocked && p2Effect.kind === 'launch') {
+          p2SMRef.current.applyReaction(p2Reaction);
+          p2LocoRef.current.halt();
+        } else if (isCrumple) {
           p2SMRef.current.applyKnockdown();
           p2LocoRef.current.halt();
           // Trigger dust VFX on knockdown
@@ -1410,9 +1461,9 @@ export default function GameBattleArena({
             setFloorBreakPhase('floor_break_debris');
           }
         } else if (!guardResult.blocked) {
-          p2SMRef.current.applyStun(p1Hit.hitstun || 0.3, false);
-          // Apply pushback from hit
-          p2LocoRef.current.applyPushback(p1Hit.pushback ?? 0.3);
+          p2SMRef.current.applyReaction(p2Reaction, p1HbWindow.move ?? null);
+          // A body in the air is not pushed along the floor.
+          if (!p2SMRef.current.isAirborne) p2LocoRef.current.applyPushback(p1Hit.pushback ?? 0.3);
         }
         if (guardResult.guardBroken) {
           p2SMRef.current.applyStun(p1Hit.hitstun || 0.3, false);
@@ -1516,6 +1567,7 @@ export default function GameBattleArena({
         p2Facing, now,
       );
       p2SMRef.current.setCommandStance(p2AIInput.crouch ? 'Crouch' : p2AIInput.jump ? 'Air' : 'Ground');
+      p2SM.tickAirborne(dt);
       const p2NextMotion = p2SM.update(p2AIInput, dt);
       const p2HbWindow = p2SM.getHitboxWindow();
       p2Hb.update(p2HbWindow);
@@ -1545,7 +1597,7 @@ export default function GameBattleArena({
         p2ComboRef.current = newP2Combo;
         setP2Combo({ ...newP2Combo });
         if (!p1GuardResult.blocked) {
-          engine.applyIncomingHit('p1', p2ScaledDmg, false, p2Hit.hitstun || 0.3);
+          engine.applyIncomingHit('p1', Math.max(1, Math.round(p2ScaledDmg * p1SMRef.current.juggleDamageScale())), false, p2Hit.hitstun || 0.3);
         }
 
         const isCrumple = !p1GuardResult.blocked && p2Hit.launch > 0.3;
@@ -1571,7 +1623,13 @@ export default function GameBattleArena({
             setFloorBreakPhase('floor_break_debris');
           }
         } else if (!p1GuardResult.blocked) {
-          p1SMRef.current.applyStun(p2Hit.hitstun || 0.3, false);
+          p1SMRef.current.applyReaction(
+            resolveHitReaction(
+              { launch: p2Hit.launch, reaction: (p2HbWindow.move as { reaction?: string } | undefined)?.reaction },
+              p1SMRef.current.isAirborne,
+            ),
+            p2HbWindow.move ?? null,
+          );
           p1LocoRef.current.applyPushback(p2Hit.pushback ?? 0.3);
         }
         if (p1GuardResult.guardBroken) {
@@ -1872,7 +1930,12 @@ export default function GameBattleArena({
           p1XRef.current = newP1X;
           setP1X(newP1X);
         }
-        const jy = p1LocoRef.current.airborneY;
+        // ONE OWNER OF Y AT A TIME. There are two airborne systems — the
+        // locomotion jump arc and the juggle — and a launched fighter is not
+        // jumping, so this is a switch rather than a sum. Without it the
+        // juggle is invisible: the FSM lifts the body and the renderer keeps
+        // drawing it on the floor.
+        const jy = p1SM.isAirborne ? p1SM.juggleHeight : p1LocoRef.current.airborneY;
         if (Math.abs(jy - p1YRef.current) > 0.005) {
           p1YRef.current = jy;
           p1JumpYRef.current = jy;
@@ -1882,7 +1945,7 @@ export default function GameBattleArena({
           p2XRef.current = newP2X;
           setP2X(newP2X);
         }
-        const p2JumpY = p2LocoRef.current.airborneY;
+        const p2JumpY = p2SM.isAirborne ? p2SM.juggleHeight : p2LocoRef.current.airborneY;
         if (Math.abs(p2JumpY - p2YRef.current) > 0.005) {
           p2YRef.current = p2JumpY;
           setP2Y(p2JumpY);
