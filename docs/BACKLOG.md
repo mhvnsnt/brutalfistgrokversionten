@@ -20,10 +20,12 @@ movesets, then arenas and presentation.
 | 1.4 | "Same move for every button" | **done** — the attack slots held 1.7–4.2 s Mixamo demo loops; real single strikes now (`bc3c067`) |
 | 1.5 | Neck twisting "like an owl" | **done** — 111° head twist clamped to 35° (`452ce19`) |
 | 1.6 | Idle body twisted up | **done** — 171° of axial roll on both thighs, clamped (`cbe0939`) |
-| 1.7 | **Universal skeleton, and bake every clip onto it offline** | gate shipped (`check-universal-skeleton.mjs`); the BAKE is the next big piece |
+| 1.7 | **Universal skeleton, and bake every clip onto it offline** | **done** — 366 clips resolved onto the one 58-joint rig at build time; the runtime does no retargeting at all |
+| 1.15 | Feet not planted, "wobbly ragdoll", leaning on the toes | **done** — every clip lifted both feet 21-32 cm off the floor, the idle included. Floor lock baked in: idle/stance 23.3 -> 3.4 cm, block 22.9 -> 3.4, BOXING 25.3 -> 0.0, walk 0.0 |
+| 1.16 | Some clips go THROUGH the floor | OPEN — 3 of 8 sampled (attack_rk -25 cm, walk_forward -7 cm, attack_1 -4 cm). The bake deliberately does not raise these: it is a different defect and lifting would hide it. |
 | 1.12 | Elbows/knees bending both ways and sideways | **done** — 646 hinge tracks were off-axis; a wrong-side fold is reflected, not clamped |
 | 1.13 | Idle was a Mixamo shadowboxing loop | **done** — the idle is an authored fighting stance now |
-| 1.14 | **The Bannon Mixamo bank is clamped on EVERY frame** | OPEN, and it is the next animation job. Measured on BOXING: RightShoulder and LeftShoulder sit at 35/25 with a RANGE OF 0, and both forearm twists at 12 with range 0 — every frame saturated against the ceiling, which reads as a stiff, pinned arm. GRAFQUICKJAB, from Schwarzerblitz, measures 0/0 and is untouched. The constraints are papering over a convention problem in that bank rather than fixing it. Those clips hold no combat slot any more, so nothing in a fight depends on them — but they are wrong, and the bake is where they get fixed properly. |
+| 1.14 | **The Bannon Mixamo bank is clamped on EVERY frame** | PARTLY ADDRESSED by the bake — the corrections now happen once, offline, and are counted and gated. Still worth a convention fix at source. Measured on BOXING: RightShoulder and LeftShoulder sit at 35/25 with a RANGE OF 0, and both forearm twists at 12 with range 0 — every frame saturated against the ceiling, which reads as a stiff, pinned arm. GRAFQUICKJAB, from Schwarzerblitz, measures 0/0 and is untouched. The constraints are papering over a convention problem in that bank rather than fixing it. Those clips hold no combat slot any more, so nothing in a fight depends on them — but they are wrong, and the bake is where they get fixed properly. |
 | 1.8 | Re-rig the 4 fighters off the skeleton | open — CIPHER_rigged, MAIME, MAIME_tattered, EDWIN_KENNEDY_unchained |
 | 1.9 | Candy-wrapper pinch at wrists and knees | open — no twist bones on any rig; fix is dual-quaternion skinning (shader, no re-rig) |
 | 1.10 | Clavicles receive nothing from the Schwarzerblitz source | open — derive from the upper arm |
@@ -50,6 +52,9 @@ movesets, then arenas and presentation.
 
 ## 3. PRESENTATION
 
+- The PWA not updating is **fixed**: the Pages workflow only builds on `main`
+  and `main` was 14 commits behind, so nothing had deployed; and the service
+  worker's cache version was a constant, so no deploy ever purged a cache.
 - **Preload everything before the select screen** — models and 2D art both.
   The 2D images not showing is **fixed** (`<img src>` was not going through
   the deploy-base resolver, so every portrait 404'd on the PWA). The PRELOAD

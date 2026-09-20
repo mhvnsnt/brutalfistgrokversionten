@@ -11,12 +11,12 @@
     "dev": "node scripts/with-app-env.mjs vite dev --host 0.0.0.0 --port 8080",
     "rocket:preview": "ROCKET_PREVIEW=1 node scripts/with-app-env.mjs vite preview --host 0.0.0.0 --port 8080 --strictPort",
     "rocket:build": "ROCKET_PREVIEW=1 npm run build",
-    "predev": "node scripts/sync-bannon-motion.mjs && node scripts/sync-schwarzerblitz-motion.mjs && node scripts/sync-fighting-motion-sources.mjs && node scripts/sync-schwarzerblitz-moves.mjs",
+    "predev": "node scripts/sync-bannon-motion.mjs && node scripts/sync-schwarzerblitz-motion.mjs && node scripts/sync-fighting-motion-sources.mjs && node scripts/sync-schwarzerblitz-moves.mjs && node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs scripts/bake-fighter-animations.mjs --gate",
     "next:dev": "next dev --hostname 0.0.0.0 --port 3000",
     "next:build": "next build",
     "next:start": "next start --hostname 0.0.0.0 --port 3000",
     "build": "node scripts/with-app-env.mjs vite build && npm run db:migrate",
-    "prebuild": "node scripts/sync-bannon-motion.mjs && node scripts/sync-schwarzerblitz-motion.mjs && node scripts/sync-fighting-motion-sources.mjs && node scripts/sync-schwarzerblitz-moves.mjs && node scripts/build-pwa-icons.mjs",
+    "prebuild": "node scripts/sync-bannon-motion.mjs && node scripts/sync-schwarzerblitz-motion.mjs && node scripts/sync-fighting-motion-sources.mjs && node scripts/sync-schwarzerblitz-moves.mjs && node scripts/build-pwa-icons.mjs && node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs scripts/bake-fighter-animations.mjs --gate",
     "db:migrate": "node scripts/migrate.mjs",
     "build:dev": "node scripts/with-app-env.mjs vite build --mode development",
     "preview": "node scripts/with-app-env.mjs vite preview",
@@ -25,10 +25,11 @@
     "pretypecheck": "node scripts/sync-schwarzerblitz-motion.mjs",
     "typecheck": "tsc --noEmit",
     "check:auth": "node scripts/check-auth-invariant.mjs",
-    "test": "node --test 'scripts/**/*.test.mjs' && node --experimental-strip-types --test src/lib/app-data/app-data.test.ts src/lib/app-data/readiness-schedule.test.ts src/lib/auth/gate-identity.test.ts src/lib/auth/sign-in-gate.test.ts src/engine/combat/stage-boundaries.test.ts src/engine/combat/command-input.test.ts src/engine/combat/character-stances.test.ts src/engine/retarget/borrowed-motion-safety.test.ts src/engine/combat/schwarzerblitz-specials.test.ts src/engine/combat/cancel-windows.test.ts src/lib/assetBase.test.ts src/engine/retarget/rest-pose-offset.test.ts src/engine/retarget/source-rest.test.ts src/engine/retarget/skeletal-limits.test.ts src/engine/retarget/clip-coverage.test.ts src/engine/combat/round-system.test.ts",
+    "test": "node --test 'scripts/**/*.test.mjs' && node --experimental-strip-types --test src/lib/app-data/app-data.test.ts src/lib/app-data/readiness-schedule.test.ts src/lib/auth/gate-identity.test.ts src/lib/auth/sign-in-gate.test.ts src/engine/combat/stage-boundaries.test.ts src/engine/combat/command-input.test.ts src/engine/combat/character-stances.test.ts src/engine/retarget/borrowed-motion-safety.test.ts src/engine/combat/schwarzerblitz-specials.test.ts src/engine/combat/cancel-windows.test.ts src/lib/assetBase.test.ts src/engine/retarget/rest-pose-offset.test.ts src/engine/retarget/source-rest.test.ts src/engine/retarget/skeletal-limits.test.ts src/engine/retarget/baked-motion.test.ts src/engine/retarget/clip-coverage.test.ts src/engine/combat/round-system.test.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "pwa:verify": "node scripts/verify-pwa-build.mjs dist"
+    "pwa:verify": "node scripts/verify-pwa-build.mjs dist",
+    "bake": "node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs scripts/bake-fighter-animations.mjs --gate"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.4",

@@ -164,12 +164,22 @@ export function clampToJointLimits(
   clip: THREE.AnimationClip,
   restMap: Map<string, THREE.Quaternion>,
   limits: Readonly<Record<string, JointLimit>> = JOINT_LIMITS,
+  /**
+   * Bones a hinge constraint already owns. A HINGE IS THE COMPLETE
+   * CONSTRAINT for that joint, and the two rules disagree about the axis:
+   * this one decomposes about the bone's length (Y) while a hinge decomposes
+   * about its own axis (Z). MEASURED — running both left the knees 20 to 22
+   * degrees off their hinge, because capping the Y-twist afterwards
+   * reintroduced exactly the off-axis rotation the hinge had just removed.
+   */
+  ownedByHinge: Readonly<Record<string, unknown>> = HINGE_JOINTS,
 ): LimitViolation[] {
   const violations: LimitViolation[] = [];
   const axis = new THREE.Vector3(0, 1, 0); // bone length runs up the local Y on this rig
   for (const track of clip.tracks) {
     if (!track.name.endsWith('.quaternion')) continue;
     const bone = track.name.slice(0, -'.quaternion'.length);
+    if (ownedByHinge[bone]) continue;
     const limit = limits[bone];
     const bind = restMap.get(bone);
     if (!limit || !bind) continue;
@@ -190,9 +200,24 @@ export function clampToJointLimits(
       if (twistDeg > worstTwist) worstTwist = twistDeg;
       if (bendDeg <= limit.bend && twistDeg <= limit.twist) continue;
 
-      const fixed = bind.clone()
+      // ITERATE. A swing and a twist only recompose exactly when the swing
+      // has no component along the twist axis, which is not guaranteed — so
+      // capping both at once can leave the result over. MEASURED on
+      // CAPITALPUNISHMENT: a shoulder still reading 161 degrees of twist
+      // against a 90 limit after a single pass. This runs offline in the
+      // bake, so converging costs nothing.
+      let fixed = bind.clone()
         .multiply(capped(swing, limit.bend))
         .multiply(capped(twist, limit.twist));
+      for (let pass = 0; pass < 4; pass++) {
+        const check = swingTwist(bindInv.clone().multiply(fixed), axis);
+        const b = angleDeg(check.swing);
+        const t = angleDeg(check.twist);
+        if (b <= limit.bend + 0.25 && t <= limit.twist + 0.25) break;
+        fixed = bind.clone()
+          .multiply(capped(check.swing, limit.bend))
+          .multiply(capped(check.twist, limit.twist));
+      }
       values[i] = fixed.x;
       values[i + 1] = fixed.y;
       values[i + 2] = fixed.z;
@@ -431,11 +456,25 @@ export function constrainHinges(
       const overOff = offAxis > hinge.maxOffAxis;
       if (wanted === angle && !overOff) continue;
 
-      const flex = new THREE.Quaternion().setFromAxisAngle(
-        hinge.axis, (wanted * Math.PI) / 180,
-      );
-      const off = overOff ? capped(swing, hinge.maxOffAxis) : swing;
-      const fixed = bind.clone().multiply(off).multiply(flex);
+      // ITERATE. Capping the swing and recomposing it with a DIFFERENT twist
+      // reintroduces a little off-axis rotation — measured at 1 to 4 degrees
+      // over, which is enough to fail the bake's own gate. Two more passes
+      // converge it; this runs offline, so the cost is nothing.
+      let off = overOff ? capped(swing, hinge.maxOffAxis) : swing;
+      let flex = new THREE.Quaternion().setFromAxisAngle(hinge.axis, (wanted * Math.PI) / 180);
+      let fixed = bind.clone().multiply(off).multiply(flex);
+      for (let pass = 0; pass < 3; pass++) {
+        const check = swingTwist(bindInv.clone().multiply(fixed), hinge.axis);
+        const checkOff = angleDeg(check.swing);
+        const checkAngle = signedAngleAbout(check.twist, hinge.axis);
+        if (checkOff <= hinge.maxOffAxis && checkAngle >= hinge.min && checkAngle <= hinge.max) break;
+        off = capped(check.swing, hinge.maxOffAxis);
+        flex = new THREE.Quaternion().setFromAxisAngle(
+          hinge.axis,
+          (Math.min(hinge.max, Math.max(hinge.min, checkAngle)) * Math.PI) / 180,
+        );
+        fixed = bind.clone().multiply(off).multiply(flex);
+      }
       values[i] = fixed.x;
       values[i + 1] = fixed.y;
       values[i + 2] = fixed.z;

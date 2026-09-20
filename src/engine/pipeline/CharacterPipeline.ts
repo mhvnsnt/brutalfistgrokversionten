@@ -83,6 +83,7 @@ import {
   loadBannonMotionBankTail,
   loadBannonMotionBankVariants,
 } from '../retarget/BannonClipJsonAdapter';
+import { loadBakedMotionBank } from '../retarget/BakedMotionBank';
 import {
   buildSchwarzerblitzMotionClips,
   schwarzerblitzSourceRest,
@@ -774,9 +775,15 @@ export async function extractAndRetargetAnimations(
     // and clamping magnitude cannot see it. MEASURED, the two banks disagree
     // about which way an elbow bends, which is what "folding backwards
     // towards his shoulder blade" is. See SkeletalLimits.HINGE_JOINTS.
-    const hinged = constrainHinges(relative, targetRest);
+    // Limits first, hinges LAST: a hinge is the complete constraint for its
+    // joint, and the generic limit decomposes about a different axis, so
+    // running it afterwards undoes the hinge.
+    // Against the model's OWN bind, never the T-pose reference a T-pose bank
+    // is retargeted through: a joint limit is anatomical and only means
+    // something measured from the body's real rest.
+    const clamped = clampToJointLimits(relative, restMap);
+    const hinged = constrainHinges(relative, restMap);
     if (hinged.length > 0) hingeHits += hinged.length;
-    const clamped = clampToJointLimits(relative, targetRest);
     if (clamped.length > 0) {
       limitHits += clamped.length;
       for (const v of clamped) {
@@ -801,9 +808,45 @@ export async function extractAndRetargetAnimations(
     bridgeClipCount = processedClips.length;
   }
 
+  // ── THE BAKED SET: already on this skeleton, nothing left to resolve ──
+  // Every clip in it was bound, rest-corrected, spine-redistributed,
+  // hinge-constrained and joint-limited ONCE at build time against the
+  // canonical 58-joint rig — the same thing Tekken and Schwarzerblitz get
+  // from authoring on one skeleton. So it is read and played, not retargeted.
+  //
+  // When the bake has not been run (a dev checkout, or a build that skipped
+  // it) this is empty and the live path below runs exactly as before. A
+  // missing build step must not be a broken game.
+  let bakedBound = 0;
+  try {
+    const baked = await loadBakedMotionBank();
+    for (const [name, clip] of baked) {
+      if (processedClips.some((c) => c.name === name)) continue;
+      const copy = clip.clone();
+      const ud = (copy as THREE.AnimationClip & { userData: Record<string, unknown> }).userData ?? {};
+      const sem = String(ud.semanticState ?? resolveClipSemanticState(name) ?? '');
+      (copy as THREE.AnimationClip & { userData: Record<string, unknown> }).userData = {
+        ...ud, ...(sem ? { semanticState: sem } : {}),
+      };
+      processedClips.push(copy);
+      bakedBound++;
+    }
+    if (bakedBound > 0) {
+      retargetApplied = true;
+      retargetVerdict = 'PASS';
+      bridgeClipCount = bakedBound;
+      console.log(`[CharacterPipeline] 🧊 "${modelName}" baked set: ${bakedBound} clip(s), already on the skeleton`);
+    }
+  } catch (e: unknown) {
+    console.warn(`[CharacterPipeline] ⚠️ baked set skipped: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // Mixamo/Euler bank as bind-relative deltas — full punches/kicks/guard/walk
   // without replacing live bind (orientation + Cipher hunch stay locked).
+  // Skipped entirely when the baked set covered it: re-deriving what the bake
+  // already resolved is how the two drift apart.
   try {
+    if (bakedBound > 0) throw new Error('covered by the baked set');
     const bank = await loadBannonClipsFromPublic();
     const variants = await loadBannonMotionBankVariants();
     let bankBound = 0;
@@ -931,7 +974,9 @@ export async function extractAndRetargetAnimations(
     }
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
-    console.warn(`[CharacterPipeline] ⚠️ motion bank skipped: ${message}`);
+    if (message !== 'covered by the baked set') {
+      console.warn(`[CharacterPipeline] ⚠️ motion bank skipped: ${message}`);
+    }
   }
 
   const filled = fillBindRelativeGaps(targetScene, processedClips);

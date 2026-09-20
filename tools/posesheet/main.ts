@@ -117,6 +117,9 @@ async function main() {
   // pipeline's output rather than re-deriving it and drifting from it.
   (window as unknown as { __POSESHEET: unknown }).__POSESHEET = {
     THREE, scene, mixer, actionFor, limits: JOINT_LIMITS,
+    /** Every action name the pipeline registered, for whole-set audits. */
+    clipNames: () =>
+      actions instanceof Map ? [...actions.keys()] : Object.keys(actions as object),
   };
   (window as unknown as { __POSESHEET_READY: boolean }).__POSESHEET_READY = true;
 }
