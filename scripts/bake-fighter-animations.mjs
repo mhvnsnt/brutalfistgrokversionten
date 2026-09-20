@@ -282,6 +282,7 @@ const report = {
   baked: 0,
   skipped: [],
   hingeCorrections: 0,
+  conventionTwistCorrections: 0,
   limitCorrections: 0,
   spineRedistributed: 0,
   grounded: 0,
