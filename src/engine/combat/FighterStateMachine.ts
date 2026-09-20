@@ -123,6 +123,12 @@ import {
   type CommandStep,
   type MatchableMove,
 } from './CommandInput.ts';
+import {
+  attemptThrowBreak,
+  openThrowBreak,
+  tickThrowBreak,
+  type ThrowBreakState,
+} from './ThrowChains.ts';
 
 export interface SpecialMoveDefinition {
   id: string;
@@ -432,8 +438,16 @@ export class FighterStateMachine {
   private queuedAction: QueuedAction | null = null;
 
   private inputBuffer: BufferEntry[] = [];
-  /** 10-frame input buffer at 60fps = 167ms. Holds inputs during block stun recovery. */
-  private readonly BUFFER_WINDOW_MS = 167;
+  /**
+   * Combo inputs must survive the startup/active portion of the move that is
+   * currently playing. The old 167ms window was shorter than even the light
+   * attack's 440ms total, so a deliberate L,L,H entered through the real
+   * controls expired before recovery was allowed to read it. Keep this as a
+   * bounded input buffer (not an infinite queue): 600ms is 36 frames at 60fps,
+   * enough to span one ordinary attack and still short enough to reject stale
+   * button strings.
+   */
+  private readonly BUFFER_WINDOW_MS = 600;
 
   // ── HitStun state ─────────────────────────────────────────────────────────
   private hitStunTimer = 0;
@@ -473,7 +487,9 @@ export class FighterStateMachine {
   private attackStartCount = 0;
   private throwComboQueue: Array<'light' | 'heavy'> = [];
   private throwComboIndex = 0;
+  /** Time the attacker has to earn the next authored throw link. */
   private throwComboTimer = 0;
+  private readonly THROW_COMBO_INPUT_WINDOW = 0.35;
 
   // ── Grab range visualization ──────────────────────────────────────────────
   private grabRangeActive = false;
@@ -562,6 +578,24 @@ export class FighterStateMachine {
   get isInCommandThrow(): boolean { return this.actionState === 'CommandThrow'; }
   get isInOverdriveState(): boolean { return this.inOverdriveState; }
 
+  /** Arm the defender's reaction window after a throw connects in range. */
+  beginIncomingThrowBreak(depth = 0) {
+    this.incomingThrowBreak = openThrowBreak(depth);
+    this.incomingThrowBreakOutcome = null;
+  }
+
+  /** Consume the committed/broken result once the arena has processed it. */
+  consumeIncomingThrowBreakOutcome(): 'broken' | 'committed' | null {
+    const outcome = this.incomingThrowBreakOutcome;
+    this.incomingThrowBreakOutcome = null;
+    return outcome;
+  }
+
+  /** Whether a throw-break reaction window is currently open. */
+  get isThrowBreakPending(): boolean {
+    return this.incomingThrowBreak !== null;
+  }
+
   /** Whether grab range visualization should be shown */
   get showGrabRange(): boolean { return this.grabRangeActive; }
   /** Grab range radius for visualization */
@@ -643,6 +677,11 @@ export class FighterStateMachine {
    */
   activeClip(): string | null {
     return this.currentMove?.clip ?? null;
+  }
+
+  /** Human-readable move identity for deterministic combat probes and HUD diagnostics. */
+  activeMoveName(): string | null {
+    return this.currentMove?.specialName ?? (this.currentMove ? this.currentMove.animation : null);
   }
 
   registerSpecialMoves(moves: SpecialMoveDefinition[]) {
@@ -865,6 +904,7 @@ export class FighterStateMachine {
     const risingLight = resolvedInput.light && !this.prevInput.light;
     const risingHeavy = resolvedInput.heavy && !this.prevInput.heavy;
     const risingGuard = resolvedInput.guard && !this.prevInput.guard;
+    const risingEscape = (resolvedInput.escape ?? false) && !(this.prevInput.escape ?? false);
     const risingGrapple = (resolvedInput.grapple ?? false) && !(this.prevInput.grapple ?? false);
     const risingLp = (resolvedInput.lp ?? false) && !(this.prevInput.lp ?? false);
     const risingRp = (resolvedInput.rp ?? false) && !(this.prevInput.rp ?? false);
@@ -910,24 +950,59 @@ export class FighterStateMachine {
       if (this.grabRangeTimer <= 0) this.grabRangeActive = false;
     }
 
+    // ── Incoming throw-break reaction ────────────────────────────────────
+    // The arena arms this only after a throw is confirmed in range. The
+    // defender then gets real frames to press Escape. On expiry, the arena
+    // commits the throw and applies its damage/knockdown.
+    if (this.incomingThrowBreak) {
+      if (risingEscape && attemptThrowBreak(this.incomingThrowBreak)) {
+        this.incomingThrowBreak = null;
+        this.incomingThrowBreakOutcome = 'broken';
+        this.actionState = 'Idle';
+        this.motionState = 'idle';
+        this.currentMove = null;
+        this.moveTimer = 0;
+        this.moveElapsed = 0;
+        this.queuedAction = null;
+        this.walkVelocity = { forward: 0, strafe: 0 };
+        return this.motionState;
+      }
+      if (!tickThrowBreak(this.incomingThrowBreak, dt)) {
+        this.incomingThrowBreak = null;
+        this.incomingThrowBreakOutcome = 'committed';
+      } else {
+        return this.motionState;
+      }
+    }
+
     // ── Throw combo chain routing ─────────────────────────────────────────
+    // A successful throw opens an authored follow-up window. The attacker must
+    // press the requested button inside that window; the old implementation
+    // advanced the route on a timer, turning the grapple into an unskippable
+    // cutscene and ignoring the source chain data.
     if (this.throwComboQueue.length > 0 && this.throwComboIndex < this.throwComboQueue.length) {
+      if (this.actionState === 'Attacking') return this.motionState;
+
       this.throwComboTimer = Math.max(0, this.throwComboTimer - dt);
       if (this.throwComboTimer <= 0) {
+        console.log('[FSM] ⛓️ Throw combo chain expired — follow-up dropped');
+        this.throwComboQueue = [];
+        this.throwComboIndex = 0;
+      } else {
         const nextHit = this.throwComboQueue[this.throwComboIndex];
-        this.throwComboIndex++;
-        console.log(`[FSM] ⛓️ Throw combo chain — hit ${this.throwComboIndex}/${this.throwComboQueue.length}: ${nextHit}`);
-        if (nextHit === 'light') {
-          this.throwComboTimer = DEFAULT_MOVE_WINDOWS.lightAttack.startup + DEFAULT_MOVE_WINDOWS.lightAttack.active + DEFAULT_MOVE_WINDOWS.lightAttack.recovery;
-          return this.beginAttack('lightAttack', DEFAULT_MOVE_WINDOWS.lightAttack);
-        } else {
-          this.throwComboTimer = DEFAULT_MOVE_WINDOWS.heavyAttack.startup + DEFAULT_MOVE_WINDOWS.heavyAttack.active + DEFAULT_MOVE_WINDOWS.heavyAttack.recovery;
-          return this.beginAttack('heavyAttack', DEFAULT_MOVE_WINDOWS.heavyAttack);
+        const pressed =
+          (nextHit === 'light' && risingLight) ||
+          (nextHit === 'heavy' && risingHeavy);
+        if (pressed) {
+          this.throwComboIndex++;
+          console.log(`[FSM] ⛓️ Throw combo chain earned — hit ${this.throwComboIndex}/${this.throwComboQueue.length}: ${nextHit}`);
+          return nextHit === 'light'
+            ? this.beginAttack('lightAttack', DEFAULT_MOVE_WINDOWS.lightAttack)
+            : this.beginAttack('heavyAttack', DEFAULT_MOVE_WINDOWS.heavyAttack);
         }
       }
       return this.motionState;
     } else if (this.throwComboQueue.length > 0 && this.throwComboIndex >= this.throwComboQueue.length) {
-      // Combo chain complete
       this.throwComboQueue = [];
       this.throwComboIndex = 0;
     }
@@ -1016,7 +1091,7 @@ export class FighterStateMachine {
         // Begin throw combo chain if throw succeeded
         if (this.commandThrowSucceeded && this.throwComboQueue.length > 0) {
           this.throwComboIndex = 0;
-          this.throwComboTimer = 0.05; // small delay before first combo hit
+          this.throwComboTimer = this.THROW_COMBO_INPUT_WINDOW;
           console.log('[FSM] ⛓️ Starting throw combo chain:', this.throwComboQueue);
         }
         this.commandThrowSucceeded = false;
@@ -1306,6 +1381,7 @@ export class FighterStateMachine {
     this.commandThrowSucceeded = false;
     this.throwComboQueue = [...(move.throwComboRoute ?? [])];
     this.throwComboIndex = 0;
+    this.throwComboTimer = 0;
     this.grabRangeActive = true;
     this.grabRangeTimer = move.startup + move.active;
     return this.motionState;
@@ -1326,6 +1402,7 @@ export class FighterStateMachine {
     // Activate grab range visualization
     this.grabRangeActive = true;
     this.grabRangeTimer = COMMAND_THROW_MOVE.startup + COMMAND_THROW_MOVE.active;
+    this.throwComboTimer = 0;
     console.log('[FSM] 🤲 CommandThrow started — grab range:', COMMAND_THROW_MOVE.grabRange);
     return this.motionState;
   }
