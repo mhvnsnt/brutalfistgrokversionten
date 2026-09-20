@@ -54,6 +54,20 @@ export interface MoveLabel {
    * A person can, in one tap.
    */
   kinds?: MoveKind[];
+  /**
+   * THE OPPONENT'S HALF OF THIS GRAPPLE — the clip the other man plays.
+   *
+   * Owner: "neck breaker ... would have two animation parts, one for the
+   * deliverer and the receiver", and "same for all grapples — they need the
+   * opponent side hooked up and wired up."
+   *
+   * The bake pairs the halves it can pair by name (KNEETHROW with
+   * KNEETHROWREACTION, and the durations agree to four decimal places, which
+   * is what proves they came off one take). It cannot pair NECKBREAKER with
+   * anything, because that half was never recorded. This is where he says
+   * which recording to use instead, having just watched both of them loop.
+   */
+  pairedWith?: string;
   /** When it was written, so a later pass can tell what is new. */
   at: number;
 }
@@ -101,7 +115,17 @@ export function setMoveLabel(clip: string, label: Omit<MoveLabel, 'at'>): MoveLa
   const merged: MoveLabel = { ...all[clip], ...label, at: Date.now() };
   // An emptied label is a DELETE, so a mistake can be taken back rather than
   // leaving a blank entry that looks reviewed.
-  if (!merged.name && !merged.slot && !merged.note && !merged.verdict) delete all[clip];
+  //
+  // EVERY FIELD HAS TO BE COUNTED HERE OR THE SCREEN SILENTLY LOSES WORK.
+  // This listed four fields and the label has six. MEASURED: tapping a kind
+  // on a clip with no typed name, slot, note or verdict produced `kinds`
+  // and nothing else, this test read that as an empty label, and the tap was
+  // DELETED on the way to storage — `kindsOf` came back `[]` immediately
+  // after `toggleMoveKind`. The animation pool is checkboxes and nothing
+  // else, so on a fresh clip — which is every clip at the start of a sweep —
+  // it stored nothing at all. A field added later must be added here too.
+  if (!merged.name && !merged.slot && !merged.note && !merged.verdict
+    && !merged.kinds?.length && !merged.pairedWith) delete all[clip];
   else all[clip] = merged;
   try {
     globalThis.localStorage?.setItem(KEY, JSON.stringify(all));
@@ -127,6 +151,8 @@ export function exportMoveLabels(labels: MoveLabelMap = loadMoveLabels()): strin
       l.name ? `= ${l.name}` : null,
       l.slot ? `-> ${l.slot}` : null,
       l.note ? `(${l.note})` : null,
+      l.kinds?.length ? `{${l.kinds.join(' ')}}` : null,
+      l.pairedWith ? `+ opponent ${l.pairedWith}` : null,
     ].filter(Boolean);
     lines.push(`${clip}  ${bits.join('  ')}`);
   }

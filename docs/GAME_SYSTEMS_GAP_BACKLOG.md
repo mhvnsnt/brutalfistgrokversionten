@@ -169,13 +169,13 @@ Animation/rig correctness is gameplay infrastructure, not cosmetic polish.
 ## 4. Throws / grappling
 
 - [ ] **Normal throw**
-- [ ] **Command throw**
+- [x] **Command throw** — resolves for BOTH sides now. The AI's grapple input entered CommandThrow and nothing ever checked its range, so it could never land; the player could not be thrown by anybody. Both directions wired, both with a break window. See 21d.
 - [ ] **Directional throws**
 - [ ] **Side throws**
 - [ ] **Back throws**
 - [ ] **Character-specific throws**
 - [ ] **Throw startup/active/break window**
-- [ ] **Unified throw transaction**
+- [ ] **Unified throw transaction** — the victim now plays the opponent's half of the throw rather than a stock knockdown (21d), but attacker and victim are still two independent playbacks, not one transaction with shared timing and position.
 - [ ] **Throw-break window for every throw family**
 - [ ] **Throw-break input matching**
 - [ ] **Directional throw breaks**
@@ -627,6 +627,154 @@ Two details that matter for the job it has to do:
 EVIDENCE, driven in a browser: 366 clip rows; hovering shows the
 "preview · tap to tag" banner; the playhead advances and WRAPS
 (0.93 -> 0.31 on a 1.42 s clip), which is start-to-finish looping.
+
+## 21e. LOGGED, NOT STARTED — 41 Bannon clips are baked lying down
+
+Found while pairing grapples; NOT touched, because the repo's own law is to
+finish one system before starting another. Written down so the next pass has
+the numbers instead of re-deriving them.
+
+Owner: "Crotch chop and rapid chest beating are taunts. I can see those aren't
+firing off in your thing."
+
+They are not firing, and the gate is right to refuse them. MEASURED across the
+baked index: **41 clips start AND end with the head on the floor**
+(`strike.startUp` and `strike.endUp` both under 0.2, where 1.0 is standing).
+All 41 are from the `bannon` bank; the schwarzerblitz bank has none. They
+include every single one of these, which are all STANDING performances:
+
+    CROTCHCHOP 0.042   RAPIDCHESTBEATING 0.043   TAUNT 0.041
+    TAU_BUTTSLAP 0.07  TAU_GENERALFEMALE 0.098   TAUNT_KOFIKINGSTON 0.043
+    TAU_GAMEOVER       TAU_DIVA                  TAU_HEADCRACK
+    SPINNINGARMSSPREAD WBTC                      CARTWHEEL
+
+For contrast, in the same bank TAUNT_FLEX reads 0.995 and TAUNT_POINT 0.997 —
+so it is a subset, not the whole bank, which is what makes it look like an
+import-side orientation problem rather than one global axis being wrong.
+
+`clipStartsStanding` (STANDING_START_MIN 0.6) refuses them, and it should: a
+taunt performed flat on the mat is not a taunt. The defect is in the asset, not
+the gate, and the fix belongs in the source sync or the bake's orientation
+pass, not in loosening the threshold.
+
+DO NOT reach for `correctWholeBodyPitch` — it was written for exactly this,
+measured WORSE (it "fixed" three clips that were already correct, including a
+takedown victim and a kip-up), and was reverted with the reason recorded in
+scripts/bake-fighter-animations.mjs. Whatever is done here has to be measured
+per clip and RENDERED before banking, per the owner law.
+
+## 21d. The opponent's half of a grapple
+
+Owner, twice, and the second time was a repeat because the first was not done:
+
+> "neck breaker ... would have two animation parts for the one for the deliverer
+> and the receiver type shit for the fucking grapples"
+
+> "Scoop slam is a grapple too that needs the opponent side, and same for all
+> grapple they need the opponent side hooked up and wired up all areas wise
+> where it needs to be with reaction and animation etc"
+
+### What was actually happening
+
+MEASURED, not read: the bank holds **54 clips of a body being thrown** and
+nothing had ever connected one of them to the throw it belongs to. A landed
+throw called `applyKnockdown()` on the victim and stopped there, so the same
+stock fall answered a DDT, a giant swing and a scoop slam, at a length with no
+relation to the throw being performed on him.
+
+And the other half of "all areas wise" was worse. `p1SM.action ===
+'CommandThrow'` was **the only occurrence in GameBattleArena**. `buildP2AIInput`
+has carried a `grapple` field the whole time and the AI's state machine entered
+CommandThrow on it — but nothing ever checked its grab range, resolved it,
+opened a break window or dealt damage. **The AI could not land a throw at all,
+and the player could never be thrown by anybody.** Both sides are wired now,
+including a throw break for the player.
+
+### Where a pairing comes from, in order of authority
+
+1. **The owner**, in the Move Library, watching both clips loop side by side.
+2. **The bake**, which derives pairs from the names that are actually present
+   and CONFIRMS them on duration. Five of the thirteen agree to four decimal
+   places — KNEETHROW 0.5417 with KNEETHROWREACTION 0.5417, ORAORAORA 2.4583,
+   RENZOTHROW 2.25, ROADROLLERDAB 4.5417, SHARKNADO 1.125. That is one take
+   recorded from two bodies, not a name rule getting lucky.
+3. **A stand-in** drawn from the throw victims whose own deliverer half was
+   never imported, chosen by length and **reported as a stand-in** so it is
+   never mistaken for a real pair. It refuses rather than answer a throw with
+   something more than 1.6 s away from it.
+
+A generic hit flinch is never in that pool: REACTION_HITWEAKHIGH is a sixth of
+a second of a head snapping back and is in no sense somebody being suplexed.
+The bake already files those under `hit_reaction`; that decision is reused
+rather than a second name rule being invented.
+
+### 37 receiver halves have no deliverer, and that is the import list
+
+AMYTHROW_REACTION, CYPHRTHROWREACTION, ELENATHROWREACTION, KIYOKOTHROWREACTION,
+LAZORTHROWREACTION, MIRATHROWREACTION, NIGHTTHROWREACTION, WALLYTHROWREACTION,
+BACKBREAKER_REACTION, JENNLEGLOCKREACTION, SKELETONFACEPRESSREACTION,
+THUNDERGODREACTION and the rest: the victim's half was imported and the throw
+itself never was. Nothing is deleted (owner law on generated content) — they
+are the pool the stand-in draws from, and they are exactly what to go and find.
+
+Going the other way, these grapples have no recorded partner at all and are on
+stand-ins: NECKBREAKER, SUPLEX, GERMANSUPLEX, POPUPGERMANSUPLEX, CHOKESLAM,
+TOMBSTONE, BRAINBUSTER, VERTICALBRAINBUSTER, SNAPPILEDRIVERS, HURRICANERANA,
+DRAGONSCREW, SPINTORTURERACKBOMB, HAMMERTHROW, FENCETHROW.
+
+### TZ_SCOOP_SLAM's deliverer half is the whole source reel
+
+`TZ_SCOOP_SLAM` and `TZ_TILT_WHIRL_SLAM` both measure **17.4333 s** — the same
+duration, to four decimals, for two different moves — while their `__RECV`
+halves are a sane 2.8 s and 1.8 s. That is the capture bug already written down
+in CLAUDE.md, where `capture_two` read `--start/--end` and then never applied
+the window, so the bank got the entire video. The receiving halves were
+captured correctly; the delivering halves need re-cutting at the source. It is
+also why both render as a 17-second T-pose, which is a source defect and not a
+rig one.
+
+### A gate that refused the thing it was asked for
+
+`resolveClipName` applies "starts standing" and "stands upright" to every
+lookup. A throw victim is SUPPOSED to go horizontal and can start off his feet,
+so naming one by hand got it refused for exactly the reason it was chosen. A
+clip named outright is an instruction now, not a suggestion — except for a
+combat state or a semantic slot, which still go through the table so nothing
+can jump the queue by being named after a state. The owner's BROKEN verdict
+still wins, because he looked at it.
+
+### And the grapple button did nothing
+
+Third finding of the pass, and the one a player would hit first. The HUD says
+`V: GRAPPLE`. MEASURED by grep: `risingGrapple` appeared exactly TWICE in the
+whole state machine — pushed into the input buffer, and queued during recovery
+as `{ type: 'grapple' }`. The switch that executes a queued action has cases
+for light, heavy, guard and commandThrow, so `'grapple'` fell through to
+`default`, which sets Idle. And there was no neutral path at all.
+
+So throws were reachable only through Forward+Guard or the two-button
+combinations, and buffering the throw button during recovery — exactly when a
+player buffers a throw — threw the input away. Both fixed, with a test that
+was confirmed FAILING on the unfixed code first (2 fail -> 2 pass).
+
+### THE ANIMATION POOL WAS STORING NOTHING
+
+Found on the way through, and it is the more urgent of the two:
+
+`setMoveLabel` deletes a label it considers empty so a mistake can be taken
+back. That test listed **four** fields and the label has six. A tap on a clip
+with no typed name, slot, note or verdict produced a label carrying `kinds` and
+nothing else, so the emptiness test threw it away on the way to storage —
+`kindsOf` came back `[]` immediately after `toggleMoveKind`.
+
+On a fresh clip, which is every clip at the start of a sweep, **the checkbox
+screen he asked for stored nothing at all.** He would have tagged hundreds of
+clips and lost every one. Fixed, with a regression test that taps a kind on a
+clip with nothing else written on it, and an explicit note in the code that a
+field added later has to be added to that test too.
+
+RULE THIS EARNED: a "delete when empty" rule has to be derived from the type,
+or it silently discards whichever field was added last.
 
 ## 21c. Two probes of mine that could not fail, and one that lied
 

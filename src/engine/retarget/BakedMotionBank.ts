@@ -1,5 +1,6 @@
 // `.ts` extensions on purpose — the repo's test runner resolves them literally.
 import * as THREE from 'three';
+import { markGrapplePairs } from '../combat/GrapplePairing.ts';
 
 import { assetUrl } from '../../lib/assetBase.ts';
 
@@ -72,6 +73,17 @@ export interface BakedManifestEntry {
   movingBones?: number;
   /** How many bones it drives at all. */
   boneCount?: number;
+  /**
+   * THE OPPONENT'S HALF OF THIS GRAPPLE, best match first.
+   *
+   * Derived at bake time from the clips that are actually present and
+   * confirmed on duration — five of the thirteen agree to four decimal
+   * places, which is one take recorded from two bodies, not a name rule
+   * getting lucky. See deriveGrapplePairs in scripts/bake-fighter-animations.
+   */
+  pairedWith?: string[];
+  /** This clip IS somebody being thrown. It is never an attacker's half. */
+  receives?: boolean;
   /**
    * Which way the strike travels in the body's own frame: +1 is straight at
    * the opponent, 0 square sideways, -1 directly away.
@@ -742,6 +754,9 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
     if (!res.ok) throw new Error(`index HTTP ${res.status}`);
     const manifest = (await res.json()) as Record<string, BakedManifestEntry>;
     applyStandability(manifest);
+    // The opponent's half of every grapple, read off the same index rather
+    // than a second fetch. See engine/combat/GrapplePairing.
+    markGrapplePairs(manifest);
     // SLOT OWNERS FIRST. Actions register in order and the first clip for a
     // semantic wins, so the clip the bake chose for a combat state has to be
     // seen before any clip that merely infers the same state from its name.
@@ -777,6 +792,17 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
   }
   cached = out;
   return out;
+}
+
+/**
+ * WHICH CLIPS ARE ACTUALLY ON THE SKELETON RIGHT NOW.
+ *
+ * A caller naming a clip by hand — the opponent's half of a grapple — has
+ * to be able to ask whether that name will resolve to anything, rather than
+ * naming it and watching a body freeze. Empty before the bank has loaded.
+ */
+export function bakedClipNames(): ReadonlySet<string> {
+  return new Set(cached ? cached.keys() : []);
 }
 
 /** For tests and for the pipeline's own reporting. */

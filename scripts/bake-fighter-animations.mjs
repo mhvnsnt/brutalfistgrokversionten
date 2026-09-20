@@ -943,6 +943,98 @@ const report = {
 
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THE OPPONENT SIDE OF A GRAPPLE
+//
+// Owner, twice: "neck breaker ... would have two animation parts for the one
+// for the deliverer and the receiver type shit for the grapples", and then
+// "Scoop slam is a grapple too that needs the opponent side, and same for all
+// grapples — they need the opponent side hooked up and wired up all areas
+// wise where it needs to be with reaction and animation etc."
+//
+// A throw is TWO performances. The bank already holds both halves for a lot
+// of them — 54 clips in it are somebody being thrown — and nothing had ever
+// connected a half to its other half, so the victim of every throw in the
+// game played the same generic knockdown.
+//
+// THE PAIRS ARE DERIVED FROM THE BAKED SET, NOT TYPED OUT. A hand-written
+// table of 366 clip names is wrong the first time a clip is renamed and
+// nobody notices. This reads the names that are actually there: strip the
+// receiving marker (REACTION / RECV / VICTIM) and, if what is left is itself
+// a baked clip, those two are halves of one move.
+//
+// EXTRA_PAIRS is for the ones whose two halves were named by different people
+// on different days — POWERBOMBWHIP delivers, POWERBOMBREACTION receives, and
+// no string operation gets from one to the other. The bake REFUSES to finish
+// if either side of an entry is missing, so this list cannot rot silently.
+const RECEIVER_MARKER = /(REACTION|RECV|VICTIM)/i;
+
+const EXTRA_PAIRS = {
+  // Named apart, same move. Both sides checked below.
+  POWERBOMBWHIP: 'POWERBOMBREACTION',
+};
+
+function deriveGrapplePairs(manifest) {
+  const names = Object.keys(manifest);
+  const have = new Set(names);
+  const receivers = names.filter((n) => RECEIVER_MARKER.test(n));
+
+  /** deliverer -> receiver halves, best first. */
+  const byDeliverer = new Map();
+  const paired = new Set();
+
+  const link = (deliverer, receiver, how) => {
+    if (!have.has(deliverer) || !have.has(receiver)) {
+      throw new Error(
+        `grapple pair names a clip that is not baked: ${deliverer} <- ${receiver}`,
+      );
+    }
+    if (!byDeliverer.has(deliverer)) byDeliverer.set(deliverer, []);
+    byDeliverer.get(deliverer).push({ receiver, how });
+    paired.add(receiver);
+  };
+
+  for (const r of receivers) {
+    // Two shapes appear in the bank and both are just a suffix:
+    //   KNEETHROW + REACTION,  TZ_SCOOP_SLAM + __RECV,  X + ___VICTIM
+    // Trailing variant numbers (_2, _NEW, _FIX, __1_) are stripped with it,
+    // which is what makes KNEETHROWREACTION_SLOW find KNEETHROW.
+    const stems = new Set([
+      r.replace(/_*(RECV|VICTIM)(_*\d+_*)?$/i, ''),
+      r.replace(/_?REACTION.*$/i, ''),
+    ]);
+    for (const stem of stems) {
+      if (stem && stem !== r && have.has(stem)) link(stem, r, 'name');
+    }
+  }
+  for (const [deliverer, receiver] of Object.entries(EXTRA_PAIRS)) {
+    link(deliverer, receiver, 'declared');
+  }
+
+  // A receiver half whose deliverer was never imported. MEASURED: 37 of
+  // them. These are NOT junk — most are real recordings of a body being
+  // thrown, and they are what the runtime's stand-in draws from, so a
+  // grapple with no partner of its own still throws somebody properly
+  // instead of playing a stock knockdown. (The runtime drops the ones the
+  // bake filed under hit_reaction: a sixth of a second of a head snapping
+  // back is not somebody being suplexed.) They are also the shopping list
+  // for the next import pass.
+  const orphans = receivers.filter((r) => !paired.has(r));
+
+  // Sort each deliverer's halves by how close they are in length: the victim's
+  // half has to last about as long as the throw, and where three variants
+  // exist (KNEETHROWREACTION / _NEW / _SLOW) that is the only measurement that
+  // says which one was recorded with this take.
+  for (const [deliverer, list] of byDeliverer) {
+    const d = manifest[deliverer].dur;
+    list.sort((a, b) =>
+      Math.abs(manifest[a.receiver].dur - d) - Math.abs(manifest[b.receiver].dur - d));
+  }
+
+  return { byDeliverer, orphans, receivers };
+}
+
 const manifest = {};
 
 for (const src of sources()) {
@@ -1237,6 +1329,18 @@ for (const src of sources()) {
   report.baked++;
 }
 
+// THE OPPONENT SIDE, stamped onto the clips themselves so the runtime needs
+// no second file and no second fetch. `pairedWith` on the deliverer is what
+// the victim plays; `receives` marks the half that is somebody being thrown,
+// which is also the pool the generic fallback draws from.
+const grapplePairs = deriveGrapplePairs(manifest);
+for (const r of grapplePairs.receivers) manifest[r].receives = true;
+for (const [deliverer, list] of grapplePairs.byDeliverer) {
+  manifest[deliverer].pairedWith = list.map((x) => x.receiver);
+}
+report.grapplePairs = grapplePairs.byDeliverer.size;
+report.grappleOrphanReceivers = grapplePairs.orphans;
+
 writeFileSync(join(OUT, 'index.json'), JSON.stringify(manifest, null, 0));
 
 const bytes = readdirSync(OUT).reduce(
@@ -1255,6 +1359,11 @@ console.log(`  hinge corrections    ${report.hingeCorrections} track(s)`);
 console.log(`  convention twist    ${report.conventionTwistCorrections} track(s)`);
 console.log(`  limit corrections    ${report.limitCorrections} track(s)`);
 console.log(`  combat slots owned   ${report.slotOwners ?? 0}`);
+console.log(`  GRAPPLE PAIRS        ${report.grapplePairs} deliverer(s) now carry the opponent half`);
+if (report.grappleOrphanReceivers?.length) {
+  console.log(`  RECEIVER, NO THROW   ${report.grappleOrphanReceivers.length} clip(s) of a body being thrown whose deliverer half was never imported`);
+  console.log('    ' + report.grappleOrphanReceivers.slice(0, 10).join(', '));
+}
 console.log(`  planted on the floor ${report.grounded} clip(s) moved, avg shift ${
   report.grounded ? ((report.groundedTotal / report.grounded) * 100).toFixed(1) : '0'} cm, added to every pelvis key)`);
 if (process.env.BF_MEDIANS) {

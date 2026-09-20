@@ -6,6 +6,8 @@ import * as THREE from 'three';
 import { runCharacterPipeline } from '../engine/pipeline/CharacterPipeline';
 import { loadGLTF } from '../engine/pipeline/glbCache';
 import { assetUrl } from '../lib/assetBase';
+import { markGrapplePairs, receiverClipFor } from '../engine/combat/GrapplePairing';
+import type { BakedManifestEntry } from '../engine/retarget/BakedMotionBank';
 import {
   MOVE_KINDS,
   canonicalSlot,
@@ -48,6 +50,10 @@ interface ManifestEntry {
   semantic?: string;
   owns?: boolean;
   airborne?: boolean;
+  /** The opponent's half, paired at bake time. */
+  pairedWith?: string[];
+  /** This clip IS somebody being thrown. */
+  receives?: boolean;
 }
 
 type Filter = 'all' | 'untagged' | 'unlabelled' | 'unassigned' | 'airborne' | 'labelled';
@@ -219,6 +225,11 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
           if (!live) return;
           if (!m || Object.keys(m).length === 0) throw new Error('empty index');
           setManifest(m);
+          // The pairing lives in this same index, and this screen can be
+          // opened from the menu without a match ever having loaded the
+          // bank — so it seeds the pairing itself rather than showing
+          // "nothing close enough" for every throw in the game.
+          markGrapplePairs(m as Record<string, BakedManifestEntry>);
           setManifestError(null);
         })
         .catch((e: unknown) => {
@@ -289,6 +300,28 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
   };
 
   const entry = selected ? manifest[selected] : undefined;
+
+  /**
+   * Every clip in the bank that IS somebody being thrown — the only honest
+   * shortlist for "what does the other man do?". Sorted by length, because
+   * the victim's half has to last about as long as the throw.
+   */
+  const victimClips = useMemo(
+    () => Object.entries(manifest).filter(([, m]) => m.receives)
+      .sort((a, b) => (b[1].dur ?? 0) - (a[1].dur ?? 0)).map(([n]) => n),
+    [manifest],
+  );
+  /** What the game would play right now with nothing chosen by hand. */
+  const pairedAuto = selected ? (receiverClipFor(selected, { labels })?.receiver ?? null) : null;
+  const pairedShown = selected ? (labels[selected]?.pairedWith ?? pairedAuto) : null;
+  /**
+   * Is this worth asking about? A clip he tagged grapple or throw, or one
+   * the bake already paired. Never every clip — 366 dropdowns is not a tool.
+   */
+  const isGrappleish = (c: string) => {
+    const k = kindsOf(c, labels);
+    return k.includes('grapple') || k.includes('throw');
+  };
   const missing = Boolean(selected && available.length > 0 && !available.includes(selected));
   const labelledCount = Object.keys(labels).length;
 
@@ -585,6 +618,61 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
                 );
               })}
             </div>
+
+            {/*
+              THE OPPONENT SIDE.
+
+              Owner, twice: "neck breaker ... would have two animation parts,
+              one for the deliverer and the receiver", then "Scoop slam is a
+              grapple too that needs the opponent side, and same for all
+              grapples."
+
+              The bake pairs the thirteen it can pair by name and confirms
+              them on duration. It cannot pair NECKBREAKER, SUPLEX,
+              GERMANSUPLEX, CHOKESLAM or TOMBSTONE with anything, because
+              those halves were never recorded. This is where he says which
+              recording to use — with SEE IT next to it, because he is
+              already watching clips loop on this screen and picking a throw
+              victim blind from a list of names is exactly the guess the
+              owner law forbids.
+            */}
+            {selected && (isGrappleish(selected) || Boolean(manifest[selected]?.pairedWith)) && (
+              <div className="border border-white/10 bg-black/30 p-2 space-y-1">
+                <div className="text-[9px] tracking-[0.2em] text-zinc-500">OPPONENT HALF</div>
+                <div className="flex gap-2 items-center flex-wrap">
+                  <select
+                    value={labels[selected]?.pairedWith ?? ''}
+                    onChange={(e) => setLabels(setMoveLabel(selected, {
+                      ...labels[selected], pairedWith: e.target.value || undefined,
+                    }))}
+                    className="flex-1 min-w-[150px] bg-black/40 border border-white/15 px-2 py-1 text-[11px]"
+                  >
+                    <option value="">
+                      {pairedAuto ? `auto · ${pairedAuto}` : 'auto · nothing close enough'}
+                    </option>
+                    {victimClips.map((v) => (
+                      <option key={v} value={v}>{v} · {manifest[v]?.dur ?? '?'}s</option>
+                    ))}
+                  </select>
+                  <button
+                    disabled={!pairedShown}
+                    onPointerEnter={() => pairedShown && setHovered(pairedShown)}
+                    onClick={() => pairedShown && setHovered(pairedShown)}
+                    className="text-[10px] px-3 py-1 border border-sky-500/60 text-sky-300 disabled:opacity-40"
+                  >
+                    SEE IT
+                  </button>
+                </div>
+                <div className="text-[10px] text-zinc-400">
+                  {pairedShown
+                    ? <>the other man plays <b className="text-sky-300">{pairedShown}</b>{' '}
+                        ({labels[selected]?.pairedWith ? 'you chose it'
+                          : manifest[selected]?.pairedWith?.includes(pairedShown) ? 'paired at bake time'
+                          : 'stand-in, chosen on length'})</>
+                    : <span className="text-amber-400">no half recorded for this throw — pick one and the victim stops playing the stock knockdown</span>}
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-2 flex-wrap">
               <input

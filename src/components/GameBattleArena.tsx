@@ -41,6 +41,8 @@ import { useAuth } from '../contexts/AuthContext';
 // ── Locomotion + bone hitbox systems ─────────────────────────────────────────
 import { LocomotionSystem, ATTACK_ROOT_MOTION_PROFILES, locomotionBoundsFromStage } from '../engine/locomotion/LocomotionSystem';
 import { createTekkenStick } from '../engine/combat/TekkenInput';
+import { receiverClipFor } from '../engine/combat/GrapplePairing';
+import { bakedClipNames } from '../engine/retarget/BakedMotionBank';
 import { BoneHitboxSystem, HIT_STOP_DURATIONS, HIT_STOP_DEFAULT_MS } from '../engine/locomotion/BoneHitboxSystem';
 // ── Announcer system ──────────────────────────────────────────────────────────
 import { getAnnouncerSystem } from '../engine/announcer/AnnouncerSystem';
@@ -145,6 +147,53 @@ export default function GameBattleArena({
   const [p2State, setP2State] = useState<string>('Neutral');
   const [p1Animation, setP1Animation] = useState<string>('idle');
   const [p2Animation, setP2Animation] = useState<string>('idle');
+
+  /**
+   * THE OPPONENT'S HALF OF A GRAPPLE.
+   *
+   * Owner, twice: "neck breaker ... would have two animation parts, one for
+   * the deliverer and the receiver", and "Scoop slam is a grapple too that
+   * needs the opponent side, and same for all grapples."
+   *
+   * A landed throw used to call `applyKnockdown()` on the victim and leave
+   * it there, so the same stock fall answered a DDT, a giant swing and a
+   * scoop slam — at a length that had nothing to do with the throw being
+   * done to him. This holds the victim on the paired clip for exactly as
+   * long as that clip runs, then hands him back to the knockdown he was
+   * going to play anyway.
+   *
+   * Which clip each body is REALLY playing comes from the resolver itself
+   * (`onClipResolved`), not from a second copy of the lookup here.
+   */
+  const [grappleBeat, setGrappleBeat] = useState<{ victim: 'p1' | 'p2'; clip: string; source: string } | null>(null);
+  const grappleBeatTimer = useRef<number | null>(null);
+  /** Mirrored for the probe: state is not readable from outside React. */
+  const grappleBeatRef = useRef<{ victim: 'p1' | 'p2'; clip: string; source: string } | null>(null);
+  const liveClipRef = useRef<{ p1: string | null; p2: string | null }>({ p1: null, p2: null });
+  /** The clip the attacker was playing when the grab connected. */
+  const throwDelivererRef = useRef<{ p1: string | null; p2: string | null }>({ p1: null, p2: null });
+
+  const playOpponentHalf = useCallback((victim: 'p1' | 'p2', deliverer: string | null) => {
+    if (!deliverer) return;
+    const pick = receiverClipFor(deliverer, { available: (c) => bakedClipNames().has(c) });
+    if (!pick) return;
+    if (grappleBeatTimer.current !== null) window.clearTimeout(grappleBeatTimer.current);
+    grappleBeatRef.current = { victim, clip: pick.receiver, source: pick.source };
+    setGrappleBeat({ victim, clip: pick.receiver, source: pick.source });
+    console.log(
+      `[Arena] 🤼 opponent half — ${deliverer} -> ${pick.receiver} (${pick.source}, ${pick.dur}s) on ${victim}`,
+    );
+    // Held for the clip's own length. A fixed timeout would cut a 2.5 s DDT
+    // reaction short and leave a 0.5 s knee throw standing in a pose.
+    grappleBeatTimer.current = window.setTimeout(
+      () => { grappleBeatRef.current = null; setGrappleBeat(null); grappleBeatTimer.current = null; },
+      Math.max(250, Math.round((pick.dur || 0.8) * 1000)),
+    );
+  }, []);
+
+  useEffect(() => () => {
+    if (grappleBeatTimer.current !== null) window.clearTimeout(grappleBeatTimer.current);
+  }, []);
   const [ko, setKo] = useState(false);
   const [winner, setWinner] = useState<'p1' | 'p2' | 'draw' | null>(null);
   const [roundTimer, setRoundTimer] = useState(99);
@@ -1368,6 +1417,17 @@ export default function GameBattleArena({
           p1: { attackStarts: p1SMRef.current?.attackStarts ?? 0, trigger: p1AnimTriggerRef.current },
           p2: { attackStarts: p2SMRef.current?.attackStarts ?? 0, trigger: p2AnimTriggerRef.current },
         }),
+        /**
+         * WHAT EACH BODY IS REALLY PLAYING, and the grapple half in flight.
+         * Read from the resolver's own report, so a probe measures the clip
+         * that is on screen rather than the one the state table implies.
+         */
+        clips: () => ({
+          p1: liveClipRef.current.p1,
+          p2: liveClipRef.current.p2,
+          grappleBeat: grappleBeatRef.current,
+          lastDeliverer: { ...throwDelivererRef.current },
+        }),
         /** What each side's state machine says it is doing, for the stuck-pose probe. */
         states: () => ({
           p1: { action: p1SMRef.current?.action, motion: p1SMRef.current?.current, clip: p1SMRef.current?.activeClip() },
@@ -1393,6 +1453,10 @@ export default function GameBattleArena({
           // window. P2's FSM consumes Escape during that window; only after it
           // expires does the arena commit the throw.
           p2SMRef.current.beginIncomingThrowBreak(0);
+          // WHAT HE IS THROWING WITH, captured NOW. By the time the break
+          // window closes the attacker may already be out of the throw, and
+          // the victim's half has to match the throw that was performed.
+          throwDelivererRef.current.p1 = liveClipRef.current.p1;
           console.log('[Arena] 🤲 Command throw connected — break window opened');
         }
         // Hide grab range visualization after 400ms
@@ -1479,6 +1543,7 @@ export default function GameBattleArena({
 
       // ── Check P1 hitbox vs P2 ──────────────────────────────────────────
       const p2SM = p2SMRef.current;
+      const prevP2Action = p2SM.action;
       const p2IsBlocking = p2SM.action === 'Guard' && !p2MomentumChargeRef.current.blockingDisabled;
 
       // ── Z-axis sidestep whiff check ────────────────────────────────────
@@ -1672,6 +1737,10 @@ export default function GameBattleArena({
       } else if (throwBreakOutcome === 'committed') {
         const throwDmg = COMMAND_THROW_MOVE.damage ?? 220;
         p2SMRef.current.applyKnockdown();
+        // THE OTHER MAN'S HALF. applyKnockdown still runs underneath, so the
+        // physics, the damage and the wake-up are untouched — this only
+        // decides what his body is seen doing while it happens.
+        playOpponentHalf('p2', throwDelivererRef.current.p1);
         p2LocoRef.current.halt();
         p2HitboxRef.current.reset();
         console.log('[Arena] ✅ Command throw committed — damage:', throwDmg);
@@ -1696,6 +1765,36 @@ export default function GameBattleArena({
           x: 60 + Math.random() * 10,
           y: 20 + Math.random() * 20,
         }]);
+      }
+
+      // ── THE SAME THING, WITH THE PLAYER AS THE VICTIM ─────────────────
+      // Armed by the AI's throw above. Escape breaks it exactly as it does
+      // for the AI, and a committed throw puts the player through the
+      // opponent's half of whatever the AI threw with.
+      const p1ThrowBreakOutcome = p1SMRef.current.consumeIncomingThrowBreakOutcome();
+      if (p1ThrowBreakOutcome === 'broken') {
+        p2SMRef.current.resolveCommandThrow(false);
+        p1LocoRef.current.applyPushback(0.35);
+        p1HitboxRef.current.reset();
+        audioManagerRef.current.playSFX('throw_break');
+        setSpecialMoveNotice({ name: 'THROW BREAK!', player: 'p1', id: ++specialNoticeIdRef.current });
+        setTimeout(() => setSpecialMoveNotice(null), 900);
+      } else if (p1ThrowBreakOutcome === 'committed') {
+        const throwDmg = COMMAND_THROW_MOVE.damage ?? 220;
+        p1SMRef.current.applyKnockdown();
+        p1LocoRef.current.halt();
+        p1HitboxRef.current.reset();
+        playOpponentHalf('p1', throwDelivererRef.current.p2);
+        engineRef.current?.applyIncomingHit('p1', throwDmg, false, 0.3);
+        if (settings.soundEnabled) sfx.playHeavyHit();
+        audioManagerRef.current.playSFX('throw_connect');
+        setDamageEvent({
+          count: ++damageEventCountRef.current,
+          player: 'p1',
+          damage: throwDmg,
+          isCounter: false,
+          factionColor: p1Color,
+        });
       }
 
       const p2Hb = p2HitboxRef.current;
@@ -1723,6 +1822,30 @@ export default function GameBattleArena({
       const p2NextMotion = p2SM.update(p2AIInput, dt);
       const p2HbWindow = p2SM.getHitboxWindow();
       p2Hb.update(p2HbWindow);
+
+      // ── THE AI'S THROW, WHICH HAD NEVER RESOLVED ──────────────────────
+      //
+      // TWO THINGS WERE MISSING AND EITHER ALONE WAS ENOUGH.
+      //
+      // The input side reads `p2AIInput.grapple` and passes it to the command
+      // buffer — but `buildP2AIInput` NEVER SET IT, on any branch, so the AI
+      // had no way to ask for a throw in the first place (fixed there, in the
+      // close-range cycle). And on this side `p1SM.action === 'CommandThrow'`
+      // was the ONLY occurrence in the file: nothing ever checked the AI's
+      // grab range, called `resolveCommandThrow`, opened a break window or
+      // dealt the damage. So the player could not be thrown by anybody.
+      //
+      // Owner: the opponent side has to be "wired up all areas wise." A
+      // grapple only the player can perform is half a system.
+      if (p2SM.action === 'CommandThrow' && prevP2Action !== 'CommandThrow') {
+        const grabResult = p2SM.checkGrabRange(p2XRef.current, p1XRef.current, p1SMRef.current.action);
+        p2SM.resolveCommandThrow(grabResult.throwSucceeded);
+        if (grabResult.throwSucceeded) {
+          p1SMRef.current.beginIncomingThrowBreak(0);
+          throwDelivererRef.current.p2 = liveClipRef.current.p2;
+          console.log('[Arena] 🤲 AI command throw connected — break window opened');
+        }
+      }
 
       // ── Check P2 hitbox vs P1 ──────────────────────────────────────────
       const p1IsBlocking = p1SM.action === 'Guard';
@@ -2492,8 +2615,11 @@ export default function GameBattleArena({
           p2Fighter={p2Fighter}
           p1State={p1State}
           p2State={p2State}
-          p1Animation={introBeat?.player === 'p1' ? introBeat.clip : p1Animation}
-          p2Animation={introBeat?.player === 'p2' ? introBeat.clip : p2Animation}
+          p1Animation={grappleBeat?.victim === 'p1' ? grappleBeat.clip
+            : introBeat?.player === 'p1' ? introBeat.clip : p1Animation}
+          p2Animation={grappleBeat?.victim === 'p2' ? grappleBeat.clip
+            : introBeat?.player === 'p2' ? introBeat.clip : p2Animation}
+          onClipResolved={(who, clip) => { liveClipRef.current[who] = clip; }}
           p1Color={p1Color}
           p2Color={p2Color}
           hitStopActive={hitStopActive}
@@ -3214,6 +3340,22 @@ function buildP2AIInput(
     return {forward:-1,strafe:0,light:false,heavy:false,guard:true,crouch:false,jump:false};
   if (healthPressure && cycle === 4)
     return {forward:0,strafe:orbit,light:false,heavy:false,guard:true,crouch:false,jump:false};
+  /**
+   * THE AI CAN THROW YOU NOW.
+   *
+   * Owner: the grapple needs "the opponent side hooked up and wired up all
+   * areas wise." MEASURED: not one branch of this function ever set
+   * `grapple`, on any cycle, for any style or personality — so the field the
+   * command buffer reads was permanently false and only the player could
+   * ever attempt a throw. A grapple only one side can perform is half a
+   * system, and it is why nobody had ever seen the victim's half of one.
+   *
+   * Inside grab range (1.4 m), and weighted to the styles that would: a
+   * wrestler or brawler reaches for it, everyone else does it occasionally.
+   * The player gets the same 0.35 s break window the AI does.
+   */
+  if (distance <= 1.35 && (cycle === 4 || (powerStyle && cycle === 2)))
+    return {forward:0,strafe:0,light:false,heavy:false,guard:false,crouch:false,jump:false,grapple:true};
   switch (cycle) {
     case 0: case 1: return {forward:0,strafe:orbit,light:true,heavy:false,guard:false,crouch:false,jump:false};
     case 2: return {forward:0,strafe:orbit,light:false,heavy:true,guard:false,crouch:false,jump:false};

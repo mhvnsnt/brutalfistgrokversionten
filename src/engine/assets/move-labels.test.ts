@@ -108,3 +108,60 @@ describe('what kind of animation this is', () => {
     assert.deepEqual(taggingProgress(all, labels), { tagged: 2, total: 4 });
   });
 });
+
+/**
+ * THE CHECKBOX HAS TO SURVIVE THE WRITE.
+ *
+ * Owner asked for the animation pool specifically so a sweep could be done
+ * with taps and no typing: "I'll literally be able to just tap the checkbox
+ * of what kind of animation it is, and that'll help the whole pipeline."
+ *
+ * MEASURED the day after it shipped: a tap on a clip with no typed name,
+ * slot, note or verdict produced a label carrying `kinds` and nothing else,
+ * and the "an emptied label is a delete" test — which listed four of the
+ * six fields — threw it away on the way to storage. `kindsOf` came back
+ * empty immediately after `toggleMoveKind`. On a fresh clip, which is every
+ * clip at the start of a sweep, the screen stored NOTHING.
+ */
+describe('a tapped kind is kept', () => {
+  const store = new Map<string, string>();
+  const before = globalThis.localStorage;
+
+  it('survives on a clip with nothing else written on it', async () => {
+    (globalThis as { localStorage?: unknown }).localStorage = {
+      getItem: (k: string) => (store.has(k) ? store.get(k)! : null),
+      setItem: (k: string, v: string) => { store.set(k, String(v)); },
+      removeItem: (k: string) => { store.delete(k); },
+    };
+    const m = await import('./moveLabels.ts');
+    try {
+      m.toggleMoveKind('CROTCHCHOP', 'taunt');
+      assert.deepEqual([...m.kindsOf('CROTCHCHOP')], ['taunt'],
+        'the tap was discarded on the way to storage');
+      m.toggleMoveKind('CROTCHCHOP', 'idle');
+      assert.deepEqual([...m.kindsOf('CROTCHCHOP')], ['idle', 'taunt']);
+      // Untapping everything still clears the entry, so a mistake is takeable back.
+      m.toggleMoveKind('CROTCHCHOP', 'idle');
+      m.toggleMoveKind('CROTCHCHOP', 'taunt');
+      assert.deepEqual(m.loadMoveLabels(), {});
+    } finally {
+      (globalThis as { localStorage?: unknown }).localStorage = before;
+    }
+  });
+
+  it('keeps a pairing written on its own', async () => {
+    store.clear();
+    (globalThis as { localStorage?: unknown }).localStorage = {
+      getItem: (k: string) => (store.has(k) ? store.get(k)! : null),
+      setItem: (k: string, v: string) => { store.set(k, String(v)); },
+      removeItem: (k: string) => { store.delete(k); },
+    };
+    const m = await import('./moveLabels.ts');
+    try {
+      m.setMoveLabel('NECKBREAKER', { pairedWith: 'POWERBOMBREACTION' });
+      assert.equal(m.loadMoveLabels().NECKBREAKER?.pairedWith, 'POWERBOMBREACTION');
+    } finally {
+      (globalThis as { localStorage?: unknown }).localStorage = before;
+    }
+  });
+});

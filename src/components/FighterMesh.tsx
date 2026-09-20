@@ -21,6 +21,7 @@ import {
 import { COMBAT_STATE_TO_SEMANTIC, SEMANTIC_STATE_ALIASES, inferSemanticStateFromClipName } from '../engine/retarget/SemanticStateAliases';
 import { clipAnimates, clipKeepsFacing, clipStandsUpright, clipStartsStanding, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
 import { clipsLabelledFor, isReceivingClip, labelRefuses } from '../engine/assets/moveLabels';
+import { isThrowVictimClip } from '../engine/combat/GrapplePairing';
 import { AnimationBridge } from '../../animation_bridge/retarget';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -117,6 +118,16 @@ export interface FighterMeshProps {
    * the fighters — showed two wireframe boxes or nothing at all.
    */
   onModelReady?: (ok: boolean) => void;
+  /**
+   * WHICH CLIP IS ACTUALLY PLAYING, reported by the thing that chose it.
+   *
+   * The arena needs the deliverer's real clip name to look up the opponent's
+   * half of a grapple, and re-deriving it there would be a second copy of
+   * this resolution that can disagree with this one. That disagreement is
+   * the exact class of bug this project keeps paying for, so the resolver
+   * says what it picked instead of being asked again.
+   */
+  onClipResolved?: (clip: string | null, inputKey: string) => void;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -345,6 +356,26 @@ function resolveClipName(
   preferred: string[] = [],
 ): string | null {
   const availableClips = Object.keys(actions);
+
+  /**
+   * A CLIP NAMED OUTRIGHT IS AN INSTRUCTION, NOT A SUGGESTION.
+   *
+   * The gates below exist to stop a thrown body leaking into an ATTACK slot.
+   * When the arena asks for the victim's half of a grapple BY NAME, those
+   * same gates refuse it for exactly the reason it was chosen — it goes
+   * horizontal, it can start off its feet, it is somebody being thrown. So a
+   * caller that names a real clip gets that clip.
+   *
+   * The owner's BROKEN verdict still wins, because he looked at it.
+   *
+   * It is deliberately NOT taken for a combat state or a semantic slot.
+   * Those go through the table, where the preference order, the slot owner
+   * and the gates all still apply — otherwise a clip that happened to be
+   * named after a state would jump the queue and skip every check.
+   */
+  const isVocabulary = key in COMBAT_STATE_TO_SEMANTIC || key in SEMANTIC_STATE_ALIASES;
+  if (!isVocabulary && actions[key] && !labelRefuses(key)) return key;
+
   const clipsByState = buildClipsByState(actions);
 
   /**
@@ -558,6 +589,7 @@ function FighterMeshInner({
   onDeformationBlocked,
   onAnimationIntegrityReport,
   onModelReady,
+  onClipResolved,
 }: {
   gltfUrl: string;
   state: string;
@@ -579,8 +611,17 @@ function FighterMeshInner({
   onDeformationBlocked?: (characterName: string, failingChecks: string[]) => void;
   onAnimationIntegrityReport?: (report: AnimationIntegrityReport) => void;
   onModelReady?: (ok: boolean) => void;
+  onClipResolved?: (clip: string | null, inputKey: string) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
+  /**
+   * Held in a ref on purpose. The clip-resolution effect lists its
+   * dependencies explicitly, and a callback that changes identity every
+   * render would re-run the whole resolution — which restarts the
+   * animation — once per frame.
+   */
+  const onClipResolvedRef = useRef(onClipResolved);
+  onClipResolvedRef.current = onClipResolved;
   const [normalized, setNormalized] = useState<NormalizedResult | null>(null);
 
   /**
@@ -740,6 +781,7 @@ function FighterMeshInner({
     console.log(
       `[FighterMesh] 🎬 input="${inputKey}" → clip="${clipName ?? 'NONE'}" trigger=${animationTrigger}`,
     );
+    onClipResolvedRef.current?.(clipName, inputKey);
 
     // ── COMBAT ENTRY: Run 14-point deformation integrity test ─────────────────
     // AGENT LAW: The deformation integrity test runs ONCE when the first
@@ -861,8 +903,19 @@ function FighterMeshInner({
     const nextAction = actions[clipName];
     const fadeDuration = FADE_DURATIONS[inputKey] ?? DEFAULT_FADE;
     const isLoop = LOOP_STATES.has(inputKey);
-    const isUrgent = isAttack || ['hit', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple', 'jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey);
-    const isDefensiveInterrupt = ['hit', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple'].includes(inputKey);
+    const isUrgent = isAttack || isThrowVictimClip(inputKey)
+      || ['hit', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple', 'jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey);
+    /**
+     * BEING THROWN OUTRANKS WHATEVER HE WAS DOING.
+     *
+     * This list is keyed on the STATE name, and the opponent's half of a
+     * grapple arrives as a CLIP name — so a body mid-punch when the throw
+     * committed would have had his half deferred behind his own attack lock
+     * and the crossfade hold, or dropped. A knockdown interrupts; so does
+     * the thing that causes it.
+     */
+    const isDefensiveInterrupt = ['hit', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple'].includes(inputKey)
+      || isThrowVictimClip(inputKey);
     const isSameClip = clipName === committedClipRef.current;
     const now = performance.now() / 1000;
 
@@ -1085,6 +1138,7 @@ export function FighterMesh({
   onDeformationBlocked,
   onAnimationIntegrityReport,
   onModelReady,
+  onClipResolved,
 }: FighterMeshProps) {
   // NO MODEL TO WAIT FOR. Say so immediately, or a caller holding the
   // cinematic open for this fighter waits for something that never arrives.
@@ -1111,6 +1165,7 @@ export function FighterMesh({
         onDeformationBlocked={onDeformationBlocked}
         onAnimationIntegrityReport={onAnimationIntegrityReport}
         onModelReady={onModelReady}
+        onClipResolved={onClipResolved}
       />
     </Suspense>
   );

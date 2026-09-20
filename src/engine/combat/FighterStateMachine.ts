@@ -1225,6 +1225,20 @@ export class FighterStateMachine {
       return this.beginCommandThrowWithMove(RIGHT_THROW_MOVE);
     }
 
+    // ── THE GRAPPLE BUTTON WAS NOT WIRED TO ANYTHING ──────────────────────
+    //
+    // `risingGrapple` was computed, pushed into the input buffer, and
+    // queued during recovery — and there was NO path anywhere that turned a
+    // grapple press into a throw. MEASURED: the only occurrences of
+    // `risingGrapple` in this file were the buffer push and the queue, and
+    // the queue's type had no case. The HUD tells the player "V: GRAPPLE"
+    // and the button did nothing; throws were reachable only through
+    // Forward+Guard or the two-button combinations below.
+    if (risingGrapple) {
+      console.log('[FSM] 🤲 Command throw input detected (grapple button)');
+      return this.beginCommandThrow();
+    }
+
     // ── Command throw detection: Forward + Guard within CMD_THROW_WINDOW_MS ──
     if (risingGuard && resolvedInput.forward > CMD_THROW_FORWARD_THRESHOLD) {
       const timeSinceForward = now - this.forwardPressTime;
@@ -1622,6 +1636,13 @@ export class FighterStateMachine {
       case 'heavy':
         return this.beginAttack('heavyAttack', DEFAULT_MOVE_WINDOWS.heavyAttack);
       case 'commandThrow':
+      // A GRAPPLE QUEUED DURING RECOVERY RESOLVED TO NOTHING.
+      // `queuedAction = { type: 'grapple' }` is pushed on a rising grapple
+      // press, and this switch had cases for light, heavy, guard and
+      // commandThrow — so 'grapple' fell to `default`, which sets Idle.
+      // Buffering the throw button during recovery, which is exactly when a
+      // player buffers a throw, threw the input away.
+      case 'grapple':
         return this.beginCommandThrow();
       case 'guard':
         this.actionState = 'Guard';

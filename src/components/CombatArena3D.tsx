@@ -563,6 +563,13 @@ export interface CombatArena3DProps {
   p2State: string;
   p1Animation: string;
   p2Animation: string;
+  /**
+   * Which clip each body ACTUALLY ended up playing, straight from the thing
+   * that chose it. The arena needs the deliverer's real clip name to look up
+   * the opponent's half of a grapple; asking a second resolver the same
+   * question is how two answers start disagreeing.
+   */
+  onClipResolved?: (who: 'p1' | 'p2', clip: string | null, inputKey: string) => void;
   p1Color: string;
   p2Color: string;
   hitStopActive: boolean;
@@ -627,6 +634,7 @@ export default function CombatArena3D({
   p2State,
   p1Animation,
   p2Animation,
+  onClipResolved,
   p1Color,
   p2Color,
   hitStopActive,
@@ -940,6 +948,7 @@ export default function CombatArena3D({
           locomotionVelocity={p1LocomotionVelocity}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP1BoneHitboxReady}
+          onClipResolved={(clip, inputKey) => onClipResolved?.('p1', clip, inputKey)}
           onModelReady={(ok) => onFighterReady?.('p1', ok)}
           onDeformationBlocked={(characterName, failingChecks) => {
             // AGENT LAW: Log combat freeze — no UI, backend only
@@ -967,6 +976,7 @@ export default function CombatArena3D({
           locomotionVelocity={p2LocomotionVelocity}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP2BoneHitboxReady}
+          onClipResolved={(clip, inputKey) => onClipResolved?.('p2', clip, inputKey)}
           onModelReady={(ok) => onFighterReady?.('p2', ok)}
           onDeformationBlocked={(characterName, failingChecks) => {
             // AGENT LAW: Log combat freeze — no UI, backend only
