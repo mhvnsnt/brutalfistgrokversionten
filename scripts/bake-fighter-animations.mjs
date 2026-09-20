@@ -335,8 +335,13 @@ for (const src of sources()) {
     report.worst.push({ clip: src.name, bone: v.bone.replace('mixamorig', ''), ...v });
   }
 
-  // Plant it before anything is written: the offset is measured from the
-  // constrained pose, which is the pose that will actually play.
+  // Measure the clip against the canonical floor, but DO NOT inject a
+  // per-frame Hips.position track. That old "floor lock" was the source of
+  // the ghostly legs/leaning: it translated the entire pelvis independently
+  // at every sample while the authored knees/feet were already solving their
+  // own gait. Tekken/Schwarzerblitz-style locomotion keeps the animation on
+  // one authored skeleton and lets the character controller own world
+  // translation; jump/throw clips are allowed to leave the floor.
   const ground = groundingTrack(relative);
   const clipAirborne = Boolean(ground?.airborne);
   if (clipAirborne) report.airborne++;
@@ -347,13 +352,6 @@ for (const src of sources()) {
   if (ground?.times) {
     report.grounded++;
     report.groundedTotal += ground.worst;
-    const values = [];
-    for (const dy of ground.offsets) {
-      values.push(hipsBindPosition.x, hipsBindPosition.y + dy, hipsBindPosition.z);
-    }
-    relative.tracks.push(
-      new THREE.VectorKeyframeTrack(`${HIPS}.position`, ground.times, values),
-    );
   }
 
   const tracks = {};
