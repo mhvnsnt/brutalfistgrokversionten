@@ -19,6 +19,7 @@ import {
   type AnimationIntegrityReport,
 } from '../engine/combat/AnimationIntegrityGate';
 import { COMBAT_STATE_TO_SEMANTIC, SEMANTIC_STATE_ALIASES, inferSemanticStateFromClipName } from '../engine/retarget/SemanticStateAliases';
+import { clipAnimates, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
 import { AnimationBridge } from '../../animation_bridge/retarget';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -343,9 +344,55 @@ function resolveClipName(
   const availableClips = Object.keys(actions);
   const clipsByState = buildClipsByState(actions);
 
+  /**
+   * A FROZEN CLIP IS NEVER THE ANSWER IF ANYTHING ELSE MATCHES.
+   *
+   * MEASURED at bake time: 15 clips move two bones or fewer. Eight are
+   * Mixamo character REST POSES shipped as clips; the important one is
+   * HURRICANE_KICK, which moves exactly ONE bone of 22 — the hips sweep 172
+   * degrees while every other joint sits inside half a degree, so it is a
+   * statue spinning on the spot. It is the FIRST alias for attack_2 and
+   * attack_rk, so two of the game's core kicks played it.
+   *
+   * The alias table already carried a note about this defect and left it
+   * alone, calling the reorder a design decision. Deciding it by MEASUREMENT
+   * instead catches every other frozen clip at the same time.
+   *
+   * A frozen clip still beats NO clip — that would be a bind pose — so this
+   * only ever reorders preferences, never removes the last option.
+   */
+  const pick = (test: (c: string) => boolean): string | undefined =>
+    availableClips.find((c) => test(c) && clipAnimates(c)) ?? availableClips.find(test);
+
+  /**
+   * ALIAS ORDER IS PRIORITY, AND IT WAS BEING IGNORED.
+   *
+   * The lookup was `availableClips.find(c => aliases.some(a => c === a))` —
+   * it walks the AVAILABLE CLIPS in whatever order the bank loaded them and
+   * returns the first that matches ANY alias. The alias list's order, which
+   * is the entire point of an ordered preference list, did nothing.
+   *
+   * MEASURED on attack_rk: the alias list prefers ROUNDHOUSEKICK, the bake
+   * names ROUNDHOUSEKICK as that slot's OWNER, and resolution returned
+   * CROSS_JUMPS — a jump clip — because it happened to sit earlier in the
+   * bank. Walking the aliases in order instead is what makes a preference
+   * mean anything.
+   */
+  const byAliasOrder = (aliases: string[]): string | undefined => {
+    for (const pass of [true, false]) {
+      for (const alias of aliases) {
+        const hit = availableClips.find(
+          (c) => c.toLowerCase() === alias.toLowerCase() && (!pass || clipAnimates(c)),
+        );
+        if (hit) return hit;
+      }
+    }
+    return undefined;
+  };
+
   for (const want of preferred) {
-    if (actions[want]) return want;
-    const ci = availableClips.find((c) => c.toLowerCase() === want.toLowerCase());
+    if (actions[want] && clipAnimates(want)) return want;
+    const ci = pick((c) => c.toLowerCase() === want.toLowerCase());
     if (ci) return ci;
   }
 
@@ -357,22 +404,24 @@ function resolveClipName(
 
   const semanticState = COMBAT_STATE_TO_SEMANTIC[key];
   if (semanticState) {
-    if (actions[semanticState]) return semanticState;
+    // THE BAKE'S OWN CHOICE WINS. It measured the candidates and marked one
+    // as this slot's owner — GRAFQUICKJAB, a 0.46 s jab, over BOXING, a
+    // 1.73 s shadowboxing LOOP. Nothing at runtime was reading that, so a
+    // jab played BOXING inside an attack window a fraction of its length.
+    const owner = slotOwnerFor(semanticState);
+    if (owner && actions[owner]) return owner;
+    if (actions[semanticState] && clipAnimates(semanticState)) return semanticState;
     const aliases = SEMANTIC_STATE_ALIASES[semanticState] ?? [semanticState];
-    const semanticFound = availableClips.find((c) =>
-      aliases.some((a) => c.toLowerCase() === a.toLowerCase()),
-    );
+    const semanticFound = byAliasOrder(aliases);
     if (semanticFound) return semanticFound;
   }
 
   const aliases = ANIMATION_ALIASES[key] ?? [key];
-  let found = availableClips.find((c) =>
-    aliases.some((a) => c.toLowerCase() === a.toLowerCase()),
-  );
+  let found = byAliasOrder(aliases);
   if (found) return found;
 
   if (key === 'idle' || key === 'Neutral') {
-    found = availableClips.find((c) => c.toLowerCase().includes('idle'));
+    found = pick((c) => c.toLowerCase().includes('idle'));
     if (found) return found;
   }
 

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import * as THREE from 'three';
 
-import { clipFromBaked, markStandability, type BakedClipFile, type BakedManifestEntry } from './BakedMotionBank.ts';
+import { clipFromBaked, markFrozen, markSlotOwners, markStandability, type BakedClipFile, type BakedManifestEntry } from './BakedMotionBank.ts';
 import { HINGE_JOINTS, JOINT_LIMITS, angleDeg, signedAngleAbout, swingTwist, removeConstantConventionTwist } from './SkeletalLimits.ts';
 import { loadCanonicalSkeleton } from './CanonicalSkeleton.ts';
 
@@ -328,4 +328,83 @@ test('no shipped stance clip is left hovering', { skip: !hasBake }, () => {
     'SHAZSTANCE', 'TIGERSTANCE', 'TIGERSTANCEUPDATED', 'WALK', 'WALKFAST', 'SHAZWALK', 'DRUNK_WALK']);
   const hovering = [...unstandable].filter((n) => posePools.has(n)).sort();
   assert.deepEqual(hovering, KNOWN_HOVERING, 'the set of hovering stance clips changed');
+});
+
+/**
+ * A CLIP THAT DOES NOT MOVE IS NOT AN ANIMATION.
+ *
+ * HURRICANE_KICK is the case that matters: it moves exactly ONE bone of 22.
+ * The hips sweep 172 degrees while every other joint sits inside half a
+ * degree, so it plays as a statue spinning on the spot — and it is the
+ * FIRST alias for attack_2 and attack_rk, so two of the game's core kicks
+ * were that statue. The alias table carried a written note about it and
+ * left it, calling the reorder a design decision.
+ */
+test('frozen clips are identified by measurement, not by name', () => {
+  const manifest: Record<string, BakedManifestEntry> = {
+    A_REAL_KICK:   { file: 'a', bank: 'b', dur: 1, bones: 22, boneCount: 22, movingBones: 14 },
+    SPINNING_STATUE: { file: 'b', bank: 'b', dur: 1, bones: 22, boneCount: 22, movingBones: 1 },
+    A_REST_POSE:   { file: 'c', bank: 'b', dur: 1, bones: 22, boneCount: 22, movingBones: 0 },
+    A_SUBTLE_POSE: { file: 'd', bank: 'b', dur: 1, bones: 22, boneCount: 22, movingBones: 3 },
+    TINY_RIG:      { file: 'e', bank: 'b', dur: 1, bones: 4, boneCount: 4, movingBones: 0 },
+    UNMEASURED:    { file: 'f', bank: 'b', dur: 1, bones: 22 },
+  };
+  const frozen = markFrozen(manifest);
+  assert.equal(frozen.has('SPINNING_STATUE'), true, 'one bone of 22 is not an animation');
+  assert.equal(frozen.has('A_REST_POSE'), true);
+  assert.equal(frozen.has('A_REAL_KICK'), false);
+  assert.equal(frozen.has('A_SUBTLE_POSE'), false, 'three moving bones is a real, small motion');
+  assert.equal(frozen.has('TINY_RIG'), false, 'a 4-bone rig is not judged by this rule');
+  assert.equal(frozen.has('UNMEASURED'), false, 'an unmeasured clip behaves exactly as before');
+});
+
+test('the shipped bake still flags the hurricane kick as frozen', { skip: !hasBake }, () => {
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  const hk = manifest.HURRICANE_KICK;
+  if (!hk) return;
+  assert.ok((hk.movingBones ?? 99) <= 2, `HURRICANE_KICK moves ${hk.movingBones} bones — has the source been replaced?`);
+  assert.equal(markFrozen(manifest).has('HURRICANE_KICK'), true);
+});
+
+test('the frozen set stays small — a wide net here would mute real moves', { skip: !hasBake }, () => {
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  const frozen = markFrozen(manifest);
+  const total = Object.keys(manifest).length;
+  assert.ok(frozen.size > 0, 'nothing was measured as frozen — is movingBones being written?');
+  assert.ok(frozen.size < total * 0.1, `${frozen.size}/${total} clips called frozen — the threshold is too wide`);
+});
+
+/**
+ * THE BAKE'S CHOICE MUST REACH THE RUNTIME.
+ *
+ * The bake measures the candidates for each combat slot and marks a winner
+ * — GRAFQUICKJAB, a 0.46 s jab, over BOXING, a 1.73 s shadowboxing LOOP.
+ * Nothing at runtime read that, so a jab played BOXING inside an attack
+ * window a fraction of its length, and both kick slots played
+ * HURRICANE_KICK, which moves one bone of 22.
+ */
+test('every combat slot has an owner, and it is a real single strike', { skip: !hasBake }, () => {
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  const owners = markSlotOwners(manifest);
+  const frozen = markFrozen(manifest);
+
+  for (const slot of ['attack_1', 'attack_rp', 'attack_rk', 'block', 'idle']) {
+    const owner = owners.get(slot);
+    assert.ok(owner, `${slot} has no owner — the runtime will fall back to alias order`);
+    assert.equal(frozen.has(owner), false, `${slot} is owned by a frozen clip: ${owner}`);
+  }
+});
+
+test('an attack slot is never owned by a multi-second demonstration clip', { skip: !hasBake }, () => {
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  const owners = markSlotOwners(manifest);
+  // A single strike is well under a second. BOXING is 1.73 s and is a LOOP;
+  // that mismatch is what made every punch read as shadowboxing.
+  const LONGEST_SINGLE_STRIKE_S = 1.2;
+  for (const slot of ['attack_1', 'attack_rp', 'attack_lk', 'attack_rk']) {
+    const owner = owners.get(slot);
+    if (!owner) continue;
+    const dur = manifest[owner]?.dur ?? 0;
+    assert.ok(dur <= LONGEST_SINGLE_STRIKE_S, `${slot} owner ${owner} is ${dur}s — that is a demonstration, not a strike`);
+  }
 });

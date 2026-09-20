@@ -166,6 +166,8 @@ const AIRBORNE_PEAK_M = Number(process.env.BF_AIRBORNE_M ?? 0.5);
  */
 const MAX_GROUND_SHIFT_M = Number(process.env.BF_MAX_SHIFT ?? 0.9);
 const MEDIANS = [];
+/** A bone that turns less than this across a whole clip has not moved. */
+const MOVING_BONE_DEG = 5;
 /** Names given in BF_GROUND_DEBUG get their raw floor measurement printed. */
 const DEBUG_GROUND = new Set((process.env.BF_GROUND_DEBUG ?? '').split(',').filter(Boolean));
 
@@ -712,7 +714,28 @@ for (const src of sources()) {
       tracks,
     }),
   );
+  // HOW MANY BONES ACTUALLY MOVE. A clip where nothing moves is not an
+  // animation, and several are shipped as if they were: eight Mixamo
+  // character rest poses (Y_BOT, PALADIN_J_NORDSTROM, CH44_NONPBR and
+  // friends), TPOSE, SUPINE, the SPINJUMP family — and HURRICANE_KICK,
+  // which moves exactly ONE bone of 22: the hips sweep 172 deg while every
+  // other joint sits inside half a degree. It plays as a statue spinning on
+  // the spot, and it is the FIRST alias for attack_2 and attack_rk, so two
+  // of the game's core kicks were that statue.
+  let movingBones = 0;
+  const boneCount = Object.keys(tracks).length;
+  for (const t of Object.values(tracks)) {
+    let widest = 0;
+    for (let i = 4; i + 3 < t.q.length; i += 4) {
+      const dot = Math.abs(t.q[i] * t.q[0] + t.q[i + 1] * t.q[1] + t.q[i + 2] * t.q[2] + t.q[i + 3] * t.q[3]);
+      widest = Math.max(widest, Math.acos(Math.min(1, dot)) * 2 * 180 / Math.PI);
+    }
+    if (widest > MOVING_BONE_DEG) movingBones++;
+  }
+
   manifest[src.name] = {
+    movingBones,
+    boneCount,
     file: `${src.name}.json`,
     bank: src.bank,
     dur: +relative.duration.toFixed(4),
@@ -754,6 +777,11 @@ if (process.env.BF_MEDIANS) {
   const sorted = MEDIANS.map(([, m]) => m).sort((a, b) => a - b);
   const q = (f) => (sorted[Math.floor(sorted.length * f)] * 100).toFixed(1);
   console.log(`  peak-lift distribution (cm): p10 ${q(0.1)}  p25 ${q(0.25)}  p50 ${q(0.5)}  p75 ${q(0.75)}  p90 ${q(0.9)}  max ${(sorted[sorted.length-1]*100).toFixed(1)}`);
+}
+{
+  const dead = Object.entries(manifest).filter(([, m]) => (m.boneCount ?? 0) >= 8 && (m.movingBones ?? 0) <= 2);
+  console.log(`  NOTHING MOVES        ${dead.length} clip(s) where 2 or fewer bones turn at all — not animations`);
+  if (dead.length) console.log('    ' + dead.slice(0, 8).map(([n, m]) => `${n} ${m.movingBones}/${m.boneCount}`).join(', '));
 }
 console.log(`  kept airborne        ${report.airborne} clip(s) (peak lift over ${AIRBORNE_PEAK_M * 100} cm)`);
 // NAME THE CLIPS THAT STILL HOVER. A clip the offset could not bring down is

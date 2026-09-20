@@ -68,6 +68,10 @@ export interface BakedManifestEntry {
   armSpread?: number;
   /** Median forward reach of the arms. A guard is up; a T-pose is not. */
   armForward?: number;
+  /** How many of this clip's bones turn more than 5 degrees across it. */
+  movingBones?: number;
+  /** How many bones it drives at all. */
+  boneCount?: number;
 }
 
 /** Past this, a clip's feet never reach the ground and it cannot be a stance. */
@@ -96,6 +100,28 @@ export const STANDABLE_FLOOR_GAP_M = 0.08;
 export const TPOSE_SPREAD_MIN = 0.5;
 export const TPOSE_FORWARD_MAX = 0.35;
 
+/**
+ * A clip driving at least this many bones must move more than
+ * MIN_MOVING_BONES of them, or it is not an animation.
+ *
+ * MEASURED across the bake: 15 clips fail this. Eight are Mixamo CHARACTER
+ * REST POSES shipped as clips (Y_BOT, PALADIN_J_NORDSTROM, CH44_NONPBR and
+ * friends), plus TPOSE, SUPINE and the SPINJUMP family — and
+ * HURRICANE_KICK, which moves exactly ONE bone of 22. Its hips sweep 172
+ * degrees while every other joint sits inside half a degree, so it plays as
+ * a statue spinning on the spot. It is the FIRST alias for attack_2 and
+ * attack_rk, which means two of the game's core kicks were that statue.
+ *
+ * The alias table already carried a note about this and left it: "moving
+ * them ahead of it is a design decision, so the order is left as it is and
+ * the gate reports the defect instead." The owner has since asked for the
+ * frozen animations and the redundant attacks fixed, so it is decided — and
+ * decided by MEASUREMENT rather than by re-ordering one list by hand, so
+ * every other frozen clip is caught with it.
+ */
+export const ANIMATED_MIN_BONES = 8;
+export const MIN_MOVING_BONES = 3;
+
 const INDEX_URL = '/motion/baked/index.json';
 const BASE = '/motion/baked/';
 
@@ -105,6 +131,64 @@ let attempted = false;
 let notStandable: Set<string> = new Set();
 /** Clips the bake measured as a T-pose rather than an authored pose. */
 let notAPose: Set<string> = new Set();
+/** Clips the bake measured as not moving at all. */
+let notAnimated: Set<string> = new Set();
+/** semantic state -> the clip the bake chose to OWN it. */
+let slotOwners: Map<string, string> = new Map();
+
+/**
+ * THE CLIP THE BAKE CHOSE FOR THIS COMBAT STATE.
+ *
+ * The bake already decides this, by measuring: it picked GRAFQUICKJAB
+ * (0.46 s, a single jab) over BOXING (1.73 s, a shadowboxing LOOP) for
+ * attack_1, and marked it `owns: true` in the manifest. The runtime
+ * resolver never looked — it walked an alias list and landed on BOXING, so
+ * a jab played a second and three quarters of shadowboxing inside an attack
+ * window a few hundred milliseconds long.
+ *
+ * Consulting the owner first is what makes the bake's measurement mean
+ * something at runtime.
+ */
+export function slotOwnerFor(semantic: string): string | null {
+  return slotOwners.get(semantic) ?? null;
+}
+
+/** Decide, from a manifest, which clip owns each semantic state. */
+export function markSlotOwners(manifest: Record<string, BakedManifestEntry>): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const [name, entry] of Object.entries(manifest)) {
+    if (entry.owns && entry.semantic && !out.has(entry.semantic)) out.set(entry.semantic, name);
+  }
+  return out;
+}
+
+/**
+ * DOES THIS CLIP ANIMATE? A separate question from whether it stands or
+ * whether it is a pose — a clip can plant perfectly, hold a real pose, and
+ * still be a single frozen frame.
+ *
+ * Unknown clips are allowed, so a checkout with no bake behaves as before.
+ */
+export function clipAnimates(name: string): boolean {
+  return !notAnimated.has(name);
+}
+
+/** For tests: the clips the last manifest ruled out as frozen. */
+export function frozenClips(): ReadonlySet<string> {
+  return notAnimated;
+}
+
+/** Decide, from a manifest, which clips never move. */
+export function markFrozen(manifest: Record<string, BakedManifestEntry>): Set<string> {
+  const out = new Set<string>();
+  for (const [name, entry] of Object.entries(manifest)) {
+    const bones = entry.boneCount;
+    const moving = entry.movingBones;
+    if (bones === undefined || moving === undefined) continue;
+    if (bones >= ANIMATED_MIN_BONES && moving < MIN_MOVING_BONES) out.add(name);
+  }
+  return out;
+}
 
 /**
  * IS THIS AN AUTHORED POSE, or the rig with its arms out?
@@ -163,6 +247,8 @@ export function unstandableClips(): ReadonlySet<string> {
 export function applyStandability(manifest: Record<string, BakedManifestEntry>): Set<string> {
   notStandable = markStandability(manifest);
   notAPose = markTPoses(manifest);
+  notAnimated = markFrozen(manifest);
+  slotOwners = markSlotOwners(manifest);
   return notStandable;
 }
 
@@ -302,4 +388,6 @@ export function resetBakedMotionBankForTest(): void {
   attempted = false;
   notStandable = new Set();
   notAPose = new Set();
+  notAnimated = new Set();
+  slotOwners = new Map();
 }
