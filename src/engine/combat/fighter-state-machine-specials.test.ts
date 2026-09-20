@@ -30,7 +30,8 @@ describe('special input survives the move that is buffering it', () => {
 
     // Light attack recovery begins at 0.22s. Advance past the end while the
     // buffered L,L,H sequence is still inside the bounded 600ms window.
-    const motion = fsm.update(base, 0.40);
+    fsm.update(base, 0.40);
+    const motion = fsm.update(base, 0.05);
 
     assert.equal(motion, 'lightAttack');
     assert.equal(fsm.action, 'Attacking');
