@@ -19,7 +19,7 @@ import {
   type AnimationIntegrityReport,
 } from '../engine/combat/AnimationIntegrityGate';
 import { COMBAT_STATE_TO_SEMANTIC, SEMANTIC_STATE_ALIASES, inferSemanticStateFromClipName } from '../engine/retarget/SemanticStateAliases';
-import { clipAnimates, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
+import { clipAnimates, clipStandsUpright, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
 import { AnimationBridge } from '../../animation_bridge/retarget';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -163,8 +163,10 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   jumpAttack:        ['jumpAttack', 'JumpAttack', 'airAttack', 'AirAttack', 'jumpingPunch', 'JumpingPunch', 'heavyAttack', 'HeavyAttack'],
   runAttack:         ['runAttack', 'RunAttack', 'dashAttack', 'DashAttack', 'runningAttack', 'RunningAttack', 'heavyAttack', 'HeavyAttack'],
   // ── Tekken Specials ─────────────────────────────────────────────────────────
-  overdrive:         ['overdrive', 'Overdrive', 'heavyAttack', 'HeavyAttack', 'special', 'Special'],
-  finisher:           ['finisher', 'Finisher', 'finisher_move', 'Finisher_Move', 'finisher', 'Finisher', 'heavyAttack', 'HeavyAttack'],
+  // Distinct clips, not a second name for the heavy kick — see the finisher
+  // and overdrive entries in SemanticStateAliases for how they were chosen.
+  overdrive:         ['overdrive', 'Overdrive', 'GYAKUZUKI_COMBO', 'TIGER_HEAVYKICKCOMBO', 'special', 'Special', 'heavyAttack', 'HeavyAttack'],
+  finisher:          ['finisher', 'Finisher', 'finisher_move', 'Finisher_Move', 'ORAORAORA', 'TIGER_HEAVYKICKCOMBO', 'GYAKUZUKI_COMBO', 'heavyAttack', 'HeavyAttack'],
   superArmor:        ['superArmor', 'SuperArmor', 'power_crush', 'armorMove', 'ArmorMove', 'heavyAttack', 'HeavyAttack'],
   // ── Command Throw ───────────────────────────────────────────────────────────
   CommandThrow:      ['heavyAttack', 'HeavyAttack', 'heavy', 'Heavy', 'grab', 'Grab', 'throw', 'Throw', 'grapple', 'Grapple', 'suplex', 'Suplex', 'slam', 'Slam', 'SBW_throw', 'T_1_3', 'T_2_4', 'bf_grab', 'bf_beastMode'],
@@ -361,10 +363,23 @@ function resolveClipName(
    * A frozen clip still beats NO clip — that would be a bind pose — so this
    * only ever reorders preferences, never removes the last option.
    */
-  /** Usable = it moves, and its strike goes the way the body faces. */
-  const usable = (c: string) => clipAnimates(c) && clipStrikesForward(c);
+  /**
+   * Usable = it moves, the body is the right way up, and — WHEN THE SLOT
+   * BEING FILLED IS AN ATTACK — it contains a strike that reaches out.
+   *
+   * THE STRIKE RULE IS NOT UNIVERSAL, and applying it universally was a
+   * regression the resolution probe caught before it shipped. Clips are
+   * given a semantic by NAME at bake time, so CROSS_JUMPS (a jumping-jack
+   * loop) and TAUNT are both filed under attack slots; refusing them as
+   * attacks is right, and refusing them as a JUMP and a TAUNT is not. With
+   * the rule applied everywhere, pressing jump played JUMPAXEKICK and
+   * taunting played BREAKDANCE_READY.
+   */
+  const usable = (c: string, forAttack = true) =>
+    clipAnimates(c) && clipStandsUpright(c) && (!forAttack || clipStrikesForward(c));
+  const attackSlot = /^attack|finisher|overdrive/.test(COMBAT_STATE_TO_SEMANTIC[key] ?? key);
   const pick = (test: (c: string) => boolean): string | undefined =>
-    availableClips.find((c) => test(c) && usable(c)) ?? availableClips.find(test);
+    availableClips.find((c) => test(c) && usable(c, attackSlot)) ?? availableClips.find(test);
 
   /**
    * ALIAS ORDER IS PRIORITY, AND IT WAS BEING IGNORED.
@@ -384,7 +399,7 @@ function resolveClipName(
     for (const pass of [true, false]) {
       for (const alias of aliases) {
         const hit = availableClips.find(
-          (c) => c.toLowerCase() === alias.toLowerCase() && (!pass || usable(c)),
+          (c) => c.toLowerCase() === alias.toLowerCase() && (!pass || usable(c, attackSlot)),
         );
         if (hit) return hit;
       }
@@ -393,7 +408,7 @@ function resolveClipName(
   };
 
   for (const want of preferred) {
-    if (actions[want] && usable(want)) return want;
+    if (actions[want] && usable(want, attackSlot)) return want;
     const ci = pick((c) => c.toLowerCase() === want.toLowerCase());
     if (ci) return ci;
   }
@@ -412,7 +427,7 @@ function resolveClipName(
     // jab played BOXING inside an attack window a fraction of its length.
     const owner = slotOwnerFor(semanticState);
     if (owner && actions[owner]) return owner;
-    if (actions[semanticState] && usable(semanticState)) return semanticState;
+    if (actions[semanticState] && usable(semanticState, attackSlot)) return semanticState;
     const aliases = SEMANTIC_STATE_ALIASES[semanticState] ?? [semanticState];
     const semanticFound = byAliasOrder(aliases);
     if (semanticFound) return semanticFound;

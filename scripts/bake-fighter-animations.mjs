@@ -46,6 +46,7 @@ import {
   redistributeChain,
 } from '../src/engine/retarget/SkeletalLimits.ts';
 import { measureRestCorrection, needsCorrection } from '../src/engine/retarget/RestPoseOffset.ts';
+import { FOOT_STRIKE_REACH_M, HAND_STRIKE_REACH_M } from '../src/engine/retarget/BakedMotionBank.ts';
 import {
   buildClipsFromEulerBank,
   eulerBankRestPose,
@@ -90,9 +91,9 @@ const round = (v) => +v.toFixed(PRECISION);
  */
 function ownerFailsMeasurement(name, strike, movingBones, boneCount, claimed) {
   if (!claimed) return null;
-  if (/^attack/.test(claimed) && strike
-      && Math.abs(strike.forward) > 0.3 && strike.forward * strike.bodyFaces < 0) {
-    return `strike ${strike.forward.toFixed(2)} vs body ${strike.bodyFaces.toFixed(2)}`;
+  if (/^attack/.test(claimed) && strike?.handReach !== undefined
+      && strike.handReach < HAND_STRIKE_REACH_M && (strike.footReach ?? 0) < FOOT_STRIKE_REACH_M) {
+    return `no limb reaches out (hand ${strike.handReach.toFixed(2)} m, foot ${(strike.footReach ?? 0).toFixed(2)} m)`;
   }
   if (boneCount >= 8 && movingBones < 3) return `${movingBones}/${boneCount} bones move`;
   return null;
@@ -367,10 +368,26 @@ function measureStrikeDirection(clip) {
   const sampler = new THREE.AnimationMixer(skeleton.root);
   sampler.clipAction(clip).play();
   const LIMBS = ['mixamorigLeftHand', 'mixamorigRightHand', 'mixamorigLeftFoot', 'mixamorigRightFoot'];
+  const LIMB_ROOT = {
+    mixamorigLeftHand: 'mixamorigLeftArm',
+    mixamorigRightHand: 'mixamorigRightArm',
+    mixamorigLeftFoot: 'mixamorigLeftUpLeg',
+    mixamorigRightFoot: 'mixamorigRightUpLeg',
+  };
+  const rp = new THREE.Vector3();
   const prev = new Map();
   const hp = new THREE.Vector3();
   const lp = new THREE.Vector3();
   let best = { speed: 0, forward: 0, limb: null, bodyFaces: 0 };
+  // THE SECOND MEASUREMENT: WHERE THE LIMB REACHES, not where it moves
+  // fastest. Peak speed is ambiguous on a snappy strike — a jab is pulled
+  // back faster than it is pushed out, so the fastest frame is the
+  // RETRACTION and the direction reads backwards. RENDERED and confirmed:
+  // DEFAULTJUMPPUNCH measures fwd -0.97 and visibly punches forward;
+  // CROUCHINGKICK measures -1.00 and visibly kicks forward. Reach cannot
+  // say that: a strike goes OUT, and the frame where the limb is farthest
+  // from the body is the frame the strike lands.
+  const track = new Map();
   // WHICH WAY THE BODY FACES, from the shoulder line: a human is far wider
   // across the shoulders than front-to-back, so the body faces perpendicular
   // to that line. Measured alongside the strike because turning a clip round
@@ -387,12 +404,20 @@ function measureStrikeDirection(clip) {
     hips.getWorldPosition(hp);
     const L = boneObjects.get('mixamorigLeftShoulder');
     const R = boneObjects.get('mixamorigRightShoulder');
+    let faceNow = null;
+    let faceVec = null;
     if (L && R) {
       L.getWorldPosition(ls); R.getWorldPosition(rs);
       const across = rs.clone().sub(ls);
       // Forward is the shoulder line turned 90 deg about Y.
       const fwd = new THREE.Vector3(-across.z, 0, across.x);
-      if (fwd.lengthSq() > 1e-9) { faceSum += fwd.normalize().x; faceN++; }
+      if (fwd.lengthSq() > 1e-9) {
+        fwd.normalize();
+        faceVec = fwd.clone();
+        faceNow = fwd.x;
+        faceSum += faceNow;
+        faceN++;
+      }
     }
     for (const name of LIMBS) {
       const b = boneObjects.get(name);
@@ -404,7 +429,43 @@ function measureStrikeDirection(clip) {
       const before = prev.get(name);
       prev.set(name, rel.clone());
       if (!before) continue;
+      // EXTENSION FROM THE LIMB'S OWN ROOT, not from the hips. Measuring it
+      // hips-relative compares a hand against a foot on a scale a leg always
+      // wins, and it picked the stepping LeftFoot for GYAKUZUKI — a reverse
+      // PUNCH — and the idle RightHand for GRAFQUICKJAB, a left jab.
+      const rootName = LIMB_ROOT[name];
+      const root = rootName ? boneObjects.get(rootName) : null;
+      if (root) {
+        root.getWorldPosition(rp);
+        const arm = lp.clone().sub(rp);
+        const t = track.get(name) ?? { near: null, far: null, nearD: Infinity, farD: -Infinity, speed: 0, behind: 0, frames: 0, lowY: Infinity, highY: -Infinity, projMin: Infinity, projMax: -Infinity };
+        if (lp.y < t.lowY) t.lowY = lp.y;
+        if (lp.y > t.highY) t.highY = lp.y;
+        const span = Math.hypot(arm.x, arm.z);
+        // HOW MUCH OF THE MOVE IS SPENT GOING THE WRONG WAY. A kick that
+        // chambers behind the body for two thirds of its length and lands in
+        // the last fifth reads, in play, as a kick thrown backwards — which
+        // is what the owner saw in ROUNDHOUSEKICK: 12 of 17 samples have the
+        // striking foot behind the hips, against 4 of 17 for HEAVYKICK.
+        t.frames++;
+        if (rel.x * (faceNow ?? 1) < 0) t.behind++;
+        // HOW FAR THIS LIMB GETS OUT IN FRONT OF ITS OWN ROOT — the hand
+        // past its shoulder, the foot past its hip — projected onto the
+        // body's OWN forward vector, so the clip's authored facing does not
+        // matter and the body's girth is not counted as reach. This is the
+        // measurement the gate reads; every other number here is kept for
+        // the record. See HAND_STRIKE_REACH_M / FOOT_STRIKE_REACH_M.
+        if (faceVec) {
+          const out = (lp.x - rp.x) * faceVec.x + (lp.z - rp.z) * faceVec.z;
+          if (out > t.projMax) t.projMax = out;
+        }
+        if (span < t.nearD) { t.nearD = span; t.near = lp.clone().sub(hp); }
+        if (span > t.farD) { t.farD = span; t.far = lp.clone().sub(hp); t.farFace = faceNow; }
+        track.set(name, t);
+      }
       const step = rel.clone().sub(before);
+      const tt = track.get(name);
+      if (tt) tt.speed = Math.max(tt.speed, step.length());
       const speed = step.length();
       if (speed <= best.speed) continue;
       const flat = new THREE.Vector3(step.x, 0, step.z);
@@ -417,6 +478,82 @@ function measureStrikeDirection(clip) {
   sampler.uncacheClip(clip);
   restPose();
   best.bodyFaces = faceN ? faceSum / faceN : 0;
+  // The limb that EXTENDS the furthest is the one throwing the strike, and
+  // the direction from its most-tucked frame to its most-extended one is
+  // where the strike goes.
+  //
+  // SPEED PICKS THE LIMB, REACH SAYS WHERE IT GOES. Neither alone is right:
+  //   - peak speed names the striking limb correctly (the jab's LeftHand,
+  //     the axe kick's RightFoot) and then reports the RETRACTION direction,
+  //     which is how a forward punch measured -0.97.
+  //   - extension alone gets the direction right and names the wrong limb:
+  //     GYAKUZUKI is a reverse PUNCH and its stepping LeftFoot out-extends
+  //     the hand (0.277 m against 0.25 m), so the whole clip read backwards.
+  // The product of the two is what a strike is — a limb that goes out fast.
+  //
+  // A FOOT THAT ONLY STEPS IS NOT THROWING THE STRIKE. Extension x speed
+  // still lost GYAKUZUKI_COMBO to its own footwork: traced, both hands
+  // punch to +0.5 m forward while the left foot STEPS BACK 0.78 m, which
+  // out-scores them, so a forward punching combination measured reach -1.00.
+  // A kick lifts the foot; a step does not, so a foot is only eligible as
+  // the striking limb once it leaves the floor by more than a stride.
+  let reach = { forward: 0, limb: null, extent: 0, score: 0 };
+  for (const [name, t] of track) {
+    if (!t.near || !t.far) continue;
+    const extent = t.farD - t.nearD;
+    const score = extent * t.speed;
+    if (score <= reach.score) continue;
+    const out = t.far.clone().sub(t.near);
+    const flat = new THREE.Vector3(out.x, 0, out.z);
+    if (flat.lengthSq() < 1e-9) continue;
+    flat.normalize();
+    reach = {
+      forward: flat.x,
+      limb: name.replace('mixamorig', ''),
+      extent,
+      score,
+      // WHICH WAY THE BODY FACES AT THE MOMENT THE STRIKE LANDS, not
+      // averaged over the clip. ROUNDHOUSEKICK is why: it faces forward at
+      // the start and the end and TURNS ITS BACK to throw the kick, so the
+      // mean reads a healthy 0.738 while the frame that matters is negative.
+      // That is exactly what the owner described — "he's not rotating his
+      // body to do it towards the character he's fighting."
+      face: t.farFace,
+      behind: t.frames ? t.behind / t.frames : 0,
+    };
+  }
+  best.reach = reach.forward;
+  best.reachLimb = reach.limb;
+  best.reachExtent = reach.extent;
+  best.reachFace = reach.face ?? best.bodyFaces;
+  best.reachBehind = reach.behind ?? 0;
+  // DOES THIS CLIP CONTAIN A STRIKE THAT GOES AT THE OPPONENT?
+  //
+  // Asked of EVERY limb rather than of one chosen limb, which is what three
+  // earlier versions of this got wrong: peak speed names the right limb and
+  // the wrong DIRECTION, furthest extension names a punch's stepping FOOT,
+  // and foot LIFT does not separate those either — GYAKUZUKI_COMBO's step
+  // lifts 0.62 m, higher than QUICKKICK's kick at 0.607. A clip does not
+  // need a nominated striker; it needs one limb that goes out in front,
+  // which is a question each limb can answer for itself.
+  //
+  // HANDS AND FEET ARE JUDGED SEPARATELY because they reach different
+  // distances from their own roots, and a single number lets a stride stand
+  // in for a punch: BOXING scores 0.53 on the foot while its hands never
+  // leave the guard, which is exactly the clip the owner reported.
+  let handOut = -Infinity;
+  let footOut = -Infinity;
+  for (const [name, t] of track) {
+    if (!Number.isFinite(t.projMax)) continue;
+    if (/Hand$/.test(name)) handOut = Math.max(handOut, t.projMax);
+    else footOut = Math.max(footOut, t.projMax);
+  }
+  best.handReach = Number.isFinite(handOut) ? handOut : 0;
+  best.footReach = Number.isFinite(footOut) ? footOut : 0;
+  best.footLift = Math.max(
+    ...[...track].filter(([n]) => /Foot$/.test(n)).map(([, t]) => t.highY - t.lowY),
+    0,
+  );
   return best;
 }
 
@@ -894,9 +1031,44 @@ for (const src of sources()) {
     floorGap: ground?.floorGap ?? 0,
     minLiftFoot: ground?.minLiftFoot ?? 0,
     minLiftBody: ground?.minLiftBody ?? 0,
-    strike: (() => { const d = strikeOf.get(src.name); return d ? { fwd: +d.forward.toFixed(3), limb: d.limb, body: +d.bodyFaces.toFixed(3) } : undefined; })(),
+    strike: (() => {
+      const d = strikeOf.get(src.name);
+      if (!d) return undefined;
+      return {
+        fwd: +d.forward.toFixed(3),
+        limb: d.limb,
+        body: +d.bodyFaces.toFixed(3),
+        // Where the strike REACHES. See measureStrikeDirection: `fwd` is the
+        // peak-SPEED direction and reads a snappy jab's retraction, so it
+        // false-positives every short attack in the bank.
+        reach: +(d.reach ?? 0).toFixed(3),
+        reachLimb: d.reachLimb ?? undefined,
+        reachExtent: +(d.reachExtent ?? 0).toFixed(4),
+        /** Body facing at the frame the strike lands, not averaged. */
+        reachFace: +(d.reachFace ?? 0).toFixed(3),
+        /** Share of the clip the striking limb spends behind the body. */
+        reachBehind: +(d.reachBehind ?? 0).toFixed(3),
+        /** How far the higher foot leaves the floor: a kick, or a step. */
+        footLift: +(d.footLift ?? 0).toFixed(3),
+        /**
+         * THE GATE'S MEASUREMENTS, in metres: how far the hand gets in
+         * front of its shoulder, and the foot in front of its hip.
+         */
+        handReach: +(d.handReach ?? 0).toFixed(3),
+        footReach: +(d.footReach ?? 0).toFixed(3),
+      };
+    })(),
     armForward: ground?.posture?.medianArmForward ?? 0,
     armSpread: ground?.posture?.medianArmSpread ?? 0,
+    // THE BODY'S OWN UP-VECTOR, MEDIAN OVER THE CLIP. Already measured for
+    // the leg-flip pass and never carried to the runtime, which is how
+    // FACEGOUGE, CARTWHEEL and HURRICANERANA came back as "planted, faces
+    // forward, strikes forward" finisher candidates while RENDERING fully
+    // inverted. floorGap says the lowest point touches the mat; it cannot
+    // say WHICH END is down. +1 is standing, 0 is horizontal, -1 is upside
+    // down.
+    spineUp: +(ground?.posture?.medianSpineUp ?? 0).toFixed(3),
+    legDown: +(ground?.posture?.medianLegDown ?? 0).toFixed(3),
   };
   if (slot) report.slotOwners = (report.slotOwners ?? 0) + 1;
   report.baked++;
@@ -934,9 +1106,11 @@ if (process.env.BF_MEDIANS) {
 }
 {
   const bad = Object.entries(manifest).filter(([, m]) =>
-    m.strike && (m.strike.fwd ?? 0) * (m.strike.body ?? 0) < 0 && Math.abs(m.strike.fwd ?? 0) > 0.3);
-  console.log(`  STRIKE FIGHTS BODY   ${bad.length} clip(s) strike away from the way they face — refused as attacks`);
-  if (bad.length) console.log('    ' + bad.slice(0, 6).map(([n, m]) => `${n} strike ${m.strike.fwd} body ${m.strike.body}`).join(', '));
+    /^attack/.test(m.semantic ?? '') && m.strike
+    && (m.strike.handReach ?? 9) < HAND_STRIKE_REACH_M
+    && (m.strike.footReach ?? 9) < FOOT_STRIKE_REACH_M);
+  console.log(`  NO STRIKE IN IT      ${bad.length} attack clip(s) where no hand or foot reaches out — refused as attacks`);
+  if (bad.length) console.log('    ' + bad.slice(0, 8).map(([n, m]) => `${n} h${m.strike.handReach} f${m.strike.footReach}`).join(', '));
 }
 if (report.rejectedOwners.length) {
   console.log(`  OWNER REJECTED       ${report.rejectedOwners.length} named slot owner(s) failed the measurement`);

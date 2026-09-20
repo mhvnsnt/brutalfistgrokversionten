@@ -5,7 +5,8 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import * as THREE from 'three';
 
-import { clipFromBaked, markBackwardStrikes, markFrozen, markSlotOwners, markStandability, type BakedClipFile, type BakedManifestEntry } from './BakedMotionBank.ts';
+import { UPRIGHT_SPINE_MIN, clipFromBaked, markBackwardStrikes, markFrozen, markInverted, markSlotOwners, markStandability, type BakedClipFile, type BakedManifestEntry } from './BakedMotionBank.ts';
+import { COMBAT_STATE_TO_SEMANTIC, SEMANTIC_STATE_ALIASES } from './SemanticStateAliases.ts';
 import { HINGE_JOINTS, JOINT_LIMITS, angleDeg, signedAngleAbout, swingTwist, removeConstantConventionTwist } from './SkeletalLimits.ts';
 import { loadCanonicalSkeleton } from './CanonicalSkeleton.ts';
 
@@ -456,4 +457,101 @@ test('every slot owner strikes forward, moves, and is short', { skip: !hasBake }
     assert.ok((m.movingBones ?? 0) >= 3, `${m.semantic} owner ${name} barely moves`);
     assert.ok((m.dur ?? 9) <= 1.2, `${m.semantic} owner ${name} is ${m.dur}s — a demonstration, not a strike`);
   }
+});
+
+/**
+ * A STANDING MOVE IS THROWN BY A BODY THAT IS THE RIGHT WAY UP.
+ *
+ * Found looking for a finisher clip. Filtering the bake on every gate it had
+ * — animates, plants, faces forward, strikes forward — put FACEGOUGE,
+ * CARTWHEEL and HURRICANERANA near the top of the list. RENDERED, all three
+ * are inverted; FACEGOUGE is head-down for its whole five seconds. Every
+ * gate passed them because `floorGap` says the lowest point touches the mat
+ * and cannot say which END is down: a cartwheel touches it with its hands.
+ */
+test('a clip that spends itself upside down cannot be a standing move', { skip: !hasBake }, () => {
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  for (const [, m] of Object.entries(manifest)) {
+    assert.ok(typeof m.spineUp === 'number', 'the bake stopped writing spineUp — the gate is blind without it');
+    break;
+  }
+  const upsideDown = markInverted(manifest);
+
+  // Caught. Each of these passed every other gate and renders inverted.
+  for (const bad of ['FACEGOUGE', 'CARTWHEEL']) {
+    if (!manifest[bad]) continue;
+    assert.ok(upsideDown.has(bad), `${bad} measures spineUp ${manifest[bad].spineUp} and was not caught`);
+  }
+
+  // NOT caught, or the rule is too tight. These three dip hard and are the
+  // move doing its job: a crouching kick leans, a dropkick goes horizontal,
+  // and the capoeira AU is a cartwheel kick that comes back up.
+  for (const good of ['GRAFQUICKJAB', 'GYAKUZUKI', 'QUICKKICK', 'STANCE', 'CROUCHINGKICK', 'DROP_KICK', 'AU']) {
+    if (!manifest[good]) continue;
+    assert.equal(upsideDown.has(good), false,
+      `${good} measures spineUp ${manifest[good].spineUp} and was refused as a standing move`);
+  }
+
+  // A grapple, a knockdown or a getup is SUPPOSED to invert and is not judged.
+  for (const [name, m] of Object.entries(manifest)) {
+    if (!upsideDown.has(name)) continue;
+    assert.ok(/^(attack|idle|block|walk|strafe|run|dash|backdash|crouch|guard|victory|taunt)/.test(m.semantic ?? ''),
+      `${name} is a ${m.semantic} clip and should never have been judged for uprightness`);
+  }
+});
+
+test('no slot owner is upside down', { skip: !hasBake }, () => {
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  const upsideDown = markInverted(manifest);
+  for (const [slot, owner] of markSlotOwners(manifest)) {
+    assert.equal(upsideDown.has(owner), false,
+      `${slot} is owned by ${owner}, which measures spineUp ${manifest[owner]?.spineUp}`);
+  }
+});
+
+/**
+ * THE FINISHER IS NOT A SECOND NAME FOR THE HEAVY KICK.
+ *
+ * Both `finisher` and `overdrive` mapped onto attack_rk, so spending a full
+ * meter played the same animation as pressing heavy kick. The owner calls
+ * these FINISHERS and has reported the redundant attacks repeatedly; the two
+ * moves that are meant to be the payoff were the worst case of it.
+ */
+test('finisher, overdrive and the heavy attacks are four different moves', () => {
+  const slots = ['finisher', 'overdrive', 'attack_rk', 'attack_rp'];
+  const semantics = slots.map((s) => COMBAT_STATE_TO_SEMANTIC[s] ?? s);
+  assert.equal(COMBAT_STATE_TO_SEMANTIC.finisher, 'finisher');
+  assert.equal(COMBAT_STATE_TO_SEMANTIC.overdrive, 'overdrive');
+  assert.equal(new Set(semantics).size, slots.length, `these still collapse onto each other: ${semantics.join(', ')}`);
+
+  // Each slot must exist and must lead with its own clip, not borrow the
+  // first choice of another slot.
+  const firstReal = (slot: string) =>
+    (SEMANTIC_STATE_ALIASES[slot] ?? []).find((a) => /^[A-Z0-9_]+$/.test(a));
+  const leads = semantics.map(firstReal);
+  for (let i = 0; i < slots.length; i++) {
+    assert.ok(leads[i], `${semantics[i]} names no real clip at all`);
+  }
+  assert.equal(new Set(leads).size, leads.length, `two slots lead with the same clip: ${leads.join(', ')}`);
+});
+
+test('every clip the finisher and overdrive slots name is real, upright and animated', { skip: !hasBake }, () => {
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  const upsideDown = markInverted(manifest);
+  const frozen = markFrozen(manifest);
+  const backward = markBackwardStrikes(manifest);
+  let checked = 0;
+  for (const slot of ['finisher', 'overdrive']) {
+    for (const alias of SEMANTIC_STATE_ALIASES[slot] ?? []) {
+      const m = manifest[alias];
+      if (!m) continue;   // lowercase GLB-clip fallbacks are not in the bake
+      checked++;
+      assert.equal(frozen.has(alias), false, `${slot} names ${alias}, which does not move`);
+      assert.equal(backward.has(alias), false, `${slot} names ${alias}, which strikes backwards`);
+      assert.equal(upsideDown.has(alias), false, `${slot} names ${alias}, which is upside down`);
+      assert.ok((m.floorGap ?? 0) <= 0.08, `${slot} names ${alias}, which floats ${m.floorGap} m off the mat`);
+      assert.ok((m.spineUp ?? 0) > UPRIGHT_SPINE_MIN, `${slot} names ${alias} at spineUp ${m.spineUp}`);
+    }
+  }
+  assert.ok(checked >= 4, `only ${checked} named clips exist in the bake — did they get renamed?`);
 });

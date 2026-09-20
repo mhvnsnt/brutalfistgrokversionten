@@ -103,6 +103,23 @@ export const SCHWARZERBLITZ_COMBAT_SLOTS: Record<string, string> = {
   attack_1:  'GRAFQUICKJAB',    // 0.46s jab, vs BOXING's 1.73s loop
   attack_rp: 'GYAKUZUKI',       // 0.42s reverse punch, vs BOXING__2_'s 4.23s
   attack_lk: 'QUICKKICK',       // 0.25s
-  attack_rk: 'ROUNDHOUSEKICK',  // 0.96s, vs CROSS_JUMPS
+  // ROUNDHOUSEKICK WAS HERE AND IS THE KICK THE OWNER REPORTED: "it's going
+  // off to the side, off to the left of the character ... he's not rotating
+  // his body to do it towards the character he's fighting." The bake was
+  // refusing the claim by accident — on a peak-SPEED measure that reads a
+  // snappy strike's retraction and false-positives half the bank — so the
+  // correction survived only as long as that bug did.
+  //
+  // TRACED frame by frame (scratchpad/trace-strike.mjs), right foot forward
+  // of the hips, and the body's own facing:
+  //   ROUNDHOUSEKICK  t 0.48-0.78  foot -0.57 m (BEHIND)  face 0.55
+  //                   t 0.90       foot +0.59            face 0.94
+  //   HEAVYKICK       t 0.17-0.34  foot +0.43            face 0.94
+  // The roundhouse chambers behind a half-turned body for two thirds of its
+  // length and lands in the last twentieth; the engine's hit frame comes
+  // long before the leg gets there. HEAVYKICK lands in the first third, is
+  // half the length, and measures clean on every gate — reach +0.546 with
+  // the body facing +0.936 at the moment it lands.
+  attack_rk: 'HEAVYKICK',       // 0.54s, lands at t 0.17-0.34
   block:     'GUARD',           // 0.17s hold, vs CENTER_BLOCK's 1.77s
 };

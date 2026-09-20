@@ -76,7 +76,49 @@ export interface BakedManifestEntry {
    * Which way the strike travels in the body's own frame: +1 is straight at
    * the opponent, 0 square sideways, -1 directly away.
    */
-  strike?: { fwd: number; limb?: string; body?: number };
+  strike?: {
+    /**
+     * Peak-SPEED direction. KEPT FOR THE RECORD AND NO LONGER THE GATE: a
+     * strike's fastest frame is often its RETRACTION, so a jab that visibly
+     * punches forward measures -0.97. RENDERED against 10 clips, this
+     * disagreed with what is on screen 4 times. Use `reach`.
+     */
+    fwd: number;
+    limb?: string;
+    /** Body facing averaged over the whole clip. Use `reachFace`. */
+    body?: number;
+    /**
+     * WHERE THE STRIKE REACHES: the direction from the striking limb's
+     * most-tucked frame to its most-extended one, in the body's own frame.
+     * The limb is picked by extension x peak speed, because extension alone
+     * names a punch's stepping FOOT and speed alone names the right limb
+     * and the wrong direction.
+     */
+    reach?: number;
+    reachLimb?: string;
+    /** Body facing at the frame the strike lands, not averaged over the clip. */
+    reachFace?: number;
+    /** Share of the clip the striking limb spends behind the body. */
+    reachBehind?: number;
+    reachExtent?: number;
+    /** How far the higher foot leaves the floor: a kick, or a step. */
+    footLift?: number;
+    /**
+     * THE GATE'S MEASUREMENTS, in metres: how far the hand gets in front of
+     * its shoulder and the foot in front of its hip, projected onto the
+     * body's own forward vector. See HAND_STRIKE_REACH_M.
+     */
+    handReach?: number;
+    footReach?: number;
+  };
+  /**
+   * WHICH WAY IS UP FOR THIS BODY, median over the clip. +1 stands, 0 is
+   * horizontal, -1 is upside down. Measured at bake time for the leg-flip
+   * pass and never carried to the runtime until now.
+   */
+  spineUp?: number;
+  /** Which way the legs hang, median over the clip. -1 is a standing leg. */
+  legDown?: number;
 }
 
 /** Past this, a clip's feet never reach the ground and it cannot be a stance. */
@@ -127,6 +169,86 @@ export const TPOSE_FORWARD_MAX = 0.35;
 export const ANIMATED_MIN_BONES = 8;
 export const MIN_MOVING_BONES = 3;
 
+/**
+ * A STANDING MOVE IS THROWN BY A BODY THAT IS THE RIGHT WAY UP.
+ *
+ * Found looking for a finisher clip. Filtering the bake on every gate it
+ * had — animates, plants on the floor, faces forward, strikes forward —
+ * returned FACEGOUGE, CARTWHEEL and HURRICANERANA near the top. RENDERED,
+ * all three are inverted: FACEGOUGE is head-down for its whole five
+ * seconds. Every existing gate passed them, because `floorGap` says the
+ * lowest point touches the mat and cannot say WHICH END is down.
+ *
+ * MEASURED across the bake, median spine-up per clip:
+ *     GRAFQUICKJAB   0.999   attack_1 owner      CARTWHEEL     -0.297
+ *     GYAKUZUKI      0.995   attack_rp owner     FACEGOUGE     -0.720
+ *     QUICKKICK      0.994   attack_lk owner     TIGERSCARLETSCREW -0.690
+ *     STANCE         0.995   idle owner          TAUNT2        -0.439
+ * Every clip the bake CHOSE for a standing slot sits above 0.99. The whole
+ * roster's distribution has its 25th percentile at 0.678, so the population
+ * is bimodal and the gap between the two lobes is wide.
+ *
+ * THE THRESHOLD IS ZERO — at or below horizontal, for the MEDIAN of the
+ * clip — and it is deliberately generous rather than tight. Real standing
+ * attacks do dip: CROUCHINGKICK measures 0.507, DROP_KICK 0.655 and the
+ * capoeira AU 0.453, and all three are the move doing its job. A median is
+ * what separates them from a body that never comes back up.
+ */
+export const UPRIGHT_SPINE_MIN = 0;
+
+/**
+ * HOW FAR A LIMB MUST GET OUT IN FRONT BEFORE THE CLIP CONTAINS A STRIKE.
+ *
+ * The gate this replaced asked which way the FASTEST limb travelled, and a
+ * strike's fastest frame is usually its retraction — so a jab that visibly
+ * punches forward measured -0.97 and EVERY jump attack and crouch attack in
+ * the bank was refused as backwards. Three more attempts at nominating the
+ * one striking limb each failed on a different clip: furthest extension
+ * names a punching combination's stepping FOOT; extension x speed does the
+ * same; foot LIFT does not separate them either, because GYAKUZUKI_COMBO's
+ * step lifts 0.62 m and QUICKKICK's kick lifts 0.607 m.
+ *
+ * Nominating a striker was the mistake. Every limb is asked instead, and
+ * hands and feet are judged apart, because they reach different distances
+ * and one shared number lets a stride stand in for a punch.
+ *
+ * MEASURED — how far the limb gets in front of ITS OWN ROOT (hand past
+ * shoulder, foot past hip), projected onto the body's own forward vector:
+ *
+ *              hand   foot                       hand   foot
+ *   ORAORAORA  0.46   0.40      BOXING           0.26   0.53   <- the clip
+ *   GYAK_COMBO 0.43   0.26      BOXING__1_       0.25   0.22      the owner
+ *   DEFAULTJP  0.42   0.06      BOXING__2_       0.19   0.37      reported
+ *   GYAKUZUKI  0.40   0.23      COMBO_PUNCH      0.29   0.37
+ *   GRAFQUICKJAB 0.38 0.14      ILLEGAL_ELBOW    0.23   0.42
+ *   HIGHPUNCH  0.37   0.40      HURRICANE_KICK   0.18  -0.38
+ *   AXEKICK    0.33   0.91      (and for scale, holding still:)
+ *   QUICKKICK  0.36   0.85      STANCE           0.33   0.18
+ *   HEAVYKICK  0.33   0.68      WALK             0.33   0.26
+ *   CROUCHKICK 0.17   0.69      RUNNING          0.21   0.46
+ *
+ * BOXING is the case that decides the shape of this. Its hands never leave
+ * the guard — 0.26, less than a man standing still — while its feet score
+ * 0.53 on a step. One combined number passes it; two do not, which is the
+ * answer the owner already gave by looking at it.
+ *
+ * The margins are honest rather than comfortable: the lowest real punch is
+ * 0.37 against 0.35, and the lowest real kick 0.68 against 0.60. An ELBOW
+ * strike is the known cost — ILLEGAL_ELBOW_PUNCH keeps the hand tucked by
+ * design and scores 0.23, so it is refused as an attack. It was refused by
+ * the old gate too; this does not make it worse, and a dedicated elbow
+ * measure (forearm, not hand) is the fix if it ever matters.
+ */
+export const HAND_STRIKE_REACH_M = 0.35;
+export const FOOT_STRIKE_REACH_M = 0.60;
+
+/**
+ * The semantic slots where the engine hands the clip a fighter who is
+ * standing up and expects one back. Grapples, knockdowns, getups and the
+ * victim halves of throws are all SUPPOSED to invert and are not judged.
+ */
+const UPRIGHT_SEMANTICS = /^(attack|idle|block|walk|strafe|run|dash|backdash|crouch|guard|victory|taunt)/;
+
 const INDEX_URL = '/motion/baked/index.json';
 const BASE = '/motion/baked/';
 
@@ -142,6 +264,8 @@ let notAnimated: Set<string> = new Set();
 let slotOwners: Map<string, string> = new Map();
 /** Attack clips whose strike travels away from the way the body faces. */
 let strikesBackwards: Set<string> = new Set();
+/** Standing-slot clips whose body spends the clip at or past horizontal. */
+let inverted: Set<string> = new Set();
 
 /**
  * DOES THIS CLIP'S STRIKE GO THE WAY THE BODY IS FACING?
@@ -155,6 +279,14 @@ let strikesBackwards: Set<string> = new Set();
  * you and swinging behind himself:
  *
  *     ROUNDHOUSEKICK  strike -0.96  body +0.74
+ *
+ * CORRECTED 2026-09-20: the number above is the PEAK-SPEED direction, and
+ * that measure is wrong about 4 clips in 10. A snappy strike retracts faster
+ * than it extends, so the fastest frame points backwards — DEFAULTJUMPPUNCH
+ * measured -0.97 and CROUCHINGKICK -1.00 while both visibly strike forward,
+ * which is why every jump attack and crouch attack in the bank was refused.
+ * The gate now reads `reach` (tucked -> extended) with the body's facing at
+ * the frame it lands. Verified against 10 rendered clips: 10 of 10.
  *     BOXING          strike -1.00  body +0.91
  *     COMBO_PUNCH     strike -1.00  body +0.93
  *
@@ -185,10 +317,48 @@ export function markBackwardStrikes(manifest: Record<string, BakedManifestEntry>
   const out = new Set<string>();
   for (const [name, entry] of Object.entries(manifest)) {
     if (!/^attack/.test(entry.semantic ?? '')) continue;
-    const fwd = entry.strike?.fwd;
-    const body = entry.strike?.body;
-    if (fwd === undefined || body === undefined) continue;
-    if (Math.abs(fwd) > 0.3 && fwd * body < 0) out.add(name);
+    const hand = entry.strike?.handReach;
+    const foot = entry.strike?.footReach;
+    if (hand === undefined || foot === undefined) {
+      // An older bake has neither. Fall back to the peak-speed rule rather
+      // than letting everything through on a stale manifest.
+      const fwd = entry.strike?.fwd;
+      const body = entry.strike?.body;
+      if (fwd === undefined || body === undefined) continue;
+      if (Math.abs(fwd) > 0.3 && fwd * body < 0) out.add(name);
+      continue;
+    }
+    if (hand < HAND_STRIKE_REACH_M && foot < FOOT_STRIKE_REACH_M) out.add(name);
+  }
+  return out;
+}
+
+/**
+ * IS THE BODY THE RIGHT WAY UP IN THIS CLIP?
+ *
+ * See UPRIGHT_SPINE_MIN. Separate from `clipCanStand`, which asks whether
+ * the lowest point reaches the mat — a cartwheel touches the mat with its
+ * HANDS and passes that gate perfectly.
+ *
+ * Unknown clips are allowed, so a checkout with no bake behaves as before.
+ */
+export function clipStandsUpright(name: string): boolean {
+  return !inverted.has(name);
+}
+
+/** For tests: the standing-slot clips ruled out for being upside down. */
+export function invertedClips(): ReadonlySet<string> {
+  return inverted;
+}
+
+/** Decide, from a manifest, which standing-slot clips are inverted. */
+export function markInverted(manifest: Record<string, BakedManifestEntry>): Set<string> {
+  const out = new Set<string>();
+  for (const [name, entry] of Object.entries(manifest)) {
+    if (!UPRIGHT_SEMANTICS.test(entry.semantic ?? '')) continue;
+    const up = entry.spineUp;
+    if (up === undefined) continue;
+    if (up <= UPRIGHT_SPINE_MIN) out.add(name);
   }
   return out;
 }
@@ -213,6 +383,7 @@ export function slotOwnerFor(semantic: string): string | null {
   // named owner of attack_rk and strikes away from the way the body faces,
   // which is precisely the kick the owner reported going the wrong way.
   if (strikesBackwards.has(owner) || notAnimated.has(owner)) return null;
+  if (inverted.has(owner)) return null;
   return owner;
 }
 
@@ -313,6 +484,7 @@ export function applyStandability(manifest: Record<string, BakedManifestEntry>):
   notAnimated = markFrozen(manifest);
   slotOwners = markSlotOwners(manifest);
   strikesBackwards = markBackwardStrikes(manifest);
+  inverted = markInverted(manifest);
   return notStandable;
 }
 
@@ -455,4 +627,5 @@ export function resetBakedMotionBankForTest(): void {
   notAnimated = new Set();
   slotOwners = new Map();
   strikesBackwards = new Set();
+  inverted = new Set();
 }

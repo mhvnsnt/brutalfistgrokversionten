@@ -26,10 +26,38 @@ export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
   strafe_left:    ['strafe_left', 'strafeLeft', 'StrafeLeft', 'GINGA_SIDEWAYS_2', 'LOCO_PROWL', 'sidestepLeft', 'SidestepLeft', 'SBW_strafe_left', 'sidestepUp', 'SIDESTEP', 'SIDESTEPF', 'SIDESTEPMEDIUM', 'SIDESTEPFAST'],
   strafe_right:   ['strafe_right', 'strafeRight', 'StrafeRight', 'CROUCH_TORCH_WALK_RIGHT', 'INJURED_TURN_RIGHT', 'sidestepRight', 'SidestepRight', 'SBW_strafe_right', 'sidestepDown', 'SIDESTEPF', 'SIDESTEP', 'SIDESTEPMEDIUM'],
   attack_1:       ['attack_1', 'lightAttack', 'LightAttack', 'BOXING', 'BODY_JAB_CROSS', 'BOXING__1_', 'punch', 'Punch', 'jab', 'Jab', 'attack', 'Attack', 'LP', 'T_1', 'bf_jab', 'attack_1_procedural_placeholder', 'HIGHPUNCH', 'GRAFQUICKJAB', 'GYAKUZUKI'],
-  attack_rp:      ['attack_rp', 'heavyAttack', 'HeavyAttack', 'COMBO_PUNCH', 'BOXING__2_', 'BOXING__3_', 'ILLEGAL_ELBOW_PUNCH', 'ILLEGAL_ELBOW_PUNCH__1_', 'BASEBALL_HIT', 'cross', 'Cross', 'RP', 'T_2', 'bf_cross', 'UPPERCUT', 'PUNCHKICKCOMBO', 'ORAORAORA', 'GRAFPUNCHCOMBO'],
+  attack_rp:      ['attack_rp', 'heavyAttack', 'HeavyAttack', 'COMBO_PUNCH', 'BOXING__2_', 'BOXING__3_', 'ILLEGAL_ELBOW_PUNCH', 'ILLEGAL_ELBOW_PUNCH__1_', 'BASEBALL_HIT', 'cross', 'Cross', 'RP', 'T_2', 'bf_cross', 'UPPERCUT', 'PUNCHKICKCOMBO', 'GRAFPUNCHCOMBO'],
   attack_2:       ['attack_2', 'HURRICANE_KICK', 'DROP_KICK', 'ILLEGAL_KNEE', 'TIGER_FEINT_KICK', 'BASH', 'AU', 'CAPOEIRA', 'kick', 'Kick', 'bf_kick', 'QUICKKICK', 'AXEKICK', 'GRAFPUSHINGKICK'],
   attack_lk:      ['attack_lk', 'lightKick', 'LightKick', 'DROP_KICK', 'ILLEGAL_KNEE', 'TIGER_FEINT_KICK', 'LK', 'T_3', 'bf_lk', 'QUICKKICK', 'CROUCHINGKICK', 'ROUNDHOUSELOW'],
-  attack_rk:      ['attack_rk', 'heavyKick', 'HeavyKick', 'HURRICANE_KICK', 'AU', 'CAPOEIRA', 'BASH', 'CROSS_JUMPS', 'RK', 'T_4', 'bf_rk', 'ROUNDHOUSEKICK', 'HEAVYKICK', 'AXEKICK', 'TIGER_HEAVYKICK'],
+  attack_rk:      ['attack_rk', 'heavyKick', 'HeavyKick', 'HURRICANE_KICK', 'AU', 'CAPOEIRA', 'BASH', 'CROSS_JUMPS', 'RK', 'T_4', 'bf_rk', 'HEAVYKICK', 'AXEKICK', 'TIGER_HEAVYKICK', 'ROUNDHOUSEKICK'],
+  // THE FINISHER AND THE OVERDRIVE ARE THEIR OWN MOVES.
+  //
+  // Both used to map onto attack_rk, so spending a full meter played the
+  // same clip as a heavy kick — the redundancy the owner keeps reporting,
+  // on the two moves that are supposed to be the payoff.
+  //
+  // Chosen by measurement and then RENDERED (owner LAW), from every clip in
+  // the bake that animates, plants on the floor, faces forward, strikes
+  // forward and stands upright:
+  //   ORAORAORA             2.46 s  spineUp 0.996  strike 0.64  a sustained
+  //                                 flurry from a planted guard — the shape
+  //                                 a rage art has in the games this borrows
+  //                                 from, and long enough to read as one.
+  //   GYAKUZUKI_COMBO       1.13 s  spineUp 0.995  strike 0.85  step into a
+  //                                 committed reverse punch, arm fully out.
+  //   TIGER_HEAVYKICKCOMBO  1.75 s  spineUp 0.998  strike 0.72  knee up into
+  //                                 a kick combination.
+  // REJECTED AFTER RENDERING, all of which the numbers alone liked:
+  //   NECKBREAKER    starts as a crumpled heap — it is the RECEIVING half.
+  //   GRAFHAMMERCOMBO  goes horizontal and stays there.
+  //   FACEGOUGE / CARTWHEEL / HURRICANERANA  inverted (see UPRIGHT_SPINE_MIN).
+  // DROP_KICK, BASH and ILLEGAL_KNEE were on these lists and are off them:
+  // the owner looked at the first two and said the dropkick "kind of looks
+  // like it stays vertical" instead of going horizontal (measured: spine-up
+  // 0.66, where a dropkick should approach 0), and ILLEGAL_KNEE keeps both
+  // hand and foot tucked by design so it cannot pass the reach gate.
+  finisher:       ['finisher', 'Finisher', 'ORAORAORA', 'TIGER_HEAVYKICKCOMBO', 'GYAKUZUKI_COMBO', 'GRAFSURPRISEPUNCHLOW', 'attack_rk'],
+  overdrive:      ['overdrive', 'Overdrive', 'GYAKUZUKI_COMBO', 'TIGER_HEAVYKICKCOMBO', 'GRAFJUMPKICK', 'ORAORAORA', 'attack_rp'],
   block:          ['block', 'guard', 'Guard', 'CENTER_BLOCK', 'GUARD_HIGH', 'GUARD_LOW', 'DEFENDER', 'ESQUIVA_4', 'Block', 'defend', 'Defend', 'SBW_guard', 'T_guard', 'block_procedural_placeholder', 'GUARD', 'LOWSTANCEGUARD'],
   hit_reaction:   ['hit_reaction', 'hit', 'Hit', 'HIT_REACTION', 'HIT_TO_BODY', 'HIT_TO_HEAD', 'BIG_RIB_HIT', 'HIT_ON_THE_BACK', 'HIT_ON_SIDE_OF_HEAD', 'BIG_BODY_BLOW', 'hurt', 'Hurt', 'flinch', 'Flinch', 'hitstun', 'Hitstun', 'SBW_hit', 'T_hit', 'hit_reaction_procedural_placeholder', 'REACTION_HITWEAKHIGH', 'REACTION_HITWEAKMEDIUM', 'REACTION_HITSTRONGHIGH', 'REACTION_HITSTRONGMID'],
   knockdown:      ['knockdown', 'Knockdown', 'FALLING_FLAT_IMPACT', 'FALLING_FORWARD_DEATH', 'DEFEAT', 'DYING_BACKWARDS', 'ko', 'KO', 'fall', 'Fall', 'SBW_knockdown', 'T_knockdown', 'knockdown_procedural_placeholder', 'REACTION_HEAVYHITAIRREVOLT', 'REACTION_HEAVYHITAIRREVOLTBACK', 'SUPINE'],
@@ -75,8 +103,8 @@ export const COMBAT_STATE_TO_SEMANTIC: Record<string, string> = {
   heavy:             'attack_rp',
   lightKick:         'attack_lk',
   heavyKick:         'attack_rk',
-  overdrive:         'attack_rk',
-  finisher:           'attack_rk',
+  overdrive:         'overdrive',
+  finisher:          'finisher',
   superArmor:        'attack_rp',
   crouchLightAttack: 'attack_1',
   crouchHeavyAttack: 'attack_lk',
