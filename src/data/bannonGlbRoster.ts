@@ -1,4 +1,4 @@
-import { resolveGlbUrl } from './bannonGlbUrl';
+import { resolveGlbUrl } from './bannonGlbUrl.ts';
 import { getGraphicsQuality } from '../lib/graphicsSettings';
 
 export type BannonGlbRosterEntry = {

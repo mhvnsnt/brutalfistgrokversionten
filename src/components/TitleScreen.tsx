@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { assetUrl } from '../lib/assetBase';
+import { startAssetWarmup, type WarmupProgress } from '../engine/assets/AssetWarmup';
+import { warmupUrls } from '../engine/assets/warmupPlan';
 
 /**
  * THE TITLE SCREEN — the owner's own 1280x720 title video.
@@ -24,6 +26,25 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const themeRef = useRef<HTMLAudioElement | null>(null);
   const [videoUp, setVideoUp] = useState(false);
+  const [warm, setWarm] = useState<WarmupProgress | null>(null);
+
+  /**
+   * START PULLING THE GAME DOWN WHILE THE TITLE PLAYS.
+   *
+   * The title screen is the one moment a player is reliably sitting still,
+   * and it is the whole reason a match used to open on an empty stage: the
+   * first request for a 45 MB roster happened when the fight started. Nothing
+   * waits on this — pressing START mid-warm is fine.
+   */
+  useEffect(() => {
+    const abort = new AbortController();
+    startAssetWarmup(warmupUrls(), {
+      concurrency: 3,
+      signal: abort.signal,
+      onProgress: setWarm,
+    });
+    return () => abort.abort();
+  }, []);
 
   // Autoplay can still be refused; the poster and the wordmark cover that.
   useEffect(() => {
@@ -89,8 +110,13 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
         >
           BRUTAL FIST
         </span>
-        <span className="mt-8 mb-[18vh] text-sm tracking-[0.45em] text-yellow-400 animate-pulse drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+        <span className="mt-8 text-sm tracking-[0.45em] text-yellow-400 animate-pulse drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
           PRESS START
+        </span>
+        {/* Honest about what it is doing, and never a gate: the player can
+            start at any point and the warm simply stops. */}
+        <span className="mt-3 mb-[18vh] h-3 text-[9px] tracking-[0.3em] text-white/45 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
+          {warm && warm.done < warm.total ? `LOADING ${warm.done}/${warm.total}` : ''}
         </span>
       </button>
     </div>
