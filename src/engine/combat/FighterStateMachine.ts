@@ -481,7 +481,9 @@ export class FighterStateMachine {
   private attackStartCount = 0;
   private throwComboQueue: Array<'light' | 'heavy'> = [];
   private throwComboIndex = 0;
+  /** Time the attacker has to earn the next authored throw link. */
   private throwComboTimer = 0;
+  private readonly THROW_COMBO_INPUT_WINDOW = 0.35;
 
   // ── Grab range visualization ──────────────────────────────────────────────
   private grabRangeActive = false;
@@ -924,23 +926,33 @@ export class FighterStateMachine {
     }
 
     // ── Throw combo chain routing ─────────────────────────────────────────
+    // A successful throw opens an authored follow-up window. The attacker must
+    // press the requested button inside that window; the old implementation
+    // advanced the route on a timer, turning the grapple into an unskippable
+    // cutscene and ignoring the source chain data.
     if (this.throwComboQueue.length > 0 && this.throwComboIndex < this.throwComboQueue.length) {
+      if (this.actionState === 'Attacking') return this.motionState;
+
       this.throwComboTimer = Math.max(0, this.throwComboTimer - dt);
       if (this.throwComboTimer <= 0) {
+        console.log('[FSM] ⛓️ Throw combo chain expired — follow-up dropped');
+        this.throwComboQueue = [];
+        this.throwComboIndex = 0;
+      } else {
         const nextHit = this.throwComboQueue[this.throwComboIndex];
-        this.throwComboIndex++;
-        console.log(`[FSM] ⛓️ Throw combo chain — hit ${this.throwComboIndex}/${this.throwComboQueue.length}: ${nextHit}`);
-        if (nextHit === 'light') {
-          this.throwComboTimer = DEFAULT_MOVE_WINDOWS.lightAttack.startup + DEFAULT_MOVE_WINDOWS.lightAttack.active + DEFAULT_MOVE_WINDOWS.lightAttack.recovery;
-          return this.beginAttack('lightAttack', DEFAULT_MOVE_WINDOWS.lightAttack);
-        } else {
-          this.throwComboTimer = DEFAULT_MOVE_WINDOWS.heavyAttack.startup + DEFAULT_MOVE_WINDOWS.heavyAttack.active + DEFAULT_MOVE_WINDOWS.heavyAttack.recovery;
-          return this.beginAttack('heavyAttack', DEFAULT_MOVE_WINDOWS.heavyAttack);
+        const pressed =
+          (nextHit === 'light' && risingLight) ||
+          (nextHit === 'heavy' && risingHeavy);
+        if (pressed) {
+          this.throwComboIndex++;
+          console.log(`[FSM] ⛓️ Throw combo chain earned — hit ${this.throwComboIndex}/${this.throwComboQueue.length}: ${nextHit}`);
+          return nextHit === 'light'
+            ? this.beginAttack('lightAttack', DEFAULT_MOVE_WINDOWS.lightAttack)
+            : this.beginAttack('heavyAttack', DEFAULT_MOVE_WINDOWS.heavyAttack);
         }
       }
       return this.motionState;
     } else if (this.throwComboQueue.length > 0 && this.throwComboIndex >= this.throwComboQueue.length) {
-      // Combo chain complete
       this.throwComboQueue = [];
       this.throwComboIndex = 0;
     }
@@ -1029,7 +1041,7 @@ export class FighterStateMachine {
         // Begin throw combo chain if throw succeeded
         if (this.commandThrowSucceeded && this.throwComboQueue.length > 0) {
           this.throwComboIndex = 0;
-          this.throwComboTimer = 0.05; // small delay before first combo hit
+          this.throwComboTimer = this.THROW_COMBO_INPUT_WINDOW;
           console.log('[FSM] ⛓️ Starting throw combo chain:', this.throwComboQueue);
         }
         this.commandThrowSucceeded = false;
@@ -1319,6 +1331,7 @@ export class FighterStateMachine {
     this.commandThrowSucceeded = false;
     this.throwComboQueue = [...(move.throwComboRoute ?? [])];
     this.throwComboIndex = 0;
+    this.throwComboTimer = 0;
     this.grabRangeActive = true;
     this.grabRangeTimer = move.startup + move.active;
     return this.motionState;
@@ -1339,6 +1352,7 @@ export class FighterStateMachine {
     // Activate grab range visualization
     this.grabRangeActive = true;
     this.grabRangeTimer = COMMAND_THROW_MOVE.startup + COMMAND_THROW_MOVE.active;
+    this.throwComboTimer = 0;
     console.log('[FSM] 🤲 CommandThrow started — grab range:', COMMAND_THROW_MOVE.grabRange);
     return this.motionState;
   }
