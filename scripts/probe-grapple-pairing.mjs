@@ -78,8 +78,18 @@ if (!ready) { console.log('FAIL: no __BF_DEBUG.clips — the match never started
 /** Close the distance first: a throw out of range is a whiff, not a test. */
 const attempts = [];
 for (let n = 0; n < 9 && attempts.filter((a) => a.committed).length === 0; n++) {
+  // GRAB RANGE IS 1.4 AND THE FIRST RUN WHIFFED THREE TIMES OUT OF FOUR at
+  // gaps of 2.09, 1.62 and 1.48. Walk in longer, and only press once the gap
+  // is actually inside the range rather than after a fixed hold.
   await page.keyboard.down('ArrowRight');
-  await page.waitForTimeout(1400);
+  for (let w = 0; w < 30; w++) {
+    const g = await page.evaluate(() => {
+      const q = window.__BF_DEBUG?.positions?.();
+      return q ? Math.abs((q.p2?.x ?? 0) - (q.p1?.x ?? 0)) : null;
+    }).catch(() => null);
+    if (g !== null && g <= 1.15) break;
+    await page.waitForTimeout(120);
+  }
   const gap = await page.evaluate(() => {
     const p = window.__BF_DEBUG?.positions?.();
     return p ? Math.abs((p.p2?.x ?? 0) - (p.p1?.x ?? 0)) : null;
@@ -108,19 +118,43 @@ for (let n = 0; n < 9 && attempts.filter((a) => a.committed).length === 0; n++) 
   let seen = null;
   for (let i = 0; i < 40; i++) {
     const c = await page.evaluate(() => window.__BF_DEBUG?.clips?.() ?? null).catch(() => null);
-    if (c?.grappleBeat) { seen = c; break; }
+    if (c?.grappleBeat) {
+      seen = c;
+      // THE BEAT AND THE BODY ARE NOT THE SAME FRAME. Setting the beat is a
+      // React state change; the mesh picks the clip up on the next commit,
+      // and on a 3fps software rasteriser that is not instant. Reading the
+      // body in the same tick as the beat reports the clip he was playing
+      // BEFORE the throw, which reads exactly like the pairing not working.
+      const want = c.grappleBeat.clip;
+      const who = c.grappleBeat.victim;
+      for (let j = 0; j < 25; j++) {
+        const after = await page.evaluate(() => window.__BF_DEBUG?.clips?.() ?? null).catch(() => null);
+        if (after?.[who] === want) { seen = { ...after, grappleBeat: c.grappleBeat, lastDeliverer: c.lastDeliverer }; break; }
+        await page.waitForTimeout(60);
+      }
+      break;
+    }
     await page.waitForTimeout(60);
   }
   const fresh = log.slice(before);
+  // WHICH SIDE WAS THROWN IS SOMETHING THE BEAT SAYS, NOT SOMETHING TO ASSUME.
+  // The first version of this printed p1's deliverer and p2's clip no matter
+  // who threw whom, and reported "- -> KNEETHROWREACTION_NEW, victim playing
+  // GYAKUZUKI" for a run that had worked — GYAKUZUKI being the ATTACKER's
+  // clip, read off the wrong body. Now that the AI can throw too, either
+  // fighter can be the victim and the probe has to follow the beat.
+  const victim = seen?.grappleBeat?.victim ?? null;
+  const thrower = victim === 'p1' ? 'p2' : 'p1';
   attempts.push({
     route: ['v', '1+3', '2+4'][n % 3],
     gap,
     connected: fresh.some((l) => /connected/.test(l)),
     committed: Boolean(seen),
-    deliverer: seen?.lastDeliverer?.p1 ?? null,
+    victim,
+    deliverer: victim ? (seen?.lastDeliverer?.[thrower] ?? null) : null,
     victimClip: seen?.grappleBeat?.clip ?? null,
     source: seen?.grappleBeat?.source ?? null,
-    victimPlaying: seen?.p2 ?? null,
+    victimPlaying: victim ? (seen?.[victim] ?? null) : null,
   });
   await page.waitForTimeout(2500);
 }
@@ -130,8 +164,8 @@ for (const [i, a] of attempts.entries()) {
   console.log(
     `  try ${i + 1}  ${String(a.route).padEnd(4)} gap ${a.gap === null ? '?' : a.gap.toFixed(2)}  ` +
     `connected ${a.connected ? 'yes' : 'no '}  committed ${a.committed ? 'yes' : 'no '}  ` +
-    `${a.deliverer ?? '-'} -> ${a.victimClip ?? '-'} (${a.source ?? '-'}) ` +
-    `victim playing: ${a.victimPlaying ?? '-'}`,
+    `victim ${a.victim ?? '- '}  ${a.deliverer ?? '-'} -> ${a.victimClip ?? '-'} (${a.source ?? '-'}) ` +
+    `his body is playing: ${a.victimPlaying ?? '-'}`,
   );
 }
 const win = attempts.find((a) => a.committed);

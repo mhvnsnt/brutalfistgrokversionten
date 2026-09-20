@@ -2258,6 +2258,14 @@ export default function GameBattleArena({
           }
           p1LocoRef.current.clampX(newP1X);
           p2LocoRef.current.clampX(newP2X);
+          // READ THE CLAMP BACK. These two lines fixed the locomotion
+          // system's own rootX and the arena then carried on using the
+          // UNCLAMPED numbers for the refs, the React state and everything
+          // downstream — so the body and the position the rest of the game
+          // believed in disagreed, and at the ropes that disagreement is the
+          // difference between standing against them and being outside them.
+          newP1X = p1LocoRef.current.position.x;
+          newP2X = p2LocoRef.current.position.x;
         }
 
         // Only trigger React re-render when position changes meaningfully (>0.01 units)

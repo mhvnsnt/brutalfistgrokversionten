@@ -177,6 +177,24 @@ if (needsCorrection(correction)) {
  * standing move (the idle peaks at 23 cm, a jab at 32) and well below a jump.
  */
 const AIRBORNE_PEAK_M = Number(process.env.BF_AIRBORNE_M ?? 0.5);
+/**
+ * How much the head must ALSO rise before high feet are read as a jump
+ * rather than a crouch. 10 cm is well inside a real jump and well outside
+ * the noise on a crouch, where the head moves the other way entirely.
+ */
+const HEAD_RISE_M = Number(process.env.BF_HEAD_RISE_M ?? 0.10);
+
+/**
+ * States that are ON THE MAT by definition. A clip that answers one of these
+ * is grounded however high the foot-lift measurement says its feet went —
+ * see the note at `clipAirborne` for the four geometric signals that were
+ * tried first and the reason none of them can work on a rotation-only bank.
+ */
+const GROUNDED_SEMANTICS = new Set([
+  'idle', 'crouch', 'block', 'guard', 'taunt', 'victory',
+  'walk_forward', 'walk_back', 'strafe_left', 'strafe_right',
+  'run', 'dash_forward', 'backdash', 'getup',
+]);
 
 /**
  * The most the grounding offset may move a body, in metres.
@@ -255,6 +273,9 @@ function measurePosture() {
   // from authored motion (a body that inverts during a move and comes back).
   const spine = h.clone().sub(p);
   const spineUp = spine.lengthSq() > 1e-9 ? spine.normalize().y : 0;
+  // HEAD HEIGHT IN WORLD SPACE. Already computed above and thrown away; it is
+  // the one number that tells a CROUCH from a JUMP. See the airborne test.
+  const headY = h.y;
   // WHICH WAY DOES THE LEG HANG? hips -> foot as a unit vector's Y. -1 is a
   // leg hanging straight down, which is what a standing body does. A POSITIVE
   // value means the foot is above the pelvis: the leg is folded up over the
@@ -308,6 +329,7 @@ function measurePosture() {
   if (n) legDown /= n;
   return {
     spineUp,
+    headY,
     armForward,
     armSpread,
     legDown,
@@ -810,6 +832,21 @@ function groundingOffset(clip) {
   // as a grounded clip, and every audit then judged a jump as a failed
   // stance. Measured: BIG_BODY_BLOW at 161 cm, filed as "meant to be on the
   // floor".
+  // WHAT THE FRAMES SAY ABOUT WHY THE FEET ARE HIGH. Measured for every clip
+  // so a crouch can be told from a jump on numbers rather than on a name.
+  // See the airborne note below.
+  const iHigh = lift.indexOf(Math.max(...lift));
+  const iLow = lift.indexOf(Math.min(...lift));
+  const pHigh = postures[iHigh] ?? null;
+  const pLow = postures[iLow] ?? null;
+  const headRise = pHigh && pLow ? pHigh.headY - pLow.headY : 0;
+  const legDownAtPeak = pHigh ? pHigh.legDown : 0;
+  const hipsAboveFeetAtPeak = pHigh ? pHigh.hipsAboveFeet : 0;
+  // HOW LONG THE FEET STAY UP. A jump is off the floor briefly; a held
+  // crouch or a low stance is down for most of the clip. If this separates
+  // them it is the answer; if it does not, nothing geometric does.
+  const peak = Math.max(...lift);
+  const liftFrac = peak > 1e-6 ? lift.filter((v) => v > peak * 0.6).length / lift.length : 0;
   const airborne = Math.max(...lift) > AIRBORNE_PEAK_M;
   const minLift = Math.min(...lift);
   // The frame where the body is CLOSEST to standing on the floor is the one
@@ -840,6 +877,10 @@ function groundingOffset(clip) {
   const offset = Math.max(-MAX_GROUND_SHIFT_M, Math.min(MAX_GROUND_SHIFT_M, raw));
   return {
     airborne,
+    headRise: +headRise.toFixed(4),
+    liftFrac: +liftFrac.toFixed(3),
+    legDownAtPeak: +legDownAtPeak.toFixed(4),
+    hipsAboveFeetAtPeak: +hipsAboveFeetAtPeak.toFixed(4),
     capped,
     offset,
     minLift,
@@ -941,8 +982,26 @@ const report = {
   worst: [],
 };
 
-rmSync(OUT, { recursive: true, force: true });
+/**
+ * EMPTY THE DIRECTORY, DO NOT DELETE IT.
+ *
+ * This used to `rmSync(OUT, {recursive:true})` and recreate it. MEASURED:
+ * running the bake while `vite dev` is up makes the dev server return
+ * **404 for every file under /motion/baked/ for the rest of its life** —
+ * the directory it was watching no longer exists, and the new one with the
+ * same name is not the same inode. `/title/title_poster.jpg` kept serving
+ * 200 the whole time, so the server looked healthy.
+ *
+ * The cost of that is not a slow reload: every probe run after a bake
+ * measures a game with NO ANIMATIONS AT ALL, and says so in language that
+ * reads like a layout bug or a broken clip. It cost a full diagnostic pass
+ * here — a clip list reporting one row, which was "The baked clip list did
+ * not load (HTTP 404)".
+ *
+ * Unlinking the files leaves the directory in place and the watcher intact.
+ */
 mkdirSync(OUT, { recursive: true });
+for (const f of readdirSync(OUT)) rmSync(join(OUT, f), { recursive: true, force: true });
 
 // ─────────────────────────────────────────────────────────────────────────────
 // THE OPPONENT SIDE OF A GRAPPLE
@@ -1108,7 +1167,50 @@ for (const src of sources()) {
   if (DEBUG_GROUND.has(src.name)) {
     console.log(`  [ground] ${src.name} min=${(ground?.minLift ?? NaN).toFixed(4)} max=${(ground?.maxLift ?? NaN).toFixed(4)} offset=${(ground?.offset ?? 0).toFixed(4)} airborne=${ground?.airborne}`);
   }
-  const clipAirborne = Boolean(ground?.airborne);
+  /**
+   * A CLIP THAT ANSWERS A GROUNDED STATE CANNOT BE AIRBORNE.
+   *
+   * Owner, repeatedly: "the feet lifting off of the ground instead of the
+   * pelvis and torso moving down towards the feet, at times where it's like
+   * a crouch. It should be crouching down, moving the torso and pelvis and
+   * all the body parts down towards the feet while the knees bend ... moving
+   * all the body down in world space." And: "they're kind of levitating off
+   * the ground too."
+   *
+   * WHY IT KEEPS COMING BACK. The banks are ROTATION ONLY, so the pelvis is
+   * the FK root: bend the knees and the FEET come up, because nothing lowers
+   * the hips. The grounding pass fixes exactly that by writing a per-frame
+   * hips offset — but it is skipped for anything judged AIRBORNE, and that
+   * judgement was "the lowest foot got over 50 cm off the floor", which is
+   * the artefact itself. The clips that needed grounding most received none.
+   *
+   * I TRIED FOUR WAYS TO TELL A CROUCH FROM A JUMP ON THE FRAMES AND NONE OF
+   * THEM WORK. Measured on this corpus:
+   *     signal                 jumps            crouches
+   *     head rise at peak      -0.05 .. +0.02   -0.18 .. +0.02
+   *     leg direction at peak  -0.73 .. +0.49   -0.79 .. -0.39
+   *     hips above feet        -0.44 .. +0.42   +0.35 .. +1.05
+   *     share of clip elevated  0.28 .. 1.00     0.45 .. 1.00
+   * Every one overlaps. JUMP and CROUCHING are IDENTICAL on peak lift
+   * (0.187) and on head rise (0.000). That is not a weak signal, it is the
+   * same data: with no root translation anywhere in the corpus, a jump and a
+   * crouch ARE the same rotations. Nothing geometric can separate them, and
+   * the first rule I wrote on the head (which looked right) stripped the
+   * flag from all 17 jump-named clips in the bank. It was reverted.
+   *
+   * WHAT DOES SEPARATE THEM IS THE SLOT, and that is not a guess about the
+   * motion — it is what the slot MEANS. An idle is on the mat. So is a walk,
+   * a crouch, a block, a taunt, a getup, a stance. MEASURED: of the 193
+   * clips flagged airborne, 124 answered one of those states — 105 of them
+   * `idle`. An airborne idle is not a finding, it is a misclassification.
+   *
+   * `attack_2` (43 of them) genuinely holds both jump attacks and crouching
+   * kicks, so those are left on the old rule rather than guessed at. They
+   * are what the owner's `aerial` checkbox in the Move Library is for.
+   */
+  const semanticForGrounding = SLOT_OWNER.get(src.name) ?? inferSemanticFromMotionKey(src.name);
+  const clipAirborne = Boolean(ground?.airborne) && !GROUNDED_SEMANTICS.has(semanticForGrounding);
+  if (ground?.airborne && !clipAirborne) report.regrounded = (report.regrounded ?? 0) + 1;
   if (clipAirborne) report.airborne++;
   if (ground?.capped) {
     report.cappedShift++;
@@ -1281,6 +1383,10 @@ for (const src of sources()) {
     floorGap: ground?.floorGap ?? 0,
     minLiftFoot: ground?.minLiftFoot ?? 0,
     minLiftBody: ground?.minLiftBody ?? 0,
+    headRise: ground?.headRise ?? 0,
+    liftFrac: ground?.liftFrac ?? 0,
+    legDownAtPeak: ground?.legDownAtPeak ?? 0,
+    hipsAboveFeetAtPeak: ground?.hipsAboveFeetAtPeak ?? 0,
     strike: (() => {
       const d = strikeOf.get(src.name);
       if (!d) return undefined;

@@ -663,6 +663,109 @@ takedown victim and a kip-up), and was reverted with the reason recorded in
 scripts/bake-fighter-animations.mjs. Whatever is done here has to be measured
 per clip and RENDERED before banking, per the owner law.
 
+## 21f. THE PELVIS BOB WAS BEING DELETED AT LOAD
+
+This is the one he has reported most often, across several passes, and every
+previous fix was real and never reached the screen.
+
+> "instead of the pelvis doing a natural bob, it's like the pelvis is locked
+> in position and the idle motion is picking the feet up off the ground"
+
+> "at times where it's like a crouch. It should be crouching down, moving the
+> torso and pelvis and all the body parts down towards the feet while the
+> knees bend ... moving all the body down in world space" ... "they're kind of
+> levitating off the ground too."
+
+### The chain, end to end
+
+The banks are ROTATION ONLY, so the pelvis is the FK root: bend a knee and the
+FOOT comes up, because nothing lowers the hips. The bake exists to fix that —
+it measures the lowest foot per frame and writes a per-frame hips Y so the
+body comes down to meet the floor. **That was working.** CROUCHING carries 30
+hips keys and 0.376 m of travel in the shipped file.
+
+`clipFromBaked` then threw every one of them away. Its rule was: constant
+translation, keep; **variable translation, drop**. So the only pelvis tracks
+that survived the loader were the ones that never move.
+
+MEASURED on the live rig in the Move Library, before and after:
+
+| clip | hips travel | lowest-foot travel |
+|---|---|---|
+| CROUCHING before | 0.000 m | 0.392 m |
+| CROUCHING after | **0.359 m** | **0.081 m** |
+| SHAZLOWRUSH_CROUCH after | 0.459 m | 0.148 m |
+| GRAFCROUCHEXTENDARM after | 0.382 m | 0.029 m |
+| STANCE after | 0.048 m (the idle bob) | 0.000 m |
+
+The original rule was right about one thing: dynamic root travel must not
+fight world locomotion. But that is X and Z, and it is already handled
+upstream by `stripRootPositionTracks`. Dropping the whole track to solve a
+horizontal problem took the vertical fix with it. The contract is now **keep
+Y, pin X and Z**.
+
+### And a second, independent cause: an airborne test that measured its own defect
+
+The grounding pass is SKIPPED for anything judged airborne, and the judgement
+was "the lowest foot got over 50 cm off the floor" — which is the artefact
+itself. A crouch in pure FK lifts the feet exactly that way. The clips that
+needed grounding most received none: CROUCHING, CROUCHINGKICK, DUCKINGCOMET,
+SHAZLOWRUSH_CROUCH, GRAFCROUCHEXTENDARM all carried ONE hips key and 0.000 m.
+
+**I tried four geometric ways to tell a crouch from a jump and none of them
+work.** Measured across this corpus:
+
+| signal | jumps | crouches |
+|---|---|---|
+| head rise at peak lift | -0.05 .. +0.02 | -0.18 .. +0.02 |
+| leg direction at peak | -0.73 .. +0.49 | -0.79 .. -0.39 |
+| hips above feet at peak | -0.44 .. +0.42 | +0.35 .. +1.05 |
+| share of clip elevated | 0.28 .. 1.00 | 0.45 .. 1.00 |
+
+Every one overlaps. JUMP and CROUCHING are **identical** on peak lift (0.187)
+and on head rise (0.000). That is not a weak signal — with no root translation
+anywhere in the corpus, a jump and a crouch ARE the same rotations. The head
+rule looked right and stripped the airborne flag from **all 17** jump-named
+clips; it was reverted before it shipped.
+
+WHAT DOES SEPARATE THEM IS THE SLOT, and that is not a guess about the motion
+— it is what the slot means. An idle is on the mat; so is a walk, a crouch, a
+block, a taunt, a getup. Of the 193 clips flagged airborne, **124 answered one
+of those states, 105 of them `idle`**. Airborne 193 -> 69.
+
+`attack_2` (43 clips) genuinely holds both jump attacks and crouching kicks,
+so those are left alone rather than guessed at — CROUCHINGKICK is still
+ungrounded and is one `aerial` tap away. ASSISTEDDIVSENTON is a real dive
+filed as `idle` and is now grounded; same remedy.
+
+## 21g. The bake 404'd the dev server for the rest of its life
+
+`rmSync(OUT, {recursive:true})` + recreate. Vite was watching the old inode,
+so after any bake **every file under /motion/baked/ returned 404 until the
+server was restarted** — while `/title/title_poster.jpg` kept serving 200, so
+the server looked healthy. Every probe run after a bake was measuring a game
+with NO ANIMATIONS, and reporting it in language that reads like a layout or
+clip bug. It cost a full diagnostic pass here: a clip list showing one row,
+which turned out to be the text "The baked clip list did not load (HTTP 404)".
+The bake now unlinks the files and leaves the directory in place.
+
+## 21h. Orientation, not width
+
+Owner: "they kind of need to sense my phone's orientation so they don't go off
+my screen ... I'm not asking you to lock it into horizontal or vertical."
+
+- TITLE SCREEN: the 1280x720 video was `object-cover`, which in a 412x915
+  portrait viewport shows **20%** of the frame. `object-contain` upright,
+  `cover` in landscape. Measured: portrait now shows **100%** of the frame.
+- MOVE LIBRARY: the layout keyed off `md:` — a WIDTH breakpoint at 768px. A
+  phone in landscape is 915 wide and trips it; upright it is 412 and does not.
+  Now `landscape:`, a real orientation query. Portrait puts the viewport on
+  top at a fixed 44vh with the list scrolling under it; landscape puts list
+  and editor in one column and gives the viewport the whole right side.
+  Measured: preview 380x403 upright / 563x338 landscape, both fully on screen.
+  The editor's DETAILS pane folds away upright, because at 412x915 the three
+  panes together left the clip list EIGHT PIXELS tall.
+
 ## 21d. The opponent's half of a grapple
 
 Owner, twice, and the second time was a repeat because the first was not done:

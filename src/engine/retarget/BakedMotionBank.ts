@@ -668,41 +668,77 @@ export function clipFromBaked(data: BakedClipFile): THREE.AnimationClip | null {
     if (!track?.t?.length || track.q.length !== track.t.length * 4) continue;
     tracks.push(new THREE.QuaternionKeyframeTrack(`${bone}.quaternion`, track.t, track.q));
   }
-  // Legacy baked files can contain Hips.position floor-lock tracks. The
-  // old runtime rule dropped ALL translations, but that is too blunt: some
-  // authored poses carry a CONSTANT pelvis offset (for example a wide stance)
-  // that is part of the pose, not per-frame floor chasing. Dropping that
-  // constant offset leaves the pelvis tens of centimetres too high and makes
-  // the knees/feet look like they are shooting sideways even though the
-  // quaternion tracks are correct.
-  //
-  // Rule:
-  //   - CONSTANT translation (<= 2 mm total variation) -> keep it.
-  //   - VARIABLE translation -> drop it; world locomotion owns dynamic root
-  //     travel and the old per-key grounding track must never fight it.
-  //
-  // This preserves authored static pelvis placement without resurrecting the
-  // per-frame floor-lock bug.
+  /**
+   * THE PELVIS BOB. THIS IS WHERE IT KEPT DYING.
+   *
+   * Owner, across several passes and again today: "instead of the pelvis
+   * doing a natural bob, it's like the pelvis is locked in position and the
+   * idle motion is picking the feet up off the ground" ... "at times where
+   * it's like a crouch. It should be crouching down, moving the torso and
+   * pelvis and all the body parts down towards the feet while the knees
+   * bend ... moving all the body down in world space."
+   *
+   * The banks are rotation-only, so the pelvis is the FK root and bending a
+   * knee lifts the FOOT. The bake exists to fix that: it measures the lowest
+   * foot per frame and writes a per-frame hips Y so the body comes DOWN to
+   * meet the floor instead. That work has been landing in the baked files
+   * for a while — CROUCHING carries 30 hips keys and 0.376 m of travel.
+   *
+   * AND THIS FUNCTION THREW IT ALL AWAY. The rule below was
+   * `variation > 0.002 -> continue`: keep a CONSTANT pelvis offset, drop
+   * anything that moves. So every per-frame grounding track in the corpus
+   * was discarded at load, and only the clips that needed no correction kept
+   * theirs. MEASURED on the live rig in the Move Library: JUMP, which has a
+   * single constant key, HAD its `mixamorigHips.position` track; CROUCHING,
+   * with 30 keys, had NO position track at all, and the sampled hips travel
+   * across the whole crouch was 0.000 m while the lowest foot travelled
+   * 0.392 m. The feet come up because the fix is deleted on the way in.
+   *
+   * THE ORIGINAL RULE WAS RIGHT ABOUT ONE THING. Dynamic root travel must
+   * not fight the world locomotion system — a clip that walks the pelvis
+   * forward would drag the fighter across the stage twice. But that is about
+   * X and Z, and it is already handled upstream: `stripRootPositionTracks`
+   * zeroes horizontal translation and keeps Y as a delta. Dropping the whole
+   * track to solve a horizontal problem took the vertical fix with it.
+   *
+   * So: KEEP Y, PIN X AND Z. Locomotion owns where the body is on the mat;
+   * the bake owns how high off it the hips sit. Neither can fight the other
+   * because they no longer touch the same axis.
+   */
   let constantPositionTracks = 0;
+  let groundedPositionTracks = 0;
   for (const [bone, track] of Object.entries(data.positions ?? {})) {
     if (!track?.t?.length || track.p.length !== track.t.length * 3) continue;
-    let minX = Infinity, minY = Infinity, minZ = Infinity;
-    let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
-    for (let i = 0; i + 2 < track.p.length; i += 3) {
-      const x = track.p[i], y = track.p[i + 1], z = track.p[i + 2];
-      if (![x, y, z].every(Number.isFinite)) continue;
-      minX = Math.min(minX, x); minY = Math.min(minY, y); minZ = Math.min(minZ, z);
-      maxX = Math.max(maxX, x); maxY = Math.max(maxY, y); maxZ = Math.max(maxZ, z);
+    let minY = Infinity, maxY = -Infinity;
+    for (let i = 1; i < track.p.length; i += 3) {
+      const y = track.p[i];
+      if (!Number.isFinite(y)) continue;
+      minY = Math.min(minY, y); maxY = Math.max(maxY, y);
     }
-    const variation = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
-    if (!Number.isFinite(variation) || variation > 0.002) continue;
-    const p = track.p.slice(0, 3);
-    tracks.push(new THREE.VectorKeyframeTrack(
-      `${bone}.position`,
-      [track.t[0] ?? 0],
-      p,
-    ));
-    constantPositionTracks++;
+    if (!Number.isFinite(minY)) continue;
+    // X and Z are pinned to the first key. Anything else is locomotion's.
+    const x0 = track.p[0];
+    const z0 = track.p[2];
+    if (![x0, z0].every(Number.isFinite)) continue;
+    const varies = maxY - minY > 0.002;
+    if (!varies) {
+      tracks.push(new THREE.VectorKeyframeTrack(
+        `${bone}.position`, [track.t[0] ?? 0], [x0, track.p[1], z0],
+      ));
+      constantPositionTracks++;
+      continue;
+    }
+    const times: number[] = [];
+    const values: number[] = [];
+    for (let k = 0; k < track.t.length; k++) {
+      const y = track.p[k * 3 + 1];
+      if (!Number.isFinite(track.t[k]) || !Number.isFinite(y)) continue;
+      times.push(track.t[k]);
+      values.push(x0, y, z0);
+    }
+    if (times.length < 2) continue;
+    tracks.push(new THREE.VectorKeyframeTrack(`${bone}.position`, times, values));
+    groundedPositionTracks++;
   }
   if (tracks.length === 0) return null;
   const clip = new THREE.AnimationClip(data.name, data.dur, tracks);
@@ -713,6 +749,7 @@ export function clipFromBaked(data: BakedClipFile): THREE.AnimationClip | null {
     ...(data.semantic ? { semanticState: data.semantic } : {}),
     owns: Boolean(data.owns),
     constantPositionTracks,
+    groundedPositionTracks,
     // Already on the skeleton: nothing downstream should retarget it again.
     baked: true,
   };

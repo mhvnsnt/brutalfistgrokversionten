@@ -90,7 +90,29 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
     >
       <video
         ref={videoRef}
-        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoUp ? 'opacity-100' : 'opacity-0'}`}
+        /*
+         * FIT THE WHOLE FRAME WHEN THE PHONE IS UPRIGHT.
+         *
+         * Owner: "when I have it horizontal the whole start screen shows,
+         * that's good. But when I have it vertical, the video I sent you for
+         * the start screen is cropped. It needs to sense and understand and
+         * fit to my screen ... so if they have it in vertical they can also
+         * still see the whole title screen, full movie thing." And,
+         * explicitly: "I'm not asking you to lock it into horizontal or
+         * vertical."
+         *
+         * The video is 1280x720. `object-cover` scales it to FILL, so in a
+         * portrait viewport of roughly 412x915 it matches the height and
+         * throws away most of the width — his art, cropped to a letterbox
+         * slice of itself. `object-contain` shows the whole frame and pillar-
+         * boxes instead, which is the thing he actually asked for. Landscape
+         * already looked right, so landscape keeps `cover` and fills the
+         * screen edge to edge.
+         *
+         * This is an ORIENTATION query, not a width breakpoint: a tablet in
+         * portrait is wide enough to trip `md:` and would still crop.
+         */
+        className={`absolute inset-0 h-full w-full object-contain landscape:object-cover transition-opacity duration-700 ${videoUp ? 'opacity-100' : 'opacity-0'}`}
         poster={assetUrl('/title/title_poster.jpg')}
         muted
         loop

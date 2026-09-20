@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { test } from 'node:test';
+import { describe, it, test } from 'node:test';
 import * as THREE from 'three';
 
 import { UPRIGHT_SPINE_MIN, clipFromBaked, markBackwardStrikes, markFrozen, markInverted, markSlotOwners, markStandability, type BakedClipFile, type BakedManifestEntry } from './BakedMotionBank.ts';
@@ -156,7 +156,19 @@ test('a baked file becomes a playable clip', { skip: !hasBake && 'bake not run' 
   assert.equal(ud.baked, true);
 });
 
-test('baked clips keep constant authored pelvis offsets but drop variable floor-lock motion', () => {
+/**
+ * THE SECOND HALF OF THIS USED TO ASSERT THE BUG.
+ *
+ * It required a VARYING hips track to be dropped entirely — "world
+ * locomotion owns dynamic root travel". That is true of X and Z and false of
+ * Y: the per-frame Y is the grounding that lowers the pelvis when the knees
+ * bend, and dropping it is why a crouch lifted the feet instead of lowering
+ * the body. Measured on the live rig: hips travel 0.000 m through a crouch
+ * whose baked file carried 0.376 m of it. The contract is now keep Y, pin X
+ * and Z — the horizontal concern the original rule was written for still
+ * holds, without taking the vertical fix with it.
+ */
+test('baked clips keep an authored pelvis offset, and keep the grounding bob', () => {
   const base: BakedClipFile = {
     name: 'POSITION_POLICY',
     bank: 'bannon',
@@ -192,11 +204,20 @@ test('baked clips keep constant authored pelvis offsets but drop variable floor-
     },
   });
   assert.ok(variable);
-  assert.equal(variable.tracks.some((t) => t.name === 'mixamorigHips.position'), false);
+  const vTrack = variable.tracks.find((t) => t.name === 'mixamorigHips.position');
+  assert.ok(vTrack, 'the per-frame grounding track was dropped — that is the crouch bug');
   assert.equal(
     (variable as THREE.AnimationClip & { userData: Record<string, unknown> }).userData.constantPositionTracks,
     0,
   );
+  assert.equal(
+    (variable as THREE.AnimationClip & { userData: Record<string, unknown> }).userData.groundedPositionTracks,
+    1,
+  );
+  // Y varies; X and Z do not.
+  const ys = [...vTrack.values].filter((_, i) => i % 3 === 1);
+  assert.ok(Math.abs(ys[0] - (-0.435)) < 1e-4 && Math.abs(ys[1] - (-0.20)) < 1e-4, `Y was ${ys}`);
+  assert.ok([...vTrack.values].filter((_, i) => i % 3 === 0).every((v) => v === 0));
 });
 
 test('the floor lock moves only the hips, and only an airborne clip is protected from being raised', { skip: !hasBake && 'bake not run' }, () => {
@@ -600,4 +621,55 @@ test('every clip the finisher and overdrive slots name is real, upright and anim
     }
   }
   assert.ok(checked >= 4, `only ${checked} named clips exist in the bake — did they get renamed?`);
+});
+
+/**
+ * THE PELVIS BOB SURVIVES THE LOADER.
+ *
+ * Owner, across several passes: "instead of the pelvis doing a natural bob,
+ * it's like the pelvis is locked in position and the idle motion is picking
+ * the feet up off the ground", and "at a crouch it should be moving the
+ * torso and pelvis down towards the feet while the knees bend."
+ *
+ * The bake had been writing per-frame hips Y for a while — CROUCHING carries
+ * 30 keys and 0.376 m of travel — and `clipFromBaked` DELETED every one of
+ * them on the way in, because its rule was "constant translation, keep;
+ * variable translation, drop". Measured on the live rig before the fix: the
+ * hips travelled 0.000 m through the whole crouch while the lowest foot
+ * travelled 0.392 m. After: hips 0.359 m, foot 0.081 m.
+ *
+ * The rule was right about X and Z — world locomotion owns those — so the
+ * loader keeps Y and pins the horizontal.
+ */
+describe('a per-frame hips track reaches the clip', () => {
+  const clipWith = (p: number[], t: number[]) => clipFromBaked({
+    name: 'T', bank: 'test', dur: t[t.length - 1] ?? 1,
+    tracks: { mixamorigHips: { t: [0, 1], q: [0, 0, 0, 1, 0, 0, 0, 1] } },
+    positions: { mixamorigHips: { t, p } },
+  });
+
+  it('keeps a varying Y instead of dropping the whole track', () => {
+    const clip = clipWith([0, 1.0, 0, 0, 0.7, 0, 0, 1.0, 0], [0, 0.5, 1]);
+    const pos = clip?.tracks.find((tr) => tr.name === 'mixamorigHips.position');
+    assert.ok(pos, 'the per-frame grounding track was dropped');
+    assert.equal(pos.times.length, 3);
+    // Float32 keyframe storage: compare with a tolerance, not deep-equal.
+    const ys = [...pos.values].filter((_, i) => i % 3 === 1);
+    [1.0, 0.7, 1.0].forEach((want, i) => assert.ok(Math.abs(ys[i] - want) < 1e-5, `key ${i} was ${ys[i]}`));
+  });
+
+  it('pins X and Z, because locomotion owns those', () => {
+    const clip = clipWith([0.5, 1.0, 9, 3.0, 0.7, -9, -4, 1.0, 2], [0, 0.5, 1]);
+    const pos = clip?.tracks.find((tr) => tr.name === 'mixamorigHips.position');
+    assert.ok(pos);
+    assert.ok([...pos.values].filter((_, i) => i % 3 === 0).every((v) => Math.abs(v - 0.5) < 1e-5));
+    assert.ok([...pos.values].filter((_, i) => i % 3 === 2).every((v) => Math.abs(v - 9) < 1e-4));
+  });
+
+  it('still keeps a constant offset as one key', () => {
+    const clip = clipWith([0, 0.93, 0, 0, 0.93, 0], [0, 1]);
+    const pos = clip?.tracks.find((tr) => tr.name === 'mixamorigHips.position');
+    assert.ok(pos);
+    assert.equal(pos.times.length, 1);
+  });
 });

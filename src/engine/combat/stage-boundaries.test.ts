@@ -244,10 +244,20 @@ describe('a fighter cannot walk through the stage he is standing in', () => {
       const bounds = locomotionBoundsFromStage(cfg);
       if (Number.isFinite(cfg.boundaryX) && cfg.hasWalls) {
         assert.equal(bounds.maxX, cfg.boundaryX, `${id} must stop at its own wall`);
+        assert.equal(bounds.walkMaxX, cfg.boundaryX, `${id} must not be walkable past its own wall`);
+      } else if (Number.isFinite(cfg.boundaryX)) {
+        // AN EDGE THAT IS NOT A WALL IS STILL AN EDGE. This branch used to be
+        // folded in with the open streets and asserted a backstop of 10 for
+        // stages whose edge is at 3.8 and 3.0 — which is the bug: you WALKED
+        // out of the ring. Walking stops at the edge; the backstop past it is
+        // only there so a throw has somewhere to put you.
+        assert.equal(bounds.walkMaxX, cfg.boundaryX, `${id} must not be walkable past its own edge`);
+        assert.equal(bounds.maxX, cfg.boundaryX + OPEN_STAGE_OVERRUN);
       } else {
-        // Open: a distant backstop, past the ring-out line so ring-out wins.
+        // Genuinely open: a distant backstop, past the ring-out line.
         assert.ok(bounds.maxX > OPEN_STAGE_RING_OUT_X, `${id} backstop must sit past the ring-out line`);
         assert.equal(bounds.maxX, OPEN_STAGE_RING_OUT_X + OPEN_STAGE_OVERRUN);
+        assert.equal(bounds.walkMaxX, bounds.maxX);
       }
       assert.equal(bounds.maxZ, Number.isFinite(cfg.boundaryZ) ? cfg.boundaryZ : DEFAULT_LOCOMOTION_BOUNDS.maxZ);
     });
@@ -277,6 +287,41 @@ describe('a fighter cannot walk through the stage he is standing in', () => {
       assert.ok(loco.position.z > 2.0, `${id} still stopped at the old Z clamp`);
     }
   });
+
+  /**
+   * YOU CANNOT WALK YOURSELF OUT OF THE RING.
+   *
+   * Owner: "the ring outs are still happening too easy because you can just
+   * walk through the walls and walk through the ropes." One bug, both halves.
+   *
+   * MEASURED before the fix: `wrestling_ring` declares boundaryX 3.8 and
+   * `hasWalls: false`, and `hasWalls: false` was read as "no boundary at
+   * all", so the walk clamp became the open-street backstop of +/-10 while
+   * `ringOutEdgeX` for that stage is 3.8. Walking right for two seconds rang
+   * you out. `sky_crane` is the same shape at 3.0.
+   */
+  for (const id of STAGE_IDS) {
+    const cfg = STAGE_CONFIGS[id];
+    if (cfg.hasWalls || !Number.isFinite(cfg.boundaryX)) continue;
+    it(`${id}: you cannot WALK past the ring-out line, only be put there`, () => {
+      const loco = new LocomotionSystem(0, 0, 1);
+      loco.setBounds(locomotionBoundsFromStage(cfg));
+      // Walk hard into the edge for two seconds of frames.
+      for (let i = 0; i < 120; i++) loco.update(1, 0, 1 / 60, false, false);
+      const walked = Math.abs(loco.position.x);
+      assert.ok(walked <= cfg.boundaryX + 1e-6,
+        `${id}: walked to ${walked}, past its own edge at ${cfg.boundaryX}`);
+      assert.ok(walked <= ringOutEdgeX(cfg) + 1e-6,
+        `${id}: walked past the ring-out line at ${ringOutEdgeX(cfg)} on foot`);
+
+      // BUT A THROW STILL PUTS YOU OUT. If the fix simply clamped everything
+      // to the edge, the ring-out could never fire again — which is the
+      // opposite bug and just as bad.
+      loco.setPosition(cfg.boundaryX + 1.0, 0);
+      assert.ok(Math.abs(loco.position.x) > ringOutEdgeX(cfg),
+        `${id}: nothing can reach the ring-out line any more`);
+    });
+  }
 
   it('setPosition is clamped — a teleport cannot strand a body off screen', () => {
     // A WALLED stage: the cage is a hard boundary, so 4.0 is the end of the world.

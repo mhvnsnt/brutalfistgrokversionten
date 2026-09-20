@@ -102,10 +102,39 @@ const DEFAULT_Z_MIN = -2.0;
 const DEFAULT_Z_MAX = 2.0;
 
 export interface LocomotionBounds {
+  /** The HARD backstop: nothing may ever be beyond this, however it got there. */
   minX: number;
   maxX: number;
   minZ: number;
   maxZ: number;
+  /**
+   * WHERE WALKING STOPS — which is not the same place.
+   *
+   * Owner: "the ring outs are still happening too easy because you can just
+   * walk through the walls and walk through the ropes." Those are one bug.
+   *
+   * MEASURED across the 15 shipped stages: wrestling_ring declares
+   * boundaryX 3.8 and hasWalls:false, and hasWalls:false was read as "no
+   * boundary at all", so the walk clamp jumped to the open-street backstop of
+   * +/-10 while ringOutEdgeX for that stage is 3.8. You WALKED to 3.81 and
+   * rang yourself out — 6.2 units past the ropes, on foot. sky_crane has the
+   * identical shape at 3.0 and walks 7 units off the end of the crane. The
+   * three street stages carry boundaryX Infinity and are genuinely unbounded,
+   * so +/-10 is right for them and they are unchanged.
+   *
+   * hasWalls only ever meant "is the edge something you splat against". It
+   * never meant the edge is not there. A wrestling ring has ropes: you cannot
+   * STROLL through them, but you can be thrown over them, and a ring-out
+   * should cost somebody a throw.
+   *
+   * So there are two limits. WHAT A FIGHTER DOES TO HIMSELF — walking,
+   * running, a lunging attack, a clip's own root motion — stops here. WHAT IS
+   * DONE TO HIM — a hit's pushback, a throw landing, a ledge throw — is
+   * clamped only by the hard backstop above, which is what leaves the
+   * ring-out reachable.
+   */
+  walkMinX: number;
+  walkMaxX: number;
   /**
    * false = an open stage: there is no wall to splat against, and X is bounded
    * only by a distant backstop past the ring-out line, so walking off the edge
@@ -126,6 +155,7 @@ export const OPEN_STAGE_OVERRUN = 2;
 export const DEFAULT_LOCOMOTION_BOUNDS: LocomotionBounds = {
   minX: DEFAULT_X_MIN, maxX: DEFAULT_X_MAX,
   minZ: DEFAULT_Z_MIN, maxZ: DEFAULT_Z_MAX,
+  walkMinX: DEFAULT_X_MIN, walkMaxX: DEFAULT_X_MAX,
   hasWalls: true,
 };
 
@@ -142,12 +172,33 @@ export function locomotionBoundsFromStage(
   // this fixes. The limit sits BEYOND the ring-out line so the ring-out always
   // wins; it is the backstop, not the rule.
   const openLimit = OPEN_STAGE_RING_OUT_X + OPEN_STAGE_OVERRUN;
+
+  // A WALLED stage: the wall is both the edge and the backstop.
+  if (hasWalls) {
+    return {
+      minX: -cfg.boundaryX, maxX: cfg.boundaryX,
+      walkMinX: -cfg.boundaryX, walkMaxX: cfg.boundaryX,
+      minZ: -z, maxZ: z, hasWalls: true,
+    };
+  }
+  // AN EDGE THAT IS NOT A WALL BUT IS STILL AN EDGE — the ring ropes, the end
+  // of the crane. Walking stops at it; a throw carries you past it, far
+  // enough for the arc to read, and the ring-out fires the moment it is
+  // crossed. See walkMaxX above for the measurement that made this necessary.
+  if (Number.isFinite(cfg.boundaryX)) {
+    const backstop = cfg.boundaryX + OPEN_STAGE_OVERRUN;
+    return {
+      minX: -backstop, maxX: backstop,
+      walkMinX: -cfg.boundaryX, walkMaxX: cfg.boundaryX,
+      minZ: -z, maxZ: z, hasWalls: false,
+    };
+  }
+  // A GENUINELY OPEN STAGE (boundaryX Infinity — the three street stages).
+  // Unchanged: the distant backstop is the only limit there is.
   return {
-    minX: hasWalls ? -cfg.boundaryX : -openLimit,
-    maxX: hasWalls ? cfg.boundaryX : openLimit,
-    minZ: -z,
-    maxZ: z,
-    hasWalls,
+    minX: -openLimit, maxX: openLimit,
+    walkMinX: -openLimit, walkMaxX: openLimit,
+    minZ: -z, maxZ: z, hasWalls: false,
   };
 }
 
@@ -253,7 +304,7 @@ export class LocomotionSystem {
     const hasMotion = Math.abs(dx) > ROOT_MOTION_THRESHOLD || Math.abs(dz) > ROOT_MOTION_THRESHOLD;
 
     if (hasMotion && this.state.mode === 'rootMotion') {
-      this.state.rootX = this.clampToX(this.state.rootX + dx);
+      this.state.rootX = this.clampWalkX(this.state.rootX + dx);
       this.state.rootZ = this.clampToZ(this.state.rootZ + dz);
     }
 
@@ -304,7 +355,7 @@ export class LocomotionSystem {
     this.state.velocityZ = this.smoothVel(this.state.velocityZ, targetVZ, dt);
 
     // Apply to root position
-    this.state.rootX = this.clampToX(this.state.rootX + this.state.velocityX * dt);
+    this.state.rootX = this.clampWalkX(this.state.rootX + this.state.velocityX * dt);
     this.state.rootZ = this.clampToZ(this.state.rootZ + this.state.velocityZ * dt);
 
     if (this.jumpY > 0 || this.jumpV > 0) {
@@ -327,7 +378,7 @@ export class LocomotionSystem {
     const bellCurve = Math.sin(progress * Math.PI);
     const frameDisplacement = this.attackRootMotionProfile.forwardDisplacement * bellCurve * dt / Math.max(0.001, this.attackRootMotionDuration);
 
-    this.state.rootX = this.clampToX(
+    this.state.rootX = this.clampWalkX(
       this.state.rootX + frameDisplacement * this.state.facing
     );
 
@@ -426,21 +477,41 @@ export class LocomotionSystem {
     return this.bounds;
   }
 
+  /** The HARD backstop. Used for what is DONE TO a fighter, never for a walk. */
   private clampToX(x: number): number {
     // Open stages clamp too — just at the distant backstop, past the ring-out
     // line, so the ring-out fires first and nobody can drift off screen.
     return Math.max(this.bounds.minX, Math.min(this.bounds.maxX, x));
   }
 
+  /**
+   * WHERE A FIGHTER'S OWN MOVEMENT STOPS. See LocomotionBounds.walkMaxX: on
+   * the wrestling ring this is the ropes at 3.8 while the backstop is 5.8,
+   * which is what stops you walking yourself out of the ring while still
+   * leaving a throw somewhere to put you.
+   */
+  private clampWalkX(x: number): number {
+    const lo = this.bounds.walkMinX ?? this.bounds.minX;
+    const hi = this.bounds.walkMaxX ?? this.bounds.maxX;
+    return Math.max(lo, Math.min(hi, x));
+  }
+
   private clampToZ(z: number): number {
     return Math.max(this.bounds.minZ, Math.min(this.bounds.maxZ, z));
   }
 
+  /**
+   * The separation fix-up and the hazard bounce. WALK-limited on purpose:
+   * being nudged out of the ring because two bodies overlapped is not a
+   * ring-out anybody earned. A throw uses setPosition and a hit uses
+   * applyPushback, and both of those keep the hard backstop.
+   */
   clampX(x: number) {
-    this.state.rootX = this.clampToX(x);
-    // Kill velocity toward the clamped direction
-    if ((x <= this.bounds.minX && this.state.velocityX < 0) ||
-        (x >= this.bounds.maxX && this.state.velocityX > 0)) {
+    this.state.rootX = this.clampWalkX(x);
+    const lo = this.bounds.walkMinX ?? this.bounds.minX;
+    const hi = this.bounds.walkMaxX ?? this.bounds.maxX;
+    if ((x <= lo && this.state.velocityX < 0) ||
+        (x >= hi && this.state.velocityX > 0)) {
       this.state.velocityX = 0;
     }
   }

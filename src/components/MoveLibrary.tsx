@@ -124,6 +124,45 @@ function ClipPlayer({
     action.play();
   }, [rig, clip, speed]);
 
+  /**
+   * WHERE THE HIPS AND THE FEET ACTUALLY ARE, on the rig that is on screen.
+   *
+   * Owner: "the feet lifting off of the ground instead of the pelvis and
+   * torso moving down towards the feet." That is a claim about world-space
+   * positions, so it has to be answered with world-space positions read off
+   * the live skeleton — not from the clip file, which is one transform away
+   * from what is drawn. scripts/probe-crouch-grounding.mjs reads this.
+   */
+  useEffect(() => {
+    if (!rig) return;
+    const bones: THREE.Object3D[] = [];
+    rig.scene.traverse((o) => { if ((o as THREE.Bone).isBone) bones.push(o); });
+    const hips = bones.find((b) => /hips|pelvis/i.test(b.name)) ?? null;
+    const feet = bones.filter((b) => /foot|toe/i.test(b.name));
+    const v = new THREE.Vector3();
+    (window as unknown as Record<string, unknown>).__BF_PREVIEW_TRACKS = (name: string) => {
+      const a = rig.actions[name];
+      if (!a) return { found: false, have: Object.keys(rig.actions).length };
+      const c = a.getClip();
+      return {
+        found: true,
+        dur: +c.duration.toFixed(3),
+        tracks: c.tracks.length,
+        position: c.tracks.filter((t) => /\.position$/.test(t.name)).map((t) => t.name),
+        hipsBone: hips?.name ?? null,
+      };
+    };
+    (window as unknown as Record<string, unknown>).__BF_PREVIEW_SAMPLE = () => {
+      if (!hips) return null;
+      hips.getWorldPosition(v);
+      const hipsY = v.y;
+      let footY = Infinity;
+      for (const f of feet) { f.getWorldPosition(v); footY = Math.min(footY, v.y); }
+      return { hipsY, footY: Number.isFinite(footY) ? footY : 0, bones: bones.length };
+    };
+    return () => { delete (window as unknown as Record<string, unknown>).__BF_PREVIEW_SAMPLE; };
+  }, [rig]);
+
   useEffect(() => {
     if (!rig) return;
     let raf = 0;
@@ -166,6 +205,18 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
   const [available, setAvailable] = useState<string[]>([]);
   const [draft, setDraft] = useState<{ name: string; slot: string; note: string }>({ name: '', slot: '', note: '' });
   const [copied, setCopied] = useState(false);
+  /**
+   * The details pane starts OPEN in landscape and CLOSED upright, because
+   * upright there is not room for the viewport, the clip list and the whole
+   * editor at once — measured at 412x915, the clip list was left 8px tall.
+   * Read once from the media query rather than from the width, so a tablet
+   * held upright behaves like a phone held upright.
+   */
+  const [editorOpen, setEditorOpen] = useState(
+    () => (typeof window !== 'undefined'
+      ? window.matchMedia('(orientation: landscape)').matches
+      : true),
+  );
   /**
    * WWE / TEKKEN FLOW: pick the fighter first, then his move list.
    *
@@ -421,8 +472,35 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
         </button>
       </div>
 
-      <div className="flex flex-1 min-h-0 flex-col md:flex-row">
-        <div className="md:w-64 border-b md:border-b-0 md:border-r border-white/10 flex flex-col min-h-0">
+      {/*
+        ORIENTATION, NOT WIDTH.
+
+        Owner: "they kind of need to sense my phone's orientation so they
+        don't go off my screen ... I'm not asking you to lock it into
+        horizontal or vertical." And the two symptoms he gave:
+          - in horizontal the preview "is real small ... I gotta zoom in and
+            look real close to see the actual animation";
+          - "to scroll down the move list I have to turn my phone, but that
+            makes the preview window go away."
+
+        Both came from `md:flex-row`, which is a WIDTH breakpoint at 768px. A
+        phone in landscape is 915 wide and trips it; the same phone upright is
+        412 and does not. So the layout was keyed to the wrong thing, and in
+        neither state could he watch a clip and scroll the list at once — the
+        one thing this screen exists for.
+
+        PORTRAIT: the viewport sits on top at a fixed 44vh and does not move;
+        the list and the editor take the rest and scroll under it.
+        LANDSCAPE: list and editor go in one column down the left and the
+        viewport takes the entire right side — 378px of height instead of
+        ~230, because the editor is no longer stacked underneath it.
+
+        `flex-col-reverse` in portrait is what puts the viewport above the
+        list without duplicating any JSX: the panes stay in one DOM order and
+        only their direction changes.
+      */}
+      <div className="flex flex-1 min-h-0 flex-col-reverse landscape:flex-row">
+        <div className="flex-1 min-h-0 landscape:flex-none landscape:w-80 border-t landscape:border-t-0 landscape:border-r border-white/10 flex flex-col">
           {/*
             HIS MOVE LIST, with the input written the way a command list is
             written. This is what "then it takes you to the move list" means
@@ -432,7 +510,7 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
             fighter is what makes that visible instead of arguable.
           */}
           {tab === 'moves' && (
-            <div className="border-b border-white/10 max-h-56 overflow-y-auto">
+            <div className="border-b border-white/10 max-h-28 landscape:max-h-40 overflow-y-auto shrink-0">
               {fighterCommands.map((c) => (
                 <div key={c.id} className="px-2 py-1 text-[10px] flex gap-2">
                   <span className="text-yellow-300 w-20 shrink-0">{c.input || '—'}</span>
@@ -464,7 +542,7 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
             placeholder="search"
             className="mx-2 mb-2 bg-black/40 border border-white/15 px-2 py-1 text-[11px]"
           />
-          <div className="flex-1 overflow-y-auto">
+          <div data-cliplist className="flex-1 min-h-[34%] overflow-y-auto">
             {rows.map(([name, m]) => {
               const l = labels[name];
               return (
@@ -504,58 +582,7 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
               </div>
             )}
           </div>
-        </div>
-
-        <div className="flex-1 min-h-0 flex flex-col">
-          <div className="flex-1 min-h-0 relative">
-            <Canvas camera={{ position: [0, 0.15, 4.6], fov: 32 }} dpr={[1, 1.5]}>
-              <hemisphereLight intensity={2.2} groundColor={0x334455} />
-              <directionalLight position={[3, 5, 4]} intensity={2} />
-              <Suspense fallback={null}>
-                <ClipPlayer
-                  modelUrl={resolveGlbUrl(model)}
-                  clip={previewing}
-                  speed={speed}
-                  onClips={setAvailable}
-                  onProgress={setPlayhead}
-                />
-              </Suspense>
-              <OrbitControls target={[0, 0, 0]} enablePan={false} />
-            </Canvas>
-            {missing && (
-              <div className="absolute inset-x-0 top-2 text-center text-[10px] text-red-300">
-                this clip does not resolve on {model}
-              </div>
-            )}
-            {/*
-              SAY WHAT IS PLAYING AND PROVE IT IS PLAYING.
-              A looping clip and a frozen one look identical in a still
-              frame, and telling those apart is the whole job on this
-              screen. The bar is the playhead; if it does not sweep, the
-              clip is not animating and that is a finding, not a glitch.
-            */}
-            <div className="absolute inset-x-0 top-1 px-2 flex items-center gap-2">
-              <span className={`text-[10px] ${hovered ? 'text-sky-300' : 'text-yellow-300'}`}>
-                {previewing ?? '—'}
-              </span>
-              {hovered && hovered !== selected && (
-                <span className="text-[9px] text-zinc-500">preview · tap to tag</span>
-              )}
-              <span className="ml-auto text-[9px] text-zinc-500">
-                {playhead.dur > 0 ? `${playhead.t.toFixed(2)} / ${playhead.dur.toFixed(2)}s` : ''}
-              </span>
-            </div>
-            {playhead.dur > 0 && (
-              <div className="absolute inset-x-2 top-5 h-[2px] bg-white/10">
-                <div
-                  className={hovered ? 'h-full bg-sky-400' : 'h-full bg-yellow-400'}
-                  style={{ width: `${Math.min(100, (playhead.t / playhead.dur) * 100)}%` }}
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="border-t border-white/10 p-2 space-y-2">
+          <div className="border-t border-white/10 p-2 space-y-2 shrink-0 overflow-y-auto max-h-[46%] landscape:max-h-[52%]">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[10px] text-yellow-300 font-bold">
                 {selected ?? '—'}
@@ -619,6 +646,32 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
               })}
             </div>
 
+
+            {/*
+              EVERYTHING BUT THE CHECKBOXES FOLDS AWAY ON A PHONE.
+
+              Owner, on this screen: "to scroll down the move list I have to
+              turn my phone, but that makes the preview window go away", and
+              in horizontal "the preview is real small."
+
+              MEASURED at 412x915 with the viewport at 44vh: the column under
+              it is 403 px, and the editor as it stood claimed up to 46% of
+              that on top of a 224 px command list — which left the clip list
+              EIGHT PIXELS tall. Three panes cannot all be open on a phone;
+              the question is which one is the work.
+
+              The work is the checkboxes, so they stay out. The text fields,
+              the verdict buttons and the opponent-half picker are things he
+              reaches for occasionally, so they fold. Open by default in
+              landscape, where there is room.
+            */}
+            <button
+              onClick={() => setEditorOpen((v) => !v)}
+              className="w-full text-left text-[9px] tracking-[0.2em] text-zinc-500 border-t border-white/10 pt-1"
+            >
+              {editorOpen ? 'DETAILS \u25b4' : 'DETAILS \u25be  name · slot · note · verdict · opponent half'}
+            </button>
+            {editorOpen && (<>
             {/*
               THE OPPONENT SIDE.
 
@@ -718,7 +771,59 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
               <button onClick={() => save('broken')} className="text-[10px] px-3 py-1 border border-red-500/60 text-red-300">BROKEN</button>
               <button onClick={() => save('unsure')} className="text-[10px] px-3 py-1 border border-white/25 text-zinc-300">UNSURE</button>
             </div>
+            </>)}
           </div>
+        </div>
+
+        <div className="shrink-0 h-[44vh] landscape:h-auto landscape:flex-1 min-h-0 flex flex-col">
+          <div className="flex-1 min-h-0 relative">
+            <Canvas camera={{ position: [0, 0.15, 4.6], fov: 32 }} dpr={[1, 1.5]}>
+              <hemisphereLight intensity={2.2} groundColor={0x334455} />
+              <directionalLight position={[3, 5, 4]} intensity={2} />
+              <Suspense fallback={null}>
+                <ClipPlayer
+                  modelUrl={resolveGlbUrl(model)}
+                  clip={previewing}
+                  speed={speed}
+                  onClips={setAvailable}
+                  onProgress={setPlayhead}
+                />
+              </Suspense>
+              <OrbitControls target={[0, 0, 0]} enablePan={false} />
+            </Canvas>
+            {missing && (
+              <div className="absolute inset-x-0 top-2 text-center text-[10px] text-red-300">
+                this clip does not resolve on {model}
+              </div>
+            )}
+            {/*
+              SAY WHAT IS PLAYING AND PROVE IT IS PLAYING.
+              A looping clip and a frozen one look identical in a still
+              frame, and telling those apart is the whole job on this
+              screen. The bar is the playhead; if it does not sweep, the
+              clip is not animating and that is a finding, not a glitch.
+            */}
+            <div className="absolute inset-x-0 top-1 px-2 flex items-center gap-2">
+              <span className={`text-[10px] ${hovered ? 'text-sky-300' : 'text-yellow-300'}`}>
+                {previewing ?? '—'}
+              </span>
+              {hovered && hovered !== selected && (
+                <span className="text-[9px] text-zinc-500">preview · tap to tag</span>
+              )}
+              <span className="ml-auto text-[9px] text-zinc-500">
+                {playhead.dur > 0 ? `${playhead.t.toFixed(2)} / ${playhead.dur.toFixed(2)}s` : ''}
+              </span>
+            </div>
+            {playhead.dur > 0 && (
+              <div className="absolute inset-x-2 top-5 h-[2px] bg-white/10">
+                <div
+                  className={hovered ? 'h-full bg-sky-400' : 'h-full bg-yellow-400'}
+                  style={{ width: `${Math.min(100, (playhead.t / playhead.dur) * 100)}%` }}
+                />
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
     </div>
