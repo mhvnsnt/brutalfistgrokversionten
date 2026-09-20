@@ -102,6 +102,19 @@ export interface FighterMeshProps {
    * Use this to display the per-fighter animation status in DebugOverlayHUD.
    */
   onAnimationIntegrityReport?: (report: AnimationIntegrityReport) => void;
+  /**
+   * THE BODY IS ON SCREEN — fired once, when the GLB has finished loading AND
+   * normalizing and a real mesh is being drawn instead of the wireframe
+   * placeholder. `ok` is false when the asset was rejected outright, so a
+   * caller waiting on this can stop waiting rather than hang.
+   *
+   * This exists because the pre-fight camera pan was running over an EMPTY
+   * arena: the sweep phase is literally labelled "LOADING ARENA" and did not
+   * wait for the loading. A multi-megabyte GLB takes seconds to parse and the
+   * cinematic is 2.5s, so the shot the owner asked for — the one that shows
+   * the fighters — showed two wireframe boxes or nothing at all.
+   */
+  onModelReady?: (ok: boolean) => void;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -456,6 +469,7 @@ function FighterMeshInner({
   onBoneHitboxReady,
   onDeformationBlocked,
   onAnimationIntegrityReport,
+  onModelReady,
 }: {
   gltfUrl: string;
   state: string;
@@ -476,6 +490,7 @@ function FighterMeshInner({
   onBoneHitboxReady?: (system: BoneHitboxSystem) => void;
   onDeformationBlocked?: (characterName: string, failingChecks: string[]) => void;
   onAnimationIntegrityReport?: (report: AnimationIntegrityReport) => void;
+  onModelReady?: (ok: boolean) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const [normalized, setNormalized] = useState<NormalizedResult | null>(null);
@@ -546,6 +561,7 @@ function FighterMeshInner({
           `ASSET DEFORMATION INTEGRITY FAILURE. Fix the source GLB.`
         );
         onDeformationBlocked?.(characterName, ['PIPELINE_VALIDATION_FAILED']);
+        onModelReady?.(false);
         return;
       }
 
@@ -555,6 +571,7 @@ function FighterMeshInner({
       onBoneHitboxReady?.(boneHitboxRef.current);
 
       setNormalized(result);
+      onModelReady?.(true);
     });
 
     // Cleanup: stop all actions when model changes
@@ -935,7 +952,11 @@ export function FighterMesh({
   onBoneHitboxReady,
   onDeformationBlocked,
   onAnimationIntegrityReport,
+  onModelReady,
 }: FighterMeshProps) {
+  // NO MODEL TO WAIT FOR. Say so immediately, or a caller holding the
+  // cinematic open for this fighter waits for something that never arrives.
+  useEffect(() => { if (!modelUrl) onModelReady?.(false); }, [modelUrl, onModelReady]);
   if (!modelUrl) return <FighterPlaceholder position={position} />;
 
   return (
@@ -957,6 +978,7 @@ export function FighterMesh({
         onBoneHitboxReady={onBoneHitboxReady}
         onDeformationBlocked={onDeformationBlocked}
         onAnimationIntegrityReport={onAnimationIntegrityReport}
+        onModelReady={onModelReady}
       />
     </Suspense>
   );

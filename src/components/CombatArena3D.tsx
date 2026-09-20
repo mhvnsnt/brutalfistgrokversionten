@@ -334,10 +334,15 @@ function IntroOverlay({
   phase,
   p1Name,
   p2Name,
+  speaker,
+  speakerName,
 }: {
   phase: CinematicPhase;
   p1Name: string;
   p2Name: string;
+  /** Whose pre-fight beat is playing. Null between beats and after them. */
+  speaker?: { player: 'p1' | 'p2'; line: string } | null;
+  speakerName?: string;
 }) {
   if (phase !== 'sweep' && phase !== 'intro') return null;
 
@@ -351,6 +356,29 @@ function IntroOverlay({
           <div className="text-center">
             <div className="text-[9px] tracking-[0.6em] text-zinc-500 animate-pulse">LOADING ARENA</div>
             <div className="mt-2 text-2xl font-black tracking-widest text-white">BRUTAL FIST</div>
+          </div>
+        </div>
+      )}
+
+      {/* THE LINE. There is no voice cast, so the intro speaks in text — a
+          silent pose with a caption reads as deliberate where a silent pose
+          with nothing reads as broken. Attributed and sided, so it is obvious
+          WHICH fighter is talking during their own beat. */}
+      {speaker && (
+        <div
+          className={`absolute left-0 right-0 bottom-[13%] px-6 flex ${
+            speaker.player === 'p1' ? 'justify-start' : 'justify-end'
+          }`}
+        >
+          <div className="max-w-[62%] bg-black/70 border-l-2 px-3 py-2"
+            style={{ borderColor: speaker.player === 'p1' ? '#60a5fa' : '#f87171' }}
+          >
+            <div className="text-[8px] tracking-[0.35em] text-zinc-400">
+              {(speakerName ?? '').toUpperCase()}
+            </div>
+            <div className="text-sm md:text-base font-semibold text-white leading-snug">
+              {speaker.line}
+            </div>
           </div>
         </div>
       )}
@@ -536,6 +564,10 @@ export interface CombatArena3DProps {
    * @param failingChecks - The IDs of the failing checks
    */
   onDeformationBlocked?: (player: 'p1' | 'p2', characterName: string, failingChecks: string[]) => void;
+  /** Fired once per fighter when its real mesh is on screen (or gave up). */
+  onFighterReady?: (player: 'p1' | 'p2', ok: boolean) => void;
+  /** Whose pre-fight beat is playing, and what they are saying. */
+  introSpeaker?: { player: 'p1' | 'p2'; line: string } | null;
 }
 
 export default function CombatArena3D({
@@ -576,6 +608,8 @@ export default function CombatArena3D({
   rageArtEvent,
   cameraShakeOffset,
   onDeformationBlocked,
+  onFighterReady,
+  introSpeaker,
 }: CombatArena3DProps) {
   const [particles, setParticles] = useState<Particle[]>([]);
   const [screenFlash, setScreenFlash] = useState(0);
@@ -852,6 +886,7 @@ export default function CombatArena3D({
           locomotionVelocity={p1LocomotionVelocity}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP1BoneHitboxReady}
+          onModelReady={(ok) => onFighterReady?.('p1', ok)}
           onDeformationBlocked={(characterName, failingChecks) => {
             // AGENT LAW: Log combat freeze — no UI, backend only
             console.error(
@@ -878,6 +913,7 @@ export default function CombatArena3D({
           locomotionVelocity={p2LocomotionVelocity}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP2BoneHitboxReady}
+          onModelReady={(ok) => onFighterReady?.('p2', ok)}
           onDeformationBlocked={(characterName, failingChecks) => {
             // AGENT LAW: Log combat freeze — no UI, backend only
             console.error(
@@ -907,7 +943,13 @@ export default function CombatArena3D({
         hitStopActive={hitStopActive}
         hitEffectPool={hitEffectPool}
       />
-      <IntroOverlay phase={cinematicPhase} p1Name={p1Fighter.name} p2Name={p2Fighter.name} />
+      <IntroOverlay
+        phase={cinematicPhase}
+        p1Name={p1Fighter.name}
+        p2Name={p2Fighter.name}
+        speaker={introSpeaker}
+        speakerName={introSpeaker?.player === 'p1' ? p1Fighter.name : p2Fighter.name}
+      />
       <VictoryOverlay phase={cinematicPhase} winnerName={winnerName} />
     </div>
   );

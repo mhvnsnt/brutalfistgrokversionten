@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+
+import { preFightSequence, type IntroBeat } from '../engine/combat/PreFightIntros';
 import { type BannonFighterProfile } from '../data/bannonRoster';
 import { GameEngine } from '../engine/GameEngine';
 import { getCharacterMoveSet } from '../engine/CharacterMoveSetSystem';
@@ -147,6 +149,94 @@ export default function GameBattleArena({
   const [roundTimer, setRoundTimer] = useState(99);
   const [hitStopActive, setHitStopActive] = useState(false);
   const [arenaReady, setArenaReady] = useState(false);
+
+  /**
+   * WHEN THE PRE-FIGHT CINEMATIC IS ALLOWED TO START — null while the bodies
+   * are still loading.
+   *
+   * Owner: "it seems like you deleted the intro scene camera pan thing where
+   * it shows the fighters and stuff before the fight." The pan was never
+   * deleted; it was running over an EMPTY ARENA. MEASURED in the shipped
+   * build: at the intro frame the only thing in shot is FighterPlaceholder,
+   * the grey wireframe box drawn while a GLB loads. The sweep card literally
+   * reads "LOADING ARENA" and the sequence did not wait for the loading — a
+   * multi-megabyte GLB takes seconds to parse and the whole cinematic is
+   * 4.5 s, so the one shot that is supposed to show the fighters showed a
+   * wireframe and a room.
+   *
+   * So the clock starts when the bodies are on screen, and every beat of the
+   * sequence — camera, announcer, bell, control unlock — is measured from
+   * there. Holding in 'sweep' is not a stall: that phase exists for this.
+   */
+  const [cinematicStart, setCinematicStart] = useState<number | null>(null);
+  const bodiesUpRef = useRef<{ p1: boolean; p2: boolean }>({ p1: false, p2: false });
+
+  /**
+   * A CEILING, ALWAYS. A fighter whose model never arrives must not be able to
+   * hold the match shut — a late body is a blemish, a bell that never rings is
+   * unrecoverable. Past this the cinematic runs regardless.
+   */
+  const CINEMATIC_BODY_WAIT_CEILING_MS = 8000;
+
+  const handleFighterReady = useCallback((player: 'p1' | 'p2') => {
+    bodiesUpRef.current = { ...bodiesUpRef.current, [player]: true };
+    if (bodiesUpRef.current.p1 && bodiesUpRef.current.p2) {
+      setCinematicStart((t) => t ?? Date.now());
+    }
+  }, []);
+
+  /**
+   * THE INTRO PLAYING RIGHT NOW — one fighter at a time, a pose and a line.
+   *
+   * Owner: "sometimes the fighters do show, but they'll be frozen in T pose
+   * or in A pose ... like statues ... I kind of want a cycle of taunts ...
+   * like how Tekken does, and Mortal Kombat and Street Fighter ... one at a
+   * time ... depending on the character relationship."
+   *
+   * The statue was two things at once: the bodies were still loading (see
+   * cinematicStart), and even once loaded NOTHING drove them during the
+   * cinematic — no clip was requested until the fight began, so the mixer sat
+   * on the bind pose. Now the intro requests a real pose per fighter, so the
+   * pan has something to pan across.
+   */
+  const [introBeat, setIntroBeat] = useState<IntroBeat | null>(null);
+  const introBeatsRef = useRef<IntroBeat[]>([]);
+
+  useEffect(() => {
+    bodiesUpRef.current = { p1: false, p2: false };
+    setCinematicStart(null);
+    setIntroBeat(null);
+    const ceiling = window.setTimeout(
+      () => setCinematicStart((t) => t ?? Date.now()),
+      CINEMATIC_BODY_WAIT_CEILING_MS,
+    );
+    return () => window.clearTimeout(ceiling);
+  }, [p1Fighter.id, p2Fighter.id]);
+
+  /**
+   * Run the beats. Starts when the bodies are on screen, ends before the
+   * bell — the whole sequence is sized to the sweep plus the intro so it can
+   * never delay the match, and each beat clears itself so a fighter is only
+   * ever posing during their own moment.
+   */
+  useEffect(() => {
+    if (cinematicStart === null) return;
+    const beats = preFightSequence(
+      { id: p1Fighter.id, name: p1Fighter.name, factionAlignment: p1Fighter.factionAlignment, personality: p1Fighter.personality },
+      { id: p2Fighter.id, name: p2Fighter.name, factionAlignment: p2Fighter.factionAlignment, personality: p2Fighter.personality },
+    );
+    introBeatsRef.current = beats;
+    // Fit the sequence into the cinematic rather than extending it. The bell
+    // is scheduled off the same constants and must not move.
+    const budget = SWEEP_DURATION_MS + INTRO_DURATION_MS;
+    const each = Math.max(600, Math.floor(budget / Math.max(1, beats.length)));
+    const timers: number[] = [];
+    beats.forEach((beat, i) => {
+      timers.push(window.setTimeout(() => setIntroBeat(beat), i * each));
+    });
+    timers.push(window.setTimeout(() => setIntroBeat(null), beats.length * each));
+    return () => { for (const t of timers) window.clearTimeout(t); };
+  }, [cinematicStart, p1Fighter, p2Fighter]);
 
   // ── Post-match screen state ───────────────────────────────────────────────
   const [showPostMatch, setShowPostMatch] = useState(false);
@@ -572,8 +662,17 @@ export default function GameBattleArena({
     });
 
     // ── Cinematic sequence: sweep → intro → fight ──────────────────────────────
+    // HOLD IN 'sweep' UNTIL THE BODIES ARE ON SCREEN. See cinematicStart: the
+    // pan used to run over an empty arena because nothing waited for the GLBs.
     setCinematicPhase('sweep');
     setArenaReady(false);
+    if (cinematicStart === null) {
+      return () => {
+        cancelAnimationFrame(rafRef.current);
+        stopRecording();
+        audioManager.stopBGM(500);
+      };
+    }
 
     // Start recording when fight begins
     const tRecord = window.setTimeout(() => {
@@ -602,20 +701,22 @@ export default function GameBattleArena({
       stopRecording();
       audioManager.stopBGM(500);
     };
-  }, [p1Fighter, p2Fighter]);
+  }, [p1Fighter, p2Fighter, cinematicStart]);
 
   // Round start bell
   useEffect(() => {
+    if (cinematicStart === null) return;
     if (roundStartedRef.current) return;
     roundStartedRef.current = true;
     const t = window.setTimeout(() => {
       if (settings.soundEnabled) sfx.playRoundStart();
     }, SWEEP_DURATION_MS + INTRO_DURATION_MS + 300);
     return () => window.clearTimeout(t);
-  }, [sfx, settings.soundEnabled]);
+  }, [sfx, settings.soundEnabled, cinematicStart]);
 
   // ── Announcer: fire "Get Ready" on mount, "Round X" on intro, "Fight!" on fight ──
   useEffect(() => {
+    if (cinematicStart === null) return;
     const announcer = announcerRef.current;
     announcer.updateConfig({ enabled: settings.soundEnabled, p1Name: p1Fighter.name, p2Name: p2Fighter.name });
 
@@ -654,7 +755,7 @@ export default function GameBattleArena({
       window.clearTimeout(tRound);
       window.clearTimeout(tFight);
     };
-  }, [p1Fighter, p2Fighter, settings.soundEnabled]);
+  }, [p1Fighter, p2Fighter, settings.soundEnabled, cinematicStart]);
 
   const prevP1StateRef = useRef<string>('Neutral');
   const prevP2StateRef = useRef<string>('Neutral');
@@ -2076,12 +2177,14 @@ export default function GameBattleArena({
       {/* ── FULL-SCREEN 3D COMBAT VIEWPORT — background layer ── */}
       <div className="absolute inset-0 z-0" style={{ width: '100%', height: '100%' }}>
         <CombatArena3D
+          onFighterReady={(player, ok) => { if (ok) handleFighterReady(player); }}
+          introSpeaker={introBeat ? { player: introBeat.player, line: introBeat.line } : null}
           p1Fighter={p1Fighter}
           p2Fighter={p2Fighter}
           p1State={p1State}
           p2State={p2State}
-          p1Animation={p1Animation}
-          p2Animation={p2Animation}
+          p1Animation={introBeat?.player === 'p1' ? introBeat.clip : p1Animation}
+          p2Animation={introBeat?.player === 'p2' ? introBeat.clip : p2Animation}
           p1Color={p1Color}
           p2Color={p2Color}
           hitStopActive={hitStopActive}
