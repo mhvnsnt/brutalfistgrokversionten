@@ -115,12 +115,26 @@ function CinematicCamera({
     } else if (phase === 'fight') {
       const midX = (p1X + p2X) / 2;
       const midZ = (p1Z + p2Z) / 2;
-      const dist = Math.sqrt(Math.pow(p2X - p1X, 2) + Math.pow(p2Z - p1Z, 2));
-      const targetCamZ = Math.max(4.5, Math.min(11, dist * 1.05 + 3.0));
+      const lineX = p2X - p1X;
+      const lineZ = p2Z - p1Z;
+      const dist = Math.max(0.001, Math.hypot(lineX, lineZ));
+      // The camera is anchored to the fighters' line, not to world +Z.
+      // When the pair radial-sidestep, their combat axis rotates in XZ; the
+      // camera follows that axis exactly like a side-on fighting-game camera.
+      // Pick the normal that stays on the original camera side (+Z).
+      let normalX = -lineZ / dist;
+      let normalZ = lineX / dist;
+      if (normalZ < 0) {
+        normalX = -normalX;
+        normalZ = -normalZ;
+      }
+      const targetDistance = Math.max(4.5, Math.min(11, dist * 1.05 + 3.0));
+      const targetCamX = midX + normalX * targetDistance;
+      const targetCamZ = midZ + normalZ * targetDistance;
       const targetCamY = 2.0 + dist * 0.05;
-      cam.position.x += (midX - cam.position.x) * 0.1;
+      cam.position.x += (targetCamX - cam.position.x) * 0.1;
       cam.position.y += (targetCamY - cam.position.y) * 0.07;
-      cam.position.z += (targetCamZ + midZ * 0.25 - cam.position.z) * 0.08;
+      cam.position.z += (targetCamZ - cam.position.z) * 0.1;
       // ── Camera shake from hit effect system ──────────────────────────────
       if (shakeOffset && (Math.abs(shakeOffset.x) > 0.001 || Math.abs(shakeOffset.y) > 0.001)) {
         cam.position.x += shakeOffset.x * 0.01;
