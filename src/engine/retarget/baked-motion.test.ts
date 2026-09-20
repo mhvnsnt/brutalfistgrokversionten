@@ -123,18 +123,24 @@ test('a baked file becomes a playable clip', { skip: !hasBake && 'bake not run' 
   assert.equal(ud.baked, true);
 });
 
-test('the floor lock only ever moves the hips, and only downward', { skip: !hasBake && 'bake not run' }, () => {
+test('the floor lock moves only the hips, and only an airborne clip is protected from being raised', { skip: !hasBake && 'bake not run' }, () => {
   // MEASURED before it existed: every clip lifted both feet 21 to 32 cm off
   // the floor, the idle included — a fighter standing on air, which is the
   // "not planted, wobbly ragdoll" the owner reported. The lock is the
   // vertical half of foot IK, resolved at bake time.
   //
-  // It must never RAISE a clip: a pose that goes through the floor is a
-  // different defect and lifting it would hide it.
+  // A GROUNDED clip is corrected BOTH ways: the floor is the floor, and a
+  // foot through the mat is as wrong as a foot in the air. An AIRBORNE clip
+  // is only ever lowered — a victim dips below the floor at the moment of
+  // impact and that is the animation doing its job; raising the whole throw
+  // for one frame would float it.
   const skeleton = loadCanonicalSkeleton(readFileSync('public/models/BANNON_rigged.glb'));
   const hipsBindY = skeleton.root.getObjectByName('mixamorigHips')?.position.y ?? 0;
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
   const files = readdirSync(BAKED).filter((f) => f.endsWith('.json') && f !== 'index.json');
+
   let withLock = 0;
+  let airborneLocked = 0;
   for (const f of files) {
     const data = JSON.parse(readFileSync(join(BAKED, f), 'utf8')) as BakedClipFile;
     const positions = data.positions ?? {};
@@ -144,12 +150,35 @@ test('the floor lock only ever moves the hips, and only downward', { skip: !hasB
     const hips = positions.mixamorigHips;
     if (!hips) continue;
     withLock++;
+    const airborne = manifest[data.name]?.airborne ?? data.airborne;
+    if (airborne) airborneLocked++;
     for (let i = 1; i < hips.p.length; i += 3) {
-      assert.ok(
-        hips.p[i] <= hipsBindY + 1e-4,
-        `${f} raises the hips to ${hips.p[i]} above the bind ${hipsBindY}`,
-      );
+      const dy = hips.p[i] - hipsBindY;
+      if (airborne) {
+        assert.ok(dy <= 1e-4, `${f} is airborne and raises the hips by ${dy.toFixed(4)}`);
+      }
+      // Either way the offset has to be a plausible body movement, not a
+      // solver blowing up: nothing legitimately shifts a fighter a metre.
+      assert.ok(Math.abs(dy) < 1.0, `${f} shifts the hips by ${dy.toFixed(3)} m`);
     }
   }
   assert.ok(withLock > 200, `only ${withLock} clips carry a floor lock`);
+  assert.ok(airborneLocked > 0, 'no airborne clip was lowered — the airborne path is untested');
+});
+
+test('the airborne verdict survives a clip that needs no correction', { skip: !hasBake && 'bake not run' }, () => {
+  // An airborne clip that happens to touch the floor at one frame needs no
+  // offset, and returning early for it used to lose the VERDICT as well — so
+  // it was recorded as grounded, and every audit then judged a jump as a
+  // failed stance. Measured: BIG_BODY_BLOW, peaking at 161 cm, filed as
+  // "meant to be on the floor".
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  const entries = Object.values(manifest);
+  const airborne = entries.filter((m) => m.airborne);
+  assert.ok(airborne.length > 50, `only ${airborne.length} clips marked airborne`);
+  assert.ok(airborne.length < entries.length, 'everything cannot be airborne');
+  // The clips a fight is actually made of must be on the floor.
+  for (const name of ['STANCE', 'GRAFQUICKJAB', 'GUARD']) {
+    if (manifest[name]) assert.equal(manifest[name].airborne, false, `${name} should be grounded`);
+  }
 });

@@ -142,16 +142,34 @@ if (needsCorrection(correction)) {
  * raising it would hide it.
  */
 /**
- * Above this median lift a clip is NOT a fighter standing up, so its arc is
- * left alone. Chosen from the distribution, not picked: across the 366 baked
- * clips the median lift runs
- *   p10 4.5cm  p25 15.3cm  p50 31.2cm  p75 118.1cm  p90 156.0cm  max 177.5cm
- * There is a gap between about 35 cm and 118 cm, and it is the real boundary:
- * below it a 1.85 m fighter is on his feet, above it he is airborne or on the
- * ground (a dive, a victim's half of a throw, a getup). 60 cm sits inside
- * that gap.
+ * Above this PEAK lift a clip is not a fighter standing up, so its arc is
+ * left alone and the floor lock only ever lowers it.
+ *
+ * The measure is the maximum, not the median, and that correction matters.
+ * The median missed every clip that starts on the floor and ends in the air —
+ * a throw, a takedown, a big hit — because half its frames are grounded.
+ * MEASURED with a median rule: BIG_BODY_BLOW, JAYKICK, POWERBOMBWHIP and
+ * STEREOSUPERKICK were all classed grounded while reaching 147 to 161 cm.
+ *
+ * The lift tracked is the LOWEST foot's, so a high kick does not trip this —
+ * the support foot stays down. It only rises when BOTH feet leave the floor,
+ * which is the definition being reached for. 50 cm is well above any
+ * standing move (the idle peaks at 23 cm, a jab at 32) and well below a jump.
  */
-const AIRBORNE_MEDIAN_M = Number(process.env.BF_AIRBORNE_M ?? 0.6);
+const AIRBORNE_PEAK_M = Number(process.env.BF_AIRBORNE_M ?? 0.5);
+
+/**
+ * The most the floor lock may move a body, in metres.
+ *
+ * A fighter is 1.85 m. No legitimate grounding correction is a large
+ * fraction of that, so anything past this is not a grounding problem — it is
+ * a clip whose pose is wrong in some other way, and dropping the body a
+ * metre and a half to "plant" it buries the fighter and hides the real
+ * defect. MEASURED: GUARD_HIGH asked for -1.453 m.
+ *
+ * Clips that hit the cap are counted and named, not silently smeared.
+ */
+const MAX_GROUND_SHIFT_M = 0.6;
 const MEDIANS = [];
 
 function groundingTrack(clip) {
@@ -181,15 +199,38 @@ function groundingTrack(clip) {
   restPose();
 
   if (!lift.length || lift.some((v) => !Number.isFinite(v))) return null;
-  MEDIANS.push([clip.name, [...lift].sort((a, b) => a - b)[Math.floor(lift.length / 2)]]);
-  const median = [...lift].sort((a, b) => a - b)[Math.floor(lift.length / 2)];
-  const airborne = median > AIRBORNE_MEDIAN_M;
+  MEDIANS.push([clip.name, Math.max(...lift)]);
+  const airborne = Math.max(...lift) > AIRBORNE_PEAK_M;
   const minLift = Math.min(...lift);
-  const offsets = airborne
+  // The VERDICT is returned even when no offset is needed. An airborne clip
+  // that happens to touch the floor at one frame needs no correction, and
+  // returning null for it used to lose the verdict too — so it was recorded
+  // as a grounded clip, and every audit then judged a jump as a failed
+  // stance. Measured: BIG_BODY_BLOW at 161 cm, filed as "meant to be on the
+  // floor".
+  const verdict = { airborne };
+  // A GROUNDED clip is corrected in BOTH directions: the floor is the floor,
+  // and a foot through the mat is as wrong as a foot in the air. MEASURED
+  // across the whole set with only-lower: 134 clips still put a foot more
+  // than 4 cm through the floor, because `Math.min(0, -v)` discarded every
+  // negative lift it was handed.
+  //
+  // An AIRBORNE clip is still only ever lowered. A victim being slammed dips
+  // below the floor at the moment of impact and that is the animation doing
+  // its job; raising the whole throw to accommodate one frame would float it.
+  const raw = airborne
     ? lift.map(() => Math.min(0, -minLift))
-    : lift.map((v) => Math.min(0, -v));
-  if (offsets.every((v) => v === 0)) return null;
-  return { times: sorted, offsets, airborne, worst: -Math.min(...offsets) };
+    : lift.map((v) => -v);
+  const capped = raw.some((v) => Math.abs(v) > MAX_GROUND_SHIFT_M);
+  const offsets = raw.map((v) => Math.max(-MAX_GROUND_SHIFT_M, Math.min(MAX_GROUND_SHIFT_M, v)));
+  if (offsets.every((v) => Math.abs(v) < 1e-5)) return { ...verdict, capped };
+  return {
+    ...verdict,
+    capped,
+    times: sorted,
+    offsets,
+    worst: Math.max(...offsets.map(Math.abs)),
+  };
 }
 
 function sources() {
@@ -245,6 +286,8 @@ const report = {
   grounded: 0,
   groundedTotal: 0,
   airborne: 0,
+  cappedShift: 0,
+  cappedClips: [],
   worst: [],
 };
 
@@ -295,10 +338,15 @@ for (const src of sources()) {
   // Plant it before anything is written: the offset is measured from the
   // constrained pose, which is the pose that will actually play.
   const ground = groundingTrack(relative);
-  if (ground) {
+  const clipAirborne = Boolean(ground?.airborne);
+  if (clipAirborne) report.airborne++;
+  if (ground?.capped) {
+    report.cappedShift++;
+    report.cappedClips.push(src.name);
+  }
+  if (ground?.times) {
     report.grounded++;
     report.groundedTotal += ground.worst;
-    if (ground.airborne) report.airborne++;
     const values = [];
     for (const dy of ground.offsets) {
       values.push(hipsBindPosition.x, hipsBindPosition.y + dy, hipsBindPosition.z);
@@ -338,6 +386,7 @@ for (const src of sources()) {
       bank: src.bank,
       dur: +relative.duration.toFixed(4),
       semantic,
+      airborne: clipAirborne,
       positions,
       // A slot owner is loaded FIRST, because the first clip for a semantic
       // wins when actions are registered.
@@ -352,6 +401,7 @@ for (const src of sources()) {
     bones: Object.keys(tracks).length,
     semantic,
     owns: Boolean(slot),
+    airborne: clipAirborne,
   };
   if (slot) report.slotOwners = (report.slotOwners ?? 0) + 1;
   report.baked++;
@@ -379,9 +429,13 @@ console.log(`  planted on the floor ${report.grounded} clip(s), worst drop avg $
 if (process.env.BF_MEDIANS) {
   const sorted = MEDIANS.map(([, m]) => m).sort((a, b) => a - b);
   const q = (f) => (sorted[Math.floor(sorted.length * f)] * 100).toFixed(1);
-  console.log(`  median-lift distribution (cm): p10 ${q(0.1)}  p25 ${q(0.25)}  p50 ${q(0.5)}  p75 ${q(0.75)}  p90 ${q(0.9)}  max ${(sorted[sorted.length-1]*100).toFixed(1)}`);
+  console.log(`  peak-lift distribution (cm): p10 ${q(0.1)}  p25 ${q(0.25)}  p50 ${q(0.5)}  p75 ${q(0.75)}  p90 ${q(0.9)}  max ${(sorted[sorted.length-1]*100).toFixed(1)}`);
 }
-console.log(`  kept airborne        ${report.airborne} clip(s) (median lift over ${AIRBORNE_MEDIAN_M * 100} cm)`);
+console.log(`  kept airborne        ${report.airborne} clip(s) (peak lift over ${AIRBORNE_PEAK_M * 100} cm)`);
+if (report.cappedShift > 0) {
+  console.log(`  SHIFT CAPPED         ${report.cappedShift} clip(s) asked for more than ${MAX_GROUND_SHIFT_M * 100} cm — their pose is wrong for another reason`);
+  console.log(`    ${report.cappedClips.slice(0, 8).join(', ')}`);
+}
 console.log(`  on disk              ${(bytes / 1e6).toFixed(1)} MB`);
 for (const s of report.skipped.slice(0, 8)) console.log(`    skipped ${s.name}: ${s.why}`);
 

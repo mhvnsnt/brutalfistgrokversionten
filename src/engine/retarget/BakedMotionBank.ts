@@ -33,6 +33,12 @@ export interface BakedClipFile {
   semantic?: string;
   /** True when the bake chose this clip to OWN its semantic state. */
   owns?: boolean;
+  /**
+   * The clip leaves the floor on purpose — a jump, a dive, or the victim's
+   * half of a throw. The floor lock only lowers these; it never raises them,
+   * because a dip at the moment of impact is the animation doing its job.
+   */
+  airborne?: boolean;
   tracks: Record<string, { t: number[]; q: number[] }>;
   /**
    * Translation tracks, which for a baked clip means exactly one thing: the
@@ -50,6 +56,7 @@ export interface BakedManifestEntry {
   bones: number;
   semantic?: string;
   owns?: boolean;
+  airborne?: boolean;
 }
 
 const INDEX_URL = '/motion/baked/index.json';

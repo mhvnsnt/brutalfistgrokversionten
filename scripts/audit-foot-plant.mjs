@@ -46,6 +46,12 @@ await page.evaluate(() => {
 });
 await page.waitForFunction('window.__POSESHEET_READY === true', null, { timeout: 300000 });
 
+/** The bake records which clips leave the floor on purpose. */
+const manifest = JSON.parse(
+  (await import('node:fs')).readFileSync('public/motion/baked/index.json', 'utf8'),
+);
+const airborne = new Set(Object.entries(manifest).filter(([, m]) => m.airborne).map(([k]) => k));
+
 const rows = await page.evaluate(async ({ only }) => {
   const H = window.__POSESHEET;
   if (!H) return { error: 'pose sheet published no handles' };
@@ -98,7 +104,14 @@ const rows = await page.evaluate(async ({ only }) => {
       if (d > lift) lift = d;
       if (d < sink) sink = d;
     }
-    out.push({ clip: name, lift: +lift.toFixed(3), sink: +sink.toFixed(3) });
+    // An action name is often an ALIAS ('grapple', 'throw'); the clip's own
+    // name is what the bake recorded, and it is what decides intent.
+    out.push({
+      clip: name,
+      source: act.getClip().name,
+      lift: +lift.toFixed(3),
+      sink: +sink.toFixed(3),
+    });
   }
   return { floor: +floor.toFixed(3), out };
 }, { only: CLIPS.split(',').filter(Boolean) });
@@ -110,9 +123,16 @@ console.log('CLIP'.padEnd(34) + 'foot LIFT'.padStart(12) + 'foot SINK'.padStart(
 for (const r of rows.out.slice(0, 15)) {
   console.log(r.clip.padEnd(34) + `${(r.lift * 100).toFixed(1)} cm`.padStart(12) + `${(r.sink * 100).toFixed(1)} cm`.padStart(12));
 }
-const floating = rows.out.filter((r) => r.lift > TOLERANCE_M);
-const sinking = rows.out.filter((r) => r.sink < -TOLERANCE_M);
-console.log(`\nclips measured: ${rows.out.length}`);
-console.log(`both feet more than 4 cm off the floor at some frame: ${floating.length}`);
-console.log(`lowest foot more than 4 cm through the floor:         ${sinking.length}`);
+// Split by what the bake INTENDED. A jump in the air and a victim dipping at
+// impact are not defects; a standing move doing either is.
+const grounded = rows.out.filter((r) => !airborne.has(r.source ?? r.clip));
+const floating = grounded.filter((r) => r.lift > TOLERANCE_M);
+const sinking = grounded.filter((r) => r.sink < -TOLERANCE_M);
+console.log(`\nactions measured: ${rows.out.length}  (${grounded.length} meant to be on the floor)`);
+console.log(`GROUNDED clips more than 4 cm off the floor:   ${floating.length}`);
+console.log(`GROUNDED clips more than 4 cm through it:      ${sinking.length}`);
+for (const r of [...floating, ...sinking].slice(0, 8)) {
+  console.log(`  ${r.clip.padEnd(28)} ${(r.source ?? '').padEnd(26)} lift ${(r.lift * 100).toFixed(1)}  sink ${(r.sink * 100).toFixed(1)}`);
+}
+console.log(`(airborne by design, not counted: ${rows.out.length - grounded.length})`);
 await browser.close();
