@@ -26,7 +26,23 @@ Animation/rig correctness is gameplay infrastructure, not cosmetic polish.
       matcher and directional commands fire in a live match (see below), but
       only 3 authored sets exist for the whole roster and several inputs
       still resolve to a generic `lightAttack` rather than a character move.
-- [ ] **Per-character movelist authority** — each fighter owns a complete move table.
+- [ ] **Per-character movelist authority** — each fighter owns a complete move
+      table. MEASURED: 27 roster fighters share exactly TWO command lists —
+      20 of them are byte-identical — because `moveSetForFighter` routes the
+      whole roster into `chara_tutor` (16 commands) or `chara_tutor2` (17).
+      That is the owner's "you still have all the fighters doing the exact
+      same moves", quantified.
+      BLOCKED ON A CLEAN "IS THIS AN ATTACK" CLASSIFIER, and this is worth
+      knowing before anyone tries again: filtering the 366 baked clips on
+      every physical gate that exists (animates, plants, upright, starts
+      standing, faces forward, a hand 0.35 m past its shoulder or a foot
+      0.60 m past its hip, under 1.6 s) yields 59 "punches" and 34 "kicks"
+      — and the list is full of `SHARKNADO_REACTION`, `AMYTHROW_REACTION`,
+      `GRAFTHROWREACTION`, `HIT_TO_BODY`, `BIG_RIB_HIT`, `GINGA_BACKWARD`
+      and `CROUCH_WALK_FORWARD`. A body being THROWN extends a limb forward
+      just like a body punching. Generating movelists from that pool would
+      give every fighter a distinct set of wrong moves.
+      THE UNBLOCK IS THE OWNER'S OWN LABELS, now wired (see below).
 - [x] **Four distinct limb inputs** — `IMPLEMENTED / VERIFIED`. They were
       collapsing: `commandButtonsFor` returned `{P: lp||rp, K: lk||rk}`, so
       `4+LP` and `4+RP` were one command and half a four-button vocabulary
@@ -540,6 +556,37 @@ Do not remove completed work. Change its status and add:
 26. Advanced audio/VFX.
 27. Optional assist/partner systems.
 28. Additional experimental mechanics.
+
+## 21a. The owner's labels are an authority in combat
+
+`IMPLEMENTED`. The Move Library (main menu -> MOVE LIBRARY) plays all 366
+baked clips on a real fighter and has always collected his judgement — and
+`moveLabels.ts` used to say, in its own header, "nothing in combat reads
+it". It was a suggestion box.
+
+Two fields are wired into clip resolution now:
+
+- **verdict `broken`** refuses the clip everywhere, immediately. A verdict
+  beats every measurement in this repo, because the measurements keep
+  missing what he sees at a glance: a severed rig scores a PERFECT
+  deformation number, a T-pose that lasts 17 seconds passed the T-pose gate
+  at 0.49 against 0.50, and two taunts that play lying flat passed
+  everything but the eye.
+- **slot** makes the clip the PREFERRED pick for that slot, ahead of the
+  bake's own choice.
+
+`name` and `note` stay notes and change nothing, so writing down what a move
+IS never removes it from the game.
+
+Typed slots resolve through the engine's OWN tables (combat-state names plus
+every alias each semantic answers to), so "Heavy Kick", "heavy kick",
+"attack_rk" and "RK" all land on `attack_rk`. The editor says which slot it
+resolved to, or warns that it resolved to none — a free-text box on a phone
+that silently ignores four spellings in five is worse than no box.
+
+NEXT, and this is the path off the blocker above: as he labels, the
+labelled clips become the ground truth an "is this an attack" classifier and
+a per-character movelist generator can be built from.
 
 ## 21b. Findings banked this pass (measured, with the instrument named)
 

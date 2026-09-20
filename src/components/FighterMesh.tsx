@@ -20,6 +20,7 @@ import {
 } from '../engine/combat/AnimationIntegrityGate';
 import { COMBAT_STATE_TO_SEMANTIC, SEMANTIC_STATE_ALIASES, inferSemanticStateFromClipName } from '../engine/retarget/SemanticStateAliases';
 import { clipAnimates, clipKeepsFacing, clipStandsUpright, clipStartsStanding, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
+import { clipsLabelledFor, labelRefuses } from '../engine/assets/moveLabels';
 import { AnimationBridge } from '../../animation_bridge/retarget';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -375,8 +376,15 @@ function resolveClipName(
    * the rule applied everywhere, pressing jump played JUMPAXEKICK and
    * taunting played BREAKDANCE_READY.
    */
+  // A VERDICT FROM THE OWNER OUTRANKS EVERY MEASUREMENT HERE, because the
+  // measurements keep missing what he sees at a glance: a severed rig
+  // scores a PERFECT deformation number, a 17-second T-pose passed the
+  // T-pose gate at 0.49 against 0.50, and two taunts that play lying flat
+  // passed everything but the eye. Marking a clip BROKEN in the Move
+  // Library takes it out of the game.
   const usable = (c: string, forAttack = true) =>
-    clipAnimates(c)
+    !labelRefuses(c)
+    && clipAnimates(c)
     && clipStandsUpright(c)
     && clipStartsStanding(c)
     && (!forAttack || (clipStrikesForward(c) && clipKeepsFacing(c)));
@@ -428,6 +436,12 @@ function resolveClipName(
     // as this slot's owner — GRAFQUICKJAB, a 0.46 s jab, over BOXING, a
     // 1.73 s shadowboxing LOOP. Nothing at runtime was reading that, so a
     // jab played BOXING inside an attack window a fraction of its length.
+    // THE OWNER'S OWN ASSIGNMENT COMES FIRST. A human who looked at the
+    // clip beats the bake's heuristic, which is the entire reason the Move
+    // Library has a "where does it go?" field.
+    for (const picked of clipsLabelledFor(semanticState)) {
+      if (actions[picked] && usable(picked, attackSlot)) return picked;
+    }
     const owner = slotOwnerFor(semanticState);
     if (owner && actions[owner]) return owner;
     if (actions[semanticState] && usable(semanticState, attackSlot)) return semanticState;

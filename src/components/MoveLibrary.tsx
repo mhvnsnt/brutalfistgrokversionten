@@ -7,6 +7,7 @@ import { runCharacterPipeline } from '../engine/pipeline/CharacterPipeline';
 import { loadGLTF } from '../engine/pipeline/glbCache';
 import { assetUrl } from '../lib/assetBase';
 import {
+  canonicalSlot,
   exportMoveLabels,
   loadMoveLabels,
   setMoveLabel,
@@ -354,6 +355,25 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
                 className="w-40 bg-black/40 border border-white/15 px-2 py-1 text-[11px]"
               />
             </div>
+            {/*
+              SAY WHETHER THE SLOT LANDED.
+              A free-text box on a phone that silently ignores four spellings
+              out of five is worse than no box: he would label a hundred
+              clips and none of them would reach the game. This is the
+              engine's own answer, not a second vocabulary.
+            */}
+            {draft.slot.trim() !== '' && (
+              <div className="text-[10px]">
+                {canonicalSlot(draft.slot)
+                  ? <span className="text-emerald-400">
+                      → goes to <b>{canonicalSlot(draft.slot)}</b> in the game
+                    </span>
+                  : <span className="text-amber-400">
+                      → not a slot the engine knows yet — saved as a note, and
+                      it will not change the game until it is wired
+                    </span>}
+              </div>
+            )}
             <div className="flex gap-2 flex-wrap">
               <input
                 value={draft.note}
