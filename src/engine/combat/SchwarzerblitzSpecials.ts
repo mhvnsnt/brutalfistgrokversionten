@@ -250,12 +250,35 @@ export function availableMoveSets(): string[] {
  * authored set, this is the one place that has to change.
  */
 export function moveSetForFighter(fighterId: string): string {
-  const sets = availableMoveSets().filter((s) => s !== 'common');
-  if (!sets.length) return 'common';
-  let h = 2166136261;
-  for (let i = 0; i < fighterId.length; i++) {
-    h ^= fighterId.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return sets[(h >>> 0) % sets.length];
+  // Do not hash characters into an arbitrary source set. The old hash could
+  // route a power wrestler into the dummy corpus (randomSquareRotation2,
+  // facepalm, randomFlight), which made the roster look like it shared broken
+  // or nonsensical moves. Select from the two authored fighting sets using the
+  // character's canonical style, while keeping a deterministic explicit seam
+  // for future per-character source sets.
+  const id = fighterId.toLowerCase();
+  const styleById: Record<string, string> = {
+    bannon: 'chara_tutor2',
+    maime: 'chara_tutor',
+    cipher: 'chara_tutor2',
+  };
+  if (styleById[id]) return styleById[id];
+
+  // Character IDs are stable roster data, so these style families are
+  // character-specific without inventing moves at runtime.
+  const fighterStyles: Record<string, string> = {
+    onyx: 'chara_tutor2',
+    cain_elias: 'chara_tutor2',
+    hall_nighter: 'chara_tutor2',
+    cody: 'chara_tutor2',
+    echo: 'chara_tutor',
+    stick_up: 'chara_tutor',
+    static: 'chara_tutor2',
+  };
+  if (fighterStyles[id]) return fighterStyles[id];
+
+  // Unknown/new roster members use the stable technical set rather than the
+  // dummy corpus. Their own defaultMoveSet remains authoritative for core
+  // attacks and the source graph only supplies additional commands.
+  return 'chara_tutor';
 }
