@@ -236,6 +236,8 @@ export default function GameBattleArena({
     }
     roundStartTimeRef.current = Date.now();
     setP1X(-1.8); setP2X(1.8);
+    setP1Y(0); setP2Y(0);
+    p1YRef.current = 0; p2YRef.current = 0;
     p1XRef.current = -1.8; p2XRef.current = 1.8;
     p1LocoRef.current = new LocomotionSystem(-1.8, 0, 1);
     p2LocoRef.current = new LocomotionSystem(1.8, 0, -1);
