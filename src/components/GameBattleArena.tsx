@@ -1604,7 +1604,7 @@ export default function GameBattleArena({
       const throwBreakOutcome = p2SMRef.current.consumeIncomingThrowBreakOutcome();
       if (throwBreakOutcome === 'broken') {
         p1SMRef.current.resolveCommandThrow(false);
-        p2SMRef.current.applyPushback?.(0.35);
+        p2LocoRef.current.applyPushback(0.35);
         p2HitboxRef.current.reset();
         audioManagerRef.current.playSFX('throw_break');
         setSpecialMoveNotice({ name: 'THROW BREAK!', player: 'p2', id: ++specialNoticeIdRef.current });
