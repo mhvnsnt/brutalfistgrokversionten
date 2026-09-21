@@ -121,6 +121,21 @@ describe('matching picks the move the player earned', () => {
     assert.equal(hit?.move.name, 'Jab');
   });
 
+  it('a stale crouch edge cannot turn a later forward punch into a crouch move', () => {
+    const b = createCommandBuffer();
+    // Player briefly crouches, then releases to forward before pressing punch.
+    // The old matcher skipped the 6 edge and could still find the stale 2.
+    pushInput(b, { x: 0, y: -1 }, {}, P1, 100); // 2
+    pushInput(b, { x: 1, y: 0 }, {}, P1, 150);  // 6
+    pushInput(b, { x: 1, y: 0 }, { RP: true }, P1, 170); // 6+P
+    const crouch: MatchableMove = {
+      name: 'CrouchPunch',
+      input: [{ dirs: [2], buttons: ['P'], hold: false }],
+    };
+    const hit = matchCommand([crouch, FWD_PUNCH], b, { now: 170 });
+    assert.equal(hit?.move.name, 'FwdPunch');
+  });
+
   it('forward + punch beats the jab — longest match wins', () => {
     const b = createCommandBuffer();
     pushInput(b, { x: 1, y: 0 }, { RP: true }, P1, 100);
