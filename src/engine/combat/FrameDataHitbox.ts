@@ -100,6 +100,15 @@ const HITBOX_DEFAULTS: Record<string, Partial<HitboxGeometry>> = {
   },
 };
 
+/**
+ * Ground-contact body envelope used by the deterministic combat authority.
+ * The old collision test added 1.1m directly to every hitbox width, making
+ * contact much larger than the visible fighter and causing apparent hits
+ * before the striking limb could plausibly reach the opponent.
+ */
+export const DEFAULT_FIGHTER_HURTBOX_HALF_WIDTH_M = 0.42;
+export const DEFAULT_FIGHTER_HURTBOX_HALF_DEPTH_M = 0.34;
+
 const SPECIAL_HITBOX: Partial<HitboxGeometry> = {
   offsetX: 1.0,
   offsetZ: 0.0,
@@ -277,8 +286,8 @@ export class FrameDataHitboxSystem {
     // AABB overlap test
     const dx = Math.abs(opponentX - hbCenterX);
     const dz = Math.abs(opponentZ - hbCenterZ);
-    const halfW = (hb.width + 1.1) * 0.5;
-    const halfD = (hb.depth + 1.0) * 0.5;
+    const halfW = (hb.width * 0.5) + DEFAULT_FIGHTER_HURTBOX_HALF_WIDTH_M;
+    const halfD = (hb.depth * 0.5) + DEFAULT_FIGHTER_HURTBOX_HALF_DEPTH_M;
 
     if (dx > halfW || dz > halfD) return null;
 
