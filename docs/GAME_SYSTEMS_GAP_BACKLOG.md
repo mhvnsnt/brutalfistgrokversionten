@@ -1268,4 +1268,19 @@ Commits:
 - 8461697268bbf72b39038382731909c500e24f28 — unit coverage
 - 740eb3e97be693ee074ed021ccaabb6fda54131d — test-gate inclusion
 
-**Remaining:** AI directional throws are not yet routed through this same transaction; the current command-throw AI path is authoritative. Do not mark the entire directional-throw system VERIFIED until both attacker directions and all throw families have runtime evidence.
+**Fixed next:** AI directional throws now have an explicit, deterministic intent selector and enter the same pending transaction used by player directional throws. The arena still owns range/state validation and the FighterStateMachine owns break timing/commit; AI intent never applies damage directly.
+
+AI coverage added:
+- close neutral -> forward throw
+- power/wrestling heavy throw cycle -> backward throw
+- lateral spacing -> deterministic side throw
+- outside grab range / non-throw cycle -> no directional throw
+- AI commit/break uses the existing defender-side consumeIncomingThrowBreakOutcome() branches
+
+Commits:
+- 8864c108aaafbef6650ae450108cdfecedff2d55 — pure AI directional-throw intent selector
+- 494b8407ca623808178a99559f900d9dca9e9050 — selector regression tests
+- 8ad8899ac711850101f977666567c9daa6b8b3d5 — live AI integration
+- a6727b34e59d3c69855d92d6dbd8d0e8f8b445e5 — test-gate inclusion
+
+**Still not VERIFIED:** no fresh live runtime/test execution has been recorded after these commits. The full directional-throw system still requires runtime evidence for player and AI attacker directions, all throw families, correct/wrong break behavior, and out-of-range whiff behavior.
