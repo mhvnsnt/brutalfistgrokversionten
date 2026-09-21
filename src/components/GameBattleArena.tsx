@@ -68,6 +68,7 @@ import {
   createRoundState, openingAnnouncement, resolveRound, type RoundState,
 } from '../engine/combat/RoundSystem';
 import { commandButtonsFor, moveSetForFighter, schwarzerblitzSpecials } from '../engine/combat/SchwarzerblitzSpecials';
+import { generatedMoveset } from '../engine/combat/GeneratedMovesets';
 // ── Overdrive / super armor / Finisher ──────────────────────────────────────
 import { type OverdriveState, type SuperArmorState, type FinisherState,  } from '../engine/combat/OverdriveSystem';
 // ── Directional throw system ──────────────────────────────────────────────────
@@ -394,8 +395,8 @@ export default function GameBattleArena({
     applyStageBounds(stageId as StageId);
     p1SMRef.current = new FighterStateMachine();
     p2SMRef.current = new FighterStateMachine();
-    p1SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id), p1Fighter.id));
-    p2SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id), p2Fighter.id));
+    p1SMRef.current.registerSpecialMoves([...schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id), p1Fighter.id), ...generatedMoveset(p1Fighter.id)]);
+    p2SMRef.current.registerSpecialMoves([...schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id), p2Fighter.id), ...generatedMoveset(p2Fighter.id)]);
     p1SMRef.current.attachCommandBuffer(p1CommandRef.current);
     p2SMRef.current.attachCommandBuffer(p2CommandRef.current);
     p1HitboxRef.current.reset();
@@ -707,8 +708,8 @@ export default function GameBattleArena({
     // The imported command list, plus the engine's own button specials
     // (registerSpecialMoves appends DEFAULT_SPECIAL_MOVES itself, so the
     // button sequences that already worked keep working).
-    p1SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id), p1Fighter.id));
-    p2SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id), p2Fighter.id));
+    p1SMRef.current.registerSpecialMoves([...schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id), p1Fighter.id), ...generatedMoveset(p1Fighter.id)]);
+    p2SMRef.current.registerSpecialMoves([...schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id), p2Fighter.id), ...generatedMoveset(p2Fighter.id)]);
     p1SMRef.current.attachCommandBuffer(p1CommandRef.current);
     p2SMRef.current.attachCommandBuffer(p2CommandRef.current);
     p1HitboxRef.current.reset();

@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { markGrapplePairs } from '../combat/GrapplePairing.ts';
 import { setCommandClipMap } from '../combat/SchwarzerblitzSpecials.ts';
+import { setGeneratedMovesets } from '../combat/GeneratedMovesets.ts';
 
 import { assetUrl } from '../../lib/assetBase.ts';
 
@@ -845,6 +846,12 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
     // WHICH CLIP EACH DIRECTIONAL COMMAND PLAYS. Fetched alongside the index
     // so a command list is never built before its clips are known; a failure
     // is silent on purpose and leaves every move on its authored clip.
+    // The generated per-fighter movesets, same deal: silent on failure, and
+    // absent it every fighter keeps exactly the imported commands he had.
+    void fetch(assetUrl('/motion/movesets.json'))
+      .then((r) => (r.ok ? r.json() : null))
+      .then((m) => { if (m) setGeneratedMovesets(m as never); })
+      .catch(() => {});
     void fetch(assetUrl('/motion/command-clips.json'))
       .then((r) => (r.ok ? r.json() : null))
       .then((m) => { if (m) setCommandClipMap(m as never); })

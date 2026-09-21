@@ -663,6 +663,42 @@ takedown victim and a kip-up), and was reverted with the reason recorded in
 scripts/bake-fighter-animations.mjs. Whatever is done here has to be measured
 per clip and RENDERED before banking, per the owner law.
 
+## 21l. FULL MOVESETS — the second half of the four-attacks problem
+
+Fixing the clip collapse (21k) made the moves he HAS look different. It did
+not give him more of them, and he was also counting.
+
+MEASURED: Bannon draws **eleven** commands from the imported graph, and three
+of those require Crouch or Air — so **eight** are reachable standing. The
+imported corpus is a demo set (`chara_tutor`, `chara_tutor2`); it was never a
+moveset. Eight standing attacks is exactly what "the same 4 attacks the whole
+fight" feels like.
+
+`tools/moves/map_commands.mjs --full` fills the matrix: every direction
+crossed with punch and kick, in each stance the engine understands — 26 slots.
+Neutral is left alone because the engine's base light and heavy own it. Each
+slot draws a distinct clip from the measured pool with a reuse penalty, seeded
+per fighter. **Bannon's set holds 24 distinct clips and shares 27% with
+Onyx's.** Names come from the direction and the limb doing the work —
+"Forward Hammer", "Rising Kick", "Ducking Knee" — never from a person.
+
+Frame data comes from each clip's own duration, so a long windup really is
+slower to come out.
+
+### Proven in the buffer, not in the browser
+
+THE LIVE PROBE COULD NOT SETTLE THIS and said so. At ~2 fps a 260 ms
+directional hold can fall entirely between two frames, so "the command did not
+match" and "the harness never saw the direction" look identical.
+
+Driven straight into the command buffer instead, `generated-movesets.test.ts`
+proves: all **16** standing direction+button combinations match, they yield
+**12+ distinct animations**, and two fighters share under 60% of their clips.
+
+Also settled offline, and it is NOT a bug: `3P` and `1P` did not match from
+Ground because they require **Crouch** stance, and `9P` requires **Air**. The
+matcher has been correct the whole time; the inventory was the problem.
+
 ## 21k. 26 COMMANDS, 3 ANIMATIONS — the moveset was real and looked like four swings
 
 Owner: "currently can only fire off 4 attacks and it's the base ones ... not

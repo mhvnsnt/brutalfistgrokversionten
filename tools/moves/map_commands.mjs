@@ -201,3 +201,101 @@ const overlap = (a, b) => {
   return keys.length ? keys.filter((k) => A[k] === B[k]).length / keys.length : 0;
 };
 console.log(`\n  two fighters on the same source set now share ${Math.round(overlap('bannon', 'cipher') * 100)}% of their clips (was 100%)`);
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * FULL MOVESETS — the whole directional matrix, per fighter.
+ *
+ * Owner: "full movesets and individual movesets so they're not all doing the
+ * same attacks ... that's not like Tekken at all."
+ *
+ * Fixing the clip-per-command collapse above made the moves he HAS look
+ * different. It did not make him have more of them. MEASURED: Bannon draws
+ * ELEVEN commands, and three of those need Crouch or Air, so eight are
+ * reachable standing. A Tekken character has a hundred. The imported graph
+ * is a demo corpus; it was never a moveset.
+ *
+ * So the matrix is filled out: every direction crossed with punch and kick,
+ * in each stance the engine already understands. The engine's own base light
+ * and heavy own neutral, so 5 is left alone.
+ *
+ * WHAT MAKES THEM DIFFERENT PER FIGHTER is the same seeded, reuse-penalised
+ * draw as above — the clip decides the move, so a distinct clip IS a distinct
+ * move. A name is derived from the DIRECTION and the LIMB that does the work,
+ * never from a person: "Forward Hammer", "Rising Knee", "Low Sweep".
+ *
+ * Frame data comes from the clip's own duration rather than being invented,
+ * so a long windup really is slower to come out.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+const MATRIX = [
+  // [numpad, stance]  — 5 is left to the engine's base attacks.
+  [6, 'Ground'], [4, 'Ground'], [2, 'Ground'], [8, 'Ground'],
+  [3, 'Ground'], [1, 'Ground'], [9, 'Ground'], [7, 'Ground'],
+  [6, 'Crouch'], [4, 'Crouch'], [2, 'Crouch'],
+  [6, 'Air'], [2, 'Air'],
+];
+
+const DIR_WORD = {
+  6: 'Forward', 4: 'Back', 2: 'Low', 8: 'Rising',
+  3: 'Advancing', 1: 'Ducking', 9: 'Leaping', 7: 'Falling',
+};
+/** Named for the MOTION, never for a person — owner law on the asset tree. */
+const limbWord = (clip) => {
+  if (clip.kick) return clip.lift > 0.7 ? 'Kick' : clip.foot > 0.8 ? 'Boot' : 'Knee';
+  return clip.hand > 0.44 ? 'Hammer' : clip.dur < 0.3 ? 'Jab' : 'Strike';
+};
+
+export function fullMoveset(fighterId) {
+  const out = [];
+  const used = new Set();
+  const pool = attackPool();
+  for (const [np, stance] of MATRIX) {
+    for (const button of ['P', 'K']) {
+      const want = { kick: button === 'K', height: heightOf([np]) };
+      let best = null; let bestScore = -Infinity;
+      for (const clip of pool) {
+        let v = score(clip, want, used, fighterId + stance);
+        // An AIR command wants a clip that leaves the floor; a CROUCH one
+        // wants a low clip. This is the same measurement the height term
+        // uses, applied to the stance instead of the direction.
+        if (stance === 'Air') v += clip.airborne ? 3 : -3;
+        if (stance === 'Crouch') v += clip.airborne ? -3 : 1;
+        if (v > bestScore) { bestScore = v; best = clip; }
+      }
+      if (!best) continue;
+      used.add(best.name);
+      const startup = Math.max(0.05, Math.min(0.22, best.dur * 0.35));
+      const active = Math.max(0.05, best.dur * 0.25);
+      out.push({
+        id: `bf_${fighterId}_${stance}_${np}${button}`,
+        name: `${DIR_WORD[np]} ${limbWord(best)}`,
+        sequence: [],
+        command: [{ dirs: [np], buttons: [button] }],
+        stance,
+        clip: best.name,
+        startup,
+        active,
+        recovery: Math.max(0.12, best.dur * 0.4),
+        damage: Math.round(40 + best.hand * 40 + best.foot * 50),
+      });
+    }
+  }
+  return out;
+}
+
+if (process.argv.includes('--full')) {
+  const sets = {};
+  for (const f of ROSTER) sets[f] = fullMoveset(f);
+  const OUT2 = 'public/motion/movesets.json';
+  if (process.argv.includes('--write')) {
+    writeFileSync(OUT2, JSON.stringify(sets, null, 0));
+    console.log(`\nwrote ${OUT2}`);
+  }
+  console.log(`\nFULL MOVESETS — ${MATRIX.length * 2} slots per fighter\n`);
+  const a = sets[ROSTER[0]], b = sets[ROSTER[3]];
+  console.log(`  ${ROSTER[0]}:`);
+  for (const m of a.slice(0, 10)) console.log(`     ${m.command[0].dirs[0]}${m.command[0].buttons[0]} ${String(m.stance).padEnd(7)} ${m.name.padEnd(18)} -> ${m.clip}`);
+  const shared = a.filter((m, i) => b[i] && b[i].clip === m.clip).length;
+  console.log(`\n  ${ROSTER[0]} and ${ROSTER[3]} share ${shared}/${a.length} clips (${Math.round((shared / a.length) * 100)}%)`);
+  console.log(`  distinct clips in ${ROSTER[0]}'s set: ${new Set(a.map((m) => m.clip)).size}`);
+}
