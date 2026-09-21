@@ -1,0 +1,47 @@
+{
+  "policy": "reference-and-retarget; never silently replace authored Bannon motion",
+  "sources": [
+    {
+      "id": "quaternius-ual-1",
+      "name": "Universal Animation Library",
+      "url": "https://quaternius.itch.io/universal-animation-library",
+      "license": "CC0-1.0",
+      "role": "bulk humanoid locomotion/combat/defense/emote reference bank",
+      "reported_clips": "120+",
+      "import_mode": "external-source-candidate"
+    },
+    {
+      "id": "quaternius-ual-2",
+      "name": "Universal Animation Library 2",
+      "url": "https://quaternius.itch.io/universal-animation-library-2",
+      "license": "CC0-1.0",
+      "role": "bulk melee-combo/parkour/combat reference bank",
+      "reported_clips": "130+",
+      "import_mode": "external-source-candidate"
+    },
+    {
+      "id": "threejs-skeleton-utils",
+      "name": "Three.js SkeletonUtils",
+      "url": "https://github.com/mrdoob/three.js",
+      "license": "MIT",
+      "role": "independent skeleton clone/retargetClip reference implementation",
+      "import_mode": "runtime-dependency-already-present"
+    },
+    {
+      "id": "khronos-gltf-validator",
+      "name": "Khronos glTF Validator",
+      "url": "https://github.com/KhronosGroup/glTF-Validator",
+      "license": "Apache-2.0",
+      "role": "GLB/glTF structural validation before animation acceptance",
+      "import_mode": "validation-tool-candidate"
+    },
+    {
+      "id": "mesh2motion",
+      "name": "Mesh2Motion",
+      "url": "https://github.com/Mesh2Motion",
+      "license": "MIT code / CC0 art and animations",
+      "role": "open retarget/export pipeline reference",
+      "import_mode": "pipeline-reference"
+    }
+  ]
+}
