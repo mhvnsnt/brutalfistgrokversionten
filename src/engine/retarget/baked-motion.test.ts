@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { describe, it, test } from 'node:test';
 import * as THREE from 'three';
 
-import { UPRIGHT_SPINE_MIN, clipFromBaked, markBackwardStrikes, markFrozen, markInverted, markSlotOwners, markStandability, type BakedClipFile, type BakedManifestEntry } from './BakedMotionBank.ts';
+import { UPRIGHT_SPINE_MIN, clipFromBaked, clipIsTeamCapture, markTeamCaptures, markBackwardStrikes, markFrozen, markInverted, markSlotOwners, markStandability, type BakedClipFile, type BakedManifestEntry } from './BakedMotionBank.ts';
 import { COMBAT_STATE_TO_SEMANTIC, SEMANTIC_STATE_ALIASES } from './SemanticStateAliases.ts';
 import { HINGE_JOINTS, JOINT_LIMITS, angleDeg, signedAngleAbout, swingTwist, removeConstantConventionTwist } from './SkeletalLimits.ts';
 import { loadCanonicalSkeleton } from './CanonicalSkeleton.ts';
@@ -672,4 +672,55 @@ describe('a per-frame hips track reaches the clip', () => {
     assert.ok(pos);
     assert.equal(pos.times.length, 1);
   });
+});
+
+/**
+ * A TEAM MOVE IS NOT A SOLO MOVE.
+ *
+ * Owner: "most of the moves, some of them will say like double superkick or
+ * assisted cutter or assisted diving senton — those are tag team moves."
+ *
+ * He was right about every clip he named. MEASURED by tools/anim/inspect.mjs
+ * on the 871-bone source captures, which carry one `J_Hips` root per body:
+ * 68 have three or more PERFORMING bodies, and twelve of those are baked
+ * into the game — EIGHT of them into the `idle` slot. The bake squashes
+ * every capture onto one skeleton, so a fighter playing one performs his
+ * partner's and his victim's motion simultaneously.
+ */
+describe('a three-body capture cannot fill a solo slot', () => {
+  const manifest: Record<string, BakedManifestEntry> = {
+    DOUBLESUPLEX: { file: 'a', bank: 'b', dur: 1, bones: 22, bodies: 3 },
+    SUPLEX: { file: 'b', bank: 'b', dur: 1, bones: 22, bodies: 2 },
+    STANCE: { file: 'c', bank: 'b', dur: 1, bones: 22, bodies: 1 },
+    LEGACY: { file: 'd', bank: 'b', dur: 1, bones: 22 },
+  };
+
+  it('marks only the captures with three or more bodies', () => {
+    const team = markTeamCaptures(manifest);
+    assert.deepEqual([...team], ['DOUBLESUPLEX']);
+    assert.equal(clipIsTeamCapture('DOUBLESUPLEX'), true);
+    // Attacker-and-victim is a normal move: one man performs it.
+    assert.equal(clipIsTeamCapture('SUPLEX'), false);
+    assert.equal(clipIsTeamCapture('STANCE'), false);
+  });
+
+  it('treats a clip with no count as one body, so an old bake is unchanged', () => {
+    markTeamCaptures(manifest);
+    assert.equal(clipIsTeamCapture('LEGACY'), false);
+  });
+
+  if (hasBake) {
+    it('the shipped bake still carries them, and they are all refused', () => {
+      const idx = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+      const team = markTeamCaptures(idx);
+      // Nothing is deleted — the captures stay banked for a real tag system.
+      assert.ok(team.size >= 10, `expected the team captures to still be baked, saw ${team.size}`);
+      assert.ok(team.has('DOUBLESUPLEX') && team.has('STEREOSUPERKICK') && team.has('ASSISTEDDIVSENTON'),
+        'the clips the owner named must be among them');
+      // And none of them may own a combat slot.
+      for (const n of team) {
+        assert.equal(idx[n].owns ?? false, false, `${n} owns a slot and is a three-body capture`);
+      }
+    });
+  }
 });

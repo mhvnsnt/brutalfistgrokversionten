@@ -663,6 +663,85 @@ takedown victim and a kip-up), and was reverted with the reason recorded in
 scripts/bake-fighter-animations.mjs. Whatever is done here has to be measured
 per clip and RENDERED before banking, per the owner law.
 
+## 21i. I CAN READ AN ANIMATION NOW — tools/anim/inspect.mjs
+
+Owner: "build a thing so you can accurately see all of the amount of skeleton
+joints and movements ... so you can stop guessing ... so you can do half of
+the work that you're making me do with looking at the animations ... how many
+models and joints are in it, whether it's a strike or a taunt based on what it
+looks like plus the name, and whether it's a team move that needs a team thing
+or not."
+
+Fair. The data was always there and I was reading the WRONG END OF THE PIPE.
+The bake retargets every capture onto ONE 58-joint skeleton, so by the time I
+looked, two of the three wrestlers in a tag capture were already gone.
+
+THE SOURCE CAPTURES CARRY 600-1000 BONES AND ONE `J_Hips` ROOT PER BODY.
+`node tools/anim/inspect.mjs <CLIP>` now reports, per clip: bodies (and how
+many of them actually PERFORM — a skeleton that never turns is a prop, not a
+partner), total joints, how many turn more than 5 degrees, the per-body
+breakdown, and where the primary body spends its motion (arms / legs / spine /
+head / hands as a percentage). `--all --tag` lists the team moves. `--write`
+commits the counts to `public/motion/clip-bodies.json`, because the source is
+not in this repo or in CI.
+
+`C_*` cloth roots are excluded — that is the trap that made HAMMERLOCKDDT look
+like a crowd in the sibling project, and the owner made it law.
+
+### He was right about every clip he named, and it is worse than the names say
+
+MEASURED across 973 source captures: **68 have three or more performing
+bodies**, and **twelve of those are baked into the game**:
+
+| clip | slot it was baked into |
+|---|---|
+| ASSISTEDCUTTER, ASSISTEDDIVSENTON, ASSISTEDREVERSEGOOZLECHOP | `idle` |
+| BUCKLEBOMBENZUGIRI, FATALITY, SNAPPILEDRIVERS | `idle` |
+| REVERSEGOOZLEDIVFOOTSTOMP, STRONGZERO | `idle` |
+| DOUBLESUPLEX, POPUPGERMANSUPLEX | `grapple` |
+| STEREOSUPERKICK, TAGSUPERKICK | `attack_2` |
+
+Eight team captures were eligible to be somebody's IDLE. A fighter playing one
+performs a blend of his partner's and his victim's motion at once — that is
+the "animations are real weird" and the body twisting, and no amount of rig or
+retarget work would ever have fixed it. Refused for solo slots now, the same
+way a T-pose is. Nothing is deleted: they stay banked for a real tag system.
+
+Also found: 9 clips are baked that do not move at all (CH06_NONPBR, Y_BOT,
+PALADIN_J_NORDSTROM, PUMPKINHULK_L_SHAW and friends — 0 of 22 bones turn).
+They are rig files, not animations.
+
+## 21j. A DEFECT I REPORTED AND THEN DISPROVED — read this before chasing twists
+
+Owner described UFC-5-style glitching: "making them do T-pose and making their
+body twist all around." `scripts/probe-rig-sanity.mjs` was written to measure
+exactly that on the live rigs in a real match — T-pose shape, hinge violations
+and floating feet, every frame, naming the clip that was playing.
+
+It found what looked like a serious defect: 245 frames with the forearms 39-64
+degrees off their hinge, in STANCE and WALK, the two most-played clips.
+
+**It was my measurement, three times over.**
+1. First version measured "twist" about X. MEASURED off the canonical GLB's
+   node table: every bone places its child at local (0,1,0), so the length
+   axis is **Y**, and X is the off-axis component of a Z hinge. Wrong name.
+2. Corrected to measure both axes — and it still read 40-64 degrees.
+3. Because it was reading the RAW LOCAL quaternion, which carries the bind
+   rotation. Re-measured RELATIVE TO BIND, the way `clampToJointLimits` and
+   `constrainHinges` actually work: **every clip is inside its limits**, with
+   off-axis pinned at exactly 18.0 — the declared cap, which means the
+   constraint pass is working precisely.
+
+So there is no joint-limit violation in the shipped clips and no fix was
+shipped for one. WRITE THIS DOWN: a rotation is meaningless without the frame
+it is measured in, and "the number is large" is not a defect until it has been
+compared against bind.
+
+Useful side effects kept: the probe reports rigs found, bone counts and total
+bone travel, so a clean result can prove it looked at something — its first
+run reported zero defects across `STANCEx132`, which was thirty seconds of
+idling because a 140 ms keypress is invisible to a 2 fps harness.
+
 ## 21f. THE PELVIS BOB WAS BEING DELETED AT LOAD
 
 This is the one he has reported most often, across several passes, and every

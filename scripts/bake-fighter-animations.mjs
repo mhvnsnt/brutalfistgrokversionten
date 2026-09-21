@@ -1094,6 +1094,39 @@ function deriveGrapplePairs(manifest) {
   return { byDeliverer, orphans, receivers };
 }
 
+/**
+ * HOW MANY WRESTLERS ARE IN THIS CAPTURE.
+ *
+ * Owner: "most of the moves, some of them will say like double superkick or
+ * assisted cutter or assisted diving senton — those are tag team moves", and
+ * "build a thing so you can accurately see all of the amount of skeleton
+ * joints and movements so you can stop guessing."
+ *
+ * He was right on every clip he named. The source captures carry a separate
+ * `J_Hips` root PER BODY — DOUBLESUPLEX has three — and the bake cannot see
+ * it, because by the time a clip reaches here it has been reduced to 22
+ * bones on one skeleton and the other two wrestlers are gone.
+ *
+ * MEASURED by tools/anim/inspect.mjs across the whole source bank: 68 of the
+ * captures have three or more PERFORMING bodies, and TWELVE of those are
+ * baked into the game — eight of them into the `idle` slot. A three-body
+ * capture squashed onto one skeleton makes a fighter perform a blend of his
+ * partner's and his victim's motion, which is exactly the "animations are
+ * real weird" and the body-twisting being reported.
+ *
+ * The count is committed as a small file because the 871-bone source is not
+ * in this repo and not in CI. Absent, everything reads as one body and the
+ * bake behaves exactly as before.
+ */
+const CLIP_BODIES = (() => {
+  try {
+    return JSON.parse(readFileSync(join('public', 'motion', 'clip-bodies.json'), 'utf8'));
+  } catch {
+    return {};
+  }
+})();
+const bodiesIn = (name) => CLIP_BODIES[name]?.active ?? CLIP_BODIES[name.toUpperCase()]?.active ?? 1;
+
 const manifest = {};
 
 for (const src of sources()) {
@@ -1380,6 +1413,12 @@ for (const src of sources()) {
     semantic,
     owns: Boolean(slot),
     airborne: clipAirborne,
+    /**
+     * PERFORMING BODIES IN THE SOURCE CAPTURE. 1 is a solo move, 2 is
+     * attacker and victim, 3 or more is a TEAM move that cannot be played by
+     * one fighter without him miming two other people.
+     */
+    bodies: bodiesIn(src.name),
     floorGap: ground?.floorGap ?? 0,
     minLiftFoot: ground?.minLiftFoot ?? 0,
     minLiftBody: ground?.minLiftBody ?? 0,

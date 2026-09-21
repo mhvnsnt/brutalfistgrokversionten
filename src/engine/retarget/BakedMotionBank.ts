@@ -85,6 +85,13 @@ export interface BakedManifestEntry {
   /** This clip IS somebody being thrown. It is never an attacker's half. */
   receives?: boolean;
   /**
+   * HOW MANY WRESTLERS PERFORM IN THE SOURCE CAPTURE. 1 solo, 2 attacker and
+   * victim, 3+ a TEAM move. Counted from the `J_Hips` roots in the 871-bone
+   * source by tools/anim/inspect.mjs, because the bake only ever sees the
+   * 22-bone reduction and cannot tell. Absent means one, and nothing changes.
+   */
+  bodies?: number;
+  /**
    * Which way the strike travels in the body's own frame: +1 is straight at
    * the opponent, 0 square sideways, -1 directly away.
    */
@@ -498,6 +505,46 @@ export function markTurnsAway(manifest: Record<string, BakedManifestEntry>): Set
  *
  * Unknown clips are allowed, so a checkout with no bake behaves as before.
  */
+/**
+ * A TEAM MOVE CANNOT BE PERFORMED BY ONE MAN.
+ *
+ * Owner: "some of them will say double superkick or assisted cutter or
+ * assisted diving senton — those are tag team moves."
+ *
+ * He was right about every one he named, and MEASURED across the source
+ * bank it is worse than the names suggest: 68 captures have three or more
+ * performing bodies and TWELVE are baked into the game — eight of them into
+ * the `idle` slot, two into attack slots. The bake squashes every capture
+ * onto ONE 58-joint skeleton, so a fighter playing one of these performs a
+ * blend of his partner's and his victim's motion at the same time. That is
+ * the "animations are real weird" and the body-twisting being reported, and
+ * it is not a rig fault or a retarget fault — it is three people's motion on
+ * one body.
+ *
+ * Refused for a solo slot, exactly like a T-pose or a clip that starts on
+ * the mat. Nothing is deleted: the captures stay banked, and they are what a
+ * real tag system will play once there is a partner to play them with.
+ */
+const TEAM_BODY_MIN = 3;
+let teamCaptures = new Set<string>();
+
+export function clipIsTeamCapture(name: string): boolean {
+  return teamCaptures.has(name);
+}
+
+export function teamCaptureClips(): ReadonlySet<string> {
+  return teamCaptures;
+}
+
+export function markTeamCaptures(manifest: Record<string, BakedManifestEntry>): Set<string> {
+  const out = new Set<string>();
+  for (const [name, m] of Object.entries(manifest)) {
+    if ((m.bodies ?? 1) >= TEAM_BODY_MIN) out.add(name);
+  }
+  teamCaptures = out;
+  return out;
+}
+
 export function clipStandsUpright(name: string): boolean {
   return !inverted.has(name);
 }
@@ -794,6 +841,8 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
     // The opponent's half of every grapple, read off the same index rather
     // than a second fetch. See engine/combat/GrapplePairing.
     markGrapplePairs(manifest);
+    // A three-body capture is not a solo move. See markTeamCaptures.
+    markTeamCaptures(manifest);
     // SLOT OWNERS FIRST. Actions register in order and the first clip for a
     // semantic wins, so the clip the bake chose for a combat state has to be
     // seen before any clip that merely infers the same state from its name.
@@ -860,6 +909,7 @@ export function resetBakedMotionBankForTest(): void {
   notStandable = new Set();
   notAPose = new Set();
   notAnimated = new Set();
+  teamCaptures = new Set();
   slotOwners = new Map();
   strikesBackwards = new Set();
   inverted = new Set();

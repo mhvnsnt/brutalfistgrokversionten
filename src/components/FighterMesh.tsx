@@ -19,7 +19,7 @@ import {
   type AnimationIntegrityReport,
 } from '../engine/combat/AnimationIntegrityGate';
 import { COMBAT_STATE_TO_SEMANTIC, SEMANTIC_STATE_ALIASES, inferSemanticStateFromClipName } from '../engine/retarget/SemanticStateAliases';
-import { clipAnimates, clipKeepsFacing, clipStandsUpright, clipStartsStanding, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
+import { clipAnimates, clipIsTeamCapture, clipKeepsFacing, clipStandsUpright, clipStartsStanding, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
 import { clipsLabelledFor, isReceivingClip, labelRefuses } from '../engine/assets/moveLabels';
 import { isThrowVictimClip } from '../engine/combat/GrapplePairing';
 import { AnimationBridge } from '../../animation_bridge/retarget';
@@ -416,6 +416,11 @@ function resolveClipName(
   const usable = (c: string, forAttack = true) =>
     !labelRefuses(c)
     && clipAnimates(c)
+    // A CAPTURE OF THREE WRESTLERS IS NOT A MOVE ONE MAN CAN DO. Twelve of
+    // these are in the game, eight of them filling the IDLE slot, and a
+    // fighter playing one performs his partner's and his victim's motion at
+    // the same time. That is the weird twisting, and no rig work fixes it.
+    && !clipIsTeamCapture(c)
     && clipStandsUpright(c)
     && clipStartsStanding(c)
     // A CLIP HE TAGGED AS A REACTION IS NEVER AN ATTACK. This is the one
@@ -478,8 +483,11 @@ function resolveClipName(
     for (const picked of clipsLabelledFor(semanticState)) {
       if (actions[picked] && usable(picked, attackSlot)) return picked;
     }
+    // THE BAKE'S PICK STILL HAS TO BE PLAYABLE. This returned the slot
+    // owner unchecked, so a clip the gates refuse everywhere else could
+    // still reach the screen by owning a slot.
     const owner = slotOwnerFor(semanticState);
-    if (owner && actions[owner]) return owner;
+    if (owner && actions[owner] && usable(owner, attackSlot)) return owner;
     if (actions[semanticState] && usable(semanticState, attackSlot)) return semanticState;
     const aliases = SEMANTIC_STATE_ALIASES[semanticState] ?? [semanticState];
     const semanticFound = byAliasOrder(aliases);
