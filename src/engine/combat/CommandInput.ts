@@ -250,6 +250,18 @@ export function scoreMove(move: MatchableMove, buffer: CommandBuffer, ctx: Match
     if (steps.length === 1) return 1;
   }
 
+  // SINGLE-STEP DIRECTIONAL COMMANDS ARE EDGE-EXACT.
+  //
+  // A buffered 2 from a previous crouch must never survive long enough to
+  // turn a later 6+P into a crouching attack. Multi-step motions may skip
+  // intervening directions; a one-step directional attack cannot. The newest
+  // button edge is the command the player just asked for.
+  if (steps.length === 1 && !lastStep.hold) {
+    const newest = buffer.events[buffer.events.length - 1];
+    if (!newest || !stepMatches(lastStep, newest)) return -1;
+    return 1;
+  }
+
   let stepIndex = steps.length - 1;
   let eventIndex = buffer.events.length - 1;
   let matched = 0;
