@@ -71,3 +71,11 @@ Added a real open-animation intake lane for Quaternius UAL1/UAL2. The new scanne
 - Each authored clip is now loaded from `vendor/`, given CC0 provenance metadata, passed through the existing canonical Bannon bind-relative/constraint/grounding/semantic pipeline, and independently cross-checked with Three.js SkeletonUtils before promotion.
 - External-dependency `.gltf` files are deliberately not guessed around; the current intake admits self-contained GLB files and records failures.
 - This is implementation evidence, not verification evidence: actual vendor bytes, bake counts, CI, and PWA runtime behavior still need fresh execution.
+
+
+## 2026-09-21 — Fighter-specific move promotion pass
+
+- `tools/moves/map_commands.mjs` now reads the authored Bannon roster's `fightingStyle`, speed, and strength metadata when selecting measured attack clips; deterministic per-fighter seeding remains in place, so selection is reproducible rather than random.
+- `package.json` now runs the full directional moveset generator immediately after the canonical animation bake during dev/build, producing `public/motion/movesets.json` and `public/motion/command-clips.json` for the PWA runtime.
+- The generator continues to refuse receiving/team/inverted/non-animated/non-reaching clips rather than turning unsuitable source material into filler attacks.
+- Runtime already consumes both generated artifacts through `BakedMotionBank`; this pass closes the build-to-runtime generation gap. Fresh CI/PWA execution is still required before calling it VERIFIED.
