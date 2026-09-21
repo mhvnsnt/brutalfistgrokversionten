@@ -263,7 +263,17 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
   const previewing = hovered ?? selected;
 
   const models = useMemo(() => [...new Set(BANNON_GLB_PLAYABLE_MODELS.map((m) => m.model))], []);
-  const [model, setModel] = useState(() => models.find((m) => m.startsWith('BANNON_rigged')) ?? models[0]);
+  // REGRESSION GUARD: models is populated by useMemo after the first render,
+  // but useState's initializer runs only once. Initialising model from the
+  // first-render empty array left the editor with an undefined GLB URL and a
+  // blank preview. The list itself still rendered, which made this look like
+  // an animation/asset failure instead of an editor state bug.
+  const preferredModel = models.find((m) => m.startsWith('BANNON_rigged')) ?? models[0] ?? '';
+  const [model, setModel] = useState('');
+  useEffect(() => {
+    if (!model && preferredModel) setModel(preferredModel);
+    else if (model && !models.includes(model) && preferredModel) setModel(preferredModel);
+  }, [model, models, preferredModel]);
 
   useEffect(() => { setLabels(loadMoveLabels()); }, []);
 
