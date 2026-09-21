@@ -296,7 +296,7 @@ export function matchCommand<T extends MatchableMove>(
   let best: MatchResult<T> | null = null;
 
   for (const move of moves) {
-    if (move.stance && ctx.stance && move.stance !== ctx.stance) continue;
+    if (move.stance && move.stance !== ctx.stance) continue;
     if (move.flags?.includes('FOLLOWUP_ONLY') && !ctx.availableFollowups?.has(move.name)) continue;
 
     const steps = scoreMove(move, buffer, ctx);
