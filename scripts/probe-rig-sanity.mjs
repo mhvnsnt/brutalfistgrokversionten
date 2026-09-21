@@ -94,7 +94,7 @@ await page.evaluate(() => {
    */
   w.__RIG_REPORT = {
     frames: 0, tpose: [], twist: [], float: [], heights: [], byClip: {},
-    rigsSeen: 0, boneCounts: [], travel: 0, _prev: null, clipsSeen: {},
+    rigsSeen: 0, boneCounts: [], travel: 0, _prev: null, clipsSeen: {}, bodyY: [], headSizes: [], _q: {},
   };
   const HINGES = {
     mixamorigLeftForeArm: 1, mixamorigRightForeArm: 1,
@@ -158,6 +158,36 @@ await page.evaluate(() => {
         R.heights.push(low);
         if (low > 0.12) { R.float.push({ who, clip, y: +low.toFixed(3) }); by.float++; }
       }
+      /**
+       * IS THE BODY ON THE MAT, not just the ankle bone?
+       *
+       * Owner: "they're floating like half a head or a head off of the
+       * ground." A foot BONE sits at the ankle, several centimetres above
+       * the sole, so "the foot bone is at y=0" and "the body is touching the
+       * floor" are different claims and only the second one is his. This
+       * measures the rendered MESH's lowest point in world space.
+       */
+      m.geometry.computeBoundingBox();
+      const bb = m.geometry.boundingBox;
+      if (bb) {
+        // The skinned bounds move with the pose, so take the drawn mesh's
+        // world box rather than the bind box.
+        const soleY = (() => {
+          let lo = Infinity;
+          for (const b of m.skeleton.bones) {
+            if (!/Foot|Toe/i.test(b.name)) continue;
+            const e = b.matrixWorld.elements;
+            lo = Math.min(lo, e[13]);
+          }
+          return lo;
+        })();
+        const headY = head ? head.y : null;
+        if (Number.isFinite(soleY) && headY !== null) {
+          const headSize = Math.max(0.01, (headY - soleY) / 7.5); // a body is ~7.5 heads
+          R.bodyY.push(soleY);
+          R.headSizes.push(headSize);
+        }
+      }
 
       // ── T-POSE: arms out sideways, not forward ───────────────────────
       const lS = get('mixamorigLeftArm'), rS = get('mixamorigRightArm');
@@ -179,40 +209,41 @@ await page.evaluate(() => {
 
       // ── TWIST: a hinge rotated about its own length ──────────────────
       /**
-       * A HINGE HAS EXACTLY ONE AXIS IT MAY TURN ABOUT.
+       * A BONE THAT SNAPS — which is what a glitch actually looks like.
        *
-       * MEASURED off the canonical GLB's node table, not assumed: every bone
-       * places its child at local (0, 1, 0), so a bone's LENGTH is Y.
-       * SkeletalLimits declares the elbow and the knee as hinges about Z.
-       * That leaves two illegal rotations and they look different on screen:
+       * Owner: "it looks like they're trying to do the right thing with some
+       * of the body parts, but then some of the other body parts are
+       * twisting and doing the wrong thing", and "making their body twist
+       * all around."
        *
-       *   TWIST about Y    the bone's own length. The mesh winds around the
-       *                    forearm while the hand barely moves. JOINT_LIMITS
-       *                    allows 12 degrees.
-       *   OFF-AXIS about X an elbow or knee bending SIDEWAYS, which a real
-       *                    one cannot do. HINGE_JOINTS.maxOffAxis is 18.
+       * THE PREVIOUS METRIC HERE WAS WRONG AND I SHIPPED ITS FINDING BEFORE
+       * DISPROVING IT. It compared each bone's raw local quaternion against
+       * an anatomical limit — but a local quaternion carries the rig's BIND
+       * rotation, so a perfectly normal forearm read as 64 degrees off its
+       * hinge. Measured relative to bind, the way constrainHinges actually
+       * works, every clip in the bank is inside its limits. A live probe
+       * cannot easily get at bind, so it should not pretend to.
        *
-       * THE FIRST VERSION OF THIS MEASURED ABOUT X AND CALLED IT TWIST. That
-       * is the wrong axis for that name, and it reports an ordinary bend as a
-       * defect. Both are measured now, each against the limit the bake itself
-       * declares, and each reported under its own name.
+       * What it CAN see, and what he is actually describing, is a POP: one
+       * bone jumping a long way in a single frame while the body around it
+       * moves normally. That is what a stranded bone does when a crossfade
+       * leaves it behind, and it needs no bind pose to detect — the bone's
+       * own previous orientation is the reference.
        */
-      for (const name of Object.keys(HINGES)) {
-        const b = B[name]; if (!b) continue;
+      const prevQ = (R._q[who] = R._q[who] ?? {});
+      for (const b of m.skeleton.bones) {
         const q = b.quaternion;
-        const about = (cx, cy, cz) => {
-          const v = q.x * cx + q.y * cy + q.z * cz;
-          return Math.abs(deg(2 * Math.atan2(Math.abs(v), Math.abs(q.w))));
-        };
-        const twistY = about(0, 1, 0);
-        const offX = about(1, 0, 0);
-        if (twistY > 25) {
-          R.twist.push({ who, clip, bone: name.replace('mixamorig', ''), kind: 'twist-Y', deg: Math.round(twistY) });
-          by.twist++;
-        } else if (offX > 35) {
-          R.twist.push({ who, clip, bone: name.replace('mixamorig', ''), kind: 'offaxis-X', deg: Math.round(offX) });
-          by.twist++;
+        const p0 = prevQ[b.name];
+        if (p0) {
+          let d = Math.abs(p0[0] * q.x + p0[1] * q.y + p0[2] * q.z + p0[3] * q.w);
+          d = Math.min(1, d);
+          const jump = deg(2 * Math.acos(d));
+          if (jump > 70) {
+            R.twist.push({ who, clip, bone: b.name.replace('mixamorig', ''), kind: 'snap', deg: Math.round(jump) });
+            by.twist++;
+          }
         }
+        prevQ[b.name] = [q.x, q.y, q.z, q.w];
       }
       void head;
     });
@@ -256,6 +287,8 @@ const R = await page.evaluate(() => {
     clips: Object.entries(r.clipsSeen).sort((a, b) => b[1] - a[1]).slice(0, 8),
     tpose: r.tpose.length, twist: r.twist.length, float: r.float.length,
     footP50: +q(0.5).toFixed(3), footP90: +q(0.9).toFixed(3), footMax: +(h[h.length - 1] ?? 0).toFixed(3),
+    bodyY: r.bodyY.length ? +(r.bodyY.reduce((s2, v) => s2 + v, 0) / r.bodyY.length).toFixed(3) : null,
+    headSize: r.headSizes.length ? +(r.headSizes.reduce((s2, v) => s2 + v, 0) / r.headSizes.length).toFixed(3) : null,
     tposeTop: r.tpose.slice(0, 4), twistTop: r.twist.slice(0, 6), floatTop: r.float.slice(0, 4),
     worst: Object.entries(r.byClip)
       .map(([c, v]) => ({ clip: c, ...v, bad: v.tpose + v.twist + v.float }))
@@ -272,9 +305,14 @@ if (R.clips.length <= 1) {
   console.log('  ⚠️  ONE CLIP FOR THE WHOLE RUN — this measured an idle, not combat. Nothing below means anything.');
 }
 console.log(`  T-POSE frames         ${R.tpose}`);
-console.log(`  TWISTED-HINGE frames  ${R.twist}`);
+console.log(`  BONE SNAPS            ${R.twist}  (a joint jumping >70 deg in one frame)`);
 console.log(`  FLOATING frames       ${R.float}  (lowest foot above 12 cm)`);
 console.log(`  lowest foot           p50 ${R.footP50}m   p90 ${R.footP90}m   worst ${R.footMax}m`);
+if (R.bodyY !== null) {
+  const heads = R.headSize ? (R.bodyY / R.headSize) : 0;
+  console.log(`  body above the mat    ${R.bodyY}m = ${heads.toFixed(2)} head-heights (a head measures ${R.headSize}m)`);
+  console.log(`                        ${Math.abs(heads) < 0.25 ? 'ON THE MAT' : 'FLOATING — this is the complaint'}`);
+}
 if (R.tposeTop.length) console.log('  t-pose e.g.  ' + R.tposeTop.map((x) => `${x.who}/${x.clip} spread ${x.spread}`).join(' | '));
 if (R.twistTop.length) console.log('  twist e.g.   ' + R.twistTop.map((x) => `${x.who}/${x.clip} ${x.bone} ${x.kind} ${x.deg}deg`).join(' | '));
 if (R.floatTop.length) console.log('  float e.g.   ' + R.floatTop.map((x) => `${x.who}/${x.clip} y=${x.y}`).join(' | '));

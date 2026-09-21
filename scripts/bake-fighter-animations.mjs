@@ -185,6 +185,20 @@ const AIRBORNE_PEAK_M = Number(process.env.BF_AIRBORNE_M ?? 0.5);
 const HEAD_RISE_M = Number(process.env.BF_HEAD_RISE_M ?? 0.10);
 
 /**
+ * THE BONES EVERY CLIP MUST SPEAK ABOUT. The union of everything any clip in
+ * the corpus drives — see the note at the rest-fill for why silence on a
+ * bone is not the same as saying nothing happens to it.
+ */
+const CANONICAL_DRIVEN = [
+  'mixamorigHips', 'mixamorigSpine', 'mixamorigSpine1', 'mixamorigSpine2',
+  'mixamorigNeck', 'mixamorigHead',
+  'mixamorigLeftShoulder', 'mixamorigLeftArm', 'mixamorigLeftForeArm', 'mixamorigLeftHand',
+  'mixamorigRightShoulder', 'mixamorigRightArm', 'mixamorigRightForeArm', 'mixamorigRightHand',
+  'mixamorigLeftUpLeg', 'mixamorigLeftLeg', 'mixamorigLeftFoot', 'mixamorigLeftToeBase',
+  'mixamorigRightUpLeg', 'mixamorigRightLeg', 'mixamorigRightFoot', 'mixamorigRightToeBase',
+];
+
+/**
  * States that are ON THE MAT by definition. A clip that answers one of these
  * is grounded however high the foot-lift measurement says its feet went —
  * see the note at `clipAirborne` for the four geometric signals that were
@@ -1276,6 +1290,57 @@ for (const src of sources()) {
       q: Array.from(track.values).map(round),
     };
   }
+  /**
+   * EVERY CLIP DRIVES THE SAME BONES, OR PARTS OF THE BODY GET STRANDED.
+   *
+   * Owner: "it looks like they're trying to do the right thing with some of
+   * the body parts, but then some of the other body parts are twisting and
+   * doing the wrong thing."
+   *
+   * MEASURED across the baked bank — the clips do NOT agree on which bones
+   * they drive, and they split into three groups:
+   *
+   *     151 clips  22 bones   the full set
+   *     166 clips  20 bones   MISSING both shoulders
+   *      41 clips  17 bones   missing head, hands, toes
+   *       8 clips  14 bones   missing head, hands, toes AND THE WHOLE SPINE
+   *                           (TIGER_FEINT_KICK, JUNGLE_JUICE, TZ_SCOOP_SLAM
+   *                            — the owner's own captures)
+   *
+   * A three.js crossfade only blends tracks that EXIST. Go from a 22-bone
+   * clip to a 20-bone one and the shoulders have nothing on the far side, so
+   * they hold whatever the outgoing clip last put them at while the rest of
+   * the body moves on. Go into one of the 14-bone captures and the ENTIRE
+   * TORSO is stranded at the previous pose. That is precisely "some parts
+   * doing the right thing and other parts doing the wrong thing", and no
+   * amount of work on the clips themselves fixes it, because the defect is
+   * in what they DO NOT say.
+   *
+   * So a clip that does not drive a bone now says so explicitly, with one
+   * key at the REST pose. "This clip does not move your shoulder" is a
+   * statement; silence is not, and silence is what leaked the last pose
+   * through. Two keys rather than one, because a single-key quaternion
+   * track is legal but reads oddly in some tooling, and the cost is nil.
+   */
+  {
+    const filled = [];
+    for (const bone of CANONICAL_DRIVEN) {
+      if (tracks[bone]) continue;
+      const q = bind.get(bone);
+      if (!q) continue;
+      tracks[bone] = {
+        t: [0, round(relative.duration || 0.0001)],
+        q: [round(q.x), round(q.y), round(q.z), round(q.w),
+            round(q.x), round(q.y), round(q.z), round(q.w)],
+      };
+      filled.push(bone);
+    }
+    if (filled.length) {
+      report.restFilled = (report.restFilled ?? 0) + 1;
+      report.restFilledBones = (report.restFilledBones ?? 0) + filled.length;
+    }
+  }
+
   if (Object.keys(tracks).length === 0) {
     report.skipped.push({ name: src.name, why: 'no tracks after constraints' });
     continue;
@@ -1504,6 +1569,7 @@ console.log(`  hinge corrections    ${report.hingeCorrections} track(s)`);
 console.log(`  convention twist    ${report.conventionTwistCorrections} track(s)`);
 console.log(`  limit corrections    ${report.limitCorrections} track(s)`);
 console.log(`  combat slots owned   ${report.slotOwners ?? 0}`);
+console.log(`  REST-FILLED          ${report.restFilled ?? 0} clip(s) had bones they never mentioned (${report.restFilledBones ?? 0} tracks added) — a crossfade was stranding those bones at the previous pose`);
 console.log(`  GRAPPLE PAIRS        ${report.grapplePairs} deliverer(s) now carry the opponent half`);
 if (report.grappleOrphanReceivers?.length) {
   console.log(`  RECEIVER, NO THROW   ${report.grappleOrphanReceivers.length} clip(s) of a body being thrown whose deliverer half was never imported`);

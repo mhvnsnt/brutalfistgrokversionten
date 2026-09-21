@@ -1023,6 +1023,8 @@
     }
   ],
   "regrounded": 124,
+  "restFilled": 215,
+  "restFilledBones": 601,
   "slotOwners": 6,
   "grapplePairs": 13,
   "grappleOrphanReceivers": [
