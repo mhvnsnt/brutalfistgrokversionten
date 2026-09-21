@@ -1536,7 +1536,7 @@ export default function GameBattleArena({
         if (inRange) {
           const throwDef = THROW_CATALOG[detectedThrowId!];
           if (throwDef) {
-            p2SMRef.current.beginIncomingThrowBreak(0);
+            p2SMRef.current.beginIncomingThrowBreak(0, throwDef.breakButton);
             directionalThrowPendingRef.current = {
               attacker: 'p1',
               defender: 'p2',
@@ -1915,7 +1915,7 @@ export default function GameBattleArena({
           p1XRef.current, p1ZRef.current,
         );
         if (inRange && THROW_CATALOG[aiDirectionalThrowId]) {
-          p1SMRef.current.beginIncomingThrowBreak(0, THROW_CATALOG[detectedThrowId].breakButton);
+          p1SMRef.current.beginIncomingThrowBreak(0, THROW_CATALOG[aiDirectionalThrowId].breakButton);
           directionalThrowPendingRef.current = {
             attacker: 'p2',
             defender: 'p1',
