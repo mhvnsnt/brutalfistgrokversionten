@@ -12,8 +12,8 @@
   "conventionTwistCorrections": 161,
   "limitCorrections": 1685,
   "spineRedistributed": 166,
-  "grounded": 324,
-  "groundedTotal": 64.52671181512659,
+  "grounded": 349,
+  "groundedTotal": 66.21378957493323,
   "airborne": 69,
   "cappedShift": 1,
   "cappedClips": [
@@ -1022,7 +1022,6 @@
       "twist": 179.1
     }
   ],
-  "regrounded": 124,
   "restFilled": 215,
   "restFilledBones": 601,
   "slotOwners": 6,

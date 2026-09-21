@@ -771,7 +771,15 @@ function correctInvertedLegs(clip) {
   return { before, after: best.after, axis: best.axis, side: best.side };
 }
 
-function groundingOffset(clip) {
+/**
+ * @param clip
+ * @param forceGrounded when the clip's SLOT says it is on the mat, whatever
+ *   the foot-lift measurement thinks. See GROUNDED_SEMANTICS and the note at
+ *   `clipAirborne` — an idle, a walk, a crouch, a taunt or a getup cannot be
+ *   airborne, and in a rotation-only bank the measurement cannot tell a
+ *   crouch from a jump.
+ */
+function groundingOffset(clip, forceGrounded = false) {
   // DENSER THAN THE KEYS, still: the minimum has to be the true minimum of
   // the motion, not of the sparse keys, or a clip dips through the mat
   // between two samples.
@@ -886,11 +894,31 @@ function groundingOffset(clip) {
     posture.medianArmForward = arms.length ? arms[Math.floor(arms.length / 2)] : 0;
     posture.medianArmSpread = spread.length ? spread[Math.floor(spread.length / 2)] : 0;
   }
-  const raw = airborne ? Math.min(0, -minLift) : -minLift;
+  /**
+   * TWO PLACES DECIDED "AIRBORNE" AND THEY DISAGREED.
+   *
+   * This function decides it from the foot lift, and the caller then
+   * overrides that decision for any clip whose SLOT says it is on the mat.
+   * But the OFFSET was computed here, with the local verdict — so a clip the
+   * caller re-grounded still had its offset zeroed on the way out, and the
+   * per-frame branch it then qualified for never ran because
+   * `ground.applied` was false. It fell between the two.
+   *
+   * MEASURED: 25 clips landed in that gap and got NO pelvis track at all,
+   * with their lowest foot 5 to 11 cm THROUGH the mat — NECKBREAKER -9,
+   * ARMADA -7, HURRICANERANA -8, CORKSCREW_KIP_UP -10, BREAKDANCE_FOOTWORK_3
+   * -11. Exactly the clips the semantic fix was supposed to rescue.
+   *
+   * One decision now, taken before the offset is derived from it.
+   */
+  const reallyAirborne = airborne && !forceGrounded;
+  const raw = reallyAirborne ? Math.min(0, -minLift) : -minLift;
   const capped = Math.abs(raw) > MAX_GROUND_SHIFT_M;
   const offset = Math.max(-MAX_GROUND_SHIFT_M, Math.min(MAX_GROUND_SHIFT_M, raw));
   return {
-    airborne,
+    airborne: reallyAirborne,
+    /** What the foot lift alone said, kept for the report. */
+    airborneByLift: airborne,
     headRise: +headRise.toFixed(4),
     liftFrac: +liftFrac.toFixed(3),
     legDownAtPeak: +legDownAtPeak.toFixed(4),
@@ -1209,7 +1237,10 @@ for (const src of sources()) {
   // Measure the clip against the canonical floor. The correction is ONE
   // constant key, never a per-frame track — see groundingOffset for why the
   // per-frame version had to go and why removing it outright was not the fix.
-  const ground = groundingOffset(relative);
+  // The slot decides whether this clip is allowed to be airborne, and it has
+  // to decide BEFORE the offset is derived — see the note in groundingOffset.
+  const semanticForGrounding0 = SLOT_OWNER.get(src.name) ?? inferSemanticFromMotionKey(src.name);
+  const ground = groundingOffset(relative, GROUNDED_SEMANTICS.has(semanticForGrounding0));
   strikeOf.set(src.name, measureStrikeDirection(relative));
   if (DEBUG_GROUND.has(src.name)) {
     console.log(`  [ground] ${src.name} min=${(ground?.minLift ?? NaN).toFixed(4)} max=${(ground?.maxLift ?? NaN).toFixed(4)} offset=${(ground?.offset ?? 0).toFixed(4)} airborne=${ground?.airborne}`);
