@@ -36,7 +36,7 @@ import {
   CANONICAL_SKELETON_MODEL,
   loadCanonicalSkeleton,
 } from '../src/engine/retarget/CanonicalSkeleton.ts';
-import { bindClipTracksToTargetBones } from '../src/engine/retarget/AnimationRetargeter.ts';
+import { bindClipTracksToTargetBones, resolveToCanonicalBone } from '../src/engine/retarget/AnimationRetargeter.ts';
 import { makeClipBindRelative } from '../src/engine/retarget/BindRelativeMotion.ts';
 import { sanitizeMotionClip } from '../src/engine/retarget/neutralizeRootMotion.ts';
 import {
@@ -1016,7 +1016,13 @@ async function loadQuaterniusSources() {
           continue;
         }
         const sourceRest = sourceRestFromRoot(sourceRoot);
-        const targetRest = sourceRest;
+        const targetRest = new Map();
+        for (const [sourceBone, q] of sourceRest) {
+          const canonical = resolveToCanonicalBone(sourceBone);
+          if (!canonical) continue;
+          const targetBone = boneNames.find((name) => resolveToCanonicalBone(name) === canonical);
+          if (targetBone) targetRest.set(targetBone, q.clone());
+        }
         for (let i = 0; i < clips.length; i++) {
           const clip = clips[i];
           const clipName = `${name}_${clip.name || `clip_${i + 1}`}`.replace(/[^A-Za-z0-9_-]+/g, '_');
@@ -1026,7 +1032,11 @@ async function loadQuaterniusSources() {
               skeleton.root,
               skinned.skeleton,
               clip,
-              Object.fromEntries(skinned.skeleton.bones.map((b) => [b.name, b.name])),
+              Object.fromEntries(boneNames.map((targetBone) => {
+                const canonical = resolveToCanonicalBone(targetBone);
+                const sourceBone = skinned.skeleton.bones.find((b) => resolveToCanonicalBone(b.name) === canonical);
+                return [targetBone, sourceBone?.name ?? targetBone];
+              })),
             );
           } catch (e) {
             report.quaterniusReferenceErrors = (report.quaterniusReferenceErrors ?? 0) + 1;
@@ -1037,7 +1047,11 @@ async function loadQuaterniusSources() {
             bank: pack.toLowerCase(),
             name: clipName,
             clip,
-            sourceRest,
+            sourceRest: new Map([...sourceRest].map(([sourceBone, q]) => {
+              const canonical = resolveToCanonicalBone(sourceBone);
+              const targetBone = canonical ? boneNames.find((name) => resolveToCanonicalBone(name) === canonical) : null;
+              return [targetBone ?? sourceBone, q.clone()];
+            })),
             targetRest,
             provenance: {
               pack,
