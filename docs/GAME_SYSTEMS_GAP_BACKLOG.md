@@ -1302,3 +1302,10 @@ Commits:
 - bb78437ec3e00759879fa5d09a8d5d6c9b64920d — generic command-throw catalog-reference repair
 
 **Still not VERIFIED:** no fresh live runtime/test execution has been recorded after these commits. The full directional-throw system still requires runtime evidence for player and AI attacker directions, all throw families, correct/wrong break behavior, and out-of-range whiff behavior.
+
+## Open animation intake implementation pass — 2026-09-21
+
+- [x] **CC0 pack intake scanner** — `IMPLEMENTED`. Added `scripts/sync-open-animation-sources.mjs` for Quaternius Universal Animation Library 1/2. It indexes only real files physically present under `vendor/quaternius-ual-1/` and `vendor/quaternius-ual-2/`; it does not fabricate or silently download bytes.
+- [x] **Candidate motion-role inventory** — `IMPLEMENTED`. The scanner emits conservative candidate roles for locomotion, attacks, defense, reactions, throws and recovery. These are candidate roles only; ownership still comes from authored metadata and the bake gates.
+- [ ] **Bulk CC0 clip import** — `IN PROGRESS`. The repository now has the intake lane and build/dev scan hook, but no claim is made that the packs are present until their actual files are supplied and scanned.
+- [ ] **Bulk CC0 retarget + bake** — `IN PROGRESS`. Once real pack files exist under `vendor/`, route them through canonical retarget, independent SkeletonUtils cross-check, bind/rest, skin/joint, floor/facing, joint-limit and semantic-owner gates before promotion.
