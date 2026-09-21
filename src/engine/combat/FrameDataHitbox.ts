@@ -117,11 +117,22 @@ const SPECIAL_HITBOX: Partial<HitboxGeometry> = {
 export function buildHitboxFromMove(move: MoveWindow): HitboxGeometry {
   const base = HITBOX_DEFAULTS[move.animation] ?? HITBOX_DEFAULTS.lightAttack;
   const special = move.isSpecial ? SPECIAL_HITBOX : {};
+  // Prefer the actual baked strike-limb reach when the move has one.
+  // Generic legacy moves retain their established geometry. For generated
+  // directional moves this keeps contact tied to the animation instead of
+  // giving every punch/kick the same oversized 2m-ish envelope.
+  const reach = move.contactReach;
+  const contactOffset = reach !== undefined
+    ? Math.max(0.25, reach * 0.72)
+    : 0.6;
+  const contactWidth = reach !== undefined
+    ? Math.max(0.30, Math.min(1.05, reach * 0.56))
+    : 0.8;
   return {
-    offsetX: 0.6,
+    offsetX: contactOffset,
     offsetZ: 0.0,
-    width: 0.8,
-    depth: 0.6,
+    width: contactWidth,
+    depth: reach !== undefined ? Math.max(0.35, Math.min(0.75, reach * 0.48)) : 0.6,
     hitstun: 0.25,
     blockstun: 0.15,
     pushback: 0.3,
