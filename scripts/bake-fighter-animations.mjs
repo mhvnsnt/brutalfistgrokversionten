@@ -30,6 +30,7 @@
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 import {
   CANONICAL_SKELETON_MODEL,
@@ -57,6 +58,7 @@ import {
   SCHWARZERBLITZ_REST_CLIP,
 } from '../src/engine/retarget/SchwarzerblitzMotionBank.ts';
 import { inferSemanticFromMotionKey } from '../src/engine/retarget/BannonEulerMotionAdapter.ts';
+import { referenceRetargetClip } from '../src/engine/retarget/SkeletonUtilsReference.ts';
 
 const gate = process.argv.includes('--gate');
 const outIdx = process.argv.indexOf('--out');
@@ -956,6 +958,121 @@ function groundingOffset(clip, forceGrounded = false) {
   };
 }
 
+function sourceRestFromRoot(root) {
+  const rest = new Map();
+  root.traverse((node) => {
+    if (!node.isBone || !node.name || rest.has(node.name)) return;
+    rest.set(node.name, node.quaternion.clone());
+  });
+  return rest;
+}
+
+function collectSkinnedRoot(root) {
+  let skinned = null;
+  root.traverse((node) => {
+    if (!skinned && node.isSkinnedMesh && node.skeleton) skinned = node;
+  });
+  return skinned;
+}
+
+/**
+ * Load a real Quaternius GLB and turn every authored AnimationClip into a
+ * normal bake source. The canonical Bannon retargeter remains authoritative;
+ * SkeletonUtils is used only as an independent cross-check.
+ *
+ * Only GLB is admitted here. A .gltf that depends on external buffers/textures
+ * cannot be safely parsed in a hermetic Node bake without first materializing
+ * those dependencies, so it is reported rather than guessed around.
+ */
+async function loadQuaterniusSources() {
+  const out = [];
+  const loader = new GLTFLoader();
+  const roots = [
+    ['quaternius-ual-1', 'UAL1'],
+    ['quaternius-ual-2', 'UAL2'],
+  ];
+  for (const [dir, pack] of roots) {
+    const rootDir = join('vendor', dir);
+    let files = [];
+    try {
+      files = readdirRecursive(rootDir);
+    } catch {
+      continue;
+    }
+    for (const file of files.filter((p) => /\\.glb$/i.test(p))) {
+      const name = `${pack}_${file.replaceAll('\\\\', '_').replace(/\\.[^.]+$/i, '').replace(/[^A-Za-z0-9_-]+/g, '_')}`;
+      try {
+        const bytes = readFileSync(file);
+        const gltf = await loader.parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), file);
+        const sourceRoot = gltf.scene;
+        const skinned = collectSkinnedRoot(sourceRoot);
+        if (!skinned?.skeleton) {
+          report.skipped.push({ name, why: 'Quaternius GLB has no skinned skeleton' });
+          continue;
+        }
+        const clips = gltf.animations ?? [];
+        if (!clips.length) {
+          report.skipped.push({ name, why: 'Quaternius GLB has no animation clips' });
+          continue;
+        }
+        const sourceRest = sourceRestFromRoot(sourceRoot);
+        const targetRest = sourceRest;
+        for (let i = 0; i < clips.length; i++) {
+          const clip = clips[i];
+          const clipName = `${name}_${clip.name || `clip_${i + 1}`}`.replace(/[^A-Za-z0-9_-]+/g, '_');
+          let reference;
+          try {
+            reference = referenceRetargetClip(
+              skeleton.root,
+              skinned.skeleton,
+              clip,
+              Object.fromEntries(skinned.skeleton.bones.map((b) => [b.name, b.name])),
+            );
+          } catch (e) {
+            report.quaterniusReferenceErrors = (report.quaterniusReferenceErrors ?? 0) + 1;
+            report.skipped.push({ name: clipName, why: `SkeletonUtils cross-check failed: ${e.message}` });
+            continue;
+          }
+          const source = {
+            bank: pack.toLowerCase(),
+            name: clipName,
+            clip,
+            sourceRest,
+            targetRest,
+            provenance: {
+              pack,
+              license: 'CC0-1.0',
+              path: file,
+              originalName: clip.name || `clip_${i + 1}`,
+              referenceMappedTracks: reference.mappedTracks,
+              referenceSourceBones: reference.sourceBones,
+              referenceTargetBones: reference.targetBones,
+            },
+          };
+          out.push(source);
+        }
+      } catch (e) {
+        report.skipped.push({ name, why: `Quaternius GLB unreadable: ${e.message}` });
+      }
+    }
+  }
+  report.quaterniusSources = out.length;
+  return out;
+}
+
+function readdirRecursive(root) {
+  const out = [];
+  function walk(dir) {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, entry.name);
+      if (entry.isDirectory()) walk(p);
+      else out.push(p);
+    }
+  }
+  walk(root);
+  return out;
+}
+
 function sources() {
   const out = [];
 
@@ -999,6 +1116,8 @@ function clipFromEulerFile(name, file) {
 }
 
 const report = {
+  quaterniusSources: 0,
+  quaterniusReferenceErrors: 0,
   skeleton: CANONICAL_SKELETON_MODEL,
   joints: boneNames.length,
   baked: 0,
@@ -1171,7 +1290,7 @@ const bodiesIn = (name) => CLIP_BODIES[name]?.active ?? CLIP_BODIES[name.toUpper
 
 const manifest = {};
 
-for (const src of sources()) {
+for (const src of [...sources(), ...(await loadQuaterniusSources())]) {
   let clip;
   try {
     clip = src.clip ?? clipFromEulerFile(src.name, src.file);
@@ -1497,6 +1616,7 @@ for (const src of sources()) {
       // wins when actions are registered.
       owns: Boolean(slot),
       tracks,
+      provenance: src.provenance,
     }),
   );
   manifest[src.name] = {
@@ -1509,6 +1629,7 @@ for (const src of sources()) {
     semantic,
     owns: Boolean(slot),
     airborne: clipAirborne,
+    provenance: src.provenance,
     /**
      * PERFORMING BODIES IN THE SOURCE CAPTURE. 1 is a solo move, 2 is
      * attacker and victim, 3 or more is a TEAM move that cannot be played by
@@ -1594,6 +1715,7 @@ writeFileSync(join(OUT, '..', 'baked-report.json'), JSON.stringify({
 
 console.log(`BAKED ONTO ${CANONICAL_SKELETON_MODEL} (${boneNames.length} joints)`);
 console.log(`  clips written        ${report.baked}`);
+console.log(`  Quaternius clips      ${report.quaterniusSources} (SkeletonUtils reference errors ${report.quaterniusReferenceErrors})`);
 console.log(`  skipped              ${report.skipped.length}`);
 console.log(`  spine redistributed  ${report.spineRedistributed} clip(s)`);
 console.log(`  hinge corrections    ${report.hingeCorrections} track(s)`);
