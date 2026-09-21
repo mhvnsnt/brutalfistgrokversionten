@@ -128,6 +128,7 @@ function score(clip, want, used, seed) {
   if (used.has(clip.name)) s -= 8;
   // A stable per-fighter jitter, so two fighters differ but each is himself.
   s += seedOf(clip.name + seed) * 1.4;
+  s += styleBias(seed, clip, want);
   return s;
 }
 
@@ -163,6 +164,27 @@ const commandsFor = (set) => schwarzerblitzSpecials(set)
     dirs: m.command.flatMap((s) => s.dirs),
     kick: m.command.some((s) => s.buttons.some((b) => /K/.test(b))),
   }));
+
+const { BANNON_ROSTER } = await import('../../src/data/bannonRoster.ts');
+const PROFILE = new Map(BANNON_ROSTER.map((f) => [f.id, f]));
+
+function styleBias(fighterId, clip, want) {
+  const f = PROFILE.get(fighterId);
+  if (!f) return 0;
+  const style = String(f.fightingStyle ?? '').toLowerCase();
+  let s = 0;
+  const n = clip.name.toLowerCase();
+  const power = /power|brawler|brutal|grapple|wrestl|enforcer|endurance|impact|slam|throw|suplex|bomb/.test(style);
+  const speed = /speed|agility|striker|technical|precision|evasive|aerial|rapid|chaos|spinning/.test(style);
+  const aerial = /aerial|high-fly/.test(style);
+  if (power) s += (clip.foot + clip.hand) * 0.7 + (/slam|throw|suplex|clothesline|upper|hammer/.test(n) ? 0.9 : 0);
+  if (speed) s += Math.max(0, 1.0 - clip.dur) * 1.2 + (/spin|kick|jab|quick|combo|rush/.test(n) ? 0.45 : 0);
+  if (aerial && (clip.airborne || clip.lift > 0.55)) s += 1.5;
+  if (!aerial && clip.airborne) s -= 0.45;
+  if (f.strength >= 88 && want.kick === false) s += clip.hand * 0.35;
+  if (f.speed >= 90) s += Math.max(0, 0.8 - clip.dur) * 0.35;
+  return s;
+}
 
 const ROSTER = process.env.BF_ROSTER
   ? process.env.BF_ROSTER.split(',')
