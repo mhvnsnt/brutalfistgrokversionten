@@ -563,6 +563,9 @@ export interface CombatArena3DProps {
   p2State: string;
   p1Animation: string;
   p2Animation: string;
+  /** The clip THIS command plays — see FighterMesh.attackClip. */
+  p1AttackClip?: string | null;
+  p2AttackClip?: string | null;
   /**
    * Which clip each body ACTUALLY ended up playing, straight from the thing
    * that chose it. The arena needs the deliverer's real clip name to look up
@@ -634,6 +637,8 @@ export default function CombatArena3D({
   p2State,
   p1Animation,
   p2Animation,
+  p1AttackClip,
+  p2AttackClip,
   onClipResolved,
   p1Color,
   p2Color,
@@ -948,6 +953,7 @@ export default function CombatArena3D({
           locomotionVelocity={p1LocomotionVelocity}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP1BoneHitboxReady}
+          attackClip={p1AttackClip}
           onClipResolved={(clip, inputKey) => onClipResolved?.('p1', clip, inputKey)}
           onModelReady={(ok) => onFighterReady?.('p1', ok)}
           onDeformationBlocked={(characterName, failingChecks) => {
@@ -976,6 +982,7 @@ export default function CombatArena3D({
           locomotionVelocity={p2LocomotionVelocity}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP2BoneHitboxReady}
+          attackClip={p2AttackClip}
           onClipResolved={(clip, inputKey) => onClipResolved?.('p2', clip, inputKey)}
           onModelReady={(ok) => onFighterReady?.('p2', ok)}
           onDeformationBlocked={(characterName, failingChecks) => {

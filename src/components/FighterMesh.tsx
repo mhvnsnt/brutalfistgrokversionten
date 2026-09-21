@@ -128,6 +128,21 @@ export interface FighterMeshProps {
    * says what it picked instead of being asked again.
    */
   onClipResolved?: (clip: string | null, inputKey: string) => void;
+  /**
+   * THE CLIP THIS PARTICULAR COMMAND PLAYS.
+   *
+   * Owner: "it's boring when all fighters are doing the same 4 attacks the
+   * whole fight." MEASURED: 26 directional commands resolved to THREE
+   * animations, because every one of them named a generic motion state.
+   *
+   * Deliberately SEPARATE from `state` and `animation`. Those two decide
+   * what the fighter is DOING — and `ATTACK_STATES`, the root-motion
+   * profiles, the hit window and the attack lock are all keyed off them. If
+   * the specific clip were pushed through the same channel, a punch would
+   * stop being recognised as a punch. This only swaps which animation is
+   * played for a move that is otherwise unchanged.
+   */
+  attackClip?: string | null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -598,6 +613,7 @@ function FighterMeshInner({
   onAnimationIntegrityReport,
   onModelReady,
   onClipResolved,
+  attackClip,
 }: {
   gltfUrl: string;
   state: string;
@@ -620,6 +636,7 @@ function FighterMeshInner({
   onAnimationIntegrityReport?: (report: AnimationIntegrityReport) => void;
   onModelReady?: (ok: boolean) => void;
   onClipResolved?: (clip: string | null, inputKey: string) => void;
+  attackClip?: string | null;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   /**
@@ -771,6 +788,15 @@ function FighterMeshInner({
       actions,
       stanceKit ? stancePreferences(stanceKit, inputKey) : [],
     ) as string | null;
+
+    // THE COMMAND'S OWN ANIMATION WINS. See `attackClip`: the move keeps its
+    // state, its windows and its root motion, and only the clip changes —
+    // which is the whole difference between a moveset and four swings.
+    // Refused clips are still refused: his BROKEN verdict and the team-capture
+    // gate both apply, so this can never smuggle one back in.
+    if (attackClip && actions[attackClip] && !labelRefuses(attackClip) && !clipIsTeamCapture(attackClip)) {
+      clipName = attackClip;
+    }
 
     const isAttack = ATTACK_STATES.has(inputKey);
     if (isAttack) {
@@ -997,7 +1023,7 @@ function FighterMeshInner({
   // another go. Without it a refusal is permanent, because an effect does not
   // re-run on unchanged inputs — see deferUntil.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, animation, animationTrigger, attackDurationSeconds, normalized, gltfUrl, deferTick]);
+  }, [state, animation, attackClip, animationTrigger, attackDurationSeconds, normalized, gltfUrl, deferTick]);
 
   // Idle kickstart is handled by the bind effect when `normalized` first lands.
   // A second auto-play effect was overwriting punches with breathing idle.
@@ -1147,6 +1173,7 @@ export function FighterMesh({
   onAnimationIntegrityReport,
   onModelReady,
   onClipResolved,
+  attackClip,
 }: FighterMeshProps) {
   // NO MODEL TO WAIT FOR. Say so immediately, or a caller holding the
   // cinematic open for this fighter waits for something that never arrives.
@@ -1174,6 +1201,7 @@ export function FighterMesh({
         onAnimationIntegrityReport={onAnimationIntegrityReport}
         onModelReady={onModelReady}
         onClipResolved={onClipResolved}
+        attackClip={attackClip}
       />
     </Suspense>
   );

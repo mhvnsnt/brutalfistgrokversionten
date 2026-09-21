@@ -663,6 +663,67 @@ takedown victim and a kip-up), and was reverted with the reason recorded in
 scripts/bake-fighter-animations.mjs. Whatever is done here has to be measured
 per clip and RENDERED before banking, per the owner law.
 
+## 21k. 26 COMMANDS, 3 ANIMATIONS — the moveset was real and looked like four swings
+
+Owner: "currently can only fire off 4 attacks and it's the base ones ... not
+forward P/K, jump RK, back, back-forward to fire off different moves like I
+been asking for. Full movesets and individual movesets so they're not all
+doing the same attacks. It's boring when all fighters are doing the same 4
+attacks the whole fight, that's not like Tekken at all."
+
+THE INPUTS WERE NEVER MISSING. MEASURED on the imported graph: 26 reachable
+directional commands across the two sets — `6P Dynamo Punch`, `4P Double
+Hammer`, `3P Rising Poke`, `9P Air Screw`, `1K Ducking Comet`, `8K Rising
+Blade`. Every one of them resolved to one of THREE animations:
+
+    chara_tutor    15 commands -> lightAttack x6, lightKick x6, heavyKick x3
+    chara_tutor2   11 commands -> lightAttack x6, lightKick x4, heavyKick x1
+
+Five different punches, all playing `lightAttack`. He was counting what he
+could SEE, and what he could see was four swings.
+
+### tools/moves/map_commands.mjs
+
+Assigns a distinct clip per command on the bake's own measurements, never on
+the name: which limb reaches and how far (`handReach` / `footReach`), whether
+the clip leaves the floor (`footLift`) for up-commands, how long it is, and
+the slot the bake already filed it under. Refused: team captures, clips of
+somebody being thrown, hit reactions (HIT_TO_BODY reaches forward exactly
+like a punch and is somebody BEING hit), clips that barely move, inverted
+ones, ones that start on the mat, and anything over 2.2 s.
+
+A reuse penalty spreads the list instead of letting every slot converge on
+the highest-reaching clip, and the choice is seeded per fighter — **two men
+on the same source set now share 18% of their clips instead of 100%.**
+
+Result: 15 and 11 DISTINCT clips where there were 3.
+
+### The channel it travels on, and the bug that was already there
+
+`activeClip()` had existed on the state machine the whole time and was read
+by exactly one thing: the debug overlay. The arena then pushed it into
+`p1Animation` — which becomes the mesh's `inputKey`, and the mesh decides
+whether a move IS AN ATTACK from that key: `ATTACK_STATES`, the root-motion
+profile, the hit window and the attack lock all read it. **So every authored
+special had quietly stopped being treated as an attack** — no retime to the
+move's window, no lunge, and an idle could interrupt the swing.
+
+`attackClip` is now its own prop. The move keeps its state, its windows and
+its root motion; only the animation changes.
+
+### Measured in a live match
+
+12 of 12 inputs produce an attack animation, 5 distinct across them. The
+repeats are the neutral inputs correctly falling back to the slot owner
+(`GRAFQUICKJAB` owns `attack_1`).
+
+NOT CLAIMED: that every directional variant MATCHES its command in play. At
+the ~2 fps swiftshader manages, a 260 ms directional hold can fall entirely
+between two frames, and this harness cannot separate "the command did not
+match" from "the harness never saw the direction". The mapping itself is
+proven offline — 15 and 11 distinct clips — and the in-game variety is
+measured; the matching rate is not.
+
 ## 21i. I CAN READ AN ANIMATION NOW — tools/anim/inspect.mjs
 
 Owner: "build a thing so you can accurately see all of the amount of skeleton

@@ -147,6 +147,16 @@ export default function GameBattleArena({
   const [p2State, setP2State] = useState<string>('Neutral');
   const [p1Animation, setP1Animation] = useState<string>('idle');
   const [p2Animation, setP2Animation] = useState<string>('idle');
+  /**
+   * WHICH ANIMATION THE CURRENT COMMAND PLAYS.
+   *
+   * `activeClip()` has existed on the state machine the whole time and was
+   * read by exactly one thing: the debug overlay. The move a player pressed
+   * knew which clip it wanted and nothing ever asked it, which is why 26
+   * directional commands all came out as the same three swings.
+   */
+  const [p1AttackClip, setP1AttackClip] = useState<string | null>(null);
+  const [p2AttackClip, setP2AttackClip] = useState<string | null>(null);
 
   /**
    * THE OPPONENT'S HALF OF A GRAPPLE.
@@ -384,8 +394,8 @@ export default function GameBattleArena({
     applyStageBounds(stageId as StageId);
     p1SMRef.current = new FighterStateMachine();
     p2SMRef.current = new FighterStateMachine();
-    p1SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id)));
-    p2SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id)));
+    p1SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id), p1Fighter.id));
+    p2SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id), p2Fighter.id));
     p1SMRef.current.attachCommandBuffer(p1CommandRef.current);
     p2SMRef.current.attachCommandBuffer(p2CommandRef.current);
     p1HitboxRef.current.reset();
@@ -697,8 +707,8 @@ export default function GameBattleArena({
     // The imported command list, plus the engine's own button specials
     // (registerSpecialMoves appends DEFAULT_SPECIAL_MOVES itself, so the
     // button sequences that already worked keep working).
-    p1SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id)));
-    p2SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id)));
+    p1SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id), p1Fighter.id));
+    p2SMRef.current.registerSpecialMoves(schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id), p2Fighter.id));
     p1SMRef.current.attachCommandBuffer(p1CommandRef.current);
     p2SMRef.current.attachCommandBuffer(p2CommandRef.current);
     p1HitboxRef.current.reset();
@@ -2095,8 +2105,19 @@ export default function GameBattleArena({
       // A special plays the animation it was AUTHORED with. Without this every
       // imported move looks like the same generic heavy, which is most of what
       // "all the characters do the same thing" looked like on screen.
-      setP1Animation(p1SMRef.current.activeClip() ?? p1NextMotion);
-      setP2Animation(p2SMRef.current.activeClip() ?? p2NextMotion);
+      //
+      // THROUGH ITS OWN CHANNEL, NOT THROUGH `animation`. Pushing the clip
+      // name into `animation` made it the mesh's `inputKey`, and the mesh
+      // decides whether a move IS AN ATTACK from that key — `ATTACK_STATES`,
+      // the root-motion profile, the hit window and the attack lock all read
+      // it. So every authored special quietly stopped being treated as an
+      // attack: no retime to the move's window, no lunge, and an idle could
+      // interrupt the swing. `attackClip` swaps the animation and leaves the
+      // move's identity alone.
+      setP1Animation(p1NextMotion);
+      setP2Animation(p2NextMotion);
+      setP1AttackClip(p1SMRef.current.activeClip());
+      setP2AttackClip(p2SMRef.current.activeClip());
       setHitStopActive(engine.hitStopFrames > 0);
 
       // ── Record frame to match recorder ────────────────────────────────────
@@ -2623,6 +2644,8 @@ export default function GameBattleArena({
           p2Fighter={p2Fighter}
           p1State={p1State}
           p2State={p2State}
+          p1AttackClip={p1AttackClip}
+          p2AttackClip={p2AttackClip}
           p1Animation={grappleBeat?.victim === 'p1' ? grappleBeat.clip
             : introBeat?.player === 'p1' ? introBeat.clip : p1Animation}
           p2Animation={grappleBeat?.victim === 'p2' ? grappleBeat.clip

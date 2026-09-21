@@ -223,7 +223,47 @@ function normaliseStep(step: CommandStep): CommandStep {
  * empty list rather than throwing, so a missing set degrades to button-only
  * specials instead of breaking a match.
  */
-export function schwarzerblitzSpecials(setName = 'chara_tutor'): SpecialMoveDefinition[] {
+/**
+ * WHICH ANIMATION EACH COMMAND PLAYS.
+ *
+ * Owner: "currently can only fire off 4 attacks and it's the base ones ...
+ * not forward P/K, jump RK, back, back-forward. Full movesets and individual
+ * movesets so they're not all doing the same attacks — it's boring when all
+ * fighters are doing the same 4 attacks the whole fight."
+ *
+ * THE INPUTS WERE NEVER MISSING. MEASURED: 26 reachable directional commands
+ * across the two imported sets, and every one of them resolved to one of
+ * THREE animations — `lightAttack`, `lightKick`, `heavyKick`. Five different
+ * punches all played `lightAttack`. The moveset was real and rendered as the
+ * same swing, which is exactly what he was describing.
+ *
+ * tools/moves/map_commands.mjs assigns a DISTINCT clip per command on the
+ * bake's own measurements — which limb reaches and how far, whether the clip
+ * leaves the floor, how long it is, and the slot the bake already filed it
+ * under — never on the name. It is seeded per fighter, so two men on the same
+ * source set share 18% of their clips instead of 100%.
+ *
+ * Absent, every move keeps the clip the source authored and the behaviour is
+ * exactly as it was.
+ */
+let commandClips: { sets?: Record<string, Record<string, string>>; fighters?: Record<string, Record<string, string>> } = {};
+
+export function setCommandClipMap(map: typeof commandClips): void {
+  commandClips = map ?? {};
+}
+
+function clipForCommand(id: string, setName: string, fighterId?: string): string | undefined {
+  if (fighterId) {
+    const own = commandClips.fighters?.[fighterId.toLowerCase()]?.[id];
+    if (own) return own;
+  }
+  return commandClips.sets?.[setName]?.[id];
+}
+
+export function schwarzerblitzSpecials(
+  setName = 'chara_tutor',
+  fighterId?: string,
+): SpecialMoveDefinition[] {
   const set = SCHWARZERBLITZ_MOVE_GRAPH[setName] ?? [];
   const common = SCHWARZERBLITZ_MOVE_GRAPH.common ?? [];
   const seen = new Set<string>();
@@ -245,7 +285,11 @@ export function schwarzerblitzSpecials(setName = 'chara_tutor'): SpecialMoveDefi
       command,
       stance: move.stance,
       followupOnly: move.flags.includes('FOLLOWUP_ONLY'),
-      move: moveWindowFor(move, setName),
+      move: (() => {
+        const w = moveWindowFor(move, setName);
+        const mapped = clipForCommand(id, setName, fighterId);
+        return mapped ? { ...w, clip: mapped } : w;
+      })(),
     });
   }
   return out;

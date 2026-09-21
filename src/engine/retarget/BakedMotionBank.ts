@@ -1,6 +1,7 @@
 // `.ts` extensions on purpose — the repo's test runner resolves them literally.
 import * as THREE from 'three';
 import { markGrapplePairs } from '../combat/GrapplePairing.ts';
+import { setCommandClipMap } from '../combat/SchwarzerblitzSpecials.ts';
 
 import { assetUrl } from '../../lib/assetBase.ts';
 
@@ -841,6 +842,13 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
     // The opponent's half of every grapple, read off the same index rather
     // than a second fetch. See engine/combat/GrapplePairing.
     markGrapplePairs(manifest);
+    // WHICH CLIP EACH DIRECTIONAL COMMAND PLAYS. Fetched alongside the index
+    // so a command list is never built before its clips are known; a failure
+    // is silent on purpose and leaves every move on its authored clip.
+    void fetch(assetUrl('/motion/command-clips.json'))
+      .then((r) => (r.ok ? r.json() : null))
+      .then((m) => { if (m) setCommandClipMap(m as never); })
+      .catch(() => {});
     // A three-body capture is not a solo move. See markTeamCaptures.
     markTeamCaptures(manifest);
     // SLOT OWNERS FIRST. Actions register in order and the first clip for a
