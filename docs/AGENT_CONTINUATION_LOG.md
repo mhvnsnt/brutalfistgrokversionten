@@ -47,3 +47,14 @@ Verification note:
 GitHub reports no Actions runs attached to the new commits. Do not claim the
 test suite, typecheck, production build, or PWA runtime is green until an actual
 run or runtime probe supplies evidence. The owner is testing the PWA concurrently.
+
+
+## 2026-09-21 — open-source animation/rig intake pass
+
+- Owner directive: keep expanding the game by pulling in open-source motion, skeleton/retargeting, and GLB/skin validation resources instead of repeatedly hand-authoring isolated fixes.
+- Research identified Quaternius Universal Animation Library 1 (120+ reported clips) and Library 2 (130+ reported clips), both CC0, as bulk humanoid motion sources covering locomotion, combat and combo material.
+- Added docs/open-source-animation-sources.json as the provenance registry.
+- Added src/engine/retarget/SkeletonUtilsReference.ts using the installed Three.js open-source SkeletonUtils.retargetClip implementation as an independent retarget cross-check; Bannon's measured retargeter remains authoritative.
+- Added src/engine/retarget/SkeletonUtilsReference.test.ts and included it in the package test gate.
+- Added the open-source intake lane to docs/GAME_SYSTEMS_GAP_BACKLOG.md: bulk motion, independent retarget cross-check, GLB validation, skin/joint/exploded-mesh gates, semantic ownership, and provenance.
+- No authored Bannon asset was replaced. No new source is marked VERIFIED until GitHub Actions and runtime evidence confirm it.
