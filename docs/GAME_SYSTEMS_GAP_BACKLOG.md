@@ -1257,3 +1257,15 @@ An editor regression blocked the visual animation work: MoveLibrary derived its 
 ## 21p. AGENT EXECUTION CONTRACT
 
 The owner explicitly requires continuous repo work rather than chat-only recommendations. AGENTS.md now contains a durable operating standard: active blockers come first; measurements precede visual/animation repairs; real-pipeline verification is required; regressions receive executable guards; unrun tests remain UNKNOWN; open-source additions require compatibility/license/provenance review; and every newly discovered requirement or gap is captured here during the same workstream.
+## 21q. DIRECTIONAL THROW BREAK AUTHORITY
+
+The live arena previously detected forward/backward/side throws and applied damage immediately. That bypassed the unified FighterStateMachine throw-break transaction already used by command throws.
+
+**Fixed:** directional player throws now open the defender's authoritative incoming-break window; damage/knockdown occurs only on committed, and a correct break produces pushback without damage. Repeated held input is edge-gated so one held throw button combination cannot retrigger the throw every frame.
+
+Commits:
+- cd38b82a0c63bac21e8f2926e8d1adfa47da4742 — live arena integration
+- 8461697268bbf72b39038382731909c500e24f28 — unit coverage
+- 740eb3e97be693ee074ed021ccaabb6fda54131d — test-gate inclusion
+
+**Remaining:** AI directional throws are not yet routed through this same transaction; the current command-throw AI path is authoritative. Do not mark the entire directional-throw system VERIFIED until both attacker directions and all throw families have runtime evidence.
