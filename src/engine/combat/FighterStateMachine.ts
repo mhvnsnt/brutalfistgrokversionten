@@ -102,6 +102,8 @@ export interface MoveWindow {
   hitboxEndFrame?: number;
   totalFrames?: number;
   damage?: number;
+  /** Measured strike-limb reach in metres; drives the move-specific contact envelope. */
+  contactReach?: number;
   isSpecial?: boolean;
   specialName?: string;
   /** If true, this move is a throw — cannot be blocked by guard */
