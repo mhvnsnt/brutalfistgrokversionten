@@ -1471,7 +1471,7 @@ export default function GameBattleArena({
           // Do NOT apply damage here. The defender now owns a real reaction
           // window. P2's FSM consumes Escape during that window; only after it
           // expires does the arena commit the throw.
-          p2SMRef.current.beginIncomingThrowBreak(0);
+          p2SMRef.current.beginIncomingThrowBreak(0, THROW_CATALOG[detectedThrowId].breakButton);
           // WHAT HE IS THROWING WITH, captured NOW. By the time the break
           // window closes the attacker may already be out of the throw, and
           // the victim's half has to match the throw that was performed.
@@ -1915,7 +1915,7 @@ export default function GameBattleArena({
           p1XRef.current, p1ZRef.current,
         );
         if (inRange && THROW_CATALOG[aiDirectionalThrowId]) {
-          p1SMRef.current.beginIncomingThrowBreak(0);
+          p1SMRef.current.beginIncomingThrowBreak(0, THROW_CATALOG[detectedThrowId].breakButton);
           directionalThrowPendingRef.current = {
             attacker: 'p2',
             defender: 'p1',
