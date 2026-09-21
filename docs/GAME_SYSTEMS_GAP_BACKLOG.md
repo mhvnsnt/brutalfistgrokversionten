@@ -1234,3 +1234,26 @@ Recorded here rather than left in chat, per the rule below.
 **Never let chat-only requirements disappear.**
 
 **If a user says “add this to the list,” this file is the list.**
+
+## 21n. LOAD-REPAIR FIT VS TRUE RE-RIG — JAGER / TARZANIAN / MAIME
+
+Owner's latest measurement corrected the earlier conclusion that JAGER categorically needed a re-rig.
+
+- **JAGER:** the defect is a near-pure rigid Y offset of roughly -0.79 to -0.86 m in the JAGER/TARZANIAN family. The existing load-time mesh-to-skeleton-space repair is the authoritative fix: runtime measurement through the real pipeline reduced JAGER worst edge growth from **147.1 cm to 54.2 cm**, share past 2x from **23.74% to 3.10%**, and far-bound from **100% to 0.00%**. This is no longer evidence for a mandatory JAGER re-rig by itself.
+- **TARZANIAN_DEVIL:** the same family is covered by the offset fit; current reported residual share past 2x is **4.17%** with far-bound **0.02%**. Do not call the remaining 21–25 cm deformation a categorical re-rig defect without a residual-specific measurement showing that the load repair cannot explain it.
+- **VIPER control:** worst edge growth is **73.0 cm**, share past 2x **3.11%**, far-bound **0.33%**. JAGER's post-repair far-bound result is therefore materially cleaner than this control on that measurement.
+- **MAIME:** this is a different, structural defect. Two MAIME models are severed action-figure rigs: **15 separate skinned pieces**, 22 joints at the world origin, and identity inverse-bind matrices. Posing each piece therefore rotates it around the origin rather than a body joint. This is a contained structural rig defect and is not covered by the JAGER/TARZANIAN rigid-offset repair.
+
+**Law earned:** verdicts must be based on the residual that survives the actual repair path. Do not label a continuum tail as NEEDS RE-RIG merely because the uncorrected asset looked bad. Conversely, do not call MAIME fixed by a rigid offset repair that cannot address a severed/degenerate skeleton.
+
+## 21o. MOVE LIBRARY EDITOR REGRESSION — PARTIAL UI IS NOT A WORKING EDITOR
+
+An editor regression blocked the visual animation work: MoveLibrary derived its model list with useMemo, but initialized the selected model with useState during the first render. On that render the model list can be empty, so the state initializer captured undefined permanently. The fighter/clip list could still render, making the screen appear healthy while the live 3D editor had no valid model URL.
+
+**Fix:** initialize the model state to an empty value and synchronize it after the derived model list is available, preferring BANNON_rigged when present and falling back to the first available model. Commit: **e5acb4c73486c2ef9fe71228c37e57dd15233d13**.
+
+**Verification requirement:** future Move Library changes must verify both the editor controls and the actual live preview/animation path. A rendered list, successful HTTP response, or TypeScript pass alone is not sufficient.
+
+## 21p. AGENT EXECUTION CONTRACT
+
+The owner explicitly requires continuous repo work rather than chat-only recommendations. AGENTS.md now contains a durable operating standard: active blockers come first; measurements precede visual/animation repairs; real-pipeline verification is required; regressions receive executable guards; unrun tests remain UNKNOWN; open-source additions require compatibility/license/provenance review; and every newly discovered requirement or gap is captured here during the same workstream.
