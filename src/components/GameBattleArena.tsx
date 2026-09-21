@@ -1876,7 +1876,7 @@ export default function GameBattleArena({
 
       const p2Hb = p2HitboxRef.current;
 
-      const p2AIInput: SMInput = buildP2AIInput(
+      const p2AIInput = buildP2AIInput(
         mapActionToDisplayState(p2SMRef.current.action, p2SMRef.current.current, engine.p2State),
         engine.p1Health, engine.p2Health, p2XRef.current, p1XRef.current,
         p2ZRef.current, p1ZRef.current, p2Fighter,
