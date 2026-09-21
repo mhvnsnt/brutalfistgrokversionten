@@ -476,6 +476,8 @@ export class FighterStateMachine {
    * break landed. Declaring them is the fix; the behaviour is unchanged.
    */
   private incomingThrowBreak: ThrowBreakState | null = null;
+  /** Directional throw break requirement: 1, 2, or either. */
+  private incomingThrowBreakButton: '1' | '2' | 'either' = 'either';
   private incomingThrowBreakOutcome: 'broken' | 'committed' | null = null;
   private wakeupBuffered: WakeupOption = null;
   private wakeupActionTimer = 0;
@@ -588,8 +590,9 @@ export class FighterStateMachine {
   get isInOverdriveState(): boolean { return this.inOverdriveState; }
 
   /** Arm the defender's reaction window after a throw connects in range. */
-  beginIncomingThrowBreak(depth = 0) {
+  beginIncomingThrowBreak(depth = 0, breakButton: '1' | '2' | 'either' = 'either') {
     this.incomingThrowBreak = openThrowBreak(depth);
+    this.incomingThrowBreakButton = breakButton;
     this.incomingThrowBreakOutcome = null;
   }
 
@@ -964,8 +967,17 @@ export class FighterStateMachine {
     // defender then gets real frames to press Escape. On expiry, the arena
     // commits the throw and applies its damage/knockdown.
     if (this.incomingThrowBreak) {
-      if (risingEscape && attemptThrowBreak(this.incomingThrowBreak)) {
+      const breakPressed =
+        risingEscape ||
+        (this.incomingThrowBreakButton === '1' && (resolvedInput.lp ?? false) && !(this.prevInput.lp ?? false)) ||
+        (this.incomingThrowBreakButton === '2' && (resolvedInput.rp ?? false) && !(this.prevInput.rp ?? false)) ||
+        (this.incomingThrowBreakButton === 'either' && (
+          ((resolvedInput.lp ?? false) && !(this.prevInput.lp ?? false)) ||
+          ((resolvedInput.rp ?? false) && !(this.prevInput.rp ?? false))
+        ));
+      if (breakPressed && attemptThrowBreak(this.incomingThrowBreak)) {
         this.incomingThrowBreak = null;
+        this.incomingThrowBreakButton = 'either';
         this.incomingThrowBreakOutcome = 'broken';
         this.actionState = 'Idle';
         this.motionState = 'idle';
@@ -978,6 +990,7 @@ export class FighterStateMachine {
       }
       if (!tickThrowBreak(this.incomingThrowBreak, dt)) {
         this.incomingThrowBreak = null;
+        this.incomingThrowBreakButton = 'either';
         this.incomingThrowBreakOutcome = 'committed';
       } else {
         return this.motionState;
