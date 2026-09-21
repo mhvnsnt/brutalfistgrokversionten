@@ -5,6 +5,7 @@ import { readFileSync, existsSync } from 'node:fs';
 
 import { createCommandBuffer, pushInput, matchCommand } from './CommandInput.ts';
 import { generatedMoveset, setGeneratedMovesets } from './GeneratedMovesets.ts';
+import { buildHitboxFromMove } from './FrameDataHitbox.ts';
 
 /**
  * A FULL MOVESET, MATCHED FROM THE COMMAND BUFFER.
@@ -101,4 +102,18 @@ describe('a generated moveset is reachable from the stick', () => {
       assert.ok(m.move!.clip, `${m.id} carries no clip`);
     }
   });
+  it('carries measured limb reach into the contact envelope', function () {
+    if (!has) return;
+    const set = generatedMoveset('bannon');
+    const ranged = set.filter((m) => (m.move?.contactReach ?? 0) > 0.3);
+    assert.ok(ranged.length >= 10, 'generated moves lost measured reach');
+    const short = ranged.find((m) => m.move!.contactReach! < 0.8)!;
+    const long = ranged.find((m) => m.move!.contactReach! > 0.8)!;
+    assert.ok(short && long);
+    const a = buildHitboxFromMove(short.move!);
+    const b = buildHitboxFromMove(long.move!);
+    assert.ok(b.offsetX > a.offsetX, 'longer strike should place its contact envelope farther forward');
+    assert.ok(b.width >= a.width, 'longer strike should not get a smaller contact envelope');
+  });
+
 });
