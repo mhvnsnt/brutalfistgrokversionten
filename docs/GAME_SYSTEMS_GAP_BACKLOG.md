@@ -20,6 +20,15 @@ Animation/rig correctness is gameplay infrastructure, not cosmetic polish.
 
 ---
 
+## Open-source animation / rigging intake lane — 2026-09-21
+
+- [ ] **Bulk CC0 humanoid animation intake** — `IN PROGRESS`. Quaternius Universal Animation Library 1 (120+ reported clips) and Library 2 (130+ reported clips) are registered as external source banks. They cover locomotion, combat, combos, parkour and defensive motion and are explicitly CC0. Do not promote a clip merely because it loads: every candidate must pass the existing canonical-skeleton bake, floor/airborne, facing, limb-reach, joint-limit, body-count and owner gates.
+- [ ] **Independent retarget cross-check** — `IN PROGRESS`. Three.js `SkeletonUtils.retargetClip` is now exposed through `src/engine/retarget/SkeletonUtilsReference.ts`. The shipping Bannon retargeter remains authoritative; disagreement between the two implementations is diagnostic evidence, not an automatic replacement.
+- [ ] **GLB structural validation lane** — `RESEARCH`. Khronos glTF Validator is registered as the external validator candidate. The target gate must catch malformed GLB/glTF, invalid animation accessors/quaternions, broken references, and related structural errors before a source bank reaches the bake.
+- [ ] **Skin/joint/exploded-mesh regression gate** — `IN PROGRESS`. Repeated owner reports of limbs stretching into unrelated body parts are treated as measurable skeleton/skin/weight/space failures. Candidate source assets must report bone count, skin-joint references, inverse-bind availability, non-finite transforms, weight normalization, rest-pose displacement and per-bone/world-space excursion before acceptance.
+- [ ] **Bulk move-role expansion without fake ownership** — `PARTIAL`. Open-source banks are allowed to enlarge the candidate motion pool, but owner/semantic classification still decides whether a clip can become a jab, kick, throw, grapple receiver, hit reaction, wakeup, etc. A reaction clip with an extended limb must never become an attack simply because geometry matches an attack threshold.
+- [ ] **Provenance and license ledger** — `IMPLEMENTED`. `docs/open-source-animation-sources.json` records source, URL, license and intended role. Authored Bannon content remains higher authority and is never silently replaced.
+
 # 1. Highest-priority fighting-game spine
 
 - [ ] **Live command-input integration** — `PARTIAL`. The graph reaches the
