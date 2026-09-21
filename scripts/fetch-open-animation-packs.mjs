@@ -17,7 +17,7 @@ const packs = [
     id: 'quaternius-ual-1',
     root: 'vendor/quaternius-ual-1',
     // Public mirror of Quaternius' CC0 standard/free release.
-    url: 'https://codeload.github.com/J-Ponzo/gltf-universal-animation-library/zip/refs/heads/main',
+    url: 'https://opengameart.org/sites/default/files/universal_animation_librarystandard.zip',
     archive: '.cache/open-animation/ual1.zip',
   },
   {
