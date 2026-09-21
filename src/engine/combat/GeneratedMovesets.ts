@@ -49,6 +49,8 @@ export interface GeneratedMove {
   active: number;
   recovery: number;
   damage: number;
+  /** Measured source-limb reach in metres, used to size the contact envelope. */
+  contactReach?: number;
 }
 
 let table: Record<string, GeneratedMove[]> = {};
@@ -85,6 +87,7 @@ export function generatedMoveset(fighterId: string): SpecialMoveDefinition[] {
       hitboxEndFrame: Math.max(2, Math.round((m.startup + m.active) * 60)),
       totalFrames: Math.round((m.startup + m.active + m.recovery) * 60),
       damage: m.damage,
+      contactReach: m.contactReach,
       isSpecial: true,
       specialName: m.name,
     },
