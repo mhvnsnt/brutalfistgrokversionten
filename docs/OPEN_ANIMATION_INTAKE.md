@@ -34,3 +34,6 @@ The free distributions are intentionally used here; the repository does not sile
 ## Promotion rule
 
 Imported clips do not automatically become moves. A candidate must survive the existing bake/retarget/body-count/contact gates and then be promoted into a character-specific move slot. This prevents a generic animation library from flattening the roster into one moveset.
+
+
+The public UAL1/UAL2 downloads used by the fetcher are the OpenGameArt standard distributions, both explicitly listed as CC0 and attributed to Quaternius. UAL1's public standard package contains 45 of the 120+ advertised animations; UAL2's public standard package is the 130+ library's standard distribution. The fetcher therefore records actual downloaded bytes rather than assuming the full advertised catalog is present. citeturn1view0turn1view1
