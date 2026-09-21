@@ -63,3 +63,11 @@ run or runtime probe supplies evidence. The owner is testing the PWA concurrentl
 ## 2026-09-21 — CC0 animation intake pass
 
 Added a real open-animation intake lane for Quaternius UAL1/UAL2. The new scanner indexes only actual files under vendor/quaternius-ual-1 and vendor/quaternius-ual-2, classifies conservative candidate roles, and is wired into predev/prebuild. Added durable intake rules requiring retarget, skeleton/skin QA, floor/facing, joint-limit, body-count and semantic-owner gates before any clip becomes playable. The packs are not claimed as present until their bytes are actually supplied and scanned. CI verification remains required before declaring the new lane green.
+
+
+## 2026-09-21 — Quaternius bake wiring pass
+
+- Wired real UAL1/UAL2 GLB discovery into `scripts/bake-fighter-animations.mjs`.
+- Each authored clip is now loaded from `vendor/`, given CC0 provenance metadata, passed through the existing canonical Bannon bind-relative/constraint/grounding/semantic pipeline, and independently cross-checked with Three.js SkeletonUtils before promotion.
+- External-dependency `.gltf` files are deliberately not guessed around; the current intake admits self-contained GLB files and records failures.
+- This is implementation evidence, not verification evidence: actual vendor bytes, bake counts, CI, and PWA runtime behavior still need fresh execution.
