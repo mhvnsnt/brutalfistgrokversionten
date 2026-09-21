@@ -73,6 +73,7 @@ import { generatedMoveset } from '../engine/combat/GeneratedMovesets';
 import { type OverdriveState, type SuperArmorState, type FinisherState,  } from '../engine/combat/OverdriveSystem';
 // ── Directional throw system ──────────────────────────────────────────────────
 import { checkThrowRange, detectThrowInput, getThrowDamage, THROW_CATALOG,  } from '../engine/combat/DirectionalThrowSystem';
+import { selectAIDirectionalThrowId, type AIDirectionalThrowId } from '../engine/combat/ai-directional-throw-intent';
 // ── Global Audio Manager ──────────────────────────────────────────────────────
 import { getGlobalAudioManager } from '../engine/audio/GlobalAudioManager';
 // ── Hit Effect System ─────────────────────────────────────────────────────────
@@ -1899,20 +1900,44 @@ export default function GameBattleArena({
       const p2HbWindow = p2SM.getHitboxWindow();
       p2Hb.update(p2HbWindow);
 
-      // ── THE AI'S THROW, WHICH HAD NEVER RESOLVED ──────────────────────
-      //
-      // TWO THINGS WERE MISSING AND EITHER ALONE WAS ENOUGH.
-      //
-      // The input side reads `p2AIInput.grapple` and passes it to the command
-      // buffer — but `buildP2AIInput` NEVER SET IT, on any branch, so the AI
-      // had no way to ask for a throw in the first place (fixed there, in the
-      // close-range cycle). And on this side `p1SM.action === 'CommandThrow'`
-      // was the ONLY occurrence in the file: nothing ever checked the AI's
-      // grab range, called `resolveCommandThrow`, opened a break window or
-      // dealt the damage. So the player could not be thrown by anybody.
-      //
-      // Owner: the opponent side has to be "wired up all areas wise." A
-      // grapple only the player can perform is half a system.
+      // ── THE AI'S DIRECTIONAL THROW ─────────────────────────────────────
+      // Directional AI throws use the exact same pending transaction as player
+      // throws. No damage is applied here; P1 gets the real break window and
+      // the commit/break branch below remains the sole damage authority.
+      const aiDirectionalThrowId = p2AIInput.directionalThrowId ?? null;
+      if (
+        aiDirectionalThrowId &&
+        p2SM.action === 'Idle' &&
+        !directionalThrowPendingRef.current
+      ) {
+        const inRange = checkThrowRange(
+          p2XRef.current, p2ZRef.current,
+          p1XRef.current, p1ZRef.current,
+        );
+        if (inRange && THROW_CATALOG[aiDirectionalThrowId]) {
+          p1SMRef.current.beginIncomingThrowBreak(0);
+          directionalThrowPendingRef.current = {
+            attacker: 'p2',
+            defender: 'p1',
+            throwId: aiDirectionalThrowId,
+          };
+          throwDelivererRef.current.p2 = liveClipRef.current.p2;
+          setSpecialMoveNotice({
+            name: THROW_CATALOG[aiDirectionalThrowId].name,
+            player: 'p2',
+            id: ++specialNoticeIdRef.current,
+          });
+          setTimeout(() => setSpecialMoveNotice(null), 1500);
+          console.log('[Arena] 🤲 AI directional throw connected — unified break window opened:', aiDirectionalThrowId);
+        } else {
+          audioManagerRef.current.playSFX('whiff');
+        }
+      }
+
+      // ── THE AI'S COMMAND THROW ────────────────────────────────────────
+      // The existing grapple path remains separate: it is the generic command
+      // throw, while directionalThrowId above represents an authored
+      // directional throw family.
       if (p2SM.action === 'CommandThrow' && prevP2Action !== 'CommandThrow') {
         const grabResult = p2SM.checkGrabRange(p2XRef.current, p1XRef.current, p1SMRef.current.action);
         p2SM.resolveCommandThrow(grabResult.throwSucceeded);
@@ -3408,7 +3433,7 @@ function buildP2AIInput(
   p2State: string, p1Health: number, p2Health: number,
   p2X: number, p1X: number, p2Z: number, p1Z: number,
   fighter: BannonFighterProfile,
-): SMInput {
+): SMInput & { directionalThrowId?: AIDirectionalThrowId | null } {
   const now = performance.now();
   const style = fighter.fightingStyle.toLowerCase();
   const personality = fighter.personality.toLowerCase();
@@ -3435,6 +3460,23 @@ function buildP2AIInput(
     return {forward:1,strafe:orbit,light:false,heavy:false,guard:false,crouch:false,jump:true};
   if (powerStyle && cycle === 5)
     return {forward:-1,strafe:0,light:false,heavy:false,guard:true,crouch:false,jump:false};
+
+  // Directional throws are an explicit AI intent, not a fake button chord.
+  // The arena validates range/state and opens the same authoritative break
+  // transaction used by player directional throws.
+  const directionalThrowId = selectAIDirectionalThrowId({
+    distance,
+    distZ,
+    cycle,
+    powerStyle,
+    evasiveStyle,
+  });
+  if (directionalThrowId)
+    return {
+      forward: 0, strafe: 0, light: false, heavy: false, guard: false,
+      crouch: false, jump: false, directionalThrowId,
+    };
+
   if (healthPressure && cycle === 4)
     return {forward:0,strafe:orbit,light:false,heavy:false,guard:true,crouch:false,jump:false};
   /**
