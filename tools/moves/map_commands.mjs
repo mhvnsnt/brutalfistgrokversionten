@@ -299,6 +299,8 @@ export function fullMoveset(fighterId) {
         active,
         recovery: Math.max(0.12, best.dur * 0.4),
         damage: Math.round(40 + best.hand * 40 + best.foot * 50),
+        // Measured limb reach is the contact envelope; the runtime uses it to avoid a generic 2m hitbox on every move.
+        contactReach: button === 'K' ? best.foot : best.hand,
       });
     }
   }
