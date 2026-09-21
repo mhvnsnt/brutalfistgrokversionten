@@ -140,6 +140,19 @@ function ClipPlayer({
     const hips = bones.find((b) => /hips|pelvis/i.test(b.name)) ?? null;
     const feet = bones.filter((b) => /foot|toe/i.test(b.name));
     const v = new THREE.Vector3();
+    // THE PREVIEW RIG ITSELF, for a probe that needs the geometry and not
+    // just a bone position — measuring mesh stretch needs `applyBoneTransform`
+    // on the real SkinnedMesh. `__BF_SCENE` is published by the combat arena
+    // and does not exist on this screen, which is why the stretch sweep
+    // reported "(no sample)" for every model.
+    (window as unknown as Record<string, unknown>).__BF_PREVIEW_MESH = () => {
+      let found: THREE.SkinnedMesh | null = null;
+      rig.scene.traverse((o) => {
+        const sm = o as THREE.SkinnedMesh;
+        if (sm.isSkinnedMesh && !found) found = sm;
+      });
+      return found;
+    };
     (window as unknown as Record<string, unknown>).__BF_PREVIEW_TRACKS = (name: string) => {
       const a = rig.actions[name];
       if (!a) return { found: false, have: Object.keys(rig.actions).length };
@@ -160,7 +173,11 @@ function ClipPlayer({
       for (const f of feet) { f.getWorldPosition(v); footY = Math.min(footY, v.y); }
       return { hipsY, footY: Number.isFinite(footY) ? footY : 0, bones: bones.length };
     };
-    return () => { delete (window as unknown as Record<string, unknown>).__BF_PREVIEW_SAMPLE; };
+    return () => {
+      delete (window as unknown as Record<string, unknown>).__BF_PREVIEW_SAMPLE;
+      delete (window as unknown as Record<string, unknown>).__BF_PREVIEW_MESH;
+      delete (window as unknown as Record<string, unknown>).__BF_PREVIEW_TRACKS;
+    };
   }, [rig]);
 
   useEffect(() => {

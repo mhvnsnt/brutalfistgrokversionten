@@ -21,7 +21,7 @@ import { generatedMoveset, setGeneratedMovesets } from './GeneratedMovesets.ts';
 const FILE = 'public/motion/movesets.json';
 const has = existsSync(FILE);
 
-const DIRS: Record<number, { x: number; y: number }> = {
+const DIRS: Record<number, { x: 0 | 1 | -1; y: 0 | 1 | -1 }> = {
   5: { x: 0, y: 0 }, 6: { x: 1, y: 0 }, 4: { x: -1, y: 0 },
   2: { x: 0, y: -1 }, 8: { x: 0, y: 1 }, 3: { x: 1, y: -1 },
   1: { x: -1, y: -1 }, 9: { x: 1, y: 1 }, 7: { x: -1, y: 1 },

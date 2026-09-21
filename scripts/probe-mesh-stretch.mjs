@@ -71,7 +71,7 @@ if (!list.length) { console.log('FAIL: no model picker found'); await browser.cl
 const CLIPS = ['AXEKICK', 'GRAFPUNCHCOMBO', 'CROUCHING', 'NECKBREAKER'];
 
 console.log('\nMESH STRETCH UNDER A POSE — worst triangle edge vs its length in bind\n');
-console.log('  model                          worst   >1.6x   >2.0x   where it is worst');
+console.log('  model                         worst   grew by    >1.6x    >2.0x   where');
 const bad = [];
 for (const model of list) {
   await page.evaluate((m) => {
@@ -83,7 +83,20 @@ for (const model of list) {
   await page.waitForTimeout(3500);
 
   let worstAll = 0; let over16 = 0; let over20 = 0; let total = 0; let where = '-';
+  let wBadAll = 0; let wZeroAll = 0; let wNAll = 0; let wWorstAll = 1; let worstCmAll = 0;
+  let farNAll = 0; let farTotalAll = 0; let farWorstAll = 0; let farBoneAll = '-';
   for (const clip of CLIPS) {
+    // WAIT FOR THE SCREEN RATHER THAN ASSUMING IT. Swapping the model
+    // rebuilds the preview, and a fixed sleep left this calling page.fill on
+    // a search box that had not come back yet — a 30 s timeout that reads
+    // like a broken selector.
+    let up = false;
+    for (let i = 0; i < 60 && !up; i++) {
+      up = await page.evaluate(() => Boolean(document.querySelector('input[placeholder="search"]'))
+        && Boolean(window.__BF_PREVIEW_MESH?.()));
+      if (!up) await page.waitForTimeout(500);
+    }
+    if (!up) break;
     await page.fill('input[placeholder="search"]', clip);
     await page.waitForTimeout(500);
     const picked = await page.evaluate((c) => {
@@ -95,32 +108,22 @@ for (const model of list) {
 
     const r = await page.evaluate(() => {
       const w = window;
-      let mesh = null;
-      // The preview rig is the only skinned mesh on this screen.
-      (w.__BF_PREVIEW_SCENE ?? null);
-      const findIn = (o) => { o?.traverse?.((x) => { if (x.isSkinnedMesh && !mesh) mesh = x; }); };
-      for (const k of ['__BF_SCENE']) findIn(w[k]);
-      if (!mesh) {
-        // fall back to any renderer scene reachable from the canvas
-        const c = document.querySelector('canvas');
-        findIn(c && c.__r3f && c.__r3f.root && c.__r3f.root.getState && c.__r3f.root.getState().scene);
-      }
+      // THE PREVIEW PUBLISHES ITS OWN RIG. The first version of this looked
+      // on `__BF_SCENE`, which the COMBAT ARENA publishes and this screen
+      // does not, so it found nothing and reported "(no sample)" for every
+      // model — a clean-looking sweep that had measured nothing at all.
+      const mesh = w.__BF_PREVIEW_MESH ? w.__BF_PREVIEW_MESH() : null;
       if (!mesh || !mesh.isSkinnedMesh) return null;
       const g = mesh.geometry;
       const pos = g.attributes.position;
       const index = g.index;
-      const THREE = mesh.constructor;
-      const a = new (pos.constructor === Float32Array ? Object : Object)();
-      void a; void THREE;
-      const V = (n) => ({ x: 0, y: 0, z: 0, n });
-      void V;
       const tmpA = new mesh.position.constructor();
       const tmpB = new mesh.position.constructor();
       const bindA = new mesh.position.constructor();
       const bindB = new mesh.position.constructor();
       const count = index ? index.count : pos.count;
       const step = Math.max(3, Math.floor(count / 6000) * 3);
-      let worst = 0; let o16 = 0; let o20 = 0; let n = 0;
+      let worst = 0; let o16 = 0; let o20 = 0; let n = 0; let worstCm = 0;
       const region = (y, h) => (y > h * 0.75 ? 'head/neck' : y > h * 0.55 ? 'chest/arms' : y > h * 0.35 ? 'waist/hips' : 'legs/feet');
       g.computeBoundingBox();
       const h = g.boundingBox.max.y - g.boundingBox.min.y || 1;
@@ -131,7 +134,20 @@ for (const model of list) {
         bindA.fromBufferAttribute(pos, i0);
         bindB.fromBufferAttribute(pos, i1);
         const rest = bindA.distanceTo(bindB);
-        if (rest < 1e-4) continue;
+        /**
+         * A RATIO IS MEANINGLESS ON A MICROSCOPIC EDGE.
+         *
+         * The first version of this skipped only degenerate edges (under
+         * 0.1 mm) and reported a worst stretch of 258x on JAGER. A dense
+         * mesh is full of sub-millimetre edges around the face and fingers,
+         * and a 0.1 mm edge that moves 2.6 cm IS a ratio of 258 while being
+         * invisible. The number was real arithmetic on the wrong edges.
+         *
+         * Only edges a person could see are measured — 5 mm and up — and the
+         * growth is also reported in CENTIMETRES, because "this edge grew
+         * 4 cm" is a statement about the screen and "it grew 3x" is not.
+         */
+        if (rest < 0.005) continue;
         tmpA.fromBufferAttribute(pos, i0);
         tmpB.fromBufferAttribute(pos, i1);
         mesh.applyBoneTransform(i0, tmpA);
@@ -141,12 +157,109 @@ for (const model of list) {
         n++;
         if (ratio > 1.6) o16++;
         if (ratio > 2.0) o20++;
+        const grewCm = (now - rest) * 100;
+        if (grewCm > worstCm) worstCm = grewCm;
         if (ratio > worst) { worst = ratio; worstWhere = region(bindA.y - g.boundingBox.min.y, h); }
       }
-      return { worst, o16, o20, n, worstWhere };
+      /**
+       * DO THE WEIGHTS SUM TO ONE?
+       *
+       * A vertex whose four influences sum to 0.2 is dragged a fifth of the
+       * way toward the origin by skinning; one summing to 4 is flung out.
+       * Either reads on screen as a stretched triangle, and NEITHER SHOWS IN
+       * BIND POSE, because in bind the joint transforms cancel their own
+       * inverse bind matrices and the error multiplies by a matrix that is
+       * the identity. Read off the LIVE mesh because every shipped model is
+       * meshopt-compressed and the file cannot be read directly.
+       */
+      /**
+       * IS A VERTEX BOUND TO A BONE NOWHERE NEAR IT?
+       *
+       * The skin-bleed audit measures PAIRS of influences too far apart on
+       * the skeleton to share a vertex, and the load repair drops the
+       * stray one. A vertex with a SINGLE influence has no pair, so neither
+       * can see it — and a chest vertex weighted 100% to a shin is exactly
+       * the thing that flies a metre across the room when the leg kicks.
+       *
+       * Measured in BIND: how far the vertex sits from the bind position of
+       * its heaviest joint. A vertex belongs within arm's reach of the bone
+       * that carries it.
+       */
+      const swI = g.attributes.skinIndex;
+      const swW = g.attributes.skinWeight;
+      let farN = 0; let farWorst = 0; let farTotal = 0; let farBone = '-';
+      if (swI && swW && mesh.skeleton?.boneInverses) {
+        /**
+         * MEASURED IN BIND SPACE, WHERE BOTH THINGS ACTUALLY LIVE.
+         *
+         * The first version posed the vertex with `applyBoneTransform`,
+         * which returns MESH-LOCAL coordinates, and compared it against
+         * `bone.matrixWorld`, which is WORLD. Two different spaces, so the
+         * error was whatever the model's group transform happened to be —
+         * it reported 100% of ONYX's and VIPER's vertices as far-bound and
+         * a vertex SIX METRES from its bone, while BANNON under a different
+         * transform read 0.39%. Nonsense, and the third frame-of-reference
+         * mistake in this session.
+         *
+         * A bone's BIND position is the translation of the inverse of its
+         * inverse-bind matrix, and that is the same space the position
+         * attribute is in. No posing, no world transform, nothing to
+         * mismatch.
+         */
+        const bones = mesh.skeleton.bones;
+        const inv = mesh.skeleton.boneInverses;
+        const M = new (mesh.matrixWorld.constructor)();
+        const bp = inv.map((m2) => {
+          M.copy(m2).invert();
+          const e = M.elements;
+          return [e[12], e[13], e[14]];
+        });
+        const vtmp = new mesh.position.constructor();
+        const stepV = Math.max(1, Math.floor(swI.count / 6000));
+        for (let v = 0; v < swI.count; v += stepV) {
+          let best = -1; let bw = 0;
+          for (let k = 0; k < 4; k++) {
+            const w2 = swW.getComponent(v, k);
+            if (w2 > bw) { bw = w2; best = swI.getComponent(v, k); }
+          }
+          if (best < 0 || !bp[best]) continue;
+          vtmp.fromBufferAttribute(pos, v);
+          // THROUGH bindMatrix, which is the space the inverse-bind matrices
+          // are expressed in. Without it a model whose skin node carries a
+          // transform — JAGER's mesh is authored feet-at-origin while his
+          // skeleton is centred, 0.85 m apart — reads as 100% far-bound
+          // when the offset is legitimately absorbed here. `applyBoneTransform`
+          // does exactly this internally, which is why the STRETCH number
+          // was unaffected and trustworthy while this one was not.
+          vtmp.applyMatrix4(mesh.bindMatrix);
+          const b2 = bp[best];
+          const d = Math.hypot(vtmp.x - b2[0], vtmp.y - b2[1], vtmp.z - b2[2]);
+          farTotal++;
+          if (d > 0.45) farN++;
+          if (d > farWorst) { farWorst = d; farBone = (bones[best]?.name || '').replace('mixamorig', ''); }
+        }
+      }
+      const sw = g.attributes.skinWeight;
+      let wBad = 0; let wZero = 0; let wWorst = 1; let wN = 0;
+      if (sw) {
+        for (let v = 0; v < sw.count; v += Math.max(1, Math.floor(sw.count / 8000))) {
+          let sum = 0;
+          for (let k = 0; k < 4; k++) sum += sw.getComponent(v, k);
+          wN++;
+          if (sum < 1e-6) { wZero++; wBad++; continue; }
+          if (Math.abs(sum - 1) > 0.02) wBad++;
+          if (Math.abs(sum - 1) > Math.abs(wWorst - 1)) wWorst = sum;
+        }
+      }
+      return { worst, o16, o20, n, worstWhere, worstCm, wBad, wZero, wWorst, wN, farN, farWorst, farTotal, farBone };
     });
     if (!r) continue;
     total += r.n; over16 += r.o16; over20 += r.o20;
+    wBadAll += r.wBad ?? 0; wZeroAll += r.wZero ?? 0; wNAll += r.wN ?? 0;
+    if (Math.abs((r.wWorst ?? 1) - 1) > Math.abs(wWorstAll - 1)) wWorstAll = r.wWorst;
+    if (r.worstCm > worstCmAll) worstCmAll = r.worstCm;
+    farNAll += r.farN ?? 0; farTotalAll += r.farTotal ?? 0;
+    if ((r.farWorst ?? 0) > farWorstAll) { farWorstAll = r.farWorst; farBoneAll = r.farBone; }
     if (r.worst > worstAll) { worstAll = r.worst; where = `${r.worstWhere} (${clip})`; }
   }
   if (!total) { console.log(`  ${model.padEnd(30)} (no sample)`); continue; }
@@ -154,7 +267,10 @@ for (const model of list) {
   const p20 = ((over20 / total) * 100).toFixed(2);
   const flag = over20 / total > 0.002;
   if (flag) bad.push(model);
-  console.log(`  ${model.replace(/\.glb$/, '').padEnd(30)}${worstAll.toFixed(2).padStart(6)}x${p16.padStart(8)}%${p20.padStart(8)}%   ${where}${flag ? '   <-- STRETCHING' : ''}`);
+  const wPct = wNAll ? ((wBadAll / wNAll) * 100).toFixed(2) : '0.00';
+  void wPct; void wWorstAll; void wZeroAll;
+  const farPct = farTotalAll ? ((farNAll / farTotalAll) * 100).toFixed(2) : '0.00';
+  console.log(`  ${model.replace(/\.glb$/, '').padEnd(28)}${worstAll.toFixed(1).padStart(7)}x${worstCmAll.toFixed(1).padStart(8)}cm${p16.padStart(8)}%${p20.padStart(8)}%  far-bound ${farPct.padStart(6)}% worst ${farWorstAll.toFixed(2)}m@${farBoneAll}   ${where}${flag ? '  <-- STRETCHING' : ''}`);
 }
 console.log(`\n  ${list.length} models · ${bad.length} with visible stretching`);
 if (bad.length) console.log(`  ${bad.join(', ')}`);

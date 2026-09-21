@@ -760,6 +760,81 @@ match" from "the harness never saw the direction". The mapping itself is
 proven offline — 15 and 11 distinct clips — and the in-game variety is
 measured; the matching rate is not.
 
+## 21m. THE MODEL STRETCHING, MEASURED AT LAST — and JAGER is the broken one
+
+Owner: "a lot of character models, GLBs and attires still have stretching and
+deformation on certain parts of their body ... you keep saying you fixed it
+universally and it's fixed on some of Pablo's attires, it's fixed on Bannon's
+attires, but a lot still have it."
+
+### Three things it is NOT, each ruled out with a number
+
+- **SKIN BLEED.** `audit-skin-bleed --pipeline` measures what the GAME loads,
+  after the load-time repair: **56 of 59 models clean, 0 bleeding vertices**.
+  Only `xbot.glb` remains, a Mixamo test asset whose skeleton is not a
+  connected tree and which the repair deliberately refuses. The FILES are
+  still dirty (54 of 59) — the repair is at load, by design.
+- **BONE/MESH SCALE.** New `tools/model_diag/scale_check.mjs`: no shipped
+  model inconsistent; only 5 unwired `_rig28` intermediates.
+- **WEIGHTS NOT SUMMING TO ONE.** Read off the live decoded mesh (every
+  shipped model is meshopt-compressed, so the file cannot be read directly):
+  **0.00% off, worst sum 1.00, zero zero-sum vertices**, on every model.
+
+### What it IS: measured on the posed mesh
+
+`scripts/probe-mesh-stretch.mjs` poses the mesh with three.js's own CPU
+skinning (`applyBoneTransform`) and measures triangle edge length against
+bind. Nothing else in the repo looks at the mesh IN MOTION, which is the only
+place stretching exists.
+
+| model | worst edge grew | >2x of body | worst region |
+|---|---|---|---|
+| BANNON_rigged | 20.0 cm | 1.26% | chest/arms |
+| PABLO | 30.4 cm | 2.79% | chest/arms |
+| VIPER | 67.5 cm | 2.96% | waist/hips |
+| WRECK_PATTERSON | 42.8 cm | 2.37% | waist/hips |
+| ONYX_skinned | 79.8 cm | 3.25% | waist/hips |
+| **JAGER** | **147.1 cm** | **23.74%** | chest/arms |
+
+**Bannon and Pablo measure cleanest — the exact two he named as fixed.** That
+ordering is the strongest evidence the metric measures what he sees.
+
+### JAGER is broken, and three independent measurements agree
+
+- 23.74% of his body stretches past 2x, worst edge grows 147 cm.
+- **100% of his vertices are bound to a bone more than 45 cm away**, even
+  after `bindMatrix` is applied. Every other model sits at 0.25-0.41%.
+- His bind MESH spans Y 0.00 to 1.90 (feet at the origin) while his SKELETON
+  spans Y -0.93 to 0.68 (centred) — **0.85 m apart, half his height**. VIPER's
+  two agree to 0.095 m.
+
+This corroborates what was already written down and never acted on: JAGER
+is recorded as skinqa p95 **0.1361 = FAIL**, the worst of anything shipped,
+with an explicit "DO NOT record him as a PASS". He needs a re-rig; his only
+alternative attire (`JAGER_beard`) is also a FAIL.
+
+### FOUR MEASUREMENT MISTAKES IN ONE SITTING — all caught before reporting
+
+Worth writing down because the pattern is identical every time: **a number is
+meaningless without the frame it is measured in.**
+
+1. `scale_check` accumulated bone translation WITHOUT rotation. A Mixamo
+   bone's translation is in its parent's ROTATED frame. It reported a bone
+   span of 1.268 for every model in the roster and flagged 60 of 63 as broken.
+2. The rig probe measured hinge "twist" about X when the bone's length axis
+   is Y — read off the GLB node table, every child sits at local (0,1,0).
+3. The same probe then compared a RAW LOCAL quaternion against an anatomical
+   limit. A local quaternion carries the bind rotation, so a normal forearm
+   read as 64 degrees off its hinge. Relative to bind, every clip passes.
+4. The stretch probe's far-bound term compared a MESH-LOCAL posed vertex
+   against a WORLD bone position, reporting 100% far-bound on ONYX and VIPER
+   and a vertex six metres from its bone.
+
+And one that was not a frame error but the same class: the first stretch
+measurement allowed edges down to 0.1 mm, so a sub-millimetre edge moving
+2.6 cm scored 258x. Only edges a person can see (5 mm+) are measured now, and
+the growth is reported in CENTIMETRES as well as a ratio.
+
 ## 21i. I CAN READ AN ANIMATION NOW — tools/anim/inspect.mjs
 
 Owner: "build a thing so you can accurately see all of the amount of skeleton
