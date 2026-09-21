@@ -1283,4 +1283,13 @@ Commits:
 - 8ad8899ac711850101f977666567c9daa6b8b3d5 — live AI integration
 - a6727b34e59d3c69855d92d6dbd8d0e8f8b445e5 — test-gate inclusion
 
+**Additional correctness work:** the defender-side transaction now carries the authored break button (`1`, `2`, or `either`) from `THROW_CATALOG`, so directional throws cannot be broken with an unrelated button. Regression coverage now exercises forward/1, backward/2, and side/either behavior. Generic command throws remain on their own Escape transaction and no longer depend on directional catalog state. The live arena also had an invalid catalog reference in the generic command-throw path; that was removed before stopping.
+
+Commits:
+- 94a431710ac9fc8b20fe2687301ccb8f2ed72443 — authored break-button state in FighterStateMachine
+- fb4f0f79761e02a6b2b81d5124bb059fbe2b8865 — arena metadata wiring
+- 7148aaaade1b3922a85a7a2867feacc929e28f83 — corrected player/AI metadata wiring
+- 2a47de0e9dc348e5ea58ceb56922bd67c2e3957d — break-button regression tests
+- bb78437ec3e00759879fa5d09a8d5d6c9b64920d — generic command-throw catalog-reference repair
+
 **Still not VERIFIED:** no fresh live runtime/test execution has been recorded after these commits. The full directional-throw system still requires runtime evidence for player and AI attacker directions, all throw families, correct/wrong break behavior, and out-of-range whiff behavior.
