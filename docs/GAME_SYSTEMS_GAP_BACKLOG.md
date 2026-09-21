@@ -1250,7 +1250,7 @@ Owner's latest measurement corrected the earlier conclusion that JAGER categoric
 
 An editor regression blocked the visual animation work: MoveLibrary derived its model list with useMemo, but initialized the selected model with useState during the first render. On that render the model list can be empty, so the state initializer captured undefined permanently. The fighter/clip list could still render, making the screen appear healthy while the live 3D editor had no valid model URL.
 
-**Fix:** initialize the model state to an empty value and synchronize it after the derived model list is available, preferring BANNON_rigged when present and falling back to the first available model. Commit: **e5acb4c73486c2ef9fe71228c37e57dd15233d13**.
+**Fix:** initialize the model state to an empty value and synchronize it after the derived model list is available, preferring BANNON_rigged when present and falling back to the first available model. Fix commits: **e5acb4c73486c2ef9fe71228c37e57dd15233d13**, **fcd121d0ea43a15a6def44d3ce26d247536c526d**, **3ccca53fb53c5d50fa8bae7745b4949dee7d82d6**. The final two isolate and gate the selection contract.
 
 **Verification requirement:** future Move Library changes must verify both the editor controls and the actual live preview/animation path. A rendered list, successful HTTP response, or TypeScript pass alone is not sufficient.
 
