@@ -42,6 +42,33 @@
       "license": "MIT code / CC0 art and animations",
       "role": "open retarget/export pipeline reference",
       "import_mode": "pipeline-reference"
+    },
+    {
+      "id": "humanoid-retargeter",
+      "name": "Humanoid Retargeter",
+      "license": "MIT",
+      "type": "retargeting-tool",
+      "url": "https://github.com/zeljkovranjes/humanoid-retargeter",
+      "status": "reference-only",
+      "use": "Bone mapping, foot plant, root-motion and batch-retarget QA reference; do not vendor s&box-specific runtime."
+    },
+    {
+      "id": "kimodo-practical",
+      "name": "KIMODO Practical",
+      "license": "MIT",
+      "type": "retargeting-and-certification-tool",
+      "url": "https://github.com/htdt/kimodo-practical",
+      "status": "reference-only",
+      "use": "Independent certification/retargeting pipeline reference for GLB skeleton and motion quality gates."
+    },
+    {
+      "id": "animtransfer",
+      "name": "Anim Transfer",
+      "license": "open-source",
+      "type": "gltf-retargeting-tool",
+      "url": "https://github.com/iamtommo/animtransfer",
+      "status": "reference-only",
+      "use": "Independent GLTF skeletal transfer reference; work-in-progress export means not a production dependency."
     }
   ]
 }
