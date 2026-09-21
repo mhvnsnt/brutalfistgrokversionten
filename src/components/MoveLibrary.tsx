@@ -24,6 +24,7 @@ import { BANNON_ROSTER } from '../data/bannonRoster';
 import { moveSetForFighter, schwarzerblitzSpecials } from '../engine/combat/SchwarzerblitzSpecials';
 import { BANNON_GLB_PLAYABLE_MODELS } from '../data/bannonGlbRoster';
 import { resolveGlbUrl } from '../data/bannonGlbUrl';
+import { preferredMoveLibraryModel } from './moveLibraryModelSelection';
 
 /**
  * THE MOVE LIBRARY — every clip in the game, playable, and labellable.
@@ -268,7 +269,7 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
   // first-render empty array left the editor with an undefined GLB URL and a
   // blank preview. The list itself still rendered, which made this look like
   // an animation/asset failure instead of an editor state bug.
-  const preferredModel = models.find((m) => m.startsWith('BANNON_rigged')) ?? models[0] ?? '';
+  const preferredModel = preferredMoveLibraryModel(models);
   const [model, setModel] = useState('');
   useEffect(() => {
     if (!model && preferredModel) setModel(preferredModel);
