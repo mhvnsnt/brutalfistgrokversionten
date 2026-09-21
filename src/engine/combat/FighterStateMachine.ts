@@ -967,14 +967,15 @@ export class FighterStateMachine {
     // defender then gets real frames to press Escape. On expiry, the arena
     // commits the throw and applies its damage/knockdown.
     if (this.incomingThrowBreak) {
+      // prevInput is updated before this transaction runs, so use the
+      // rising-edge values captured at the top of update(). Re-reading
+      // resolvedInput against prevInput here would compare the button to
+      // itself and make every authored limb break silently fail.
       const breakPressed =
         risingEscape ||
-        (this.incomingThrowBreakButton === '1' && (resolvedInput.lp ?? false) && !(this.prevInput.lp ?? false)) ||
-        (this.incomingThrowBreakButton === '2' && (resolvedInput.rp ?? false) && !(this.prevInput.rp ?? false)) ||
-        (this.incomingThrowBreakButton === 'either' && (
-          ((resolvedInput.lp ?? false) && !(this.prevInput.lp ?? false)) ||
-          ((resolvedInput.rp ?? false) && !(this.prevInput.rp ?? false))
-        ));
+        (this.incomingThrowBreakButton === '1' && risingLp) ||
+        (this.incomingThrowBreakButton === '2' && risingRp) ||
+        (this.incomingThrowBreakButton === 'either' && (risingLp || risingRp));
       if (breakPressed && attemptThrowBreak(this.incomingThrowBreak)) {
         this.incomingThrowBreak = null;
         this.incomingThrowBreakButton = 'either';
