@@ -69,6 +69,24 @@
       "url": "https://github.com/iamtommo/animtransfer",
       "status": "reference-only",
       "use": "Independent GLTF skeletal transfer reference; work-in-progress export means not a production dependency."
+    },
+    {
+      "id": "kaykit-character-animations",
+      "name": "KayKit Character Animations",
+      "license": "CC0-1.0",
+      "type": "humanoid-animation-library",
+      "url": "https://kaylousberg.itch.io/kaykit-adventurers",
+      "status": "candidate",
+      "use": "Additional CC0 humanoid locomotion/combat/damage/jump/crouch source; intake only after skeleton and provenance gates."
+    },
+    {
+      "id": "freepeak-opencombat",
+      "name": "OpenCombat",
+      "license": "mixed-per-asset; CC0 preferred",
+      "type": "combat-game-reference",
+      "url": "https://github.com/FreePeak/opencombat",
+      "status": "reference-only",
+      "use": "Reference for real skeletal combat integration, test harnesses and asset provenance; no third-party asset copied without license verification."
     }
   ]
 }
