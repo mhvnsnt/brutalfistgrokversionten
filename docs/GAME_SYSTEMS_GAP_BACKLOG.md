@@ -1314,3 +1314,10 @@ Commits:
 - [x] **Deterministic default ground input law** — `IMPLEMENTED`. Command matching now fails closed when a move declares a stance: a `Crouch` move cannot match from missing/unknown stance. Directional/crouch/jump command conventions are documented in `CommandInput.ts`; crouching and jumping remain explicit command/stance requirements rather than accidental results of a generic forward+button press.
 - [ ] **Roster move promotion from open packs** — `IN PROGRESS`. Candidate clips are indexed first, then must be retargeted/baked and assigned to character-specific semantic move definitions. No unverified clip is promoted automatically.
 - [ ] **Full-contact hitbox/hurtbox alignment audit** — `IN PROGRESS`. Next runtime pass must measure attacker active volume against defender hurt volume and fighter spacing; visual overlap alone is insufficient.
+
+
+### Contact-envelope correction — 2026-09-21
+- **Status:** IN PROGRESS
+- **Finding:** the combat collision path previously inflated every active hitbox with a hardcoded `+1.1m` width and `+1.0m` depth before overlap testing. That is not a measured fighter-scale hurtbox and can make visual contact disagree with combat contact.
+- **Change:** generated moves now carry measured hand/foot reach; the hitbox uses that reach for its forward envelope, while collision uses explicit fighter-scale hurtbox half-extents (`0.42m` X, `0.34m` Z) instead of the oversized constants.
+- **Evidence:** regression tests cover an out-of-envelope separation and an in-envelope contact case. CI/PWA runtime evidence is still required before VERIFIED.
