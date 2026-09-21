@@ -369,3 +369,44 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Living Game Systems Backlog
 
 For substantial game work, read `docs/GAME_SYSTEMS_GAP_BACKLOG.md` before changing combat, movement, animation, rigging, assets, stages, controls, AI, training, replay, or presentation. When new requirements, missing systems, regressions, research findings, or pipeline gates are discovered, update that backlog in the same workstream. Never rely on chat memory for requirements. Do not mark an item VERIFIED without concrete test/probe/runtime evidence.
+
+---
+
+## 0.6 Agent operating standard — evidence, recovery, and sustained execution
+
+This game is a long-running shared engineering effort. Do not optimize for a pretty response, a plausible patch, or a single green unit test. Optimize for a playable game and durable evidence.
+
+### Work until the active blocker is actually removed
+
+When the owner says continue, keep working, go, fix it, or pick up where the previous agent stopped, resume from the repository state and recent commits. Do not merely describe what another agent should do. Inspect the current code, find the highest-value blocker, implement the fix, verify it where tooling permits, commit it, and continue to the next blocker.
+
+If an editor, preview, build, test, asset loader, or runtime regression blocks the requested work, that blocker is first. Do not work around a broken editor by pretending its output is trustworthy.
+
+### Outwork-by-method, not by claim
+
+No agent gets credit for claiming to be better than another agent. The quality bar is concrete:
+
+1. Measure before changing when the defect is visual, timing-sensitive, animation-related, or asset-related.
+2. Use the real pipeline before declaring a repair effective.
+3. Prefer the smallest authoritative fix that corrects the real layer rather than masking symptoms downstream.
+4. Add a regression test or executable probe for every bug that can return.
+5. Run the strongest available verification: targeted test, typecheck, production build, runtime/browser probe, and PWA/mobile verification as applicable.
+6. Record what was actually verified. A test that was not run is not green. UNKNOWN is never PASS.
+7. Re-read recent commits before replacing prior work. Preserve good fixes; do not churn or rewrite history merely to make a branch look cleaner.
+8. When a measurement is disproven, record the measurement mistake too. The instrument is part of the system and must not repeat the same false conclusion.
+9. Use open-source work as an input, not as an excuse to copy blindly. Prefer mature, compatible, permissively licensed components; inspect license, runtime assumptions, maintenance state, and integration cost before adding them. Record provenance when imported.
+10. Never silently downgrade authored content to generated filler. Imported, authored, measured, repaired, generated, stand-in, and quarantined content must remain distinguishable.
+
+### Permanent memory rule
+
+Chat is not the source of truth. If the owner states a requirement, discovers a gap, changes a rule, reports a regression, or asks for a feature, capture it in docs/GAME_SYSTEMS_GAP_BACKLOG.md during the same workstream. If it changes agent behavior, update this AGENTS.md too. If it is a durable engineering decision, put it in the appropriate docs contract as well.
+
+Never claim that something is remembered merely because it appeared in a chat. The repository is the durable project memory.
+
+### PWA-first feedback loop
+
+The owner will test the PWA while work continues. Keep changes incrementally testable: avoid giant speculative rewrites, preserve a working preview, and separate asset/data repairs from combat-rule changes where practical. When a PWA-visible regression is found, fix the underlying source and add a regression guard before moving on.
+
+### Current hard lesson
+
+The Move Library had a state-initialization failure where a derived model list was empty on the first render and useState permanently captured an undefined model. The list could render while the 3D editor did not. This is a canonical partial-render regression: visible UI does not prove the editor/runtime path works. Future editor changes must verify both the control surface and the live preview path.
