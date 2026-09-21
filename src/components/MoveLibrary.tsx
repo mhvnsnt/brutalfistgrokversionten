@@ -55,6 +55,7 @@ interface ManifestEntry {
   pairedWith?: string[];
   /** This clip IS somebody being thrown. */
   receives?: boolean;
+  provenance?: { pack?: string; license?: string; path?: string; originalName?: string; referenceMappedTracks?: number };
 }
 
 type Filter = 'all' | 'untagged' | 'unlabelled' | 'unassigned' | 'airborne' | 'labelled';
@@ -591,7 +592,7 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
                     {name}
                   </span>
                   <span className="block text-[8px] text-zinc-500">
-                    {m.dur.toFixed(2)}s · {m.bank}{m.owns ? ` · ${m.semantic}` : ''}{m.airborne ? ' · air' : ''}
+                    {m.dur.toFixed(2)}s · {m.bank}{m.owns ? ` · ${m.semantic}` : ''}{m.airborne ? ' · air' : ''}{m.provenance?.pack ? ` · ${m.provenance.pack}` : ''}
                     {l?.name ? ` · "${l.name}"` : ''}
                   </span>
                   {(l?.kinds?.length ?? 0) > 0 && (
@@ -622,6 +623,7 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
                 <span className="text-[9px] text-zinc-500">
                   {entry.dur.toFixed(2)}s · {entry.bones} bones · {entry.bank}
                   {entry.owns ? ` · owns ${entry.semantic}` : ` · guessed ${entry.semantic}`}
+                  {entry.provenance?.license ? ` · ${entry.provenance.license}` : ''}
                 </span>
               )}
               <select
