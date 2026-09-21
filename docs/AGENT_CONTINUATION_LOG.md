@@ -58,3 +58,8 @@ run or runtime probe supplies evidence. The owner is testing the PWA concurrentl
 - Added src/engine/retarget/SkeletonUtilsReference.test.ts and included it in the package test gate.
 - Added the open-source intake lane to docs/GAME_SYSTEMS_GAP_BACKLOG.md: bulk motion, independent retarget cross-check, GLB validation, skin/joint/exploded-mesh gates, semantic ownership, and provenance.
 - No authored Bannon asset was replaced. No new source is marked VERIFIED until GitHub Actions and runtime evidence confirm it.
+
+
+## 2026-09-21 — CC0 animation intake pass
+
+Added a real open-animation intake lane for Quaternius UAL1/UAL2. The new scanner indexes only actual files under vendor/quaternius-ual-1 and vendor/quaternius-ual-2, classifies conservative candidate roles, and is wired into predev/prebuild. Added durable intake rules requiring retarget, skeleton/skin QA, floor/facing, joint-limit, body-count and semantic-owner gates before any clip becomes playable. The packs are not claimed as present until their bytes are actually supplied and scanned. CI verification remains required before declaring the new lane green.
