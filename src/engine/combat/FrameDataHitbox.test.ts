@@ -18,6 +18,12 @@ describe('measured contact envelope', () => {
     assert.equal(system.checkCollision(0, 0, 1, 1.0, 0, false, 1), null);
   });
 
+  it('rejects a ground strike against an airborne defender when the vertical envelopes do not overlap', () => {
+    const system = new FrameDataHitboxSystem();
+    system.update({ active: true, currentFrame: 1, move: { ...move(0.8), animation: 'lightAttack', attackLevel: 'low' } });
+    assert.equal(system.checkCollision(0, 0, 1, 0.75, 0, false, 1, 1.0, 0), null);
+  });
+
   it('accepts contact when the defender enters the measured envelope', () => {
     const system = new FrameDataHitboxSystem();
     system.update({ active: true, currentFrame: 1, move: move(0.8) });
