@@ -311,11 +311,14 @@ export class FrameDataHitboxSystem {
     const defenderMaxY = opponentY + FIGHTER_HEIGHT_M;
     if (attackMaxY < defenderMinY || attackMinY > defenderMaxY) return null;
 
-    // Hit confirmed — resolve which body region was hit
+    // Resolve the actual overlapping body region, not merely the attack's
+    // nominal level. This keeps high/mid/low semantics tied to measured Y
+    // ranges and makes the debug/damage result agree with the collision.
     this.hitRegisteredThisSwing = true;
 
     const attackLevel = hb.attackLevel ?? 'mid';
-    const { region: hitRegion, multiplier: regionMultiplier } = resolveHitRegion(attackLevel);
+    const { region: hitRegion, multiplier: regionMultiplier } =
+      resolveHitRegionAtHeight(attackLevel, attackerY, opponentY);
 
     // Update hurtbox region state for debug overlay
     this.lastHitRegion = hitRegion;
