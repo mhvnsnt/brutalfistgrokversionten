@@ -14,7 +14,7 @@ describe('measured contact envelope', () => {
     assert.equal(resolveHitRegionAtHeight('high', 0, 0).region, 'head');
     assert.equal(resolveHitRegionAtHeight('mid', 0, 0).region, 'torso');
     assert.equal(resolveHitRegionAtHeight('low', 0, 0).region, 'leftLeg');
-    assert.equal(resolveHitRegionAtHeight('low', 1.0, 0).region, 'leftLeg');
+    assert.equal(resolveHitRegionAtHeight('low', 1.0, 0), null);
   });
   it('rejects an early hit outside the fighter-scale hurtbox envelope', () => {
     const system = new FrameDataHitboxSystem();
