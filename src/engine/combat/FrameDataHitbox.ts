@@ -137,21 +137,20 @@ export function buildHitboxFromMove(move: MoveWindow): HitboxGeometry {
   const contactWidth = reach !== undefined
     ? Math.max(0.30, Math.min(1.05, reach * 0.56))
     : 0.8;
-  return {
+  // Legacy frame-data supplies damage/timing defaults; measured reach must
+  // be applied last or lightAttack/heavyAttack silently overwrite it.
+  const geometry = {
+    ...base,
+    ...special,
     offsetX: contactOffset,
     offsetZ: 0.0,
     width: contactWidth,
-    depth: reach !== undefined ? Math.max(0.35, Math.min(0.75, reach * 0.48)) : 0.6,
-    hitstun: 0.25,
-    blockstun: 0.15,
-    pushback: 0.3,
-    launch: 0,
-    isSpecial: false,
-    attackLevel: 'mid' as const,
-    ...base,
-    ...special,
+    depth: reach !== undefined
+      ? Math.max(0.35, Math.min(0.75, reach * 0.48))
+      : (special.depth ?? base.depth ?? 0.6),
     damage: move.damage ?? (base as { damage?: number }).damage ?? 80,
   };
+  return geometry as HitboxGeometry;
 }
 
 // ── Resolve which hurtbox region was hit ──────────────────────────────────────
