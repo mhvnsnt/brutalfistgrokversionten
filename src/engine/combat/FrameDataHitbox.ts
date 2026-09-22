@@ -109,6 +109,14 @@ const HITBOX_DEFAULTS: Record<string, Partial<HitboxGeometry>> = {
 export const DEFAULT_FIGHTER_HURTBOX_HALF_WIDTH_M = 0.42;
 export const DEFAULT_FIGHTER_HURTBOX_HALF_DEPTH_M = 0.34;
 
+/** World-height envelope used by the deterministic combat authority. */
+const FIGHTER_HEIGHT_M = 1.8;
+const ATTACK_Y_RANGES: Record<'high' | 'mid' | 'low', [number, number]> = {
+  high: [0.78, 1.00],
+  mid: [0.42, 0.78],
+  low: [0.00, 0.45],
+};
+
 const SPECIAL_HITBOX: Partial<HitboxGeometry> = {
   offsetX: 1.0,
   offsetZ: 0.0,
@@ -273,6 +281,8 @@ export class FrameDataHitboxSystem {
     opponentZ: number,
     opponentIsBlocking: boolean,
     currentFrame: number,
+    opponentY = 0,
+    attackerY = 0,
   ): CollisionResult | null {
     if (!this.hitboxActive || !this.hitboxGeometry) return null;
     if (this.hitRegisteredThisSwing) return null;
@@ -289,6 +299,17 @@ export class FrameDataHitboxSystem {
     const halfD = (hb.depth * 0.5) + DEFAULT_FIGHTER_HURTBOX_HALF_DEPTH_M;
 
     if (dx > halfW || dz > halfD) return null;
+
+    // Vertical contact is part of the collision, not just a post-hit label.
+    // The old system could call a ground low kick a leg hit against an airborne
+    // fighter because it only tested X/Z. Use the same normalized body ranges
+    // as the hurtbox definitions, translated by each fighter's world Y.
+    const [attackMinN, attackMaxN] = ATTACK_Y_RANGES[hb.attackLevel];
+    const attackMinY = attackerY + attackMinN * FIGHTER_HEIGHT_M;
+    const attackMaxY = attackerY + attackMaxN * FIGHTER_HEIGHT_M;
+    const defenderMinY = opponentY;
+    const defenderMaxY = opponentY + FIGHTER_HEIGHT_M;
+    if (attackMaxY < defenderMinY || attackMinY > defenderMaxY) return null;
 
     // Hit confirmed — resolve which body region was hit
     this.hitRegisteredThisSwing = true;
