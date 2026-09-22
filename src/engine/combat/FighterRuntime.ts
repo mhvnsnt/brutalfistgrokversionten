@@ -19,6 +19,8 @@ export interface FighterRuntime {
     opponentX: number,
     opponentZ: number,
     opponentIsBlocking: boolean,
+    opponentY?: number,
+    attackerY?: number,
   ): CollisionResult | null;
   applyStun(duration: number, isCrumple?: boolean): void;
   registerSpecialMoves(moves: SpecialMoveDefinition[]): void;
@@ -57,13 +59,15 @@ export function createFighterRuntime(
       hitboxSystem.update(hitboxWindow);
     },
 
-    checkHit(myX, myZ, facing, opponentX, opponentZ, opponentIsBlocking) {
+    checkHit(myX, myZ, facing, opponentX, opponentZ, opponentIsBlocking, opponentY = 0, attackerY = 0) {
       const window = stateMachine.getHitboxWindow();
       return hitboxSystem.checkCollision(
         myX, myZ, facing,
         opponentX, opponentZ,
         opponentIsBlocking,
         window.currentFrame,
+        opponentY,
+        attackerY,
       );
     },
 
