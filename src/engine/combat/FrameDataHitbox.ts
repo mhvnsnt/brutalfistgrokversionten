@@ -317,8 +317,11 @@ export class FrameDataHitboxSystem {
     this.hitRegisteredThisSwing = true;
 
     const attackLevel = hb.attackLevel ?? 'mid';
-    const { region: hitRegion, multiplier: regionMultiplier } =
-      resolveHitRegionAtHeight(attackLevel, attackerY, opponentY);
+    const resolvedRegion = resolveHitRegionAtHeight(attackLevel, attackerY, opponentY);
+    // X/Z can overlap while the actual striking limb is vertically outside the
+    // permitted target region. That is a whiff, not a hit with a mislabeled limb.
+    if (!resolvedRegion) return null;
+    const { region: hitRegion, multiplier: regionMultiplier } = resolvedRegion;
 
     // Update hurtbox region state for debug overlay
     this.lastHitRegion = hitRegion;
