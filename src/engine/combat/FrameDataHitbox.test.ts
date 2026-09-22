@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { FrameDataHitboxSystem, type HitboxGeometry } from './FrameDataHitbox.ts';
+import { FrameDataHitboxSystem, resolveHitRegionAtHeight } from './FrameDataHitbox.ts';
 import type { MoveWindow } from './FighterStateMachine.ts';
 
 const move = (reach: number): MoveWindow => ({
@@ -10,6 +10,12 @@ const move = (reach: number): MoveWindow => ({
 });
 
 describe('measured contact envelope', () => {
+  it('resolves the actual overlapping body region instead of only the attack label', () => {
+    assert.equal(resolveHitRegionAtHeight('high', 0, 0).region, 'head');
+    assert.equal(resolveHitRegionAtHeight('mid', 0, 0).region, 'torso');
+    assert.equal(resolveHitRegionAtHeight('low', 0, 0).region, 'leftLeg');
+    assert.equal(resolveHitRegionAtHeight('low', 1.0, 0).region, 'leftLeg');
+  });
   it('rejects an early hit outside the fighter-scale hurtbox envelope', () => {
     const system = new FrameDataHitboxSystem();
     system.update({ active: true, currentFrame: 1, move: move(0.55) });
