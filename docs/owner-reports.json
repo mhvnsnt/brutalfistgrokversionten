@@ -70,7 +70,7 @@
       "reported": "2026-09-25",
       "symptom": "when you press back and attack, it's like kind of doing something where it's making you keep walking back. So when you do back and attack, none of those attacks ever hit. In Tekken and Schwarzerblitz it's more specific than that.",
       "rootCause": "NOT the attack carrying you \u2014 measured strictly between the start and end of the attack, movement is 0.000m on every input including back, so the state machine anchors you correctly. The fighter walked OUT OF RANGE before the attack's active frames arrived. Scale-free comparison: Schwarzerblitz crosses 1.23 of its own strike reaches per second of walking (80 units/s over a 65-unit modal range); we crossed 1.57 (2.2 m/s over a MEASURED 1.40m reach).",
-      "fixed": "PENDING",
+      "fixed": "454c782",
       "howFound": "scripts/audit-combat-feel.mjs \u2014 real presses in a real match, measuring displacement, connection and the move that fired per input.",
       "lesson": "TWO OF MY OWN READINGS WERE WRONG BEFORE THE RIGHT ONE. First I timed drift over a fixed window around the press and reported 1.76m of 'the attack carrying you' \u2014 most of it was legitimate walking, because holding back is supposed to walk you back. Then I took the strike reach as 0.8m from the distance another test happened to swing at, which made the pace gap look like 2.2x and produced a 1.0 m/s walk that was sluggish rather than deliberate. Driving every attack out to its furthest connecting distance says all four reach 1.40m and the real gap was 1.28x. MEASURE THE THING, INCLUDING THE DENOMINATOR."
     }
