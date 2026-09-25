@@ -65,6 +65,7 @@
 import * as THREE from 'three';
 import { SkeletonUtils } from 'three-stdlib';
 import { repairSkinWeights } from './SkinWeightRepair';
+import { repairBindSpace } from './BindSpaceRepair';
 import { type PsxRenderOptions } from '../../render/psx';
 import { getActiveRenderProfile } from '../../lib/graphicsSettings';
 import { restoreAuthoredTextures } from './restoreAuthoredTextures';
@@ -1143,6 +1144,27 @@ export async function runCharacterPipeline(
     console.log(
       `[CharacterPipeline] ✂️ "${modelName}" — pruned ${skinRepair.repaired}/${skinRepair.verts} ` +
       `vertices pulled across the body (worst span ${skinRepair.worstSpan} joints)`,
+    );
+  }
+
+  // ── STEP 2c: Put the body back on its own skeleton ──────────────────────
+  // Three of the shipped models are bound roughly 0.85 m away from the bones
+  // that move them — mesh feet-at-origin, skeleton hip-centred — which every
+  // other check vouches for because bind pose cancels it exactly. Under pose
+  // it is an 0.85 m lever on every vertex at once. Corrected here, before the
+  // Box3 measurement below reads the body. See BindSpaceRepair for the maths,
+  // the measurements, and why it moves the mesh rather than the bind matrix.
+  const bindSpace = repairBindSpace(cloned);
+  if (bindSpace.moved > 0) {
+    console.log(
+      `[CharacterPipeline] 📐 "${modelName}" — moved ${bindSpace.moved} mesh(es) ` +
+      `${bindSpace.offsetM}m back onto the skeleton (mean lever ${bindSpace.beforeM}m -> ${bindSpace.afterM}m)`,
+    );
+  }
+  if (bindSpace.refused > 0) {
+    console.warn(
+      `[CharacterPipeline] ⚠️ "${modelName}" — body sits ${bindSpace.offsetM}m off its skeleton ` +
+      `and a rigid move does not fix it. This rig needs re-rigging, not repairing.`,
     );
   }
 
