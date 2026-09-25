@@ -1,6 +1,9 @@
-import { describe, expect, it } from 'vitest';
+// `.ts` extensions on purpose — the repo's runner resolves them literally.
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
 import * as THREE from 'three';
-import { repairBindSpace, MIN_OFFSET_M } from './BindSpaceRepair';
+
+import { MIN_OFFSET_M, repairBindSpace } from './BindSpaceRepair.ts';
 
 /**
  * Build a two-bone skeleton and a mesh bound to it, with the mesh optionally
@@ -67,15 +70,15 @@ function meanLever(mesh: THREE.SkinnedMesh): number {
 describe('repairBindSpace', () => {
   it('puts a displaced body back on its skeleton', () => {
     const { root, mesh } = rig(new THREE.Vector3(0, 0.85, 0));
-    expect(meanLever(mesh)).toBeGreaterThan(0.8);
+    assert.ok(meanLever(mesh) > 0.8, 'the displaced rig should start with a huge lever');
 
     const report = repairBindSpace(root);
 
-    expect(report.moved).toBe(1);
-    expect(report.refused).toBe(0);
-    expect(report.offsetM).toBeCloseTo(0.85, 2);
+    assert.equal(report.moved, 1);
+    assert.equal(report.refused, 0);
+    assert.ok(Math.abs(report.offsetM - 0.85) < 0.01, `offset ${report.offsetM}`);
     // Back to the vertex's own distance from its bone, and nothing more.
-    expect(meanLever(mesh)).toBeCloseTo(0.1, 3);
+    assert.ok(Math.abs(meanLever(mesh) - 0.1) < 0.001, `lever ${meanLever(mesh)}`);
   });
 
   it('leaves a body that is already on its skeleton alone', () => {
@@ -84,14 +87,14 @@ describe('repairBindSpace', () => {
 
     const report = repairBindSpace(root);
 
-    expect(report.moved).toBe(0);
-    expect(mesh.geometry.getAttribute('position').array).toEqual(before);
+    assert.equal(report.moved, 0);
+    assert.deepEqual(mesh.geometry.getAttribute('position').array, before);
   });
 
   it('leaves a small offset alone rather than chasing the last centimetre', () => {
     // Healthy shipped models fit 4-13cm. Moving them would be churn, not repair.
     const { root } = rig(new THREE.Vector3(0, MIN_OFFSET_M - 0.05, 0));
-    expect(repairBindSpace(root).moved).toBe(0);
+    assert.equal(repairBindSpace(root).moved, 0);
   });
 
   it('refuses to shove a body whose rig is wrong in some other way', () => {
@@ -102,14 +105,14 @@ describe('repairBindSpace', () => {
 
     const report = repairBindSpace(root);
 
-    expect(report.moved).toBe(0);
-    expect(report.refused).toBe(1);
-    expect(mesh.geometry.getAttribute('position').array).toEqual(before);
+    assert.equal(report.moved, 0);
+    assert.equal(report.refused, 1);
+    assert.deepEqual(mesh.geometry.getAttribute('position').array, before);
   });
 
   it('reports zero on a scene with no skinning at all', () => {
     const root = new THREE.Group();
     root.add(new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial()));
-    expect(repairBindSpace(root)).toEqual({ moved: 0, offsetM: 0, beforeM: 0, afterM: 0, refused: 0 });
+    assert.deepEqual(repairBindSpace(root), { moved: 0, offsetM: 0, beforeM: 0, afterM: 0, refused: 0 });
   });
 });

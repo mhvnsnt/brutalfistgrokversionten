@@ -425,6 +425,21 @@ const CMD_THROW_WINDOW_MS = 200;
 /** Time window (ms) for simultaneous button presses to count as a combination */
 const TEKKEN_COMBO_WINDOW_MS = 80;
 
+/**
+ * One 60Hz frame. The frame data in this file is authored in 60ths, so a
+ * simulation step must never exceed one or a move's active frames can be
+ * skipped whole.
+ */
+export const FIXED_STEP_S = 1 / 60;
+
+/**
+ * Most catch-up steps one update will run: about a quarter second of fight per
+ * rendered frame. Enough to keep real time on a phone that has dropped to 4fps,
+ * bounded so a backgrounded tab cannot come back and simulate a whole exchange
+ * in one go.
+ */
+export const MAX_SUBSTEPS = 16;
+
 // ── State machine ─────────────────────────────────────────────────────────────
 export class FighterStateMachine {
   private actionState: ActionState = 'Idle';
@@ -548,6 +563,8 @@ export class FighterStateMachine {
 
   // ── Forward press timestamp for command throw detection ───────────────────
   private forwardPressTime = 0;
+  /** See getSweptHitboxWindow(). */
+  private peakHitboxWindow: HitboxWindow | null = null;
 
   // ── Public getters ──────────────────────────────────────────────────────────
   get current(): FighterMotionState { return this.motionState; }
@@ -904,7 +921,81 @@ export class FighterStateMachine {
   }
 
   // ── Main update ─────────────────────────────────────────────────────────────
+  /**
+   * GAME TIME HAS TO TRACK WALL TIME, OR THE FIGHT RUNS IN TREACLE.
+   *
+   * Owner, after playing: "P2's not reacting or taking any damage. And I think
+   * all of my attacks are hitting myself."
+   *
+   * MEASURED with scripts/probe-damage-attribution.mjs. Attribution is fine —
+   * zero self-hits, every point of P1's damage landing on P2. What the probe
+   * actually found is that of sixteen attack presses the game saw all sixteen
+   * and started FOUR, and the state at each rising edge says why:
+   *
+   *     HitStun x4    Idle x2    Attacking x10
+   *
+   * Ten presses arrived while an attack begun 1.07 SECONDS EARLIER was still
+   * running, on moves whose whole duration is about half a second. The arena
+   * clamped dt at 0.05s, so below 20fps every timer in the fight advanced
+   * slower than the wall clock — at the 3.8fps the headless harness manages,
+   * at about a fifth speed. The player mashes into a move that will not end,
+   * the opponent's reactions crawl too so he never visibly flinches, and the
+   * AI still lands hits in real time, so your own bar is the only one moving.
+   * That is the whole complaint, and it is one clamp.
+   *
+   * (This project has been here before: a frame collapse pegged dt at the same
+   * 0.05 cap and every spring ran at ~0.3x, so lifts never reached their
+   * climax. Same defect, different system.)
+   *
+   * SO SUB-STEP INSTEAD OF DISCARDING THE TIME. A large dt is consumed as
+   * several fixed steps of at most one 60Hz frame each, which is what a
+   * fighting game wants anyway: no move can be stepped straight over, the
+   * frame data stays exactly as authored, and game time keeps up with the
+   * wall. Only the FIRST sub-step sees the button as newly pressed — the rest
+   * see it held, which is precisely what a 60fps device would have seen.
+   *
+   * MAX_SUBSTEPS bounds the catch-up so a backgrounded tab cannot return and
+   * simulate a minute of fight in one frame. Past that bound the fight does
+   * slow down, which is the right failure: slow is recoverable, teleporting
+   * across someone's active frames is not.
+   */
   update(input: FighterInput, dt: number): FighterMotionState {
+    const steps = Math.max(1, Math.min(MAX_SUBSTEPS, Math.ceil(dt / FIXED_STEP_S)));
+    if (steps === 1) {
+      this.peakHitboxWindow = null;
+      const motion = this.updateStep(input, dt);
+      this.peakHitboxWindow = this.getHitboxWindow();
+      return motion;
+    }
+    const stepDt = dt / steps;
+    let motion = this.motionState;
+    let peak: HitboxWindow | null = null;
+    for (let i = 0; i < steps; i++) {
+      motion = this.updateStep(input, stepDt);
+      const w = this.getHitboxWindow();
+      // Keep the LAST active window, not the first: the hitbox system treats a
+      // currentFrame that moves backwards as a NEW swing, so handing it the
+      // earliest active frame each time would re-arm the same swing forever.
+      if (w.active) peak = w;
+    }
+    this.peakHitboxWindow = peak ?? this.getHitboxWindow();
+    return motion;
+  }
+
+  /**
+   * The hitbox window this fighter passed through during the last update.
+   *
+   * At one sub-step this is just the current window. With several, an entire
+   * set of active frames can open and close inside one rendered frame, and the
+   * hitbox system closes itself the moment it is handed an inactive window — so
+   * feeding it the instantaneous state would silently drop the hit. This
+   * reports the window that was actually live.
+   */
+  getSweptHitboxWindow(): HitboxWindow {
+    return this.peakHitboxWindow ?? this.getHitboxWindow();
+  }
+
+  private updateStep(input: FighterInput, dt: number): FighterMotionState {
     const now = performance.now();
 
     // ── Resolve Tekken 4-limb inputs into light/heavy/throw ──────────────

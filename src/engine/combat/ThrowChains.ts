@@ -165,10 +165,25 @@ export function openThrowBreak(depth = 0): ThrowBreakState {
 }
 
 /** Advance the break window. Returns true while it is still open. */
+/**
+ * A window that has run out is closed, even if a float says otherwise.
+ *
+ * One microsecond — far below any frame at any rate, and far above the
+ * residue left by summing a step.
+ */
+const TIMER_EPSILON_S = 1e-6;
+
 export function tickThrowBreak(state: ThrowBreakState, dt: number): boolean {
-  if (state.broken || state.remaining <= 0) return false;
+  if (state.broken || state.remaining <= TIMER_EPSILON_S) return false;
   state.remaining = Math.max(0, state.remaining - dt);
-  return state.remaining > 0;
+  // WHY THE EPSILON. The same elapsed time delivered as one step or as
+  // sixteen does not land on the same float: 0.35 arrives exactly, while
+  // sixteen steps of 0.35/16 leave about 1e-17 behind. Without this, a throw
+  // break window that expires cleanly at 60fps stays open forever when the
+  // state machine sub-steps a dropped frame — the window's length would
+  // silently depend on the frame rate, which is the class of bug the
+  // sub-stepping exists to remove.
+  return state.remaining > TIMER_EPSILON_S;
 }
 
 /**
@@ -179,7 +194,11 @@ export function tickThrowBreak(state: ThrowBreakState, dt: number): boolean {
  * a failed throw a punishable mistake rather than a free retry.
  */
 export function attemptThrowBreak(state: ThrowBreakState): boolean {
-  if (state.broken || state.remaining <= 0) return false;
+  // The SAME epsilon the tick closes on. If these two disagree about when the
+  // window is shut, a window the tick has already closed can still be broken —
+  // which is what the throw-chains test caught the moment the tick gained an
+  // epsilon and this did not.
+  if (state.broken || state.remaining <= TIMER_EPSILON_S) return false;
   state.broken = true;
   return true;
 }

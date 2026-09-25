@@ -23,6 +23,8 @@ import {
   type FighterInput as SMInput,
   DEFAULT_SPECIAL_MOVES,
   COMMAND_THROW_MOVE,
+  FIXED_STEP_S,
+  MAX_SUBSTEPS,
 } from '../engine/combat/FighterStateMachine';
 import { FrameDataHitboxSystem } from '../engine/combat/FrameDataHitbox';
 import {
@@ -857,6 +859,45 @@ export default function GameBattleArena({
 
   const prevP1StateRef = useRef<string>('Neutral');
   const prevP2StateRef = useRef<string>('Neutral');
+  /**
+   * WHO HIT WHOM — the ledger that settles a damage-attribution claim.
+   *
+   * Owner, after playing: "I'm P1 and I'm trying to fight P2 and it's like
+   * P2's not reacting or taking any damage. And I think all of my attacks are
+   * hitting myself."
+   *
+   * That is a claim about ATTRIBUTION, and there was no way to read it. The
+   * HUD shows two bars, the console logs state transitions, and nothing
+   * anywhere records "this hitbox belonged to P1 and the damage went to P2".
+   * Reading the routing proves only what the code intends; a ledger written
+   * at the moment each hit resolves is what it actually did.
+   */
+  /**
+   * FRAMES, AND HOW MANY OF THEM SAW A BUTTON DOWN.
+   *
+   * Sixteen attack presses produced three attacks in the first honest run of
+   * scripts/probe-damage-attribution.mjs. That is either the game refusing the
+   * input or the HARNESS never sampling it, and this repo has been burned by
+   * exactly that confusion before: under swiftshader the loop can run at a
+   * couple of frames a second, and a press that is shorter than a frame is a
+   * press the game never saw. Counting both sides separates them — a press
+   * seen on N frames that produced no attack is the game's doing; a press seen
+   * on zero frames is the instrument's.
+   */
+  const inputStatsRef = useRef<{
+    frames: number; lp: number; rp: number; lk: number; rk: number;
+    anyAttackBtn: number; attackStarts: number; edges: number; prevAny: boolean;
+    edgesDuringHitStop: number; atEdge: Record<string, number>; startsAtEdge: number[];
+  }>({
+    frames: 0, lp: 0, rp: 0, lk: 0, rk: 0, anyAttackBtn: 0, attackStarts: 0,
+    edges: 0, prevAny: false, edgesDuringHitStop: 0, atEdge: {}, startsAtEdge: [],
+  });
+  const hitLogRef = useRef<Array<{ t: number; by: 'p1' | 'p2'; target: 'p1' | 'p2'; dmg: number; blocked: boolean; via: string }>>([]);
+  const logHit = useRef((by: 'p1' | 'p2', target: 'p1' | 'p2', dmg: number, blocked: boolean, via: string) => {
+    const log = hitLogRef.current;
+    log.push({ t: Math.round(performance.now()), by, target, dmg, blocked, via });
+    if (log.length > 200) log.splice(0, log.length - 200);
+  }).current;
   const prevP1HealthRef = useRef<number>(p1Fighter.hp);
   const prevP2HealthRef = useRef<number>(p2Fighter.hp);
 
@@ -879,7 +920,22 @@ export default function GameBattleArena({
       const engine = engineRef.current;
       if (!engine) return;
       if (now - lastTime < FRAME_MS - 1) return;
-      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      // ── HOW MUCH TIME THE FIGHT IS ALLOWED TO ADVANCE ──────────────────
+      //
+      // This was `Math.min(elapsed, 0.05)`, and that one clamp is the whole of
+      // "P2's not reacting or taking any damage": below 20fps the discarded
+      // time made every timer in the fight run slower than the wall clock, so
+      // attacks outlasted the gap between presses and ten presses in sixteen
+      // arrived while the previous move was still going. Measured in
+      // scripts/probe-damage-attribution.mjs; the reasoning is written out over
+      // FighterStateMachine.update, which now consumes a large step as several
+      // 60Hz sub-steps so no move's active frames can be stepped over.
+      //
+      // The remaining bound exists only to stop a backgrounded tab returning
+      // and simulating a whole exchange in one frame, and it is exactly the
+      // span the state machine can fully consume.
+      const rawDt = (now - lastTime) / 1000;
+      const dt = Math.min(rawDt, MAX_SUBSTEPS * FIXED_STEP_S);
       lastTime = now;
 
       const prevP1Health = prevP1HealthRef.current;
@@ -925,6 +981,31 @@ export default function GameBattleArena({
       if (!smInput.strafe) {
         if ((bitmask as any).sidestepBg) smInput.strafe = -1;
         else if ((bitmask as any).sidestepFg) smInput.strafe = 1;
+      }
+
+      // Count what the loop actually saw this frame (see inputStatsRef), and
+      // record the fighter's STATE at each rising edge. The state machine
+      // driven in isolation lands 16 of 16 presses at 60, 30 and 3.8 fps, so
+      // whatever is eating them is here, in the wiring, and the state it was
+      // in when the press arrived is the thing that names it.
+      {
+        const st = inputStatsRef.current;
+        st.frames++;
+        const anyNow = !!(smInput.lp || smInput.rp || smInput.lk || smInput.rk);
+        if (smInput.lp) st.lp++;
+        if (smInput.rp) st.rp++;
+        if (smInput.lk) st.lk++;
+        if (smInput.rk) st.rk++;
+        if (anyNow) st.anyAttackBtn++;
+        if (anyNow && !st.prevAny) {
+          st.edges++;
+          const at = p1SMRef.current?.action ?? 'none';
+          st.atEdge[at] = (st.atEdge[at] ?? 0) + 1;
+          st.startsAtEdge.push(p1SMRef.current?.attackStarts ?? 0);
+          if (hitStopActiveRef.current) st.edgesDuringHitStop++;
+        }
+        st.prevAny = anyNow;
+        st.attackStarts = p1SMRef.current?.attackStarts ?? st.attackStarts;
       }
 
       // ── Feed the motion-command buffer ────────────────────────────────
@@ -1439,6 +1520,24 @@ export default function GameBattleArena({
           grappleBeat: grappleBeatRef.current,
           lastDeliverer: { ...throwDelivererRef.current },
         }),
+        /**
+         * HEALTH, AND WHO TOOK IT OFF WHOM.
+         *
+         * `health()` is the engine's own numbers, not the HUD's — the HUD is
+         * a `setState` behind them and a probe that reads the DOM is reading
+         * last frame. `hits()` is the attribution ledger: `by` is the fighter
+         * whose hitbox connected and `target` is who the damage was applied
+         * to, so a self-hit is visible as a row where they match.
+         */
+        health: () => ({
+          p1: engineRef.current?.p1Health ?? null,
+          p2: engineRef.current?.p2Health ?? null,
+          p1Max: p1Fighter.hp,
+          p2Max: p2Fighter.hp,
+        }),
+        hits: () => hitLogRef.current.slice(),
+        /** Loop frames vs frames that saw a button — see inputStatsRef. */
+        inputStats: () => ({ ...inputStatsRef.current }),
         /** What each side's state machine says it is doing, for the stuck-pose probe. */
         states: () => ({
           p1: { action: p1SMRef.current?.action, motion: p1SMRef.current?.current, clip: p1SMRef.current?.activeClip() },
@@ -1448,7 +1547,12 @@ export default function GameBattleArena({
 
       p1SM.tickAirborne(dt);
       const p1NextMotion = p1SM.update(smInput, dt);
-      const p1HbWindow = p1SM.getHitboxWindow();
+      // THE WINDOW THE FIGHTER PASSED THROUGH, not the one he is in. With
+      // sub-stepping a whole set of active frames can open and close inside one
+      // rendered frame, and the hitbox system closes itself as soon as it is
+      // handed an inactive window — so the instantaneous state would drop the
+      // hit outright. See FighterStateMachine.getSweptHitboxWindow.
+      const p1HbWindow = p1SM.getSweptHitboxWindow();
       p1Hb.update(p1HbWindow);
 
       // ── Command throw grab range detection ────────────────────────────
@@ -1608,7 +1712,9 @@ export default function GameBattleArena({
           // separate rule and the one that stops a juggle being an infinite.
           // It is 1.0 for anyone standing, so nothing off the ground changes.
           const p1Air = p2SMRef.current.juggleDamageScale();
-          engine.applyIncomingHit('p2', Math.max(1, Math.round(p1ScaledDmg * p1Air)), false, p1Hit.hitstun || 0.3);
+          const p1Dealt = Math.max(1, Math.round(p1ScaledDmg * p1Air));
+          engine.applyIncomingHit('p2', p1Dealt, false, p1Hit.hitstun || 0.3);
+          logHit('p1', 'p2', p1Dealt, false, 'hitbox');
         }
 
         // Apply the move's REACTION to P2 — launch, knockdown or stagger.
@@ -1756,6 +1862,7 @@ export default function GameBattleArena({
         p2HitboxRef.current.reset();
         console.log('[Arena] ✅ Command throw committed — damage:', throwDmg);
         engineRef.current?.applyIncomingHit('p2', throwDmg, false, 0.3);
+        logHit('p1', 'p2', throwDmg, false, 'throw');
         if (settings.soundEnabled) sfx.playHeavyHit();
         audioManagerRef.current.playSFX('throw_connect');
         setDamageEvent({
@@ -1797,6 +1904,7 @@ export default function GameBattleArena({
         p1HitboxRef.current.reset();
         playOpponentHalf('p1', throwDelivererRef.current.p2);
         engineRef.current?.applyIncomingHit('p1', throwDmg, false, 0.3);
+        logHit('p2', 'p1', throwDmg, false, 'throw');
         if (settings.soundEnabled) sfx.playHeavyHit();
         audioManagerRef.current.playSFX('throw_connect');
         setDamageEvent({
@@ -1831,7 +1939,7 @@ export default function GameBattleArena({
       p2SMRef.current.setCommandStance(p2AIInput.crouch ? 'Crouch' : p2AIInput.jump ? 'Air' : 'Ground');
       p2SM.tickAirborne(dt);
       const p2NextMotion = p2SM.update(p2AIInput, dt);
-      const p2HbWindow = p2SM.getHitboxWindow();
+      const p2HbWindow = p2SM.getSweptHitboxWindow();
       p2Hb.update(p2HbWindow);
 
       // ── THE AI'S THROW, WHICH HAD NEVER RESOLVED ──────────────────────
@@ -1883,7 +1991,9 @@ export default function GameBattleArena({
         p2ComboRef.current = newP2Combo;
         setP2Combo({ ...newP2Combo });
         if (!p1GuardResult.blocked) {
-          engine.applyIncomingHit('p1', Math.max(1, Math.round(p2ScaledDmg * p1SMRef.current.juggleDamageScale())), false, p2Hit.hitstun || 0.3);
+          const p2Dealt = Math.max(1, Math.round(p2ScaledDmg * p1SMRef.current.juggleDamageScale()));
+          engine.applyIncomingHit('p1', p2Dealt, false, p2Hit.hitstun || 0.3);
+          logHit('p2', 'p1', p2Dealt, false, 'hitbox');
         }
 
         const isCrumple = !p1GuardResult.blocked && p2Hit.launch > 0.3;
