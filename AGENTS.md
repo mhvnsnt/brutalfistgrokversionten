@@ -410,3 +410,42 @@ The owner will test the PWA while work continues. Keep changes incrementally tes
 ### Current hard lesson
 
 The Move Library had a state-initialization failure where a derived model list was empty on the first render and useState permanently captured an undefined model. The list could render while the 3D editor did not. This is a canonical partial-render regression: visible UI does not prove the editor/runtime path works. Future editor changes must verify both the control surface and the live preview path.
+## LAW — NEVER LAND A COMMIT THAT BREAKS THE BUILD ON MAIN (2026-09-25)
+
+On 2026-09-21 a revert removed `resolveHitRegionAtHeight` from
+`src/engine/combat/FrameDataHitbox.ts` and left the call to it on the line that
+decides whether an attack lands. Every connecting strike threw a ReferenceError
+from inside `checkCollision`. **Nobody could take damage from a strike**, for
+four days, on the build the owner plays. He reported it as "P2's not reacting or
+taking any damage… I think all of my attacks are hitting myself", and his
+screenshots show his own bar walking 9,820 → 5,860 while the opponent sat at
+10,000 for a whole round.
+
+`npx tsc --noEmit` names that bug in one line, and CI already ran it. **The gate
+existed and the commit landed anyway**, because a push to `main` reports a red
+check but does not stop the push.
+
+THE RULES, in order of how much they buy:
+
+1. **Run `npm run typecheck` AND `npm test` before every push.** Not after. A
+   red check nobody reads is not a gate. If either is red, the push does not
+   happen — fix it or revert your own commit first.
+2. **A REVERT IS A CODE CHANGE, NOT AN UNDO.** Reverting a feature by hand
+   leaves call sites, tests and types pointing at things that no longer exist.
+   After any revert, typecheck and run the tests before pushing — that is
+   exactly what was skipped here.
+3. **Assert the SYMPTOM, not just the cause.** `src/engine/combat/damage-reaches-the-opponent.test.ts`
+   drives a real attack through the real state machine into the real hitbox and
+   requires damage out the other end. A typecheck caught this instance only
+   because the missing symbol happened to be typed; it would not catch a hitbox
+   that stopped overlapping, a damage value resolving to zero, or a guard that
+   swallowed every hit — all of which look identical on screen. **When a system
+   is load-bearing, test that it still does its job, not only that it compiles.**
+   Verified the honest way: the test fails with the exact ReferenceError on the
+   broken code and passes on the fix.
+4. **Never leave main red for someone else to find.** If you push and CI goes
+   red, fixing it is your next action, ahead of whatever you were doing.
+
+THE STANDING QUESTION before any combat change ships: *can a fighter still hit
+the other fighter?* If you have not made something answer that, you have not
+tested the change.
