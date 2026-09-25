@@ -12,7 +12,7 @@ cannot drift from what happened. Symptoms are the owner's own words.
 | 2026-09-25 | 61b8216 | 18h | currently can only fire off 4 attack and it's the base ones ... P2's not reacting… |
 | 2026-09-25 | **OPEN** | 20h | on Wreck Patterson and Titan they still have parts of their arms attached to parts of thei… |
 | 2026-09-25 | 70e346f | 19h | pull in any open source so you can actually see and test and play ... pull stuff from open… |
-| 2026-09-25 | 83f179c | 20h | combat is a bit smoother, but it's still not on the level of Tekken ... I can tell you're … |
+| 2026-09-25 | 5bc31ef | 20h | combat is a bit smoother, but it's still not on the level of Tekken ... I can tell you're … |
 | 2026-09-21 | 8e857f3 | 4.8d | a lot of character models, GLBs and attires still having stretching and deformation on cer… |
 
 ## combat-no-damage — fixed in `b012d57` after 19h
@@ -65,7 +65,7 @@ cannot drift from what happened. Symptoms are the owner's own words.
 
 **Lesson.** A pipeline that reports zero skips AND zero output is not idle, it is broken. Count what went IN, not just what came out.
 
-## attacks-do-not-travel — fixed in `83f179c` after 20h
+## attacks-do-not-travel — fixed in `5bc31ef` after 20h
 
 > combat is a bit smoother, but it's still not on the level of Tekken ... I can tell you're still hand tooling things when I told you to pull in open source for these fixes ... actually pull stuff from [the Schwarzerblitz repo]
 
