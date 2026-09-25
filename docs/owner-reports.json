@@ -64,6 +64,15 @@
       "fixed": "5bc31ef",
       "howFound": "Counted engine consumption of every field in the imported graph: hidden 0, animationRightSide 0, range 0, newStance 0, movement 0. Semantics then read out of the Schwarzerblitz C++ (FK_Move, FK_MoveFileParser, FK_Character) rather than guessed.",
       "lesson": "RESOLVED UNIVERSALLY. Two independent sources of travel existed and neither reached the game: Schwarzerblitz authors it in #MOVEMENT (its animations are rotation-only by design), and our own captures perform it in a `pose` block of joint world positions that nothing read \u2014 273 of 973 source clips travel more than 15cm, up to 1.22m. Both now feed ONE cumulative travel curve (src/engine/motion/RootTravel.ts) sampled between two instants, so it is frame-rate independent by construction. Read at BAKE time from public/motion, so every future clip gets it by existing rather than by somebody remembering to wire it up. Orientation comes from the shoulder axis and is pinned by a test against moves whose names state their direction (BackStep negative, DROP_KICK positive), because an inverted sign keeps every magnitude believable and only shows up as fighters retreating when they attack."
+    },
+    {
+      "id": "back-attacks-never-hit",
+      "reported": "2026-09-25",
+      "symptom": "when you press back and attack, it's like kind of doing something where it's making you keep walking back. So when you do back and attack, none of those attacks ever hit. In Tekken and Schwarzerblitz it's more specific than that.",
+      "rootCause": "NOT the attack carrying you \u2014 measured strictly between the start and end of the attack, movement is 0.000m on every input including back, so the state machine anchors you correctly. The fighter walked OUT OF RANGE before the attack's active frames arrived. Scale-free comparison: Schwarzerblitz crosses 1.23 of its own strike reaches per second of walking (80 units/s over a 65-unit modal range); we crossed 1.57 (2.2 m/s over a MEASURED 1.40m reach).",
+      "fixed": "PENDING",
+      "howFound": "scripts/audit-combat-feel.mjs \u2014 real presses in a real match, measuring displacement, connection and the move that fired per input.",
+      "lesson": "TWO OF MY OWN READINGS WERE WRONG BEFORE THE RIGHT ONE. First I timed drift over a fixed window around the press and reported 1.76m of 'the attack carrying you' \u2014 most of it was legitimate walking, because holding back is supposed to walk you back. Then I took the strike reach as 0.8m from the distance another test happened to swing at, which made the pace gap look like 2.2x and produced a 1.0 m/s walk that was sluggish rather than deliberate. Driving every attack out to its furthest connecting distance says all four reach 1.40m and the real gap was 1.28x. MEASURE THE THING, INCLUDING THE DENOMINATOR."
     }
   ]
 }

@@ -70,10 +70,40 @@ export const ATTACK_ROOT_MOTION_PROFILES: Record<string, { forwardDisplacement: 
 };
 
 // ── Movement constants ────────────────────────────────────────────────────────
-const WALK_SPEED = 2.2;          // world units/sec
-const DASH_SPEED = 4.5;          // world units/sec
-const BACKDASH_SPEED = 3.8;      // world units/sec
-const SIDESTEP_SPEED = 1.8;      // world units/sec (Z axis)
+// ── PACE, TAKEN FROM THE GENRE RATHER THAN GUESSED ───────────────────────────
+//
+// Owner, after playing: "when you press back and attack it's making you keep
+// walking back, so none of those attacks ever hit. In Tekken and Schwarzerblitz
+// it's more specific than that."
+//
+// MEASURED IN THE HARNESS FIRST, and it corrected the obvious reading. The
+// attack does NOT carry you: movement measured strictly between the start and
+// end of the attack is 0.000m on every input, back included. What actually
+// happens is that holding back walks you out of range BEFORE the attack's
+// active frames arrive, so the move is dead however good its frame data is.
+//
+// THE COMPARISON THAT SETTLES IT NEEDS NO UNIT CONVERSION. How many of his own
+// strike-reaches does a fighter cross in a second of walking? Both numbers come
+// from the same game each time, so the scale cancels:
+//
+//     Schwarzerblitz   80 units/s over a 65-unit modal strike range  =  1.23
+//     Brutal Fist      2.2 m/s over a MEASURED 1.40 m reach          =  1.57
+//
+// AND THE REACH HAD TO BE MEASURED, NOT ASSUMED. The first pass of this took
+// 0.8 m from the distance a test happened to swing at, made the gap look like
+// 2.2x, and set the walk to 1.0 m/s — which is not "more deliberate", it is
+// sluggish. Driving every attack out to its furthest connecting distance says
+// all four reach 1.40 m, so the real gap was 1.28x.
+//
+// The pace is therefore 1.23 reaches/second over that measured reach: 1.72 m/s.
+// Schwarzerblitz's running speed is its walk x2.5 (runningSpeed = walkingSpeed
+// * 2.5f, read from FK_Character), and the backdash and sidestep keep their
+// existing proportions, so only the PACE changes and none of the relationships
+// between the moves do.
+export const WALK_SPEED = 1.72;  // metres/sec — 1.23 reaches/sec over a 1.40m reach
+export const DASH_SPEED = 4.3;   // metres/sec — Schwarzerblitz's walk x2.5
+const BACKDASH_SPEED = 3.63;     // metres/sec — keeps its 0.84 ratio to the dash
+const SIDESTEP_SPEED = 1.41;     // metres/sec — keeps its 0.82 ratio to the walk
 const WALK_ACCEL = 12.0;         // acceleration rate
 const WALK_DECEL = 18.0;         // deceleration rate
 const ROOT_MOTION_THRESHOLD = 0.005; // minimum displacement to count as root motion
