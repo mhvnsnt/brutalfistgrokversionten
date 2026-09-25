@@ -74,6 +74,12 @@ export interface MoveWindow {
   recovery: number;
   animation: FighterMotionState;
   /**
+   * The move's own per-frame travel, in metres, from the imported move graph.
+   * Locomotion drives displacement from this when present, in preference to the
+   * five-entry synthesized table. See SchwarzerblitzRootMotion.
+   */
+  rootMotion?: Array<{ forward: number; lateral: number; vertical: number }>;
+  /**
    * The height band this move strikes at. The hitbox turns it into a real
    * vertical envelope, so a low kick genuinely passes under a jump instead of
    * connecting and being labelled a leg hit. Defaults to 'mid' when absent.

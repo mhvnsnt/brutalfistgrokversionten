@@ -23,6 +23,8 @@
 import * as THREE from 'three';
 
 // ── Locomotion mode ───────────────────────────────────────────────────────────
+import { type RootMotionFrame, rootMotionBetween } from '../combat/SchwarzerblitzRootMotion.ts';
+
 export type LocomotionMode = 'programmatic' | 'rootMotion';
 
 // ── Root motion data extracted from a GLB animation frame ────────────────────
@@ -211,6 +213,8 @@ export class LocomotionSystem {
   private bounds: LocomotionBounds = DEFAULT_LOCOMOTION_BOUNDS;
 
   // Root motion tracking
+  /** The move's own authored travel, when it has one. See beginRootMotionAttack. */
+  private authoredRootMotion: readonly RootMotionFrame[] | null = null;
   private rootMotionAccumX = 0;
   private rootMotionAccumZ = 0;
   private prevRootBonePos = new THREE.Vector3();
@@ -264,11 +268,23 @@ export class LocomotionSystem {
     return this.state.mode;
   }
 
-  // ── Switch to root motion mode (attack with forward displacement) ──────────
-  beginRootMotionAttack(attackKey: string, activeDuration: number) {
+  /**
+   * Switch to root motion for an attack that travels.
+   *
+   * `authored` is the move's own per-frame travel, imported from the
+   * Schwarzerblitz move graph — 127 of its 133 moves carry one. When it is
+   * present it WINS, because it is the move's real motion rather than a
+   * synthesized bell curve, and because the alternative is the five-entry
+   * hand-written table below, which is what made every attack that was not one
+   * of those five stand perfectly still. A move with an authored curve needs no
+   * profile at all: the curve is the permission.
+   */
+  beginRootMotionAttack(attackKey: string, activeDuration: number, authored?: readonly RootMotionFrame[]) {
     const profile = ATTACK_ROOT_MOTION_PROFILES[attackKey];
-    if (!profile || !profile.hasRootMotion) return;
+    const hasAuthored = Boolean(authored?.length);
+    if (!hasAuthored && (!profile || !profile.hasRootMotion)) return;
 
+    this.authoredRootMotion = hasAuthored ? authored ?? null : null;
     this.state.mode = 'rootMotion';
     this.state.velocityX = 0;
     this.state.velocityZ = 0;
@@ -277,12 +293,23 @@ export class LocomotionSystem {
     this.attackRootMotionElapsed = 0;
     this.attackRootMotionDuration = activeDuration;
 
-    console.log(`[Locomotion] 🥊 Root motion attack: "${attackKey}" displacement=${profile.forwardDisplacement}u over ${activeDuration.toFixed(3)}s`);
+    // `profile` is OPTIONAL now — an authored curve is its own permission, and
+    // this line read `profile.forwardDisplacement` unconditionally, so every
+    // authored-only move threw here before it could move a centimetre. Found by
+    // scripts/probe-root-motion.mjs reporting six page errors next to zero
+    // travel; the travel was the symptom and this was the cause.
+    if (authored?.length) {
+      const total = authored.reduce((a, f) => a + f.forward, 0);
+      console.log(`[Locomotion] 🥊 Authored root motion: "${attackKey}" travels ${total.toFixed(2)}m over ${activeDuration.toFixed(3)}s`);
+    } else {
+      console.log(`[Locomotion] 🥊 Root motion attack: "${attackKey}" displacement=${profile?.forwardDisplacement ?? 0}u over ${activeDuration.toFixed(3)}s`);
+    }
   }
 
   // ── Return to programmatic locomotion ─────────────────────────────────────
   endRootMotionAttack() {
     this.state.mode = 'programmatic';
+    this.authoredRootMotion = null;
     this.attackRootMotionActive = false;
     this.attackRootMotionProfile = null;
     this.attackRootMotionElapsed = 0;
@@ -369,9 +396,26 @@ export class LocomotionSystem {
   }
 
   private updateRootMotion(dt: number): void {
-    if (!this.attackRootMotionActive || !this.attackRootMotionProfile) return;
+    if (!this.attackRootMotionActive) return;
 
+    const previous = this.attackRootMotionElapsed;
     this.attackRootMotionElapsed += dt;
+
+    // ── The move's own authored travel ──────────────────────────────────
+    // Sampled BETWEEN the two times rather than as a velocity at one, so a
+    // dropped frame still moves the fighter every centimetre the move
+    // authored across the gap instead of one frame's worth times a large dt.
+    if (this.authoredRootMotion) {
+      const step = rootMotionBetween(this.authoredRootMotion, previous, this.attackRootMotionElapsed);
+      this.state.rootX = this.clampWalkX(this.state.rootX + step.forward * this.state.facing);
+      this.state.rootZ = this.clampToZ(this.state.rootZ + step.lateral);
+      // Vertical is deliberately not applied here: jump height is owned by the
+      // jump arc, and two systems writing Y is how a fighter ends up hovering.
+      if (this.attackRootMotionElapsed >= this.attackRootMotionDuration) this.endRootMotionAttack();
+      return;
+    }
+
+    if (!this.attackRootMotionProfile) return;
     const progress = Math.min(1, this.attackRootMotionElapsed / Math.max(0.001, this.attackRootMotionDuration));
 
     // Synthesized root motion: bell-curve displacement (peak at 50% of active window)

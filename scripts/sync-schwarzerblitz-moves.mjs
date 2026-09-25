@@ -207,13 +207,36 @@ function parseMovesFile(text, stats) {
         break;
       }
       case 'MOVEMENT': {
-        // The `>` prefix is OPTIONAL: measured, 4 of the 131 movement lines omit
-        // it and are otherwise identical (`4 0 0 0` vs `> 4 0 0 0`). Requiring it
-        // silently dropped those four displacements.
+        // `>` IS THE INTERPOLATION FLAG, NOT A BULLET.
+        //
+        // This read it as optional decoration and threw it away. Read from the
+        // engine's own parser (FK_MoveFileParser.cpp, the `if (interpolate)`
+        // branch), `>` means the numbers are a TOTAL to spread evenly over the
+        // frames since the previous entry:
+        //
+        //     interpolationDuration = frame - lastMoveFrame
+        //     each frame in between gets value / interpolationDuration
+        //
+        // A line WITHOUT it sets one frame and leaves the rest of the move's
+        // per-frame array at zero — an impulse, not a travel.
+        //
+        // MEASURED over the source: 165 of 169 movement lines carry `>`. So
+        // dropping the flag turned almost every authored travel into a
+        // single-frame teleport, which is what a consumer of this data would
+        // have produced.
+        //
+        // AXIS ORDER is (parallel, side, vertical) — FK_Move::setMovementAtFrame
+        // builds vector3df(movementPar, movementSide, movementVert), and
+        // FK_Character zeroes `.Z` on ground contact, which is what pins the
+        // third component as the VERTICAL one. Carried through unchanged here;
+        // mapping it onto this engine's axes is the consumer's job.
         const parts = line.split(/\s+/).filter(Boolean);
-        const f = parts[0] === '>' ? parts.slice(1) : parts;
+        const interpolate = parts[0] === '>';
+        const f = interpolate ? parts.slice(1) : parts;
         if (f.length < 4 || f.some((v) => !Number.isFinite(Number(v)))) { stats.badMovement.push(line); break; }
-        move.movement.push({ frame: Number(f[0]), x: Number(f[1]), y: Number(f[2]), z: Number(f[3]) });
+        move.movement.push({
+          frame: Number(f[0]), x: Number(f[1]), y: Number(f[2]), z: Number(f[3]), interpolate,
+        });
         break;
       }
       default:
@@ -328,7 +351,7 @@ async function write(graph, source, stats) {
     `  followups: SbLink[];\n` +
     `  cancelInto: SbLink[];\n` +
     `  hitboxes: SbHitbox[];\n` +
-    `  movement: Array<{ frame: number; x: number; y: number; z: number }>;\n` +
+    `  /** interpolate spreads x/y/z evenly from the previous entry's frame to this one. */\n  movement: Array<{ frame: number; x: number; y: number; z: number; interpolate: boolean }>;\n` +
     `  /** Directives this import does not model, carried through rather than dropped. */\n` +
     `  unknown: Record<string, string | string[]>;\n` +
     `}\n` +

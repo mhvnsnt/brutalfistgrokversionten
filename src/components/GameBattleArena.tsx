@@ -25,6 +25,7 @@ import {
   COMMAND_THROW_MOVE,
   FIXED_STEP_S,
   MAX_SUBSTEPS,
+  type MoveWindow,
 } from '../engine/combat/FighterStateMachine';
 import { FrameDataHitboxSystem } from '../engine/combat/FrameDataHitbox';
 import {
@@ -2403,17 +2404,38 @@ export default function GameBattleArena({
         const p1IsBackdashing = cmd.backdashing || p1SMRef.current.action === 'Backdashing';
         const p2IsBackdashing = p2SMRef.current.action === 'Backdashing';
 
-        // Begin root motion for lunging attacks
-        if (p1SMRef.current.action === 'Attacking' || p1SMRef.current.action === 'CommandThrow') {
-          const attackKey = p1NextMotion;
-          const profile = ATTACK_ROOT_MOTION_PROFILES[attackKey];
-          if (profile?.hasRootMotion && p1LocoRef.current.mode === 'programmatic') {
-            const move = p1HbWindow.move;
-            p1LocoRef.current.beginRootMotionAttack(attackKey, move?.active ?? 0.14);
+        // ── Begin root motion for attacks that travel ────────────────────
+        // A move's AUTHORED curve is enough on its own: it is the move's real
+        // travel, and requiring a matching entry in the five-name profile table
+        // is exactly why 127 imported moves with authored root motion stood
+        // still. The whole move length is the duration, not just the active
+        // window, because a move that steps back before it strikes authors that
+        // step during its startup.
+        //
+        // BOTH FIGHTERS. This block only ever ran for P1, so the opponent never
+        // travelled with an attack at all — half the fight was missing its
+        // footwork.
+        const armRootMotion = (
+          sm: FighterStateMachine,
+          loco: typeof p1LocoRef.current,
+          motion: string,
+          window: { move: MoveWindow | null },
+        ) => {
+          if (sm.action === 'Attacking' || sm.action === 'CommandThrow') {
+            const move = window.move;
+            const authored = move?.rootMotion;
+            const profile = ATTACK_ROOT_MOTION_PROFILES[motion];
+            if ((authored?.length || profile?.hasRootMotion) && loco.mode === 'programmatic') {
+              const activeOnly = move?.active ?? 0.14;
+              const whole = move ? move.startup + move.active : activeOnly;
+              loco.beginRootMotionAttack(motion, authored?.length ? whole : activeOnly, authored);
+            }
+          } else if (loco.mode === 'rootMotion') {
+            loco.endRootMotionAttack();
           }
-        } else if (p1LocoRef.current.mode === 'rootMotion') {
-          p1LocoRef.current.endRootMotionAttack();
-        }
+        };
+        armRootMotion(p1SMRef.current, p1LocoRef.current, p1NextMotion, p1HbWindow);
+        armRootMotion(p2SMRef.current, p2LocoRef.current, p2NextMotion, p2HbWindow);
 
         if (cmd.jump) p1LocoRef.current.beginJump();
         else p1LocoRef.current.armJump();
