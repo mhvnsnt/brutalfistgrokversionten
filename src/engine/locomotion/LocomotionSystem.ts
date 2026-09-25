@@ -23,7 +23,7 @@
 import * as THREE from 'three';
 
 // ── Locomotion mode ───────────────────────────────────────────────────────────
-import { type RootMotionFrame, rootMotionBetween } from '../combat/SchwarzerblitzRootMotion.ts';
+import { type RootTravelCurve, travelBetween, totalTravel } from '../motion/RootTravel.ts';
 
 export type LocomotionMode = 'programmatic' | 'rootMotion';
 
@@ -214,7 +214,7 @@ export class LocomotionSystem {
 
   // Root motion tracking
   /** The move's own authored travel, when it has one. See beginRootMotionAttack. */
-  private authoredRootMotion: readonly RootMotionFrame[] | null = null;
+  private authoredRootMotion: RootTravelCurve | null = null;
   private rootMotionAccumX = 0;
   private rootMotionAccumZ = 0;
   private prevRootBonePos = new THREE.Vector3();
@@ -279,9 +279,9 @@ export class LocomotionSystem {
    * of those five stand perfectly still. A move with an authored curve needs no
    * profile at all: the curve is the permission.
    */
-  beginRootMotionAttack(attackKey: string, activeDuration: number, authored?: readonly RootMotionFrame[]) {
+  beginRootMotionAttack(attackKey: string, activeDuration: number, authored?: RootTravelCurve | null) {
     const profile = ATTACK_ROOT_MOTION_PROFILES[attackKey];
-    const hasAuthored = Boolean(authored?.length);
+    const hasAuthored = Boolean(authored?.t?.length);
     if (!hasAuthored && (!profile || !profile.hasRootMotion)) return;
 
     this.authoredRootMotion = hasAuthored ? authored ?? null : null;
@@ -298,8 +298,8 @@ export class LocomotionSystem {
     // authored-only move threw here before it could move a centimetre. Found by
     // scripts/probe-root-motion.mjs reporting six page errors next to zero
     // travel; the travel was the symptom and this was the cause.
-    if (authored?.length) {
-      const total = authored.reduce((a, f) => a + f.forward, 0);
+    if (hasAuthored) {
+      const total = totalTravel(authored).forward;
       console.log(`[Locomotion] 🥊 Authored root motion: "${attackKey}" travels ${total.toFixed(2)}m over ${activeDuration.toFixed(3)}s`);
     } else {
       console.log(`[Locomotion] 🥊 Root motion attack: "${attackKey}" displacement=${profile?.forwardDisplacement ?? 0}u over ${activeDuration.toFixed(3)}s`);
@@ -406,7 +406,7 @@ export class LocomotionSystem {
     // dropped frame still moves the fighter every centimetre the move
     // authored across the gap instead of one frame's worth times a large dt.
     if (this.authoredRootMotion) {
-      const step = rootMotionBetween(this.authoredRootMotion, previous, this.attackRootMotionElapsed);
+      const step = travelBetween(this.authoredRootMotion, previous, this.attackRootMotionElapsed);
       this.state.rootX = this.clampWalkX(this.state.rootX + step.forward * this.state.facing);
       this.state.rootZ = this.clampToZ(this.state.rootZ + step.lateral);
       // Vertical is deliberately not applied here: jump height is owned by the

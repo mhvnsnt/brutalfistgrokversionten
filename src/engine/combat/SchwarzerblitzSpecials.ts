@@ -37,7 +37,8 @@
 // (`node --experimental-strip-types --test`) resolve these modules. tsconfig
 // sets allowImportingTsExtensions and Vite/esbuild resolve them unchanged.
 import type { SpecialMoveDefinition } from './FighterStateMachine.ts';
-import { expandRootMotion } from './SchwarzerblitzRootMotion.ts';
+import { SB_SOURCE_FPS, expandRootMotion } from './SchwarzerblitzRootMotion.ts';
+import { travelFromPerFrame } from '../motion/RootTravel.ts';
 import type { CommandButton, CommandStep } from './CommandInput.ts';
 import type { MoveLink } from './FighterStateMachine.ts';
 import {
@@ -208,7 +209,10 @@ export function moveWindowFor(move: SbMove, setName = '') {
     // stood still unless it was one of five names in a hand-written table.
     // Expanded over the move's WHOLE length, not just its active window: a
     // move that steps back before it strikes authors that step in its startup.
-    rootMotion: expandRootMotion(move.movement, Math.max(b, a + 1)),
+    rootTravel: travelFromPerFrame(
+      expandRootMotion(move.movement, Math.max(b, a + 1)),
+      SB_SOURCE_FPS,
+    ),
   };
 }
 

@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { markGrapplePairs } from '../combat/GrapplePairing.ts';
 import { setCommandClipMap } from '../combat/SchwarzerblitzSpecials.ts';
 import { setGeneratedMovesets } from '../combat/GeneratedMovesets.ts';
+import type { RootTravelCurve } from '../motion/RootTravel.ts';
 
 import { assetUrl } from '../../lib/assetBase.ts';
 
@@ -32,6 +33,8 @@ export interface BakedClipFile {
   name: string;
   bank: string;
   dur: number;
+  /** Cumulative root travel in metres, in the fighter's own frame. See travelForClip. */
+  travel?: { t: number[]; f: number[]; l: number[] };
   /** The combat state this clip answers to, decided at bake time. */
   semantic?: string;
   /** True when the bake chose this clip to OWN its semantic state. */
@@ -54,6 +57,13 @@ export interface BakedClipFile {
 
 export interface BakedManifestEntry {
   file: string;
+  /**
+   * Peak distance in metres this clip's own capture travels from where it
+   * started. 0 for a clip that performs on the spot. The full curve lives in
+   * the clip's own JSON; this is the index so a consumer can ask "does this
+   * move go anywhere" without opening 455 files.
+   */
+  travels?: number;
   bank: string;
   dur: number;
   bones: number;
@@ -712,6 +722,9 @@ export function markStandability(manifest: Record<string, BakedManifestEntry>): 
 
 /** Turn one baked file into a clip. Exported so a test can check it directly. */
 export function clipFromBaked(data: BakedClipFile): THREE.AnimationClip | null {
+  // Register the capture's own footwork as the clip is built, so any path that
+  // loads a clip gets it — there is no second place to remember to wire it.
+  if (data.travel?.t?.length && data.name) clipTravel.set(data.name, data.travel);
   const tracks: THREE.KeyframeTrack[] = [];
   for (const [bone, track] of Object.entries(data.tracks ?? {})) {
     if (!track?.t?.length || track.q.length !== track.t.length * 4) continue;
@@ -902,6 +915,25 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
  * to be able to ask whether that name will resolve to anything, rather than
  * naming it and watching a body freeze. Empty before the bank has loaded.
  */
+/**
+ * THE TRAVEL EACH CLIP WAS CAPTURED WITH, in the fighter's own frame.
+ *
+ * The bake deliberately pins hips X and Z — the fighter's root belongs to the
+ * engine — so a clip's footwork is carried BESIDE it rather than in its
+ * position track, where it would fight the engine for the root. This is where
+ * a move picks it up.
+ */
+const clipTravel = new Map<string, RootTravelCurve>();
+
+export function travelForClip(name: string): RootTravelCurve | null {
+  return clipTravel.get(name) ?? null;
+}
+
+/** How many loaded clips carry footwork. Reported by the smoke harness. */
+export function travellingClipCount(): number {
+  return clipTravel.size;
+}
+
 export function bakedClipNames(): ReadonlySet<string> {
   return new Set(cached ? cached.keys() : []);
 }

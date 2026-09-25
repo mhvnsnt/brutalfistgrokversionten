@@ -35,6 +35,7 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isMeaningfulTravel, travelFromPoseKeys } from '../src/engine/motion/RootTravel.ts';
 
 import { RUNTIME_BONE_NAMES, resolveRuntimeBone } from '../src/engine/retarget/boneNameMap.mjs';
 
@@ -113,8 +114,28 @@ function pruneClip(clip, stats) {
   for (const [min, max] of span.values()) {
     if (Math.max(max[0] - min[0], max[1] - min[1], max[2] - min[2]) > 0.035) movingBones++;
   }
-  return { clip: { dur: clip?.dur ?? 0, keys }, boneCount: span.size, movingBones };
+  /**
+   * THE FOOTWORK THE CLIP WAS CAPTURED WITH.
+   *
+   * This cache stored ROTATIONS ONLY, so every clip arrived at the engine with
+   * its feet nailed to one spot and displacement was faked from a hand-written
+   * table of five profiles. The source clips carry joint world positions in a
+   * `pose` block that nothing read — measured over the 973 of them, 273 travel
+   * more than 15 cm horizontally and DROP_KICK crosses 1.12 m.
+   *
+   * Read here, at import, so it is cached once rather than recomputed per load,
+   * and so EVERY future clip picks it up by existing. Drift is filtered out:
+   * an idle that slides the fighter across the ring is worse than one that
+   * stands still.
+   */
+  const travelCurve = travelFromPoseKeys(clip?.keys ?? []);
+  const travel = isMeaningfulTravel(travelCurve)
+    ? { t: travelCurve.t.map(round4), f: travelCurve.f.map(round4), l: travelCurve.l.map(round4) }
+    : undefined;
+  return { clip: { dur: clip?.dur ?? 0, keys, ...(travel ? { travel } : {}) }, boneCount: span.size, movingBones, travelled: Boolean(travel) };
 }
+
+const round4 = (v) => Math.round(v * 1e4) / 1e4;
 
 async function main() {
   const localDir = findLocalClipDir();
@@ -186,6 +207,8 @@ async function main() {
     `export const BANNON_MOTION_BANK: Record<string, {\n` +
     `  dur: number;\n` +
     `  keys: Array<{ t: number; bones: Record<string, { rx: number; ry: number; rz: number }> }>;\n` +
+    `  /** Cumulative root travel in metres, in the fighter's own frame. Absent when the clip stands still. */\n` +
+    `  travel?: { t: number[]; f: number[]; l: number[] };\n` +
     `}> = ${serialized};\n`;
   await writeFile(OUTPUT, source, 'utf8');
 

@@ -1,5 +1,6 @@
 // `.ts` extensions on purpose — the repo's runner resolves them literally.
 import type { SpecialMoveDefinition } from './FighterStateMachine.ts';
+import { travelForClip } from '../retarget/BakedMotionBank.ts';
 
 /**
  * A FULL MOVESET PER FIGHTER, ACROSS THE WHOLE DIRECTIONAL MATRIX.
@@ -96,6 +97,17 @@ export function generatedMoveset(fighterId: string): SpecialMoveDefinition[] {
       contactReach: m.contactReach,
       isSpecial: true,
       specialName: m.name,
+      /**
+       * THE FOOTWORK OF THE CLIP THIS MOVE PLAYS.
+       *
+       * These generated moves are what a player's directional inputs actually
+       * fire — they cover all 26 slots — so without this the only authored
+       * travel in the project (the Schwarzerblitz #MOVEMENT data) never
+       * reached a fighter, and every generated attack was performed standing
+       * still. The clip already knows how far its capture travelled; this is
+       * where the move inherits it.
+       */
+      rootTravel: travelForClip(m.clip) ?? undefined,
     },
     };
   }) as SpecialMoveDefinition[];

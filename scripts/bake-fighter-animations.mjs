@@ -59,6 +59,7 @@ import {
 } from '../src/engine/retarget/SchwarzerblitzMotionBank.ts';
 import { inferSemanticFromMotionKey } from '../src/engine/retarget/BannonEulerMotionAdapter.ts';
 import { referenceRetargetClip } from '../src/engine/retarget/SkeletonUtilsReference.ts';
+import { isMeaningfulTravel, peakTravel, travelFromPoseKeys } from '../src/engine/motion/RootTravel.ts';
 
 const gate = process.argv.includes('--gate');
 const outIdx = process.argv.indexOf('--out');
@@ -1626,6 +1627,36 @@ for (const src of [...sources(), ...(await loadQuaterniusSources())]) {
   if (ownerFault) report.rejectedOwners.push(`${claimedOwner}:${src.name} ${ownerFault}`);
   const slot = ownerFault ? undefined : claimedOwner;
   const semantic = slot ?? inferSemanticFromMotionKey(src.name);
+  /**
+   * THE FOOTWORK THE CAPTURE WAS PERFORMED WITH.
+   *
+   * Read from the SOURCE file's `pose` block, which carries joint world
+   * positions and which nothing downstream had ever looked at. The bake
+   * deliberately pins the hips in X and Z — the fighter's root belongs to the
+   * engine, and that rule stays — so this is carried BESIDE the clip as a
+   * travel curve rather than left in the position track, where it would fight
+   * the engine for the root.
+   *
+   * Reading it here rather than in one importer is what makes it universal:
+   * every clip in public/motion gets it, including ones added later, without
+   * anybody remembering to wire it up.
+   */
+  let travel;
+  try {
+    if (src.file) {
+      const source = JSON.parse(readFileSync(src.file, 'utf8'));
+      const curve = travelFromPoseKeys(source.keys ?? []);
+      if (isMeaningfulTravel(curve)) {
+        const r4 = (v) => Math.round(v * 1e4) / 1e4;
+        travel = { t: curve.t.map(r4), f: curve.f.map(r4), l: curve.l.map(r4) };
+        report.travelClips = (report.travelClips ?? 0) + 1;
+        report.travelPeak = Math.max(report.travelPeak ?? 0, peakTravel(curve));
+      }
+    }
+  } catch {
+    // A source that will not parse is already reported by the loader above.
+  }
+
   writeFileSync(
     join(OUT, `${src.name}.json`),
     JSON.stringify({
@@ -1635,6 +1666,7 @@ for (const src of [...sources(), ...(await loadQuaterniusSources())]) {
       semantic,
       airborne: clipAirborne,
       positions,
+      ...(travel ? { travel } : {}),
       // A slot owner is loaded FIRST, because the first clip for a semantic
       // wins when actions are registered.
       owns: Boolean(slot),
@@ -1643,6 +1675,7 @@ for (const src of [...sources(), ...(await loadQuaterniusSources())]) {
     }),
   );
   manifest[src.name] = {
+    travels: travel ? +peakTravel(travel).toFixed(3) : 0,
     movingBones,
     boneCount,
     file: `${src.name}.json`,

@@ -1117,6 +1117,8 @@
       "twist": 179.1
     }
   ],
+  "travelClips": 60,
+  "travelPeak": 0.6698973802008783,
   "restFilled": 304,
   "restFilledBones": 2255,
   "slotOwners": 6,

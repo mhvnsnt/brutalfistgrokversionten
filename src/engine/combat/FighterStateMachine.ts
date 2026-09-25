@@ -74,11 +74,15 @@ export interface MoveWindow {
   recovery: number;
   animation: FighterMotionState;
   /**
-   * The move's own per-frame travel, in metres, from the imported move graph.
-   * Locomotion drives displacement from this when present, in preference to the
-   * five-entry synthesized table. See SchwarzerblitzRootMotion.
+   * How far this move carries the fighter, in metres, in his own frame.
+   *
+   * ONE representation for two independent sources: the Schwarzerblitz move
+   * files author it explicitly, and our own captures perform it (the pelvis
+   * simply moves). Locomotion drives displacement from this whenever it is
+   * present, in preference to the five-entry synthesized table. See
+   * src/engine/motion/RootTravel.ts.
    */
-  rootMotion?: Array<{ forward: number; lateral: number; vertical: number }>;
+  rootTravel?: { t: number[]; f: number[]; l: number[] };
   /**
    * The height band this move strikes at. The hitbox turns it into a real
    * vertical envelope, so a low kick genuinely passes under a jump instead of

@@ -2423,12 +2423,12 @@ export default function GameBattleArena({
         ) => {
           if (sm.action === 'Attacking' || sm.action === 'CommandThrow') {
             const move = window.move;
-            const authored = move?.rootMotion;
+            const authored = move?.rootTravel;
             const profile = ATTACK_ROOT_MOTION_PROFILES[motion];
-            if ((authored?.length || profile?.hasRootMotion) && loco.mode === 'programmatic') {
+            if ((authored?.t?.length || profile?.hasRootMotion) && loco.mode === 'programmatic') {
               const activeOnly = move?.active ?? 0.14;
               const whole = move ? move.startup + move.active : activeOnly;
-              loco.beginRootMotionAttack(motion, authored?.length ? whole : activeOnly, authored);
+              loco.beginRootMotionAttack(motion, authored?.t?.length ? whole : activeOnly, authored);
             }
           } else if (loco.mode === 'rootMotion') {
             loco.endRootMotionAttack();
