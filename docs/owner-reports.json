@@ -52,7 +52,7 @@
       "reported": "2026-09-25",
       "symptom": "pull in any open source so you can actually see and test and play ... pull stuff from open source that'll get our fights actually going well",
       "rootCause": "The Quaternius Universal Animation Library (CC0-1.0, commercially safe) was fetched, unpacked and listed in OpenAnimationSources.generated.ts, and contributed ZERO clips. Two bugs: the bake filtered files with /\\\\.glb$/ \u2014 a regex requiring a literal BACKSLASH before the extension, which no POSIX path has, so nothing matched and it reported zero skips and zero errors; and once found, every clip failed the SkeletonUtils cross-check because three's retargetClip reads target.skeleton.bones unconditionally and the canonical target is a bare bone tree.",
-      "fixed": "PENDING",
+      "fixed": "70e346f",
       "howFound": "The bake report said quaterniusSources: 0 while three GLBs sat in vendor/. A silent 100% loss with no skip and no error recorded.",
       "lesson": "A pipeline that reports zero skips AND zero output is not idle, it is broken. Count what went IN, not just what came out."
     }
