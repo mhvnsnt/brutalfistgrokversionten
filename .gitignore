@@ -18,3 +18,7 @@ tsconfig.tsbuildinfo
 # build in a real browser and are worth keeping ON DISK for the session; none
 # of it is the game.
 scratchpad/
+
+# predev download/build caches — regenerated, never committed
+.cache/
+vendor/

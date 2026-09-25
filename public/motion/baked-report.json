@@ -1,4 +1,6 @@
 {
+  "quaterniusSources": 0,
+  "quaterniusReferenceErrors": 0,
   "skeleton": "public/models/BANNON_rigged.glb",
   "joints": 58,
   "baked": 366,
