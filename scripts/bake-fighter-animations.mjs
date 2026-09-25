@@ -999,8 +999,17 @@ async function loadQuaterniusSources() {
     } catch {
       continue;
     }
-    for (const file of files.filter((p) => /\\.glb$/i.test(p))) {
-      const name = `${pack}_${file.replaceAll('\\\\', '_').replace(/\\.[^.]+$/i, '').replace(/[^A-Za-z0-9_-]+/g, '_')}`;
+    // `/\.glb$/`, NOT `/\\.glb$/`. The second form requires a literal BACKSLASH
+    // before the extension, which no POSIX path has — so this filter matched
+    // nothing, `out` came back empty, and the whole CC0 Quaternius animation
+    // library contributed ZERO clips while reporting zero skips and zero
+    // errors. A silent 100% loss: the pack is fetched, unpacked and listed in
+    // OpenAnimationSources.generated.ts, and nothing downstream ever sees it.
+    // Measured before the fix: quaterniusSources 0 with 3 GLBs sitting in vendor/.
+    for (const file of files.filter((p) => /\.glb$/i.test(p))) {
+      // Same over-escaping: the separator to flatten is a path separator, and
+      // the extension to strip starts with a real dot.
+      const name = `${pack}_${file.replaceAll('/', '_').replace(/\.[^.]+$/i, '').replace(/[^A-Za-z0-9_-]+/g, '_')}`;
       try {
         const bytes = readFileSync(file);
         const gltf = await loader.parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), file);
