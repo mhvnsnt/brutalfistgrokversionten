@@ -74,6 +74,12 @@ export interface MoveWindow {
   recovery: number;
   animation: FighterMotionState;
   /**
+   * The height band this move strikes at. The hitbox turns it into a real
+   * vertical envelope, so a low kick genuinely passes under a jump instead of
+   * connecting and being labelled a leg hit. Defaults to 'mid' when absent.
+   */
+  attackLevel?: 'high' | 'mid' | 'low';
+  /**
    * The SOURCE CLIP this move was authored with, when it has one — e.g. an
    * imported Schwarzerblitz animation name. `animation` stays a typed motion
    * state so every existing consumer is unaffected; this is the preferred clip
@@ -102,6 +108,8 @@ export interface MoveWindow {
   hitboxEndFrame?: number;
   totalFrames?: number;
   damage?: number;
+  /** Measured strike-limb reach in metres; drives the move-specific contact envelope. */
+  contactReach?: number;
   isSpecial?: boolean;
   specialName?: string;
   /** If true, this move is a throw — cannot be blocked by guard */
@@ -341,7 +349,8 @@ interface QueuedAction {
 // ── Hitbox active window result ───────────────────────────────────────────────
 export interface HitboxWindow {
   active: boolean;
-  progress: number;
+  /** Absent when a caller only cares whether the window is open and at which frame. */
+  progress?: number;
   move: MoveWindow | null;
   currentFrame: number;
 }
@@ -491,6 +500,8 @@ export class FighterStateMachine {
    * break landed. Declaring them is the fix; the behaviour is unchanged.
    */
   private incomingThrowBreak: ThrowBreakState | null = null;
+  /** Directional throw break requirement: 1, 2, or either. */
+  private incomingThrowBreakButton: '1' | '2' | 'either' = 'either';
   private incomingThrowBreakOutcome: 'broken' | 'committed' | null = null;
   private wakeupBuffered: WakeupOption = null;
   private wakeupActionTimer = 0;
@@ -605,8 +616,9 @@ export class FighterStateMachine {
   get isInOverdriveState(): boolean { return this.inOverdriveState; }
 
   /** Arm the defender's reaction window after a throw connects in range. */
-  beginIncomingThrowBreak(depth = 0) {
+  beginIncomingThrowBreak(depth = 0, breakButton: '1' | '2' | 'either' = 'either') {
     this.incomingThrowBreak = openThrowBreak(depth);
+    this.incomingThrowBreakButton = breakButton;
     this.incomingThrowBreakOutcome = null;
   }
 
@@ -1055,8 +1067,18 @@ export class FighterStateMachine {
     // defender then gets real frames to press Escape. On expiry, the arena
     // commits the throw and applies its damage/knockdown.
     if (this.incomingThrowBreak) {
-      if (risingEscape && attemptThrowBreak(this.incomingThrowBreak)) {
+      // prevInput is updated before this transaction runs, so use the
+      // rising-edge values captured at the top of update(). Re-reading
+      // resolvedInput against prevInput here would compare the button to
+      // itself and make every authored limb break silently fail.
+      const breakPressed =
+        risingEscape ||
+        (this.incomingThrowBreakButton === '1' && risingLp) ||
+        (this.incomingThrowBreakButton === '2' && risingRp) ||
+        (this.incomingThrowBreakButton === 'either' && (risingLp || risingRp));
+      if (breakPressed && attemptThrowBreak(this.incomingThrowBreak)) {
         this.incomingThrowBreak = null;
+        this.incomingThrowBreakButton = 'either';
         this.incomingThrowBreakOutcome = 'broken';
         this.actionState = 'Idle';
         this.motionState = 'idle';
@@ -1069,6 +1091,7 @@ export class FighterStateMachine {
       }
       if (!tickThrowBreak(this.incomingThrowBreak, dt)) {
         this.incomingThrowBreak = null;
+        this.incomingThrowBreakButton = 'either';
         this.incomingThrowBreakOutcome = 'committed';
       } else {
         return this.motionState;

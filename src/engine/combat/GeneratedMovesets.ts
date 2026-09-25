@@ -49,6 +49,8 @@ export interface GeneratedMove {
   active: number;
   recovery: number;
   damage: number;
+  /** Measured source-limb reach in metres, used to size the contact envelope. */
+  contactReach?: number;
 }
 
 let table: Record<string, GeneratedMove[]> = {};
@@ -64,12 +66,18 @@ export function generatedMovesetsLoaded(): number {
 /** This fighter's generated commands, as the state machine wants them. */
 export function generatedMoveset(fighterId: string): SpecialMoveDefinition[] {
   const rows = table[fighterId?.toLowerCase()] ?? [];
-  return rows.map((m) => ({
+  return rows.map((m) => {
+    // Older generated artifacts may label 1/2/3 attacks as Ground. The
+    // command itself is authoritative: down-direction attacks are crouch
+    // attacks and therefore require the crouch stance at match time.
+    const dirs = m.command.flatMap((c) => c.dirs);
+    const effectiveStance = /[123]/.test(dirs.join('')) ? 'Crouch' : m.stance;
+    return {
     id: m.id,
     name: m.name,
     sequence: [],
     command: m.command as never,
-    stance: m.stance,
+    stance: effectiveStance,
     move: {
       startup: m.startup,
       active: m.active,
@@ -85,8 +93,10 @@ export function generatedMoveset(fighterId: string): SpecialMoveDefinition[] {
       hitboxEndFrame: Math.max(2, Math.round((m.startup + m.active) * 60)),
       totalFrames: Math.round((m.startup + m.active + m.recovery) * 60),
       damage: m.damage,
+      contactReach: m.contactReach,
       isSpecial: true,
       specialName: m.name,
     },
-  })) as SpecialMoveDefinition[];
+    };
+  }) as SpecialMoveDefinition[];
 }

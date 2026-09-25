@@ -126,6 +126,25 @@ export const BUFFER_MS = 1200;
 /** Most events a buffer keeps. A 4-step motion plus slop fits comfortably. */
 export const BUFFER_SIZE = 24;
 
+/**
+ * Ground input law: attack buttons never implicitly become crouching attacks.
+ * Crouch commands must contain 2 (down) or an explicit hold of 2. Jump attacks
+ * require an actual 8/up event or an airborne stance. This keeps the default
+ * control board predictable while preserving authored command exceptions.
+ */
+export const DEFAULT_GROUND_INPUT_RULES = {
+  neutralButtons: ['LP','RP','LK','RK'] as const,
+  crouchDirection: 2,
+  forwardDirection: 6,
+  backDirection: 4,
+  jumpDirection: 8,
+} as const;
+
+export function commandRequiresExplicitDirection(step: CommandStep): boolean {
+  return step.dirs.includes(2) || step.dirs.includes(8) || step.dirs.includes(1) || step.dirs.includes(3) || step.dirs.includes(7) || step.dirs.includes(9);
+}
+
+
 export interface CommandBuffer {
   events: CommandEvent[];
   /** The last numpad pushed, so a held direction does not spam events. */
@@ -231,6 +250,18 @@ export function scoreMove(move: MatchableMove, buffer: CommandBuffer, ctx: Match
     if (steps.length === 1) return 1;
   }
 
+  // SINGLE-STEP DIRECTIONAL COMMANDS ARE EDGE-EXACT.
+  //
+  // A buffered 2 from a previous crouch must never survive long enough to
+  // turn a later 6+P into a crouching attack. Multi-step motions may skip
+  // intervening directions; a one-step directional attack cannot. The newest
+  // button edge is the command the player just asked for.
+  if (steps.length === 1 && !lastStep.hold) {
+    const newest = buffer.events[buffer.events.length - 1];
+    if (!newest || !stepMatches(lastStep, newest)) return -1;
+    return 1;
+  }
+
   let stepIndex = steps.length - 1;
   let eventIndex = buffer.events.length - 1;
   let matched = 0;
@@ -277,7 +308,7 @@ export function matchCommand<T extends MatchableMove>(
   let best: MatchResult<T> | null = null;
 
   for (const move of moves) {
-    if (move.stance && ctx.stance && move.stance !== ctx.stance) continue;
+    if (move.stance && move.stance !== ctx.stance) continue;
     if (move.flags?.includes('FOLLOWUP_ONLY') && !ctx.availableFollowups?.has(move.name)) continue;
 
     const steps = scoreMove(move, buffer, ctx);

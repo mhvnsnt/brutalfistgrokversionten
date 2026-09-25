@@ -1,0 +1,92 @@
+{
+  "policy": "reference-and-retarget; never silently replace authored Bannon motion",
+  "sources": [
+    {
+      "id": "quaternius-ual-1",
+      "name": "Universal Animation Library",
+      "url": "https://quaternius.itch.io/universal-animation-library",
+      "license": "CC0-1.0",
+      "role": "bulk humanoid locomotion/combat/defense/emote reference bank",
+      "reported_clips": "120+",
+      "import_mode": "external-source-candidate"
+    },
+    {
+      "id": "quaternius-ual-2",
+      "name": "Universal Animation Library 2",
+      "url": "https://quaternius.itch.io/universal-animation-library-2",
+      "license": "CC0-1.0",
+      "role": "bulk melee-combo/parkour/combat reference bank",
+      "reported_clips": "130+",
+      "import_mode": "external-source-candidate"
+    },
+    {
+      "id": "threejs-skeleton-utils",
+      "name": "Three.js SkeletonUtils",
+      "url": "https://github.com/mrdoob/three.js",
+      "license": "MIT",
+      "role": "independent skeleton clone/retargetClip reference implementation",
+      "import_mode": "runtime-dependency-already-present"
+    },
+    {
+      "id": "khronos-gltf-validator",
+      "name": "Khronos glTF Validator",
+      "url": "https://github.com/KhronosGroup/glTF-Validator",
+      "license": "Apache-2.0",
+      "role": "GLB/glTF structural validation before animation acceptance",
+      "import_mode": "validation-tool-candidate"
+    },
+    {
+      "id": "mesh2motion",
+      "name": "Mesh2Motion",
+      "url": "https://github.com/Mesh2Motion",
+      "license": "MIT code / CC0 art and animations",
+      "role": "open retarget/export pipeline reference",
+      "import_mode": "pipeline-reference"
+    },
+    {
+      "id": "humanoid-retargeter",
+      "name": "Humanoid Retargeter",
+      "license": "MIT",
+      "type": "retargeting-tool",
+      "url": "https://github.com/zeljkovranjes/humanoid-retargeter",
+      "status": "reference-only",
+      "use": "Bone mapping, foot plant, root-motion and batch-retarget QA reference; do not vendor s&box-specific runtime."
+    },
+    {
+      "id": "kimodo-practical",
+      "name": "KIMODO Practical",
+      "license": "MIT",
+      "type": "retargeting-and-certification-tool",
+      "url": "https://github.com/htdt/kimodo-practical",
+      "status": "reference-only",
+      "use": "Independent certification/retargeting pipeline reference for GLB skeleton and motion quality gates."
+    },
+    {
+      "id": "animtransfer",
+      "name": "Anim Transfer",
+      "license": "open-source",
+      "type": "gltf-retargeting-tool",
+      "url": "https://github.com/iamtommo/animtransfer",
+      "status": "reference-only",
+      "use": "Independent GLTF skeletal transfer reference; work-in-progress export means not a production dependency."
+    },
+    {
+      "id": "kaykit-character-animations",
+      "name": "KayKit Character Animations",
+      "license": "CC0-1.0",
+      "type": "humanoid-animation-library",
+      "url": "https://kaylousberg.itch.io/kaykit-adventurers",
+      "status": "candidate",
+      "use": "Additional CC0 humanoid locomotion/combat/damage/jump/crouch source; intake only after skeleton and provenance gates."
+    },
+    {
+      "id": "freepeak-opencombat",
+      "name": "OpenCombat",
+      "license": "mixed-per-asset; CC0 preferred",
+      "type": "combat-game-reference",
+      "url": "https://github.com/FreePeak/opencombat",
+      "status": "reference-only",
+      "use": "Reference for real skeletal combat integration, test harnesses and asset provenance; no third-party asset copied without license verification."
+    }
+  ]
+}

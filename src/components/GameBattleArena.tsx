@@ -75,6 +75,7 @@ import { generatedMoveset } from '../engine/combat/GeneratedMovesets';
 import { type OverdriveState, type SuperArmorState, type FinisherState,  } from '../engine/combat/OverdriveSystem';
 // ── Directional throw system ──────────────────────────────────────────────────
 import { checkThrowRange, detectThrowInput, getThrowDamage, THROW_CATALOG,  } from '../engine/combat/DirectionalThrowSystem';
+import { selectAIDirectionalThrowId, type AIDirectionalThrowId } from '../engine/combat/ai-directional-throw-intent';
 // ── Global Audio Manager ──────────────────────────────────────────────────────
 import { getGlobalAudioManager } from '../engine/audio/GlobalAudioManager';
 // ── Hit Effect System ─────────────────────────────────────────────────────────
@@ -185,6 +186,13 @@ export default function GameBattleArena({
   const liveClipRef = useRef<{ p1: string | null; p2: string | null }>({ p1: null, p2: null });
   /** The clip the attacker was playing when the grab connected. */
   const throwDelivererRef = useRef<{ p1: string | null; p2: string | null }>({ p1: null, p2: null });
+  /** Directional throws use the same authoritative break transaction as command throws. */
+  const directionalThrowPendingRef = useRef<{
+    attacker: 'p1' | 'p2';
+    defender: 'p1' | 'p2';
+    throwId: string;
+  } | null>(null);
+  const lastDirectionalThrowIdRef = useRef<string | null>(null);
 
   const playOpponentHalf = useCallback((victim: 'p1' | 'p2', deliverer: string | null) => {
     if (!deliverer) return;
@@ -1613,6 +1621,9 @@ export default function GameBattleArena({
       }
 
       // ── Directional throw input detection ─────────────────────────────
+      // IMPORTANT: a directional throw is not allowed to bypass the unified
+      // throw-break transaction. The old path applied damage immediately,
+      // making these throws fundamentally different from command throws.
       const throwInput = {
         lp: smInput.lp ?? false,
         rp: smInput.rp ?? false,
@@ -1622,30 +1633,29 @@ export default function GameBattleArena({
         backward: smInput.forward < 0,
       };
       const detectedThrowId = detectThrowInput(throwInput);
-      if (detectedThrowId && p1SM.action === 'Idle') {
+      const throwEdge = detectedThrowId !== null && detectedThrowId !== lastDirectionalThrowIdRef.current;
+      lastDirectionalThrowIdRef.current = detectedThrowId;
+      if (throwEdge && p1SM.action === 'Idle' && !directionalThrowPendingRef.current) {
         const inRange = checkThrowRange(p1XRef.current, p1ZRef.current, p2XRef.current, p2ZRef.current);
         if (inRange) {
-          // Throw connects — apply damage and knockdown
-          const throwDef = THROW_CATALOG[detectedThrowId];
+          const throwDef = THROW_CATALOG[detectedThrowId!];
           if (throwDef) {
-            const throwDmg = getThrowDamage(detectedThrowId, false);
-            p2SMRef.current.applyKnockdown();
-            p2LocoRef.current.halt();
-            audioManagerRef.current.playSFX('throw_connect');
-            audioManagerRef.current.playVOX('attack_grunt');
-            setDamageEvent({
-              count: ++damageEventCountRef.current,
-              player: 'p2',
-              damage: throwDmg,
-              isCounter: false,
-              factionColor: p2Color,
+            p2SMRef.current.beginIncomingThrowBreak(0, throwDef.breakButton);
+            directionalThrowPendingRef.current = {
+              attacker: 'p1',
+              defender: 'p2',
+              throwId: detectedThrowId!,
+            };
+            throwDelivererRef.current.p1 = liveClipRef.current.p1;
+            setSpecialMoveNotice({
+              name: throwDef.name,
+              player: 'p1',
+              id: ++specialNoticeIdRef.current,
             });
-            setSpecialMoveNotice({ name: throwDef.name, player: 'p1', id: ++specialNoticeIdRef.current });
             setTimeout(() => setSpecialMoveNotice(null), 1500);
-            setKnockdownEvent({ count: ++knockdownEventCountRef.current, player: 'p2' });
+            console.log('[Arena] 🤲 Directional throw connected — unified break window opened:', detectedThrowId);
           }
         } else {
-          // Throw whiffed — play whiff sound
           audioManagerRef.current.playSFX('whiff');
         }
       }
@@ -1844,7 +1854,35 @@ export default function GameBattleArena({
       // P1 armed this window before P2's update. This runs after P2 has had
       // the frame to press Escape, so a real break is possible in the match.
       const throwBreakOutcome = p2SMRef.current.consumeIncomingThrowBreakOutcome();
-      if (throwBreakOutcome === 'broken') {
+      const directionalP2Throw = directionalThrowPendingRef.current?.defender === 'p2'
+        ? directionalThrowPendingRef.current
+        : null;
+      if (throwBreakOutcome === 'broken' && directionalP2Throw) {
+        directionalThrowPendingRef.current = null;
+        p2LocoRef.current.applyPushback(0.35);
+        p2HitboxRef.current.reset();
+        audioManagerRef.current.playSFX('throw_break');
+        setSpecialMoveNotice({ name: 'THROW BREAK!', player: 'p2', id: ++specialNoticeIdRef.current });
+        setTimeout(() => setSpecialMoveNotice(null), 900);
+      } else if (throwBreakOutcome === 'committed' && directionalP2Throw) {
+        directionalThrowPendingRef.current = null;
+        const throwDmg = getThrowDamage(directionalP2Throw.throwId, false);
+        p2SMRef.current.applyKnockdown();
+        playOpponentHalf('p2', throwDelivererRef.current.p1);
+        p2LocoRef.current.halt();
+        p2HitboxRef.current.reset();
+        engineRef.current?.applyIncomingHit('p2', throwDmg, false, 0.3);
+        if (settings.soundEnabled) sfx.playHeavyHit();
+        audioManagerRef.current.playSFX('throw_connect');
+        setDamageEvent({
+          count: ++damageEventCountRef.current,
+          player: 'p2',
+          damage: throwDmg,
+          isCounter: false,
+          factionColor: p2Color,
+        });
+        setKnockdownEvent({ count: ++knockdownEventCountRef.current, player: 'p2' });
+      } else if (throwBreakOutcome === 'broken') {
         p1SMRef.current.resolveCommandThrow(false);
         p2LocoRef.current.applyPushback(0.35);
         p2HitboxRef.current.reset();
@@ -1890,7 +1928,35 @@ export default function GameBattleArena({
       // for the AI, and a committed throw puts the player through the
       // opponent's half of whatever the AI threw with.
       const p1ThrowBreakOutcome = p1SMRef.current.consumeIncomingThrowBreakOutcome();
-      if (p1ThrowBreakOutcome === 'broken') {
+      const directionalP1Throw = directionalThrowPendingRef.current?.defender === 'p1'
+        ? directionalThrowPendingRef.current
+        : null;
+      if (p1ThrowBreakOutcome === 'broken' && directionalP1Throw) {
+        directionalThrowPendingRef.current = null;
+        p1LocoRef.current.applyPushback(0.35);
+        p1HitboxRef.current.reset();
+        audioManagerRef.current.playSFX('throw_break');
+        setSpecialMoveNotice({ name: 'THROW BREAK!', player: 'p1', id: ++specialNoticeIdRef.current });
+        setTimeout(() => setSpecialMoveNotice(null), 900);
+      } else if (p1ThrowBreakOutcome === 'committed' && directionalP1Throw) {
+        directionalThrowPendingRef.current = null;
+        const throwDmg = getThrowDamage(directionalP1Throw.throwId, false);
+        p1SMRef.current.applyKnockdown();
+        p1LocoRef.current.halt();
+        p1HitboxRef.current.reset();
+        playOpponentHalf('p1', throwDelivererRef.current.p2);
+        engineRef.current?.applyIncomingHit('p1', throwDmg, false, 0.3);
+        if (settings.soundEnabled) sfx.playHeavyHit();
+        audioManagerRef.current.playSFX('throw_connect');
+        setDamageEvent({
+          count: ++damageEventCountRef.current,
+          player: 'p1',
+          damage: throwDmg,
+          isCounter: false,
+          factionColor: p1Color,
+        });
+        setKnockdownEvent({ count: ++knockdownEventCountRef.current, player: 'p1' });
+      } else if (p1ThrowBreakOutcome === 'broken') {
         p2SMRef.current.resolveCommandThrow(false);
         p1LocoRef.current.applyPushback(0.35);
         p1HitboxRef.current.reset();
@@ -1918,7 +1984,7 @@ export default function GameBattleArena({
 
       const p2Hb = p2HitboxRef.current;
 
-      const p2AIInput: SMInput = buildP2AIInput(
+      const p2AIInput = buildP2AIInput(
         mapActionToDisplayState(p2SMRef.current.action, p2SMRef.current.current, engine.p2State),
         engine.p1Health, engine.p2Health, p2XRef.current, p1XRef.current,
         p2ZRef.current, p1ZRef.current, p2Fighter,
@@ -1942,20 +2008,44 @@ export default function GameBattleArena({
       const p2HbWindow = p2SM.getSweptHitboxWindow();
       p2Hb.update(p2HbWindow);
 
-      // ── THE AI'S THROW, WHICH HAD NEVER RESOLVED ──────────────────────
-      //
-      // TWO THINGS WERE MISSING AND EITHER ALONE WAS ENOUGH.
-      //
-      // The input side reads `p2AIInput.grapple` and passes it to the command
-      // buffer — but `buildP2AIInput` NEVER SET IT, on any branch, so the AI
-      // had no way to ask for a throw in the first place (fixed there, in the
-      // close-range cycle). And on this side `p1SM.action === 'CommandThrow'`
-      // was the ONLY occurrence in the file: nothing ever checked the AI's
-      // grab range, called `resolveCommandThrow`, opened a break window or
-      // dealt the damage. So the player could not be thrown by anybody.
-      //
-      // Owner: the opponent side has to be "wired up all areas wise." A
-      // grapple only the player can perform is half a system.
+      // ── THE AI'S DIRECTIONAL THROW ─────────────────────────────────────
+      // Directional AI throws use the exact same pending transaction as player
+      // throws. No damage is applied here; P1 gets the real break window and
+      // the commit/break branch below remains the sole damage authority.
+      const aiDirectionalThrowId = p2AIInput.directionalThrowId ?? null;
+      if (
+        aiDirectionalThrowId &&
+        p2SM.action === 'Idle' &&
+        !directionalThrowPendingRef.current
+      ) {
+        const inRange = checkThrowRange(
+          p2XRef.current, p2ZRef.current,
+          p1XRef.current, p1ZRef.current,
+        );
+        if (inRange && THROW_CATALOG[aiDirectionalThrowId]) {
+          p1SMRef.current.beginIncomingThrowBreak(0, THROW_CATALOG[aiDirectionalThrowId].breakButton);
+          directionalThrowPendingRef.current = {
+            attacker: 'p2',
+            defender: 'p1',
+            throwId: aiDirectionalThrowId,
+          };
+          throwDelivererRef.current.p2 = liveClipRef.current.p2;
+          setSpecialMoveNotice({
+            name: THROW_CATALOG[aiDirectionalThrowId].name,
+            player: 'p2',
+            id: ++specialNoticeIdRef.current,
+          });
+          setTimeout(() => setSpecialMoveNotice(null), 1500);
+          console.log('[Arena] 🤲 AI directional throw connected — unified break window opened:', aiDirectionalThrowId);
+        } else {
+          audioManagerRef.current.playSFX('whiff');
+        }
+      }
+
+      // ── THE AI'S COMMAND THROW ────────────────────────────────────────
+      // The existing grapple path remains separate: it is the generic command
+      // throw, while directionalThrowId above represents an authored
+      // directional throw family.
       if (p2SM.action === 'CommandThrow' && prevP2Action !== 'CommandThrow') {
         const grabResult = p2SM.checkGrabRange(p2XRef.current, p1XRef.current, p1SMRef.current.action);
         p2SM.resolveCommandThrow(grabResult.throwSucceeded);
@@ -3453,7 +3543,7 @@ function buildP2AIInput(
   p2State: string, p1Health: number, p2Health: number,
   p2X: number, p1X: number, p2Z: number, p1Z: number,
   fighter: BannonFighterProfile,
-): SMInput {
+): SMInput & { directionalThrowId?: AIDirectionalThrowId | null } {
   const now = performance.now();
   const style = fighter.fightingStyle.toLowerCase();
   const personality = fighter.personality.toLowerCase();
@@ -3480,6 +3570,23 @@ function buildP2AIInput(
     return {forward:1,strafe:orbit,light:false,heavy:false,guard:false,crouch:false,jump:true};
   if (powerStyle && cycle === 5)
     return {forward:-1,strafe:0,light:false,heavy:false,guard:true,crouch:false,jump:false};
+
+  // Directional throws are an explicit AI intent, not a fake button chord.
+  // The arena validates range/state and opens the same authoritative break
+  // transaction used by player directional throws.
+  const directionalThrowId = selectAIDirectionalThrowId({
+    distance,
+    distZ,
+    cycle,
+    powerStyle,
+    evasiveStyle,
+  });
+  if (directionalThrowId)
+    return {
+      forward: 0, strafe: 0, light: false, heavy: false, guard: false,
+      crouch: false, jump: false, directionalThrowId,
+    };
+
   if (healthPressure && cycle === 4)
     return {forward:0,strafe:orbit,light:false,heavy:false,guard:true,crouch:false,jump:false};
   /**

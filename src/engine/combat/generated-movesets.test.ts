@@ -5,6 +5,7 @@ import { readFileSync, existsSync } from 'node:fs';
 
 import { createCommandBuffer, pushInput, matchCommand } from './CommandInput.ts';
 import { generatedMoveset, setGeneratedMovesets } from './GeneratedMovesets.ts';
+import { buildHitboxFromMove } from './FrameDataHitbox.ts';
 
 /**
  * A FULL MOVESET, MATCHED FROM THE COMMAND BUFFER.
@@ -44,21 +45,33 @@ describe('a generated moveset is reachable from the stick', () => {
     return matchCommand(candidates, buf, { now: t, stance });
   };
 
+  /**
+   * A DOWN DIRECTION IS A CROUCH COMMAND, so 1/2/3 moves carry the Crouch
+   * stance and only the standing half is Ground. This test used to demand
+   * fourteen Ground entries, from before that rule existed; the numpad is
+   * eight directions, three of which are down, so standing is five directions
+   * across two buttons.
+   */
   it('gives a fighter far more than the eight standing commands he had', function () {
     if (!has) return;
     const set = generatedMoveset('bannon');
     assert.ok(set.length >= 20, `expected a full matrix, got ${set.length}`);
     const ground = set.filter((m) => m.stance === 'Ground');
-    assert.ok(ground.length >= 14, `expected 8 directions x 2 buttons standing, got ${ground.length}`);
+    assert.ok(ground.length >= 10, `expected 5 standing directions x 2 buttons, got ${ground.length}`);
+    const crouch = set.filter((m) => m.stance === 'Crouch');
+    assert.ok(crouch.length >= 6, `expected 3 down directions x 2 buttons crouching, got ${crouch.length}`);
   });
 
-  it('every standing direction, both buttons, actually matches', function () {
+  it('every direction, both buttons, actually matches from its own stance', function () {
     if (!has) return;
     const set = generatedMoveset('bannon');
     const missed: string[] = [];
     for (const np of [6, 4, 2, 8, 3, 1, 9, 7]) {
       for (const b of ['LP', 'RK'] as const) {
-        if (!fire(set, np, b, 'Ground')) missed.push(`${np}${b}`);
+        // Holding down IS the crouch stance, so a down command is matched
+        // crouching — the same thing the arena does with cmd.crouch.
+        const stance = [1, 2, 3].includes(np) ? 'Crouch' : 'Ground';
+        if (!fire(set, np, b, stance)) missed.push(`${np}${b}`);
       }
     }
     assert.deepEqual(missed, [], `these directions fire nothing: ${missed.join(', ')}`);
@@ -75,7 +88,7 @@ describe('a generated moveset is reachable from the stick', () => {
     const clips = new Set<string>();
     for (const np of [6, 4, 2, 8, 3, 1, 9, 7]) {
       for (const b of ['LP', 'RK'] as const) {
-        const hit = fire(set, np, b, 'Ground');
+        const hit = fire(set, np, b, [1, 2, 3].includes(np) ? 'Crouch' : 'Ground');
         const def = set.find((m) => m.id === hit?.move.name);
         if (def?.move?.clip) clips.add(def.move.clip);
       }
@@ -101,4 +114,18 @@ describe('a generated moveset is reachable from the stick', () => {
       assert.ok(m.move!.clip, `${m.id} carries no clip`);
     }
   });
+  it('carries measured limb reach into the contact envelope', function () {
+    if (!has) return;
+    const set = generatedMoveset('bannon');
+    const ranged = set.filter((m) => (m.move?.contactReach ?? 0) > 0.3);
+    assert.ok(ranged.length >= 10, 'generated moves lost measured reach');
+    const short = ranged.find((m) => m.move!.contactReach! < 0.8)!;
+    const long = ranged.find((m) => m.move!.contactReach! > 0.8)!;
+    assert.ok(short && long);
+    const a = buildHitboxFromMove(short.move!);
+    const b = buildHitboxFromMove(long.move!);
+    assert.ok(b.offsetX > a.offsetX, 'longer strike should place its contact envelope farther forward');
+    assert.ok(b.width >= a.width, 'longer strike should not get a smaller contact envelope');
+  });
+
 });

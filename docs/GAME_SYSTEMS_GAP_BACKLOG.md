@@ -20,6 +20,15 @@ Animation/rig correctness is gameplay infrastructure, not cosmetic polish.
 
 ---
 
+## Open-source animation / rigging intake lane — 2026-09-21
+
+- [ ] **Bulk CC0 humanoid animation intake** — `IN PROGRESS`. Quaternius Universal Animation Library 1 (120+ reported clips) and Library 2 (130+ reported clips) are registered as external source banks. They cover locomotion, combat, combos, parkour and defensive motion and are explicitly CC0. Do not promote a clip merely because it loads: every candidate must pass the existing canonical-skeleton bake, floor/airborne, facing, limb-reach, joint-limit, body-count and owner gates.
+- [ ] **Independent retarget cross-check** — `IN PROGRESS`. Three.js `SkeletonUtils.retargetClip` is now exposed through `src/engine/retarget/SkeletonUtilsReference.ts`. The shipping Bannon retargeter remains authoritative; disagreement between the two implementations is diagnostic evidence, not an automatic replacement.
+- [ ] **GLB structural validation lane** — `RESEARCH`. Khronos glTF Validator is registered as the external validator candidate. The target gate must catch malformed GLB/glTF, invalid animation accessors/quaternions, broken references, and related structural errors before a source bank reaches the bake.
+- [ ] **Skin/joint/exploded-mesh regression gate** — `IN PROGRESS`. Repeated owner reports of limbs stretching into unrelated body parts are treated as measurable skeleton/skin/weight/space failures. Candidate source assets must report bone count, skin-joint references, inverse-bind availability, non-finite transforms, weight normalization, rest-pose displacement and per-bone/world-space excursion before acceptance.
+- [ ] **Bulk move-role expansion without fake ownership** — `PARTIAL`. Open-source banks are allowed to enlarge the candidate motion pool, but owner/semantic classification still decides whether a clip can become a jab, kick, throw, grapple receiver, hit reaction, wakeup, etc. A reaction clip with an extended limb must never become an attack simply because geometry matches an attack threshold.
+- [ ] **Provenance and license ledger** — `IMPLEMENTED`. `docs/open-source-animation-sources.json` records source, URL, license and intended role. Authored Bannon content remains higher authority and is never silently replaced.
+
 # 1. Highest-priority fighting-game spine
 
 - [ ] **Live command-input integration** — `PARTIAL`. The graph reaches the
@@ -1234,3 +1243,81 @@ Recorded here rather than left in chat, per the rule below.
 **Never let chat-only requirements disappear.**
 
 **If a user says “add this to the list,” this file is the list.**
+
+## 21n. LOAD-REPAIR FIT VS TRUE RE-RIG — JAGER / TARZANIAN / MAIME
+
+Owner's latest measurement corrected the earlier conclusion that JAGER categorically needed a re-rig.
+
+- **JAGER:** the defect is a near-pure rigid Y offset of roughly -0.79 to -0.86 m in the JAGER/TARZANIAN family. The existing load-time mesh-to-skeleton-space repair is the authoritative fix: runtime measurement through the real pipeline reduced JAGER worst edge growth from **147.1 cm to 54.2 cm**, share past 2x from **23.74% to 3.10%**, and far-bound from **100% to 0.00%**. This is no longer evidence for a mandatory JAGER re-rig by itself.
+- **TARZANIAN_DEVIL:** the same family is covered by the offset fit; current reported residual share past 2x is **4.17%** with far-bound **0.02%**. Do not call the remaining 21–25 cm deformation a categorical re-rig defect without a residual-specific measurement showing that the load repair cannot explain it.
+- **VIPER control:** worst edge growth is **73.0 cm**, share past 2x **3.11%**, far-bound **0.33%**. JAGER's post-repair far-bound result is therefore materially cleaner than this control on that measurement.
+- **MAIME:** this is a different, structural defect. Two MAIME models are severed action-figure rigs: **15 separate skinned pieces**, 22 joints at the world origin, and identity inverse-bind matrices. Posing each piece therefore rotates it around the origin rather than a body joint. This is a contained structural rig defect and is not covered by the JAGER/TARZANIAN rigid-offset repair.
+
+**Law earned:** verdicts must be based on the residual that survives the actual repair path. Do not label a continuum tail as NEEDS RE-RIG merely because the uncorrected asset looked bad. Conversely, do not call MAIME fixed by a rigid offset repair that cannot address a severed/degenerate skeleton.
+
+## 21o. MOVE LIBRARY EDITOR REGRESSION — PARTIAL UI IS NOT A WORKING EDITOR
+
+An editor regression blocked the visual animation work: MoveLibrary derived its model list with useMemo, but initialized the selected model with useState during the first render. On that render the model list can be empty, so the state initializer captured undefined permanently. The fighter/clip list could still render, making the screen appear healthy while the live 3D editor had no valid model URL.
+
+**Fix:** initialize the model state to an empty value and synchronize it after the derived model list is available, preferring BANNON_rigged when present and falling back to the first available model. Fix commits: **e5acb4c73486c2ef9fe71228c37e57dd15233d13**, **fcd121d0ea43a15a6def44d3ce26d247536c526d**, **3ccca53fb53c5d50fa8bae7745b4949dee7d82d6**. The final two isolate and gate the selection contract.
+
+**Verification requirement:** future Move Library changes must verify both the editor controls and the actual live preview/animation path. A rendered list, successful HTTP response, or TypeScript pass alone is not sufficient.
+
+## 21p. AGENT EXECUTION CONTRACT
+
+The owner explicitly requires continuous repo work rather than chat-only recommendations. AGENTS.md now contains a durable operating standard: active blockers come first; measurements precede visual/animation repairs; real-pipeline verification is required; regressions receive executable guards; unrun tests remain UNKNOWN; open-source additions require compatibility/license/provenance review; and every newly discovered requirement or gap is captured here during the same workstream.
+## 21q. DIRECTIONAL THROW BREAK AUTHORITY
+
+The live arena previously detected forward/backward/side throws and applied damage immediately. That bypassed the unified FighterStateMachine throw-break transaction already used by command throws.
+
+**Fixed:** directional player throws now open the defender's authoritative incoming-break window; damage/knockdown occurs only on committed, and a correct break produces pushback without damage. Repeated held input is edge-gated so one held throw button combination cannot retrigger the throw every frame.
+
+Commits:
+- cd38b82a0c63bac21e8f2926e8d1adfa47da4742 — live arena integration
+- 8461697268bbf72b39038382731909c500e24f28 — unit coverage
+- 740eb3e97be693ee074ed021ccaabb6fda54131d — test-gate inclusion
+
+**Fixed next:** AI directional throws now have an explicit, deterministic intent selector and enter the same pending transaction used by player directional throws. The arena still owns range/state validation and the FighterStateMachine owns break timing/commit; AI intent never applies damage directly.
+
+AI coverage added:
+- close neutral -> forward throw
+- power/wrestling heavy throw cycle -> backward throw
+- lateral spacing -> deterministic side throw
+- outside grab range / non-throw cycle -> no directional throw
+- AI commit/break uses the existing defender-side consumeIncomingThrowBreakOutcome() branches
+
+Commits:
+- 8864c108aaafbef6650ae450108cdfecedff2d55 — pure AI directional-throw intent selector
+- 494b8407ca623808178a99559f900d9dca9e9050 — selector regression tests
+- 8ad8899ac711850101f977666567c9daa6b8b3d5 — live AI integration
+- a6727b34e59d3c69855d92d6dbd8d0e8f8b445e5 — test-gate inclusion
+
+**Additional correctness work:** the defender-side transaction now carries the authored break button (`1`, `2`, or `either`) from `THROW_CATALOG`, so directional throws cannot be broken with an unrelated button. Regression coverage now exercises forward/1, backward/2, and side/either behavior. Generic command throws remain on their own Escape transaction and no longer depend on directional catalog state. The live arena also had an invalid catalog reference in the generic command-throw path; that was removed before stopping.
+
+Commits:
+- 94a431710ac9fc8b20fe2687301ccb8f2ed72443 — authored break-button state in FighterStateMachine
+- fb4f0f79761e02a6b2b81d5124bb059fbe2b8865 — arena metadata wiring
+- 7148aaaade1b3922a85a7a2867feacc929e28f83 — corrected player/AI metadata wiring
+- 2a47de0e9dc348e5ea58ceb56922bd67c2e3957d — break-button regression tests
+- bb78437ec3e00759879fa5d09a8d5d6c9b64920d — generic command-throw catalog-reference repair
+
+**Still not VERIFIED:** no fresh live runtime/test execution has been recorded after these commits. The full directional-throw system still requires runtime evidence for player and AI attacker directions, all throw families, correct/wrong break behavior, and out-of-range whiff behavior.
+
+## Open animation intake implementation pass — 2026-09-21
+
+- [x] **CC0 pack intake scanner** — `IMPLEMENTED`. Added `scripts/sync-open-animation-sources.mjs` for Quaternius Universal Animation Library 1/2. It indexes only real files physically present under `vendor/quaternius-ual-1/` and `vendor/quaternius-ual-2/`; it does not fabricate or silently download bytes.
+- [x] **Candidate motion-role inventory** — `IMPLEMENTED`. The scanner emits conservative candidate roles for locomotion, attacks, defense, reactions, throws and recovery. These are candidate roles only; ownership still comes from authored metadata and the bake gates.
+- [ ] **Bulk CC0 clip import** — `IN PROGRESS`. The repository now has the intake lane and build/dev scan hook, but no claim is made that the packs are present until their actual files are supplied and scanned.
+- [x] **Quaternius GLB -> canonical bake wiring** — `IMPLEMENTED`. `scripts/bake-fighter-animations.mjs` now discovers real UAL1/UAL2 `.glb` files under `vendor/`, loads authored AnimationClips, routes them through the existing canonical Bannon bind/constraint/grounding/semantic gates, and runs the installed Three.js SkeletonUtils retargeter as an independent pre-promotion cross-check. Actual pack bytes are still an environment/CI verification question; no clip is marked VERIFIED from source wiring alone.
+- [ ] **Bulk CC0 retarget + bake** — `IN PROGRESS`. Once real pack files exist under `vendor/`, route them through canonical retarget, independent SkeletonUtils cross-check, bind/rest, skin/joint, floor/facing, joint-limit and semantic-owner gates before promotion.
+
+- [x] **Deterministic default ground input law** — `IMPLEMENTED`. Command matching now fails closed when a move declares a stance: a `Crouch` move cannot match from missing/unknown stance. Directional/crouch/jump command conventions are documented in `CommandInput.ts`; crouching and jumping remain explicit command/stance requirements rather than accidental results of a generic forward+button press.
+- [ ] **Roster move promotion from open packs** — `IN PROGRESS`. Candidate clips are indexed first, then must be retargeted/baked and assigned to character-specific semantic move definitions. No unverified clip is promoted automatically.
+- [ ] **Full-contact hitbox/hurtbox alignment audit** — `IN PROGRESS`. Next runtime pass must measure attacker active volume against defender hurt volume and fighter spacing; visual overlap alone is insufficient.
+
+
+### Contact-envelope correction — 2026-09-21
+- **Status:** IN PROGRESS
+- **Finding:** the combat collision path previously inflated every active hitbox with a hardcoded `+1.1m` width and `+1.0m` depth before overlap testing. That is not a measured fighter-scale hurtbox and can make visual contact disagree with combat contact.
+- **Change:** generated moves now carry measured hand/foot reach; the hitbox uses that reach for its forward envelope, while collision uses explicit fighter-scale hurtbox half-extents (`0.42m` X, `0.34m` Z) instead of the oversized constants.
+- **Evidence:** regression tests cover an out-of-envelope separation and an in-envelope contact case. CI/PWA runtime evidence is still required before VERIFIED.

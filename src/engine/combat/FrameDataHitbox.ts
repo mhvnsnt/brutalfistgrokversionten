@@ -100,6 +100,23 @@ const HITBOX_DEFAULTS: Record<string, Partial<HitboxGeometry>> = {
   },
 };
 
+/**
+ * Ground-contact body envelope used by the deterministic combat authority.
+ * The old collision test added 1.1m directly to every hitbox width, making
+ * contact much larger than the visible fighter and causing apparent hits
+ * before the striking limb could plausibly reach the opponent.
+ */
+export const DEFAULT_FIGHTER_HURTBOX_HALF_WIDTH_M = 0.42;
+export const DEFAULT_FIGHTER_HURTBOX_HALF_DEPTH_M = 0.34;
+
+/** World-height envelope used by the deterministic combat authority. */
+const FIGHTER_HEIGHT_M = 1.8;
+const ATTACK_Y_RANGES: Record<'high' | 'mid' | 'low', [number, number]> = {
+  high: [0.78, 1.00],
+  mid: [0.42, 0.78],
+  low: [0.00, 0.45],
+};
+
 const SPECIAL_HITBOX: Partial<HitboxGeometry> = {
   offsetX: 1.0,
   offsetZ: 0.0,
@@ -117,21 +134,31 @@ const SPECIAL_HITBOX: Partial<HitboxGeometry> = {
 export function buildHitboxFromMove(move: MoveWindow): HitboxGeometry {
   const base = HITBOX_DEFAULTS[move.animation] ?? HITBOX_DEFAULTS.lightAttack;
   const special = move.isSpecial ? SPECIAL_HITBOX : {};
-  return {
-    offsetX: 0.6,
-    offsetZ: 0.0,
-    width: 0.8,
-    depth: 0.6,
-    hitstun: 0.25,
-    blockstun: 0.15,
-    pushback: 0.3,
-    launch: 0,
-    isSpecial: false,
-    attackLevel: 'mid' as const,
+  // Prefer the actual baked strike-limb reach when the move has one.
+  // Generic legacy moves retain their established geometry. For generated
+  // directional moves this keeps contact tied to the animation instead of
+  // giving every punch/kick the same oversized 2m-ish envelope.
+  const reach = move.contactReach;
+  const contactOffset = reach !== undefined
+    ? Math.max(0.25, reach * 0.72)
+    : 0.6;
+  const contactWidth = reach !== undefined
+    ? Math.max(0.30, Math.min(1.05, reach * 0.56))
+    : 0.8;
+  // Legacy frame-data supplies damage/timing defaults; measured reach must
+  // be applied last or lightAttack/heavyAttack silently overwrite it.
+  const geometry = {
     ...base,
     ...special,
+    offsetX: contactOffset,
+    offsetZ: 0.0,
+    width: contactWidth,
+    depth: reach !== undefined
+      ? Math.max(0.35, Math.min(0.75, reach * 0.48))
+      : (special.depth ?? base.depth ?? 0.6),
     damage: move.damage ?? (base as { damage?: number }).damage ?? 80,
   };
+  return geometry as HitboxGeometry;
 }
 
 // ── Resolve which hurtbox region was hit ──────────────────────────────────────
@@ -150,6 +177,55 @@ export function resolveHitRegion(
     region: primaryRegion,
     multiplier: regionDef?.damageMultiplier ?? 1.0,
   };
+}
+
+/**
+ * WHICH PART OF THE DEFENDER THE ATTACK'S HEIGHT ACTUALLY REACHES.
+ *
+ * THIS FUNCTION WAS MISSING AND THE CALL TO IT WAS NOT. A revert took the
+ * definition out of this file and left line ~320 calling it, so every attack
+ * that got as far as overlapping threw a ReferenceError from inside
+ * checkCollision — the one function that decides whether a hit lands. Nobody
+ * took damage from a connecting strike, on any build carrying that state, and
+ * `npx tsc --noEmit` says so in one line. It is restored here from the
+ * behaviour its own test specifies.
+ *
+ * Unlike the label-only resolveHitRegion, this asks a geometric question: take
+ * the vertical band the attack sweeps (ATTACK_Y_RANGES, in the ATTACKER's
+ * frame) and the regions that level is allowed to strike (ATTACK_LEVEL_REGIONS,
+ * in the DEFENDER's frame), and return the permitted region it overlaps most.
+ *
+ * Returning null is the point of it: X and Z can overlap while the striking
+ * limb is vertically nowhere near anything it may legally hit — a low kick
+ * under a jumping opponent, a ground attacker swinging low at someone in the
+ * air. That is a whiff, not a hit with a mislabeled limb.
+ */
+export function resolveHitRegionAtHeight(
+  attackLevel: 'high' | 'mid' | 'low',
+  attackerY: number,
+  defenderY: number,
+): { region: HurtboxRegion['region']; multiplier: number } | null {
+  const range = ATTACK_Y_RANGES[attackLevel];
+  if (!range) return null;
+  const attackMinY = attackerY + range[0] * FIGHTER_HEIGHT_M;
+  const attackMaxY = attackerY + range[1] * FIGHTER_HEIGHT_M;
+
+  let best: { region: HurtboxRegion['region']; multiplier: number } | null = null;
+  let bestOverlap = 0;
+  // Candidates are ordered by priority, and `>` keeps the earlier one on a
+  // tie — so a mid attack that overlaps torso and arm equally reads as torso.
+  for (const region of ATTACK_LEVEL_REGIONS[attackLevel]) {
+    const def = FIGHTER_HURTBOX_REGIONS.find((r) => r.region === region);
+    if (!def) continue;
+    const regionMinY = defenderY + def.yMin * FIGHTER_HEIGHT_M;
+    const regionMaxY = defenderY + def.yMax * FIGHTER_HEIGHT_M;
+    const overlap = Math.min(attackMaxY, regionMaxY) - Math.max(attackMinY, regionMinY);
+    if (overlap > bestOverlap) {
+      bestOverlap = overlap;
+      best = { region, multiplier: def.damageMultiplier };
+    }
+  }
+  return best;
 }
 
 /**
@@ -254,6 +330,8 @@ export class FrameDataHitboxSystem {
     opponentZ: number,
     opponentIsBlocking: boolean,
     currentFrame: number,
+    opponentY = 0,
+    attackerY = 0,
   ): CollisionResult | null {
     if (!this.hitboxActive || !this.hitboxGeometry) return null;
     if (this.hitRegisteredThisSwing) return null;
@@ -266,16 +344,37 @@ export class FrameDataHitboxSystem {
     // AABB overlap test
     const dx = Math.abs(opponentX - hbCenterX);
     const dz = Math.abs(opponentZ - hbCenterZ);
-    const halfW = (hb.width + 1.1) * 0.5;
-    const halfD = (hb.depth + 1.0) * 0.5;
+    const halfW = (hb.width * 0.5) + DEFAULT_FIGHTER_HURTBOX_HALF_WIDTH_M;
+    const halfD = (hb.depth * 0.5) + DEFAULT_FIGHTER_HURTBOX_HALF_DEPTH_M;
 
     if (dx > halfW || dz > halfD) return null;
 
-    // Hit confirmed — resolve which body region was hit
-    this.hitRegisteredThisSwing = true;
+    // Vertical contact is part of the collision, not just a post-hit label.
+    // The old system could call a ground low kick a leg hit against an airborne
+    // fighter because it only tested X/Z. Use the same normalized body ranges
+    // as the hurtbox definitions, translated by each fighter's world Y.
+    const [attackMinN, attackMaxN] = ATTACK_Y_RANGES[hb.attackLevel] ?? ATTACK_Y_RANGES.mid;
+    const attackMinY = attackerY + attackMinN * FIGHTER_HEIGHT_M;
+    const attackMaxY = attackerY + attackMaxN * FIGHTER_HEIGHT_M;
+    const defenderMinY = opponentY;
+    const defenderMaxY = opponentY + FIGHTER_HEIGHT_M;
+    if (attackMaxY < defenderMinY || attackMinY > defenderMaxY) return null;
 
+    // Resolve the actual overlapping body region, not merely the attack's
+    // nominal level. This keeps high/mid/low semantics tied to measured Y
+    // ranges and makes the debug/damage result agree with the collision.
     const attackLevel = hb.attackLevel ?? 'mid';
-    const { region: hitRegion, multiplier: regionMultiplier } = resolveHitRegion(attackLevel);
+    const resolvedRegion = resolveHitRegionAtHeight(attackLevel, attackerY, opponentY);
+    // X/Z can overlap while the actual striking limb is vertically outside the
+    // permitted target region. That is a whiff, not a hit with a mislabeled limb.
+    if (!resolvedRegion) return null;
+
+    // ONLY NOW is the swing spent. This flag used to be set ABOVE the whiff
+    // test, so an attack that missed vertically consumed its own active frames
+    // and could never connect again — a defender who landed mid-swing was
+    // untouchable for the rest of it.
+    this.hitRegisteredThisSwing = true;
+    const { region: hitRegion, multiplier: regionMultiplier } = resolvedRegion;
 
     // Update hurtbox region state for debug overlay
     this.lastHitRegion = hitRegion;

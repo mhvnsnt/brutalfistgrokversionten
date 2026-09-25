@@ -24,6 +24,7 @@ import { BANNON_ROSTER } from '../data/bannonRoster';
 import { moveSetForFighter, schwarzerblitzSpecials } from '../engine/combat/SchwarzerblitzSpecials';
 import { BANNON_GLB_PLAYABLE_MODELS } from '../data/bannonGlbRoster';
 import { resolveGlbUrl } from '../data/bannonGlbUrl';
+import { preferredMoveLibraryModel } from './moveLibraryModelSelection';
 
 /**
  * THE MOVE LIBRARY — every clip in the game, playable, and labellable.
@@ -54,6 +55,7 @@ interface ManifestEntry {
   pairedWith?: string[];
   /** This clip IS somebody being thrown. */
   receives?: boolean;
+  provenance?: { pack?: string; license?: string; path?: string; originalName?: string; referenceMappedTracks?: number };
 }
 
 type Filter = 'all' | 'untagged' | 'unlabelled' | 'unassigned' | 'airborne' | 'labelled';
@@ -263,7 +265,17 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
   const previewing = hovered ?? selected;
 
   const models = useMemo(() => [...new Set(BANNON_GLB_PLAYABLE_MODELS.map((m) => m.model))], []);
-  const [model, setModel] = useState(() => models.find((m) => m.startsWith('BANNON_rigged')) ?? models[0]);
+  // REGRESSION GUARD: models is populated by useMemo after the first render,
+  // but useState's initializer runs only once. Initialising model from the
+  // first-render empty array left the editor with an undefined GLB URL and a
+  // blank preview. The list itself still rendered, which made this look like
+  // an animation/asset failure instead of an editor state bug.
+  const preferredModel = preferredMoveLibraryModel(models);
+  const [model, setModel] = useState('');
+  useEffect(() => {
+    if (!model && preferredModel) setModel(preferredModel);
+    else if (model && !models.includes(model) && preferredModel) setModel(preferredModel);
+  }, [model, models, preferredModel]);
 
   useEffect(() => { setLabels(loadMoveLabels()); }, []);
 
@@ -580,7 +592,7 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
                     {name}
                   </span>
                   <span className="block text-[8px] text-zinc-500">
-                    {m.dur.toFixed(2)}s · {m.bank}{m.owns ? ` · ${m.semantic}` : ''}{m.airborne ? ' · air' : ''}
+                    {m.dur.toFixed(2)}s · {m.bank}{m.owns ? ` · ${m.semantic}` : ''}{m.airborne ? ' · air' : ''}{m.provenance?.pack ? ` · ${m.provenance.pack}` : ''}
                     {l?.name ? ` · "${l.name}"` : ''}
                   </span>
                   {(l?.kinds?.length ?? 0) > 0 && (
@@ -611,6 +623,7 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
                 <span className="text-[9px] text-zinc-500">
                   {entry.dur.toFixed(2)}s · {entry.bones} bones · {entry.bank}
                   {entry.owns ? ` · owns ${entry.semantic}` : ` · guessed ${entry.semantic}`}
+                  {entry.provenance?.license ? ` · ${entry.provenance.license}` : ''}
                 </span>
               )}
               <select
