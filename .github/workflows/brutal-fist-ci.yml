@@ -36,6 +36,12 @@ jobs:
       - name: Tests
         run: npm test
 
+      # Catches the failure a test suite structurally cannot: an import that
+      # SUCCEEDS and whose data nothing reads. The code that would fail does
+      # not exist, so there is nothing to assert against — only a count.
+      - name: Imported data has a reader
+        run: node tools/audit/unconsumed_fields.mjs --gate
+
       - name: Next compatibility build
         run: npm run next:build
 
