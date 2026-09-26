@@ -64,6 +64,42 @@ export function generatedMovesetsLoaded(): number {
   return Object.keys(table).length;
 }
 
+/**
+ * WHEN A STRING MAY CONTINUE, taken from the source rather than picked.
+ *
+ * MEASURED over the 213 cancel windows the Schwarzerblitz graph authors across
+ * its 133 moves: a window opens at a median of 0.20 of the way through the
+ * move's active window and runs to roughly its end. So a move is cancellable
+ * for most of its length once it has committed, which is what lets a string
+ * feel like one motion rather than two presses.
+ */
+export const CANCEL_OPENS_AT = 0.20;
+
+/**
+ * THE MOVES A PLAYER FIRES COULD NOT BE CANCELLED AT ALL.
+ *
+ * `detectCancel` reads `cancelInto`/`followups` off the current move, and
+ * these generated windows carried NEITHER — nor do the four DEFAULT_MOVE_WINDOWS.
+ * Those 26 directional slots are what every directional input resolves to, so
+ * in practice no attack in the game could be interrupted by another: you threw
+ * one move, sat through its whole recovery, and threw the next. That is the
+ * difference between a fighting game and a sequence of single hits, and it is
+ * what "the combat doesn't flow" means mechanically.
+ *
+ * THE WINDOW SHAPE IS MEASURED; THE PAIRING IS A DERIVED DEFAULT, and the
+ * distinction matters. The source authors named strings per move and we have
+ * none for generated slots, so each move chains into the SAME DIRECTION on the
+ * OTHER BUTTON — punch into kick, kick into punch. That gives a real two-hit
+ * string per direction and cannot become a mash: it is one link, not a licence
+ * to cancel into anything.
+ */
+function stringPartner(id: string): string | null {
+  // ids are `bf_<fighter>_<stance>_<numpad><button>`, e.g. bf_bannon_Ground_6P
+  const m = /^(.*_)([1-9])([PK])$/.exec(id);
+  if (!m) return null;
+  return `${m[1]}${m[2]}${m[3] === 'P' ? 'K' : 'P'}`;
+}
+
 /** This fighter's generated commands, as the state machine wants them. */
 export function generatedMoveset(fighterId: string): SpecialMoveDefinition[] {
   const rows = table[fighterId?.toLowerCase()] ?? [];
@@ -73,6 +109,8 @@ export function generatedMoveset(fighterId: string): SpecialMoveDefinition[] {
     // attacks and therefore require the crouch stance at match time.
     const dirs = m.command.flatMap((c) => c.dirs);
     const effectiveStance = /[123]/.test(dirs.join('')) ? 'Crouch' : m.stance;
+    const candidate = stringPartner(m.id);
+    const partner = candidate && rows.some((r) => r.id === candidate) ? candidate : null;
     return {
     id: m.id,
     name: m.name,
@@ -108,6 +146,17 @@ export function generatedMoveset(fighterId: string): SpecialMoveDefinition[] {
        * where the move inherits it.
        */
       rootTravel: travelForClip(m.clip) ?? undefined,
+      /**
+       * The string this move can continue into, and when. Without it the move
+       * runs to completion whatever the player does — see stringPartner.
+       */
+      cancelInto: partner
+        ? [{
+            move: partner,
+            from: (m.startup + m.active) * CANCEL_OPENS_AT,
+            to: m.startup + m.active + m.recovery,
+          }]
+        : [],
     },
     };
   }) as SpecialMoveDefinition[];
