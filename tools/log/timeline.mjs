@@ -22,7 +22,11 @@ const OUT = 'docs/WORK_LOG.md';
 
 function commitDate(sha) {
   try {
-    return new Date(execFileSync('git', ['show', '-s', '--format=%aI', sha], { encoding: 'utf8' }).trim());
+    // stdio 'pipe' on stderr: an id git does not know is an ordinary outcome
+    // here (a placeholder left in the file), not something to print a fatal at.
+    return new Date(execFileSync('git', ['show', '-s', '--format=%aI', sha], {
+      encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim());
   } catch {
     return null;
   }

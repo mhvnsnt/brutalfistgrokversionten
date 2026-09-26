@@ -46,7 +46,7 @@
       "rootCause": "OPEN. The weight-level defect is real in the raw assets (WRECK_PATTERSON 180 bleeding verts, TITAN 136, worst pairs Hips~RightArm / Hips~LeftForeArm) and the load-time prune clears it completely (4/4 clean after the pipeline). The visible stretching is a separate thing: the share of the body bound to a DISTANT bone (WRECK 5.60%, godwithin 5.49%, TITAN 2.25%, VIPER \u2014 never reported \u2014 0.33%).",
       "attempted": "A load-time repair rebinding far-bound vertices to the nearest bone SEGMENT. MEASURED WORSE and reverted: same probe, same clip, VIPER's stretch share went 3.21% -> 4.17% and WRECK's 2.14% -> 3.90%, because rebinding only the outliers leaves a seam against their untouched neighbours.",
       "lesson": "THREE INDEPENDENT MEASUREMENTS NOW SAY THE WEIGHTS ARE CLEAN, and one of my own earlier numbers was wrong. (1) The live scene: scripts/probe-live-skin.mjs walks the RENDERED bodies in a real WRECK vs TITAN match and counts 0 bleeding vertices on both (12,035 and 11,469 verts), so the load-time prune reaches the screen, not just the test harness. (2) Bone-segment distance: WRECK's median is 16.9cm against VIPER's 17.1cm \u2014 indistinguishable from a model never complained about. (3) My earlier 'WRECK 5.60% vs VIPER 0.33% far-bound' was an ARTIFACT of measuring distance to the joint ORIGIN; a joint sits at one END of its bone, so an ankle vertex is legitimately 0.4m from the knee that drives it, and the 'defect' was almost entirely legs. That also explains why the rebind repair made stretching worse: it was moving correctly-weighted vertices. Posed stretching does remain, on EVERY model including ones never reported (VIPER's worst edge growth is larger than WRECK's), so whatever is visible in the screenshots is not cross-body skin weights and needs the owner to point at the exact body part, or a look at the rendering side rather than the rig.",
-      "fixed": "MEASURED-CLEAN"
+      "fixed": "23e01a4"
     },
     {
       "id": "open-source-animation-dead",
@@ -89,7 +89,7 @@
       "reported": "2026-09-26",
       "symptom": "the combat needs to be more ... so it feels like something built on top of Tekken and classic fighting games ... we really need to research and pull from code and stuff in those games to get a better flow going",
       "rootCause": "NO MOVE A PLAYER FIRES COULD BE CANCELLED. detectCancel reads cancelInto/followups off the current move; the 26 generated directional slots carried neither, and neither do the four DEFAULT_MOVE_WINDOWS. So every attack ran to completion: throw one, sit through its whole recovery, throw the next. That is the difference between a fighting game and a sequence of single hits.",
-      "fixed": "PENDING",
+      "fixed": "23e01a4",
       "howFound": "Checked whether the moves the player actually fires carry the cancel data the source authors \u2014 the same 'imported but never read' shape that has now appeared four times this session.",
       "lesson": "The WINDOW SHAPE is measured (213 authored windows across 133 imported moves open at a median 0.20 of the move) but the PAIRING is a derived default, because the source authors named strings per move and generated slots have none. Same direction, other button \u2014 punch into kick and back. One link, not a licence to cancel into anything, so it cannot become a mash."
     }
