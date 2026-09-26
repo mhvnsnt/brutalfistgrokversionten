@@ -1,0 +1,60 @@
+{
+  "_what": [
+    "The parity backlog as a DAG. `needs` names tasks that must be done first; a task with",
+    "unmet dependencies is BLOCKED and the loop will not offer it. Specialists mirror the",
+    "roles the orchestration pattern assigns: rendering, moveset, engine, pipeline.",
+    "",
+    "GOAL: mechanical parity with Tekken and Schwarzerblitz in how a match actually plays."
+  ],
+  "tasks": [
+    {
+      "id": "lbs-volume",
+      "title": "Stop the hip collapsing during strikes",
+      "specialist": "rendering",
+      "status": "open",
+      "needs": [],
+      "measure": "tools/model_diag/lbs_in_play.mjs — median thigh radius must exceed 0.85 of bind",
+      "now": "median 0.68, p05 0.27",
+      "notes": "DQS proved offline to roughly double retained volume (0.23 -> 0.42) but not to fix it alone, so the rest-pose offset below is part of the same defect. Reference implementations: KosRud/DQ-skinning-for-Unity (HLSL), ishmeetkohli/dualQuaternionSkinning (GLSL)."
+    },
+    {
+      "id": "rest-offset",
+      "title": "Stop the retarget parking the thigh 81 degrees from bind",
+      "specialist": "pipeline",
+      "status": "open",
+      "needs": [],
+      "measure": "tools/model_diag/rest_offset.mjs — median thigh delta from bind under 40 degrees",
+      "now": "median 81 degrees, 210 of 455 clips past 90",
+      "notes": "A standing jab measures 74 degrees, which is not anatomy. Suspected rest-pose mismatch between source and canonical binds baked into the thigh track. upf-gti/retargeting-threejs solves joint-level offsets between mismatched binds."
+    },
+    {
+      "id": "bone-mask",
+      "title": "Upper-body moves must not drive the legs",
+      "specialist": "moveset",
+      "status": "open",
+      "needs": ["rest-offset"],
+      "measure": "an upper-body clip must leave the thigh within 15 degrees of its locomotion pose",
+      "now": "ALTERNATINGFOREARMS moves the thigh 126 degrees from bind",
+      "notes": "Partial-body blending from the spine up. Blocked on rest-offset: masking on top of a bad baseline would hide the cause instead of fixing it."
+    },
+    {
+      "id": "cancel-starting-frame",
+      "title": "A cancelled follow-up should skip part of its startup",
+      "specialist": "moveset",
+      "status": "open",
+      "needs": [],
+      "measure": "the second hit of a string reaches its active frames sooner than when thrown cold",
+      "now": "every follow-up starts at frame 0",
+      "notes": "Tekken's Cancel struct carries starting_frame beside detection_start/end (Kiloutre/TKMovesets). We have no data to fill it; needs a derivation or authored values."
+    },
+    {
+      "id": "hidden-moves",
+      "title": "Honour the hidden flag once a move list exists",
+      "specialist": "moveset",
+      "status": "blocked-on-design",
+      "needs": [],
+      "measure": "tools/audit/unconsumed_fields.mjs no longer lists SbMove.hidden",
+      "now": "110 of 133 imported moves are hidden and nothing reads it"
+    }
+  ]
+}

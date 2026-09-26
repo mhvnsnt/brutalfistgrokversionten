@@ -1,0 +1,33 @@
+{
+  "_what": [
+    "THE MEMORY PALACE: things measured and settled, so they are never re-litigated.",
+    "Modelled on OpenCognit's persistent-memory layer (github.com/OpenCognit/opencognit,",
+    "Community Edition v0.9.0, AGPL-3.0). Its server is a docker/drizzle deployment; what",
+    "is taken here is the LOOP — CEO splits work, specialists execute, a critic validates",
+    "before anything is called done, and verified truths persist so the same ground is not",
+    "covered twice. Their own DAG header puts it well: 'Output validation between every",
+    "step is non-negotiable.'",
+    "",
+    "Every entry below was MEASURED. A claim with no measurement does not belong here."
+  ],
+  "verified": [
+    { "fact": "Rotations interpolate with slerp everywhere; there are no raw quaternion lerps in the bake or retarget.", "evidence": "scripts/audit-quaternion-paths.mjs — 1,570 hemisphere flips exist across 255 of 455 clips and are harmless because THREE.Quaternion.slerp corrects the sign." },
+    { "fact": "Cancel windows open at 0.20 of the move.", "evidence": "Median of 213 windows authored across 133 imported Schwarzerblitz moves." },
+    { "fact": "The live rendered bodies carry ZERO cross-body skin weights.", "evidence": "scripts/probe-live-skin.mjs — WRECK 0/12,035 and TITAN 0/11,469 in a real match." },
+    { "fact": "WRECK_PATTERSON's rig is indistinguishable from VIPER's, which was never reported.", "evidence": "Bone-SEGMENT distance medians 16.9cm vs 17.1cm. Measuring to the joint ORIGIN instead over-reports long bones and was the source of an earlier wrong claim." },
+    { "fact": "A fighter crosses 1.23 of his own strike reaches per second of walking, matching Schwarzerblitz.", "evidence": "80 units/s over a 65-unit modal range there; 1.72 m/s over a measured 1.40m reach here." },
+    { "fact": "A jab connects out to 1.40m — measured, not assumed.", "evidence": "src/engine/locomotion/pace.test.ts drives a real attack to its furthest connecting distance." },
+    { "fact": "Linear blend skinning collapses the thigh to 0.29-0.49 of its radius at 180 degrees of twist, on every model including the best rig shipped.", "evidence": "tools/model_diag/lbs_twist.mjs" },
+    { "fact": "In real clips the thigh pinches to a median 0.68 and as low as 0.23 of bind radius; dual quaternion skinning roughly doubles what is retained but does not fully fix it (0.23 -> 0.42).", "evidence": "tools/model_diag/lbs_in_play.mjs, validated on TPOSE=1.000 and GRAFQUICKJAB=1.000 before being trusted." },
+    { "fact": "The thigh sits a median 81 degrees from its bind across 455 clips, and 126 degrees is the joint limiter (bend 120 / twist 50) working as designed, not corruption.", "evidence": "tools/model_diag/rest_offset.mjs; only 17 clips are a pure stuck offset, so this is a systematic baseline from rest-pose mismatch rather than a few bad files." }
+  ],
+  "traps": [
+    "Measure the DENOMINATOR too. Taking the strike reach as 0.8m from a test's swing distance made a 1.28x pace gap look like 2.2x.",
+    "A joint origin sits at one END of its bone, so distance-to-origin calls a correctly weighted shin broken.",
+    "A Mixamo thigh's bind local rotation is already ~180 degrees. Absolute joint angles are meaningless; measure the delta from bind.",
+    "Swing-twist decomposition has a singularity near 180 degrees and reports a large swing as a large twist.",
+    "A test that never runs the thing it names passes for the wrong reason. Assert that the move under test actually fired.",
+    "QuaternionKeyframeTrack stores Float32 while a bone quaternion is a double, so an identical pose measures ~0.02 degrees apart.",
+    "An import that reports zero skips AND zero output is broken, not idle. Count what went IN."
+  ]
+}
