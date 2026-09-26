@@ -101,6 +101,15 @@
       "fixed": "05b3049",
       "howFound": "Read the Namco Cancel struct in Kiloutre/TKMovesets (cloned, not paraphrased) and measured our own corpus's transition distances.",
       "lesson": "COMPUTED BEATS TABULATED when the table would be 200,000 invented cells. The distance is already knowable from the live skeleton against the incoming clip's first frame. TWO THINGS CHECKED AND FOUND NOT TO APPLY: the Lerp-vs-Slerp diagnosis (1,570 hemisphere flips exist, but every interpolation here goes through THREE.Quaternion.slerp which corrects the sign, and there are no raw quaternion lerps) and LBS candy-wrapping (not yet measured \u2014 the remaining posed stretching is present on every model including ones never reported). STILL OPEN from the reference: Tekken's Cancel carries `starting_frame`, the frame the TARGET move begins at when cancelled into, which lets a string's second hit flow instead of replaying its startup. We have no data to fill it."
+    },
+    {
+      "id": "pelvic-torsion-on-a-punch",
+      "reported": "2026-09-26",
+      "symptom": "A punch should not cause a 90-degree pelvic torsion ... The Structural Fix: Bone Masking. Also: Gemini keeps talking about c++ idk how to permanently correct it from assuming.",
+      "rootCause": "He was describing the clips, not the skinning. Measured on the shipped ALTERNATINGFOREARMS, the pelvis rotates away from its own first frame through 0 10 11 30 33 32 46 71 100 84 40 10 38 76 103 102 112 111 101 121 108 105 101 101 \u2014 it peaks at 121 degrees and ENDS 101 out. CHOKESLAM ends 117 out, DDT 86. Against the real IDLE stance a hand strike put the pelvis 94.6 degrees outside anywhere the fighter stands. 190 of 455 clips carry a lower body that is either faster than the bank's own fastest real kick (HURRICANE_KICK, 786 deg/s) or never returns the pelvis to a stance.",
+      "fixed": "PENDING",
+      "howFound": "Measured per frame rather than reasoning about it. The first attempt at a tagging rule \u2014 a large leg offset that barely varies is a baked-in constant \u2014 was measured and REJECTED: it tags 126 clips and puts ALTERNATINGFOREARMS in the safe pile, because its legs travel 174 degrees, which reads as footwork until you see it travelled at 998 deg/s.",
+      "lesson": "DO NOT MEASURE CORRUPT DATA TO DECIDE WHETHER TO TRUST IT \u2014 that is circular. The engine already knows something better: what the player pressed. A jab is a jab whatever its capture contains, so the mask comes from the motion state and the measurement is the evidence and the gate instead. SECOND LESSON, mine: a stance is an ENVELOPE, not a pose. Comparing the held pelvis with ONE frame of IDLE reported 64.5 degrees with the mask working perfectly, because IDLE's own pelvis sways 55 degrees over its cycle. THIRD: three.js has no per-bone pose-evaluation loop to skip inside, so a bone mask is a TRACK SPLIT plus a second action \u2014 the mixer accumulates per binding, so a bone with no track in any playing action is simply never written. 94.6 degrees outside the stance -> 7.2, with the same clip played as a kick as the in-run control."
     }
   ]
 }

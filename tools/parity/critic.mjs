@@ -62,6 +62,25 @@ const gates = [
       return { pass: r.ok, detail: `${m?.[1] ?? '?'} unread (baseline allows the known ones)` };
     },
   },
+  {
+    name: 'a punch stays out of the pelvis',
+    why: 'Owner, verbatim: "A punch should not cause a 90-degree pelvic torsion." Measured at 94.6.',
+    check: () => {
+      const r = run('node', ['--experimental-strip-types', '--import', './scripts/register-ts-resolve.mjs', 'tools/parity/pelvis_gate.ts']);
+      const m = /as a hand strike\s+([\d.]+) deg/.exec(r.out);
+      const c = /as a kick\s+([\d.]+) deg/.exec(r.out);
+      return { pass: r.ok, detail: `${m?.[1] ?? '?'} deg outside the stance, unmasked control ${c?.[1] ?? '?'} deg (want <= 15)` };
+    },
+  },
+  {
+    name: 'no clip smuggles in a fake lower body',
+    why: 'A leg track faster than the bank fastest real kick is not footwork, it is corruption.',
+    check: () => {
+      const r = run('node', ['tools/motion/bone_mask_audit.mjs', '--gate']);
+      const m = /(\d+) have a lower body/.exec(r.out);
+      return { pass: r.ok, detail: `${m?.[1] ?? '?'} of 455 not credible, and the manifest agrees` };
+    },
+  },
   ...(QUICK ? [] : [{
     name: 'hip volume under real clips',
     why: 'The thigh pinching to a quarter of its width is the visible tearing.',

@@ -3,7 +3,7 @@
     "THE MEMORY PALACE: things measured and settled, so they are never re-litigated.",
     "Modelled on OpenCognit's persistent-memory layer (github.com/OpenCognit/opencognit,",
     "Community Edition v0.9.0, AGPL-3.0). Its server is a docker/drizzle deployment; what",
-    "is taken here is the LOOP — CEO splits work, specialists execute, a critic validates",
+    "is taken here is the LOOP \u2014 CEO splits work, specialists execute, a critic validates",
     "before anything is called done, and verified truths persist so the same ground is not",
     "covered twice. Their own DAG header puts it well: 'Output validation between every",
     "step is non-negotiable.'",
@@ -11,15 +11,46 @@
     "Every entry below was MEASURED. A claim with no measurement does not belong here."
   ],
   "verified": [
-    { "fact": "Rotations interpolate with slerp everywhere; there are no raw quaternion lerps in the bake or retarget.", "evidence": "scripts/audit-quaternion-paths.mjs — 1,570 hemisphere flips exist across 255 of 455 clips and are harmless because THREE.Quaternion.slerp corrects the sign." },
-    { "fact": "Cancel windows open at 0.20 of the move.", "evidence": "Median of 213 windows authored across 133 imported Schwarzerblitz moves." },
-    { "fact": "The live rendered bodies carry ZERO cross-body skin weights.", "evidence": "scripts/probe-live-skin.mjs — WRECK 0/12,035 and TITAN 0/11,469 in a real match." },
-    { "fact": "WRECK_PATTERSON's rig is indistinguishable from VIPER's, which was never reported.", "evidence": "Bone-SEGMENT distance medians 16.9cm vs 17.1cm. Measuring to the joint ORIGIN instead over-reports long bones and was the source of an earlier wrong claim." },
-    { "fact": "A fighter crosses 1.23 of his own strike reaches per second of walking, matching Schwarzerblitz.", "evidence": "80 units/s over a 65-unit modal range there; 1.72 m/s over a measured 1.40m reach here." },
-    { "fact": "A jab connects out to 1.40m — measured, not assumed.", "evidence": "src/engine/locomotion/pace.test.ts drives a real attack to its furthest connecting distance." },
-    { "fact": "Linear blend skinning collapses the thigh to 0.29-0.49 of its radius at 180 degrees of twist, on every model including the best rig shipped.", "evidence": "tools/model_diag/lbs_twist.mjs" },
-    { "fact": "In real clips the thigh pinches to a median 0.68 and as low as 0.23 of bind radius; dual quaternion skinning roughly doubles what is retained but does not fully fix it (0.23 -> 0.42).", "evidence": "tools/model_diag/lbs_in_play.mjs, validated on TPOSE=1.000 and GRAFQUICKJAB=1.000 before being trusted." },
-    { "fact": "The thigh sits a median 81 degrees from its bind across 455 clips, and 126 degrees is the joint limiter (bend 120 / twist 50) working as designed, not corruption.", "evidence": "tools/model_diag/rest_offset.mjs; only 17 clips are a pure stuck offset, so this is a systematic baseline from rest-pose mismatch rather than a few bad files." }
+    {
+      "fact": "Rotations interpolate with slerp everywhere; there are no raw quaternion lerps in the bake or retarget.",
+      "evidence": "scripts/audit-quaternion-paths.mjs \u2014 1,570 hemisphere flips exist across 255 of 455 clips and are harmless because THREE.Quaternion.slerp corrects the sign."
+    },
+    {
+      "fact": "Cancel windows open at 0.20 of the move.",
+      "evidence": "Median of 213 windows authored across 133 imported Schwarzerblitz moves."
+    },
+    {
+      "fact": "The live rendered bodies carry ZERO cross-body skin weights.",
+      "evidence": "scripts/probe-live-skin.mjs \u2014 WRECK 0/12,035 and TITAN 0/11,469 in a real match."
+    },
+    {
+      "fact": "WRECK_PATTERSON's rig is indistinguishable from VIPER's, which was never reported.",
+      "evidence": "Bone-SEGMENT distance medians 16.9cm vs 17.1cm. Measuring to the joint ORIGIN instead over-reports long bones and was the source of an earlier wrong claim."
+    },
+    {
+      "fact": "A fighter crosses 1.23 of his own strike reaches per second of walking, matching Schwarzerblitz.",
+      "evidence": "80 units/s over a 65-unit modal range there; 1.72 m/s over a measured 1.40m reach here."
+    },
+    {
+      "fact": "A jab connects out to 1.40m \u2014 measured, not assumed.",
+      "evidence": "src/engine/locomotion/pace.test.ts drives a real attack to its furthest connecting distance."
+    },
+    {
+      "fact": "Linear blend skinning collapses the thigh to 0.29-0.49 of its radius at 180 degrees of twist, on every model including the best rig shipped.",
+      "evidence": "tools/model_diag/lbs_twist.mjs"
+    },
+    {
+      "fact": "In real clips the thigh pinches to a median 0.68 and as low as 0.23 of bind radius; dual quaternion skinning roughly doubles what is retained but does not fully fix it (0.23 -> 0.42).",
+      "evidence": "tools/model_diag/lbs_in_play.mjs, validated on TPOSE=1.000 and GRAFQUICKJAB=1.000 before being trusted."
+    },
+    {
+      "fact": "The thigh sits a median 81 degrees from its bind across 455 clips, and 126 degrees is the joint limiter (bend 120 / twist 50) working as designed, not corruption.",
+      "evidence": "tools/model_diag/rest_offset.mjs; only 17 clips are a pure stuck offset, so this is a systematic baseline from rest-pose mismatch rather than a few bad files."
+    },
+    "A punch really does rotate the pelvis past a right angle. ALTERNATINGFOREARMS' pelvis, frame by frame away from its own first frame: 0 10 11 30 33 32 46 71 100 84 40 10 38 76 103 102 112 111 101 121 108 105 101 101. Peaks at 121 and ends 101 out. CHOKESLAM ends 117 out, DDT 86. IDLE sways to 55 and returns to 0.",
+    "SPEED, not size, separates a real leg track from a corrupt one. HURRICANE_KICK is a real kick capture and its fastest lower-body joint peaks at 786 deg/s; ALTERNATINGFOREARMS moves its THIGH at 998. 190 of 455 clips are past the bank's own fastest kick or fail to return the pelvis to a stance.",
+    "Masking the legs off a hand strike takes the pelvis from 94.6 degrees outside the idle stance to 7.2, measured through the real controller on the real clip, with the same clip played as a kick as the in-run control (tools/parity/pelvis_gate.ts).",
+    "THREE.AnimationMixer has no per-bone evaluate loop, so a bone mask is a TRACK SPLIT plus a second action, not a `continue`. The mixer accumulates per binding: a bone with no track in any playing action is never written, so the stance clip's lower half can own the pelvis while the strike owns the arms."
   ],
   "traps": [
     "Measure the DENOMINATOR too. Taking the strike reach as 0.8m from a test's swing distance made a 1.28x pace gap look like 2.2x.",
@@ -28,6 +59,9 @@
     "Swing-twist decomposition has a singularity near 180 degrees and reports a large swing as a large twist.",
     "A test that never runs the thing it names passes for the wrong reason. Assert that the move under test actually fired.",
     "QuaternionKeyframeTrack stores Float32 while a bone quaternion is a double, so an identical pose measures ~0.02 degrees apart.",
-    "An import that reports zero skips AND zero output is broken, not idle. Count what went IN."
+    "An import that reports zero skips AND zero output is broken, not idle. Count what went IN.",
+    "Do not decide a mask by measuring the clip's own leg tracks \u2014 that is circular. The obvious rule (a large offset that barely varies is a baked-in constant) puts ALTERNATINGFOREARMS in the SAFE pile, because its legs travel 174 degrees, which reads as footwork until you see it travelled at 998 deg/s. The engine already knows better from WHAT THE PLAYER PRESSED.",
+    "A stance is an ENVELOPE, not a pose. Comparing a held pelvis with ONE frame of IDLE reported 64.5 degrees with the mask working correctly \u2014 IDLE's own pelvis sways 55 degrees, so any single frame of it is ~50 from the rest of the same clip. Measure the distance OUTSIDE every pose the stance passes through.",
+    "Advice for this engine keeps arriving in C++ because that is the language the animation literature is written in. Translate the mechanism and say what it became; never answer with 'we are not C++'. AGENTS.md carries the translation table and a line to paste at whatever keeps assuming it."
   ]
 }

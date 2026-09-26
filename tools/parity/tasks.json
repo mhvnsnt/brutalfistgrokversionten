@@ -13,7 +13,7 @@
       "specialist": "rendering",
       "status": "open",
       "needs": [],
-      "measure": "tools/model_diag/lbs_in_play.mjs — median thigh radius must exceed 0.85 of bind",
+      "measure": "tools/model_diag/lbs_in_play.mjs \u2014 median thigh radius must exceed 0.85 of bind",
       "now": "median 0.68, p05 0.27",
       "notes": "DQS proved offline to roughly double retained volume (0.23 -> 0.42) but not to fix it alone, so the rest-pose offset below is part of the same defect. Reference implementations: KosRud/DQ-skinning-for-Unity (HLSL), ishmeetkohli/dualQuaternionSkinning (GLSL)."
     },
@@ -23,7 +23,7 @@
       "specialist": "pipeline",
       "status": "open",
       "needs": [],
-      "measure": "tools/model_diag/rest_offset.mjs — median thigh delta from bind under 40 degrees",
+      "measure": "tools/model_diag/rest_offset.mjs \u2014 median thigh delta from bind under 40 degrees",
       "now": "median 81 degrees, 210 of 455 clips past 90",
       "notes": "A standing jab measures 74 degrees, which is not anatomy. Suspected rest-pose mismatch between source and canonical binds baked into the thigh track. upf-gti/retargeting-threejs solves joint-level offsets between mismatched binds."
     },
@@ -31,11 +31,11 @@
       "id": "bone-mask",
       "title": "Upper-body moves must not drive the legs",
       "specialist": "moveset",
-      "status": "open",
-      "needs": ["rest-offset"],
-      "measure": "an upper-body clip must leave the thigh within 15 degrees of its locomotion pose",
-      "now": "ALTERNATINGFOREARMS moves the thigh 126 degrees from bind",
-      "notes": "Partial-body blending from the spine up. Blocked on rest-offset: masking on top of a bad baseline would hide the cause instead of fixing it."
+      "status": "done",
+      "needs": [],
+      "measure": "tools/parity/pelvis_gate.ts \u2014 a hand strike must stay within 15 deg of the idle stance envelope, with the same clip played as a kick as the control",
+      "now": "7.2 deg masked vs 94.6 deg unmasked. src/engine/motion/BoneMask.ts, 13 tests, gated in the critic.",
+      "notes": "Was blocked on rest-offset on the theory that the offset had to be removed from the clips first. It does not: the engine can decline to read the part of the clip that is wrong. The mask comes from the motion state, never from measuring the corrupt tracks. Kicks, jumps, throws, hits, knockdowns and taunts keep their own legs; crouching strikes borrow the LIVE crouch stance, which is better than the crouch their capture happened to contain."
     },
     {
       "id": "cancel-starting-frame",

@@ -1,0 +1,3628 @@
+{
+  "generatedBy": "tools/motion/bone_mask_audit.mjs",
+  "kickReferenceDegS": 786,
+  "implausibleDegS": 900,
+  "pelvisReturnDeg": 25,
+  "clips": {
+    "ACTION_IDLE_TO_STANDING_IDLE": {
+      "credible": false,
+      "peakDegS": 185,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 38,
+      "reasons": [
+        "leaves the pelvis 38 deg from where it started"
+      ]
+    },
+    "ALTERNATINGFOREARMS": {
+      "credible": false,
+      "peakDegS": 998,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 101,
+      "reasons": [
+        "LeftUpLeg peaks at 998 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 101 deg from where it started"
+      ]
+    },
+    "AMYTHROW_REACTION": {
+      "credible": false,
+      "peakDegS": 1270,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 92,
+      "reasons": [
+        "LeftUpLeg peaks at 1270 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 92 deg from where it started"
+      ]
+    },
+    "ANIMATIONMASTERFILE_BLEND": {
+      "credible": false,
+      "peakDegS": 2023,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftUpLeg peaks at 2023 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "APRONJAYKICK": {
+      "credible": false,
+      "peakDegS": 349,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 92,
+      "reasons": [
+        "leaves the pelvis 92 deg from where it started"
+      ]
+    },
+    "ARMADA": {
+      "credible": false,
+      "peakDegS": 958,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 18,
+      "reasons": [
+        "LeftUpLeg peaks at 958 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "ASSISTEDCUTTER": {
+      "credible": true,
+      "peakDegS": 212,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "ASSISTEDDIVSENTON": {
+      "credible": true,
+      "peakDegS": 344,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "ASSISTEDREVERSEGOOZLECHOP": {
+      "credible": true,
+      "peakDegS": 337,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "AU": {
+      "credible": false,
+      "peakDegS": 893,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 40,
+      "reasons": [
+        "leaves the pelvis 40 deg from where it started"
+      ]
+    },
+    "AXEKICK": {
+      "credible": false,
+      "peakDegS": 1879,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightUpLeg peaks at 1879 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "BACKBREAKER_REACTION": {
+      "credible": false,
+      "peakDegS": 2081,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 39,
+      "reasons": [
+        "LeftUpLeg peaks at 2081 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 39 deg from where it started"
+      ]
+    },
+    "BASEBALL_HIT": {
+      "credible": true,
+      "peakDegS": 576,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 19,
+      "reasons": []
+    },
+    "BASH": {
+      "credible": true,
+      "peakDegS": 114,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BIG_BODY_BLOW": {
+      "credible": false,
+      "peakDegS": 1136,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 157,
+      "reasons": [
+        "RightUpLeg peaks at 1136 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 157 deg from where it started"
+      ]
+    },
+    "BIG_JUMP": {
+      "credible": false,
+      "peakDegS": 1168,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 19,
+      "reasons": [
+        "RightUpLeg peaks at 1168 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "BIG_RIB_HIT": {
+      "credible": true,
+      "peakDegS": 422,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BLASTFLIGHT": {
+      "credible": false,
+      "peakDegS": 1798,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 1798 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "BODY_JAB_CROSS": {
+      "credible": true,
+      "peakDegS": 264,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BOXING": {
+      "credible": true,
+      "peakDegS": 249,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BOXING__1_": {
+      "credible": true,
+      "peakDegS": 114,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BOXING__2_": {
+      "credible": true,
+      "peakDegS": 154,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BOXING__3_": {
+      "credible": true,
+      "peakDegS": 367,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BOXING__4_": {
+      "credible": true,
+      "peakDegS": 264,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BOXING__5_": {
+      "credible": true,
+      "peakDegS": 360,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BOX_IDLE": {
+      "credible": true,
+      "peakDegS": 20,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BRACED_HANG_HOP_UP": {
+      "credible": false,
+      "peakDegS": 1414,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightUpLeg peaks at 1414 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "BRAINBUSTER": {
+      "credible": false,
+      "peakDegS": 229,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 87,
+      "reasons": [
+        "leaves the pelvis 87 deg from where it started"
+      ]
+    },
+    "BREAKDANCE_FOOTWORK_3": {
+      "credible": true,
+      "peakDegS": 591,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BREAKDANCE_FOOTWORK_3__1_": {
+      "credible": true,
+      "peakDegS": 591,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BREAKDANCE_FOOTWORK_TO_FREEZE": {
+      "credible": false,
+      "peakDegS": 614,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 155,
+      "reasons": [
+        "leaves the pelvis 155 deg from where it started"
+      ]
+    },
+    "BREAKDANCE_FREEZES": {
+      "credible": true,
+      "peakDegS": 479,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 1,
+      "reasons": []
+    },
+    "BREAKDANCE_READY": {
+      "credible": true,
+      "peakDegS": 190,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 21,
+      "reasons": []
+    },
+    "BREAKDANCE_UPROCK_TO_GROUND": {
+      "credible": false,
+      "peakDegS": 596,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 66,
+      "reasons": [
+        "leaves the pelvis 66 deg from where it started"
+      ]
+    },
+    "BROOKLYN_UPROCK": {
+      "credible": true,
+      "peakDegS": 221,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BRUTAL_ASSASSINATION": {
+      "credible": true,
+      "peakDegS": 410,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "BUCKLEBOMBENZUGIRI": {
+      "credible": true,
+      "peakDegS": 372,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CAN_CAN": {
+      "credible": true,
+      "peakDegS": 304,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CAPITALPUNISHMENT": {
+      "credible": true,
+      "peakDegS": 873,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CAPOEIRA": {
+      "credible": true,
+      "peakDegS": 288,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CAPOEIRA__1_": {
+      "credible": true,
+      "peakDegS": 623,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CARTWHEEL": {
+      "credible": true,
+      "peakDegS": 679,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CEMETERYDRIVE": {
+      "credible": false,
+      "peakDegS": 615,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 76,
+      "reasons": [
+        "leaves the pelvis 76 deg from where it started"
+      ]
+    },
+    "CENTER_BLOCK": {
+      "credible": true,
+      "peakDegS": 215,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CH06_NONPBR": {
+      "credible": true,
+      "peakDegS": 304,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CH24_NONPBR": {
+      "credible": true,
+      "peakDegS": 279,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CH44_NONPBR": {
+      "credible": true,
+      "peakDegS": 282,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CHOKESLAM": {
+      "credible": false,
+      "peakDegS": 642,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 117,
+      "reasons": [
+        "leaves the pelvis 117 deg from where it started"
+      ]
+    },
+    "CLIMBING_A_ROPE": {
+      "credible": true,
+      "peakDegS": 397,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CLIMBING_A_ROPE__1_": {
+      "credible": true,
+      "peakDegS": 326,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CLIMBING_UP_WALL": {
+      "credible": true,
+      "peakDegS": 647,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CODERED": {
+      "credible": false,
+      "peakDegS": 345,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 102,
+      "reasons": [
+        "leaves the pelvis 102 deg from where it started"
+      ]
+    },
+    "COMBO_PUNCH": {
+      "credible": true,
+      "peakDegS": 173,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CORKSCREW_EVADE": {
+      "credible": false,
+      "peakDegS": 1111,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 57,
+      "reasons": [
+        "RightUpLeg peaks at 1111 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 57 deg from where it started"
+      ]
+    },
+    "CORKSCREW_KIP_UP": {
+      "credible": false,
+      "peakDegS": 1007,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 37,
+      "reasons": [
+        "RightUpLeg peaks at 1007 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 37 deg from where it started"
+      ]
+    },
+    "CROSS_JUMPS": {
+      "credible": true,
+      "peakDegS": 430,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CROTCHCHOP": {
+      "credible": true,
+      "peakDegS": 804,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CROUCHING": {
+      "credible": true,
+      "peakDegS": 535,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CROUCHINGKICK": {
+      "credible": false,
+      "peakDegS": 2706,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 38,
+      "reasons": [
+        "RightLeg peaks at 2706 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 38 deg from where it started"
+      ]
+    },
+    "CROUCH_IDLE_02_LOOKING_AROUND": {
+      "credible": true,
+      "peakDegS": 55,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CROUCH_TORCH_WALK_RIGHT": {
+      "credible": true,
+      "peakDegS": 530,
+      "peakBone": "RightToeBase",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CROUCH_WALK_FORWARD": {
+      "credible": true,
+      "peakDegS": 560,
+      "peakBone": "LeftToeBase",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "CRUCIFIXPIN": {
+      "credible": false,
+      "peakDegS": 513,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 173,
+      "reasons": [
+        "leaves the pelvis 173 deg from where it started"
+      ]
+    },
+    "CYPHRTHROWREACTION": {
+      "credible": false,
+      "peakDegS": 2923,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightUpLeg peaks at 2923 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "CYPHRTHROWREACTION_FIX": {
+      "credible": false,
+      "peakDegS": 2686,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightUpLeg peaks at 2686 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "DANCING": {
+      "credible": true,
+      "peakDegS": 140,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 1,
+      "reasons": []
+    },
+    "DANCING_RUNNING_MAN": {
+      "credible": true,
+      "peakDegS": 175,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "DANCING_TWERK": {
+      "credible": true,
+      "peakDegS": 117,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "DANCING__1_": {
+      "credible": true,
+      "peakDegS": 130,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "DANCING__2_": {
+      "credible": true,
+      "peakDegS": 138,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "DDT": {
+      "credible": false,
+      "peakDegS": 609,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 86,
+      "reasons": [
+        "leaves the pelvis 86 deg from where it started"
+      ]
+    },
+    "DDT_REACTION": {
+      "credible": false,
+      "peakDegS": 1858,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 1858 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "DEATH_FROM_BACK_HEADSHOT": {
+      "credible": false,
+      "peakDegS": 416,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 115,
+      "reasons": [
+        "leaves the pelvis 115 deg from where it started"
+      ]
+    },
+    "DEFAULTJUMPKICK": {
+      "credible": false,
+      "peakDegS": 1294,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightFoot peaks at 1294 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "DEFAULTJUMPPUNCH": {
+      "credible": true,
+      "peakDegS": 333,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "DEFAULTJUMPPUNCH2": {
+      "credible": true,
+      "peakDegS": 219,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "DEFEAT": {
+      "credible": true,
+      "peakDegS": 72,
+      "peakBone": "LeftToeBase",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "DEFENDER": {
+      "credible": false,
+      "peakDegS": 896,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 109,
+      "reasons": [
+        "leaves the pelvis 109 deg from where it started"
+      ]
+    },
+    "DOLL_PAPERREACTION": {
+      "credible": false,
+      "peakDegS": 1071,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 1071 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "DOUBLESUPLEX": {
+      "credible": true,
+      "peakDegS": 370,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 11,
+      "reasons": []
+    },
+    "DOUBLE_LEG_TAKEDOWN___VICTIM": {
+      "credible": false,
+      "peakDegS": 427,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 107,
+      "reasons": [
+        "leaves the pelvis 107 deg from where it started"
+      ]
+    },
+    "DOUBLE_LEG_TAKEDOWN___VICTIM__1_": {
+      "credible": false,
+      "peakDegS": 244,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 106,
+      "reasons": [
+        "leaves the pelvis 106 deg from where it started"
+      ]
+    },
+    "DRAGONSCREW": {
+      "credible": false,
+      "peakDegS": 437,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 99,
+      "reasons": [
+        "leaves the pelvis 99 deg from where it started"
+      ]
+    },
+    "DROP_KICK": {
+      "credible": false,
+      "peakDegS": 579,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 104,
+      "reasons": [
+        "leaves the pelvis 104 deg from where it started"
+      ]
+    },
+    "DROP_KICK__1_": {
+      "credible": false,
+      "peakDegS": 545,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 103,
+      "reasons": [
+        "leaves the pelvis 103 deg from where it started"
+      ]
+    },
+    "DRUNK_IDLE_VARIATION": {
+      "credible": true,
+      "peakDegS": 68,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "DRUNK_RUN_FORWARD": {
+      "credible": true,
+      "peakDegS": 477,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "DRUNK_WALK": {
+      "credible": true,
+      "peakDegS": 268,
+      "peakBone": "LeftToeBase",
+      "pelvisEndDeg": 1,
+      "reasons": []
+    },
+    "DUCKINGCOMET": {
+      "credible": false,
+      "peakDegS": 2107,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 2107 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "DUCKINGCOMET_2": {
+      "credible": false,
+      "peakDegS": 2102,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 2102 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "DWARF_WALK": {
+      "credible": true,
+      "peakDegS": 564,
+      "peakBone": "RightToeBase",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "DYING_BACKWARDS": {
+      "credible": false,
+      "peakDegS": 180,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 90,
+      "reasons": [
+        "leaves the pelvis 90 deg from where it started"
+      ]
+    },
+    "ELENATHROWREACTION": {
+      "credible": false,
+      "peakDegS": 1731,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftUpLeg peaks at 1731 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "ESQUIVA_3": {
+      "credible": true,
+      "peakDegS": 531,
+      "peakBone": "RightToeBase",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "ESQUIVA_4": {
+      "credible": true,
+      "peakDegS": 475,
+      "peakBone": "RightToeBase",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "ESQUIVA_4__1_": {
+      "credible": true,
+      "peakDegS": 727,
+      "peakBone": "RightToeBase",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "FACEGOUGE": {
+      "credible": false,
+      "peakDegS": 795,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 78,
+      "reasons": [
+        "leaves the pelvis 78 deg from where it started"
+      ]
+    },
+    "FALLING_FLAT_IMPACT": {
+      "credible": true,
+      "peakDegS": 351,
+      "peakBone": "RightToeBase",
+      "pelvisEndDeg": 17,
+      "reasons": []
+    },
+    "FALLING_FORWARD_DEATH": {
+      "credible": false,
+      "peakDegS": 931,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 98,
+      "reasons": [
+        "RightUpLeg peaks at 931 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 98 deg from where it started"
+      ]
+    },
+    "FALL_B_LOOP": {
+      "credible": true,
+      "peakDegS": 39,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "FATALITY": {
+      "credible": true,
+      "peakDegS": 286,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "FENCEM_KICK": {
+      "credible": false,
+      "peakDegS": 330,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 98,
+      "reasons": [
+        "leaves the pelvis 98 deg from where it started"
+      ]
+    },
+    "FENCETHROW": {
+      "credible": false,
+      "peakDegS": 641,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 78,
+      "reasons": [
+        "leaves the pelvis 78 deg from where it started"
+      ]
+    },
+    "FENCETHROW_002": {
+      "credible": false,
+      "peakDegS": 397,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 97,
+      "reasons": [
+        "leaves the pelvis 97 deg from where it started"
+      ]
+    },
+    "FIN_F10": {
+      "credible": false,
+      "peakDegS": 412,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 102,
+      "reasons": [
+        "leaves the pelvis 102 deg from where it started"
+      ]
+    },
+    "GERMANSUPLEX": {
+      "credible": true,
+      "peakDegS": 306,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 4,
+      "reasons": []
+    },
+    "GIANTSWING": {
+      "credible": false,
+      "peakDegS": 583,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 96,
+      "reasons": [
+        "leaves the pelvis 96 deg from where it started"
+      ]
+    },
+    "GIANTSWINGREACTION": {
+      "credible": false,
+      "peakDegS": 3996,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 138,
+      "reasons": [
+        "Hips peaks at 3996 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 138 deg from where it started"
+      ]
+    },
+    "GINGA_BACKWARD": {
+      "credible": false,
+      "peakDegS": 2171,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 20,
+      "reasons": [
+        "RightUpLeg peaks at 2171 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "GINGA_FORWARD": {
+      "credible": false,
+      "peakDegS": 1373,
+      "peakBone": "RightToeBase",
+      "pelvisEndDeg": 44,
+      "reasons": [
+        "RightToeBase peaks at 1373 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 44 deg from where it started"
+      ]
+    },
+    "GINGA_SIDEWAYS_2": {
+      "credible": false,
+      "peakDegS": 395,
+      "peakBone": "RightToeBase",
+      "pelvisEndDeg": 180,
+      "reasons": [
+        "leaves the pelvis 180 deg from where it started"
+      ]
+    },
+    "GRAFCROUCHEXTENDARM": {
+      "credible": false,
+      "peakDegS": 1447,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 1447 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "GRAFCROUCHEXTENDARM_RISE": {
+      "credible": false,
+      "peakDegS": 1252,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 1252 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "GRAFHAMMER": {
+      "credible": false,
+      "peakDegS": 954,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightLeg peaks at 954 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "GRAFHAMMERCOMBO": {
+      "credible": false,
+      "peakDegS": 954,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightLeg peaks at 954 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "GRAFHAMMERCOMBO2": {
+      "credible": false,
+      "peakDegS": 2212,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 3,
+      "reasons": [
+        "RightUpLeg peaks at 2212 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "GRAFINTRO": {
+      "credible": true,
+      "peakDegS": 253,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GRAFJUMPKICK": {
+      "credible": false,
+      "peakDegS": 2259,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 29,
+      "reasons": [
+        "RightUpLeg peaks at 2259 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 29 deg from where it started"
+      ]
+    },
+    "GRAFJUMPKICK2": {
+      "credible": false,
+      "peakDegS": 1912,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 29,
+      "reasons": [
+        "RightUpLeg peaks at 1912 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 29 deg from where it started"
+      ]
+    },
+    "GRAFJUMPPUNCH": {
+      "credible": false,
+      "peakDegS": 1024,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 10,
+      "reasons": [
+        "RightLeg peaks at 1024 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "GRAFKNEEASSAULT": {
+      "credible": false,
+      "peakDegS": 1437,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightLeg peaks at 1437 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "GRAFPUNCHCOMBO": {
+      "credible": true,
+      "peakDegS": 845,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GRAFPUNCHCOMBO_SLOWER": {
+      "credible": true,
+      "peakDegS": 845,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GRAFPUSHINGKICK": {
+      "credible": false,
+      "peakDegS": 1500,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightLeg peaks at 1500 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "GRAFQUICKJAB": {
+      "credible": true,
+      "peakDegS": 468,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GRAFQUICKSWEEP": {
+      "credible": false,
+      "peakDegS": 1905,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 69,
+      "reasons": [
+        "LeftLeg peaks at 1905 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 69 deg from where it started"
+      ]
+    },
+    "GRAFSHOULDERTHRUST": {
+      "credible": true,
+      "peakDegS": 384,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GRAFSTANCE": {
+      "credible": true,
+      "peakDegS": 40,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GRAFSTANCE2": {
+      "credible": true,
+      "peakDegS": 32,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GRAFSTANCE3": {
+      "credible": true,
+      "peakDegS": 14,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GRAFSURPRISEPUNCH": {
+      "credible": true,
+      "peakDegS": 132,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GRAFSURPRISEPUNCHLONGER": {
+      "credible": true,
+      "peakDegS": 132,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GRAFSURPRISEPUNCHLOW": {
+      "credible": false,
+      "peakDegS": 1292,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 1292 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "GRAFSURPRISEPUNCHLOW2": {
+      "credible": false,
+      "peakDegS": 1292,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 1292 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "GRAFSURPRISEPUNCHSLOWER": {
+      "credible": true,
+      "peakDegS": 125,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GRAFTHROW": {
+      "credible": true,
+      "peakDegS": 793,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GRAFTHROWREACTION": {
+      "credible": false,
+      "peakDegS": 1847,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 20,
+      "reasons": [
+        "RightLeg peaks at 1847 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "GRAFUPPERCUT": {
+      "credible": true,
+      "peakDegS": 640,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GUARD": {
+      "credible": true,
+      "peakDegS": 118,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GUARD_HIGH": {
+      "credible": true,
+      "peakDegS": 415,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 9,
+      "reasons": []
+    },
+    "GUARD_LOW": {
+      "credible": false,
+      "peakDegS": 967,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 7,
+      "reasons": [
+        "RightUpLeg peaks at 967 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "GYAKUZUKI": {
+      "credible": true,
+      "peakDegS": 576,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "GYAKUZUKI_COMBO": {
+      "credible": false,
+      "peakDegS": 1192,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 8,
+      "reasons": [
+        "RightUpLeg peaks at 1192 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "HAMMERLOCKDDT": {
+      "credible": false,
+      "peakDegS": 331,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 104,
+      "reasons": [
+        "leaves the pelvis 104 deg from where it started"
+      ]
+    },
+    "HAMMERTHROW": {
+      "credible": false,
+      "peakDegS": 574,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 26,
+      "reasons": [
+        "leaves the pelvis 26 deg from where it started"
+      ]
+    },
+    "HEAVYKICK": {
+      "credible": false,
+      "peakDegS": 1383,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightLeg peaks at 1383 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "HEAVY_WEAPON_SWING": {
+      "credible": true,
+      "peakDegS": 245,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "HIGHPUNCH": {
+      "credible": true,
+      "peakDegS": 126,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "HIT_ON_SIDE_OF_HEAD": {
+      "credible": true,
+      "peakDegS": 546,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 11,
+      "reasons": []
+    },
+    "HIT_ON_THE_BACK": {
+      "credible": true,
+      "peakDegS": 624,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 10,
+      "reasons": []
+    },
+    "HIT_REACTION": {
+      "credible": true,
+      "peakDegS": 319,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "HIT_TO_BODY": {
+      "credible": true,
+      "peakDegS": 289,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "HIT_TO_HEAD": {
+      "credible": false,
+      "peakDegS": 495,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 62,
+      "reasons": [
+        "leaves the pelvis 62 deg from where it started"
+      ]
+    },
+    "HOUSE_DANCING": {
+      "credible": true,
+      "peakDegS": 161,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "HURRICANERANA": {
+      "credible": false,
+      "peakDegS": 287,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 93,
+      "reasons": [
+        "leaves the pelvis 93 deg from where it started"
+      ]
+    },
+    "HURRICANE_KICK": {
+      "credible": true,
+      "peakDegS": 786,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 1,
+      "reasons": []
+    },
+    "IDLE": {
+      "credible": true,
+      "peakDegS": 124,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "ILLEGAL_ELBOW_PUNCH": {
+      "credible": true,
+      "peakDegS": 280,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "ILLEGAL_ELBOW_PUNCH__1_": {
+      "credible": true,
+      "peakDegS": 317,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "ILLEGAL_ELBOW_PUNCH__2_": {
+      "credible": true,
+      "peakDegS": 317,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "ILLEGAL_KNEE": {
+      "credible": true,
+      "peakDegS": 423,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "INJURED_HURTING_IDLE": {
+      "credible": true,
+      "peakDegS": 138,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "INJURED_RUN_BACKWARDS_RIGHT_TURN": {
+      "credible": true,
+      "peakDegS": 490,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 16,
+      "reasons": []
+    },
+    "INJURED_TURN_RIGHT": {
+      "credible": false,
+      "peakDegS": 287,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 90,
+      "reasons": [
+        "leaves the pelvis 90 deg from where it started"
+      ]
+    },
+    "JAYKICK": {
+      "credible": false,
+      "peakDegS": 314,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 101,
+      "reasons": [
+        "leaves the pelvis 101 deg from where it started"
+      ]
+    },
+    "JENNCROSSKICKTHROWREACTION": {
+      "credible": false,
+      "peakDegS": 1041,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 10,
+      "reasons": [
+        "RightUpLeg peaks at 1041 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "JENNCROSSKICKTHROWREACTION2": {
+      "credible": false,
+      "peakDegS": 930,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 10,
+      "reasons": [
+        "LeftUpLeg peaks at 930 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "JENNLEGLOCKREACTION": {
+      "credible": true,
+      "peakDegS": 856,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 10,
+      "reasons": []
+    },
+    "JENNLEGLOCKREACTION2": {
+      "credible": false,
+      "peakDegS": 930,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 10,
+      "reasons": [
+        "LeftUpLeg peaks at 930 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "JOHNSONINTROPOSE": {
+      "credible": false,
+      "peakDegS": 319,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 32,
+      "reasons": [
+        "leaves the pelvis 32 deg from where it started"
+      ]
+    },
+    "JOHNSONINTROPOSE2": {
+      "credible": false,
+      "peakDegS": 170,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 31,
+      "reasons": [
+        "leaves the pelvis 31 deg from where it started"
+      ]
+    },
+    "JOHNSONINTROPOSE3": {
+      "credible": false,
+      "peakDegS": 256,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 31,
+      "reasons": [
+        "leaves the pelvis 31 deg from where it started"
+      ]
+    },
+    "JOHNSONRUNNINGTACKLE": {
+      "credible": true,
+      "peakDegS": 615,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "JOHNSONWAVESWEEPER": {
+      "credible": false,
+      "peakDegS": 2243,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightUpLeg peaks at 2243 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "JOHNSONWAVESWEEPERLAUNCHER": {
+      "credible": false,
+      "peakDegS": 3209,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftUpLeg peaks at 3209 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "JOHNSONWAVESWEEPERLAUNCHER_VAR": {
+      "credible": false,
+      "peakDegS": 3209,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftUpLeg peaks at 3209 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "JOHNSONWINPOSE": {
+      "credible": true,
+      "peakDegS": 52,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "JOHNSONWINPOSE_EDIT": {
+      "credible": true,
+      "peakDegS": 79,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "JOHNSONWINPOSE_EDIT_PONCHOFIX": {
+      "credible": true,
+      "peakDegS": 79,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "JOHNSON_CANNONBALL_REACTION": {
+      "credible": false,
+      "peakDegS": 959,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 959 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "JOHNSON_CANNONBALL_REACTION2": {
+      "credible": false,
+      "peakDegS": 958,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 958 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "JOHNSON_STANCE": {
+      "credible": true,
+      "peakDegS": 49,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "JUMP": {
+      "credible": true,
+      "peakDegS": 762,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "JUMP2": {
+      "credible": true,
+      "peakDegS": 103,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "JUMPAXEKICK": {
+      "credible": false,
+      "peakDegS": 2897,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightLeg peaks at 2897 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "JUMPSPIN": {
+      "credible": false,
+      "peakDegS": 2361,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 36,
+      "reasons": [
+        "RightUpLeg peaks at 2361 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 36 deg from where it started"
+      ]
+    },
+    "JUNGLE_JUICE": {
+      "credible": false,
+      "peakDegS": 2519,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 5,
+      "reasons": [
+        "LeftUpLeg peaks at 2519 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "JUNGLE_JUICE__RECV": {
+      "credible": false,
+      "peakDegS": 4568,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 98,
+      "reasons": [
+        "LeftLeg peaks at 4568 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 98 deg from where it started"
+      ]
+    },
+    "KIP_UP": {
+      "credible": false,
+      "peakDegS": 1290,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 110,
+      "reasons": [
+        "RightLeg peaks at 1290 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 110 deg from where it started"
+      ]
+    },
+    "KIYOKOTHROWREACTION": {
+      "credible": false,
+      "peakDegS": 1038,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 1038 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "KNEETHROW": {
+      "credible": false,
+      "peakDegS": 1322,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 14,
+      "reasons": [
+        "RightLeg peaks at 1322 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "KNEETHROWREACTION": {
+      "credible": false,
+      "peakDegS": 991,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 100,
+      "reasons": [
+        "LeftUpLeg peaks at 991 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 100 deg from where it started"
+      ]
+    },
+    "KNEETHROWREACTION_NEW": {
+      "credible": true,
+      "peakDegS": 554,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 19,
+      "reasons": []
+    },
+    "KNEETHROWREACTION_SLOW": {
+      "credible": false,
+      "peakDegS": 1128,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 100,
+      "reasons": [
+        "RightUpLeg peaks at 1128 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 100 deg from where it started"
+      ]
+    },
+    "KNEETHROW_SLOW": {
+      "credible": false,
+      "peakDegS": 1281,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 14,
+      "reasons": [
+        "RightLeg peaks at 1281 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "KRAVESTANCE": {
+      "credible": true,
+      "peakDegS": 43,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "LAZORBACKROLL": {
+      "credible": false,
+      "peakDegS": 3515,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "Hips peaks at 3515 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "LAZORFORWARDROLL": {
+      "credible": false,
+      "peakDegS": 3507,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "Hips peaks at 3507 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "LAZORTHROWREACTION": {
+      "credible": true,
+      "peakDegS": 694,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "LOBSTER_ESS_REACTION": {
+      "credible": false,
+      "peakDegS": 2241,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightLeg peaks at 2241 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "LOBSTER_ESS_REACTION_FIX": {
+      "credible": false,
+      "peakDegS": 2241,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightLeg peaks at 2241 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "LOCO_LIGHT": {
+      "credible": true,
+      "peakDegS": 460,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 25,
+      "reasons": []
+    },
+    "LOCO_LUMBER": {
+      "credible": true,
+      "peakDegS": 406,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 5,
+      "reasons": []
+    },
+    "LOCO_PROWL": {
+      "credible": false,
+      "peakDegS": 389,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 39,
+      "reasons": [
+        "leaves the pelvis 39 deg from where it started"
+      ]
+    },
+    "LOCO_STALK": {
+      "credible": true,
+      "peakDegS": 160,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 3,
+      "reasons": []
+    },
+    "LOCO_STRUT": {
+      "credible": true,
+      "peakDegS": 362,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 5,
+      "reasons": []
+    },
+    "LOLA_B_STYPEREK": {
+      "credible": true,
+      "peakDegS": 273,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "LOWSTANCE": {
+      "credible": true,
+      "peakDegS": 45,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "LOWSTANCEGUARD": {
+      "credible": true,
+      "peakDegS": 85,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "LOWSTANCENEW": {
+      "credible": true,
+      "peakDegS": 25,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "MIRAAIRTHROWREACTION": {
+      "credible": false,
+      "peakDegS": 2159,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 49,
+      "reasons": [
+        "RightLeg peaks at 2159 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 49 deg from where it started"
+      ]
+    },
+    "MIRATHROWREACTION": {
+      "credible": false,
+      "peakDegS": 3096,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 46,
+      "reasons": [
+        "RightUpLeg peaks at 3096 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 46 deg from where it started"
+      ]
+    },
+    "NECKBREAKER": {
+      "credible": false,
+      "peakDegS": 544,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 86,
+      "reasons": [
+        "leaves the pelvis 86 deg from where it started"
+      ]
+    },
+    "NIGHTTHROWREACTION": {
+      "credible": false,
+      "peakDegS": 2941,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "Hips peaks at 2941 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "NOFUTURE": {
+      "credible": false,
+      "peakDegS": 202,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 102,
+      "reasons": [
+        "leaves the pelvis 102 deg from where it started"
+      ]
+    },
+    "ORAORAORA": {
+      "credible": true,
+      "peakDegS": 90,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "ORAORAORAREACTION": {
+      "credible": false,
+      "peakDegS": 1418,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 13,
+      "reasons": [
+        "RightLeg peaks at 1418 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "OVREHEADPRESS": {
+      "credible": false,
+      "peakDegS": 425,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 98,
+      "reasons": [
+        "leaves the pelvis 98 deg from where it started"
+      ]
+    },
+    "PALADIN_J_NORDSTROM": {
+      "credible": true,
+      "peakDegS": 348,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "PASSIVE_MARKER_MAN": {
+      "credible": true,
+      "peakDegS": 311,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "PIERCINGHANDREACTION": {
+      "credible": false,
+      "peakDegS": 1073,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightLeg peaks at 1073 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "POPUPGERMANSUPLEX": {
+      "credible": true,
+      "peakDegS": 556,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "POWERBOMBREACTION": {
+      "credible": false,
+      "peakDegS": 1004,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 39,
+      "reasons": [
+        "RightLeg peaks at 1004 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 39 deg from where it started"
+      ]
+    },
+    "POWERBOMBWHIP": {
+      "credible": false,
+      "peakDegS": 311,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 91,
+      "reasons": [
+        "leaves the pelvis 91 deg from where it started"
+      ]
+    },
+    "PRONEROTATION": {
+      "credible": false,
+      "peakDegS": 3996,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "Hips peaks at 3996 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "PUMPKINHULK_L_SHAW": {
+      "credible": true,
+      "peakDegS": 351,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "PUNCHKICKCOMBO": {
+      "credible": false,
+      "peakDegS": 3216,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 17,
+      "reasons": [
+        "RightUpLeg peaks at 3216 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "QUESHADA_2": {
+      "credible": false,
+      "peakDegS": 1621,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 13,
+      "reasons": [
+        "RightUpLeg peaks at 1621 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "QUICKKICK": {
+      "credible": false,
+      "peakDegS": 1229,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 1,
+      "reasons": [
+        "LeftLeg peaks at 1229 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "RAINTRIGGER": {
+      "credible": false,
+      "peakDegS": 390,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 79,
+      "reasons": [
+        "leaves the pelvis 79 deg from where it started"
+      ]
+    },
+    "RAPIDCHESTBEATING": {
+      "credible": false,
+      "peakDegS": 1089,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightUpLeg peaks at 1089 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "REACTION_HEAVYHITAIRREVOLT": {
+      "credible": false,
+      "peakDegS": 3986,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 138,
+      "reasons": [
+        "Hips peaks at 3986 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 138 deg from where it started"
+      ]
+    },
+    "REACTION_HEAVYHITAIRREVOLTBACK": {
+      "credible": false,
+      "peakDegS": 3986,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 138,
+      "reasons": [
+        "Hips peaks at 3986 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 138 deg from where it started"
+      ]
+    },
+    "REACTION_HITSTRONGHIGH": {
+      "credible": true,
+      "peakDegS": 581,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "REACTION_HITSTRONGMID": {
+      "credible": true,
+      "peakDegS": 530,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "REACTION_HITWEAKHIGH": {
+      "credible": true,
+      "peakDegS": 104,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 12,
+      "reasons": []
+    },
+    "REACTION_HITWEAKMEDIUM": {
+      "credible": true,
+      "peakDegS": 165,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "REACTION_HITWEAKMEDIUMBACK": {
+      "credible": true,
+      "peakDegS": 212,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "REACTION_LANDING": {
+      "credible": true,
+      "peakDegS": 751,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "REACTION_MONOCROSS": {
+      "credible": false,
+      "peakDegS": 938,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightUpLeg peaks at 938 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "RENZOTHROW": {
+      "credible": false,
+      "peakDegS": 2229,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 9,
+      "reasons": [
+        "RightUpLeg peaks at 2229 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "RENZOTHROWREACTION": {
+      "credible": false,
+      "peakDegS": 1004,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 90,
+      "reasons": [
+        "LeftLeg peaks at 1004 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 90 deg from where it started"
+      ]
+    },
+    "REVERSEGOOZLEDIVFOOTSTOMP": {
+      "credible": true,
+      "peakDegS": 333,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "RISINGCOMET": {
+      "credible": false,
+      "peakDegS": 2329,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftUpLeg peaks at 2329 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "ROADROLLERDAB": {
+      "credible": false,
+      "peakDegS": 2232,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightLeg peaks at 2232 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "ROADROLLERDAB_REACTION": {
+      "credible": false,
+      "peakDegS": 1463,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightUpLeg peaks at 1463 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "ROLLOUT": {
+      "credible": false,
+      "peakDegS": 2023,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftUpLeg peaks at 2023 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "ROLLOUTRIGHT": {
+      "credible": false,
+      "peakDegS": 2317,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightLeg peaks at 2317 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "ROUNDHOUSEKICK": {
+      "credible": false,
+      "peakDegS": 3208,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 17,
+      "reasons": [
+        "RightUpLeg peaks at 3208 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "ROUNDHOUSELOW": {
+      "credible": false,
+      "peakDegS": 2698,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 72,
+      "reasons": [
+        "RightUpLeg peaks at 2698 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 72 deg from where it started"
+      ]
+    },
+    "RUNNING": {
+      "credible": false,
+      "peakDegS": 1146,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftUpLeg peaks at 1146 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "RUNNINGLOW": {
+      "credible": false,
+      "peakDegS": 1098,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftUpLeg peaks at 1098 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "SCHOOLBOYSUPERKICK": {
+      "credible": false,
+      "peakDegS": 507,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 102,
+      "reasons": [
+        "leaves the pelvis 102 deg from where it started"
+      ]
+    },
+    "SHARKNADO": {
+      "credible": true,
+      "peakDegS": 732,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SHARKNADO_REACTION": {
+      "credible": false,
+      "peakDegS": 3080,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 69,
+      "reasons": [
+        "RightUpLeg peaks at 3080 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 69 deg from where it started"
+      ]
+    },
+    "SHARKNADO_REACTION_2": {
+      "credible": false,
+      "peakDegS": 3080,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 69,
+      "reasons": [
+        "RightUpLeg peaks at 3080 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 69 deg from where it started"
+      ]
+    },
+    "SHARKNADO_REACTION_3": {
+      "credible": false,
+      "peakDegS": 3080,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 69,
+      "reasons": [
+        "RightUpLeg peaks at 3080 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 69 deg from where it started"
+      ]
+    },
+    "SHARPSHOOTER": {
+      "credible": false,
+      "peakDegS": 289,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 84,
+      "reasons": [
+        "leaves the pelvis 84 deg from where it started"
+      ]
+    },
+    "SHAZENTRANCE": {
+      "credible": true,
+      "peakDegS": 250,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SHAZLOWRUSH": {
+      "credible": false,
+      "peakDegS": 1243,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftUpLeg peaks at 1243 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "SHAZLOWRUSH_CROUCH": {
+      "credible": false,
+      "peakDegS": 1201,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 34,
+      "reasons": [
+        "LeftUpLeg peaks at 1201 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 34 deg from where it started"
+      ]
+    },
+    "SHAZSTANCE": {
+      "credible": true,
+      "peakDegS": 70,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SHAZWALK": {
+      "credible": true,
+      "peakDegS": 204,
+      "peakBone": "LeftToeBase",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SHOULDERBAG": {
+      "credible": true,
+      "peakDegS": 235,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 12,
+      "reasons": []
+    },
+    "SIDESTEP": {
+      "credible": true,
+      "peakDegS": 64,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SIDESTEPF": {
+      "credible": true,
+      "peakDegS": 307,
+      "peakBone": "LeftToeBase",
+      "pelvisEndDeg": 1,
+      "reasons": []
+    },
+    "SIDESTEPFAST": {
+      "credible": true,
+      "peakDegS": 137,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SIDESTEPMEDIUM": {
+      "credible": true,
+      "peakDegS": 98,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SKELETONFACEPRESSREACTION": {
+      "credible": false,
+      "peakDegS": 1154,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 89,
+      "reasons": [
+        "LeftLeg peaks at 1154 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 89 deg from where it started"
+      ]
+    },
+    "SNAPPILEDRIVERS": {
+      "credible": true,
+      "peakDegS": 179,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SPINJUMPB": {
+      "credible": true,
+      "peakDegS": 54,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SPINJUMPBFAST": {
+      "credible": true,
+      "peakDegS": 12,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SPINJUMPF": {
+      "credible": true,
+      "peakDegS": 54,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SPINJUMPFFAST": {
+      "credible": true,
+      "peakDegS": 12,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SPINNINGARMSSPREAD": {
+      "credible": true,
+      "peakDegS": 477,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SPINTORTURERACKBOMB": {
+      "credible": false,
+      "peakDegS": 365,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 94,
+      "reasons": [
+        "leaves the pelvis 94 deg from where it started"
+      ]
+    },
+    "STANCE": {
+      "credible": true,
+      "peakDegS": 49,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "STANCE_BLADED": {
+      "credible": true,
+      "peakDegS": 24,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 4,
+      "reasons": []
+    },
+    "STANCE_CROUCH": {
+      "credible": true,
+      "peakDegS": 454,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 8,
+      "reasons": []
+    },
+    "STANCE_WIDE": {
+      "credible": true,
+      "peakDegS": 14,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 1,
+      "reasons": []
+    },
+    "STEREOSUPERKICK": {
+      "credible": true,
+      "peakDegS": 263,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 1,
+      "reasons": []
+    },
+    "STRONGZERO": {
+      "credible": true,
+      "peakDegS": 340,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SUPINE": {
+      "credible": true,
+      "peakDegS": 11,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "SUPLEX": {
+      "credible": true,
+      "peakDegS": 458,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 23,
+      "reasons": []
+    },
+    "TABLEIMPACT": {
+      "credible": false,
+      "peakDegS": 290,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 97,
+      "reasons": [
+        "leaves the pelvis 97 deg from where it started"
+      ]
+    },
+    "TAGSUPERKICK": {
+      "credible": false,
+      "peakDegS": 791,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 27,
+      "reasons": [
+        "leaves the pelvis 27 deg from where it started"
+      ]
+    },
+    "TAUNT": {
+      "credible": true,
+      "peakDegS": 386,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TAUNT2": {
+      "credible": true,
+      "peakDegS": 161,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TAUNT_ARMS_WIDE": {
+      "credible": true,
+      "peakDegS": 54,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 4,
+      "reasons": []
+    },
+    "TAUNT_CALLOUT": {
+      "credible": true,
+      "peakDegS": 117,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 6,
+      "reasons": []
+    },
+    "TAUNT_FLEX": {
+      "credible": true,
+      "peakDegS": 28,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 2,
+      "reasons": []
+    },
+    "TAUNT_KOFIKINGSTON": {
+      "credible": true,
+      "peakDegS": 655,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TAUNT_POINT": {
+      "credible": true,
+      "peakDegS": 314,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 4,
+      "reasons": []
+    },
+    "TAU_BUTTSLAP": {
+      "credible": true,
+      "peakDegS": 507,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TAU_DIVA": {
+      "credible": true,
+      "peakDegS": 812,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TAU_GAMEOVER": {
+      "credible": true,
+      "peakDegS": 152,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TAU_GENERALFEMALE": {
+      "credible": true,
+      "peakDegS": 220,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TAU_HEADCRACK": {
+      "credible": true,
+      "peakDegS": 607,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TEMPMONOREACTION": {
+      "credible": true,
+      "peakDegS": 324,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "THROWSTART": {
+      "credible": true,
+      "peakDegS": 284,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "THROWSTART_STEP": {
+      "credible": true,
+      "peakDegS": 286,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "THUNDERGODREACTION": {
+      "credible": false,
+      "peakDegS": 1077,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightLeg peaks at 1077 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "THUNDERGODREACTION2": {
+      "credible": false,
+      "peakDegS": 1076,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightLeg peaks at 1076 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "TIGERCOMMANDOCOMBO1": {
+      "credible": false,
+      "peakDegS": 2166,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 37,
+      "reasons": [
+        "RightUpLeg peaks at 2166 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 37 deg from where it started"
+      ]
+    },
+    "TIGERDOUBLEHAMMERCOMBO": {
+      "credible": true,
+      "peakDegS": 292,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TIGERDYNAMOPUNCH": {
+      "credible": true,
+      "peakDegS": 177,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TIGERDYNAMOPUNCH_FIX": {
+      "credible": true,
+      "peakDegS": 177,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TIGERINTROPOSE": {
+      "credible": true,
+      "peakDegS": 226,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TIGERINTROPOSE2": {
+      "credible": true,
+      "peakDegS": 224,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TIGERKNEEBASHSLOW": {
+      "credible": false,
+      "peakDegS": 2166,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 37,
+      "reasons": [
+        "RightUpLeg peaks at 2166 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 37 deg from where it started"
+      ]
+    },
+    "TIGERQUICKPUNCH": {
+      "credible": true,
+      "peakDegS": 147,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TIGERSCARLETSCREW": {
+      "credible": false,
+      "peakDegS": 1838,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 29,
+      "reasons": [
+        "LeftLeg peaks at 1838 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 29 deg from where it started"
+      ]
+    },
+    "TIGERSCARLETSCREW_FIX": {
+      "credible": false,
+      "peakDegS": 1809,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "Hips peaks at 1809 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "TIGERSCARLETSCREW_LOWKICK": {
+      "credible": false,
+      "peakDegS": 1261,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 139,
+      "reasons": [
+        "LeftUpLeg peaks at 1261 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 139 deg from where it started"
+      ]
+    },
+    "TIGERSCARLETSCREW_NOKICK": {
+      "credible": false,
+      "peakDegS": 3085,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftUpLeg peaks at 3085 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "TIGERSCARLETSCREW_NOKICK_FIX": {
+      "credible": false,
+      "peakDegS": 4016,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "Hips peaks at 4016 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "TIGERSTANCE": {
+      "credible": true,
+      "peakDegS": 53,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TIGERSTANCEUPDATED": {
+      "credible": true,
+      "peakDegS": 43,
+      "peakBone": "RightToeBase",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TIGERWINPOSE": {
+      "credible": true,
+      "peakDegS": 35,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 6,
+      "reasons": []
+    },
+    "TIGER_FEINT_KICK": {
+      "credible": false,
+      "peakDegS": 1006,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 58,
+      "reasons": [
+        "LeftLeg peaks at 1006 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 58 deg from where it started"
+      ]
+    },
+    "TIGER_FEINT_KICK__RECV": {
+      "credible": false,
+      "peakDegS": 1014,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 30,
+      "reasons": [
+        "Hips peaks at 1014 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 30 deg from where it started"
+      ]
+    },
+    "TIGER_HEAVYKICK": {
+      "credible": false,
+      "peakDegS": 1622,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 37,
+      "reasons": [
+        "RightUpLeg peaks at 1622 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 37 deg from where it started"
+      ]
+    },
+    "TIGER_HEAVYKICKCOMBO": {
+      "credible": false,
+      "peakDegS": 1784,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 1784 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "TOMBSTONE": {
+      "credible": false,
+      "peakDegS": 505,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 88,
+      "reasons": [
+        "leaves the pelvis 88 deg from where it started"
+      ]
+    },
+    "TPOSE": {
+      "credible": true,
+      "peakDegS": 6,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "TZ_SCOOP_SLAM": {
+      "credible": true,
+      "peakDegS": 74,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 7,
+      "reasons": []
+    },
+    "TZ_SCOOP_SLAM__RECV": {
+      "credible": false,
+      "peakDegS": 1447,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 33,
+      "reasons": [
+        "RightLeg peaks at 1447 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 33 deg from where it started"
+      ]
+    },
+    "TZ_TILT_WHIRL_SLAM": {
+      "credible": true,
+      "peakDegS": 74,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 7,
+      "reasons": []
+    },
+    "TZ_TILT_WHIRL_SLAM__RECV": {
+      "credible": false,
+      "peakDegS": 2359,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 17,
+      "reasons": [
+        "RightUpLeg peaks at 2359 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_A_TPose": {
+      "credible": true,
+      "peakDegS": 2,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Crouch_Fwd_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Crouch_Idle_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Dance_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Death01": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Driving_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Fixing_Kneeling": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Hit_Chest": {
+      "credible": true,
+      "peakDegS": 1,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Hit_Head": {
+      "credible": true,
+      "peakDegS": 1,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Idle_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Idle_Talking_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Idle_Torch_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Interact": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Jog_Fwd_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Jump_Land": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Jump_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Jump_Start": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_PickUp_Table": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Pistol_Aim_Down": {
+      "credible": true,
+      "peakDegS": 2,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Pistol_Aim_Neutral": {
+      "credible": true,
+      "peakDegS": 2,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Pistol_Aim_Up": {
+      "credible": true,
+      "peakDegS": 2,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Pistol_Idle_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Pistol_Reload": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Pistol_Shoot": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Punch_Cross": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Punch_Enter": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Punch_Jab": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Push_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Roll": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Roll_RM": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sitting_Enter": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sitting_Exit": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sitting_Idle_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sitting_Talking_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Spell_Simple_Enter": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Spell_Simple_Exit": {
+      "credible": true,
+      "peakDegS": 1,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Spell_Simple_Idle_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Spell_Simple_Shoot": {
+      "credible": true,
+      "peakDegS": 1,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sprint_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Swim_Fwd_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Swim_Idle_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sword_Attack": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sword_Attack_RM": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sword_Idle": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Walk_Formal_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Walk_Loop": {
+      "credible": true,
+      "peakDegS": 0,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_A_TPose": {
+      "credible": true,
+      "peakDegS": 10,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Chest_Open": {
+      "credible": true,
+      "peakDegS": 102,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_ClimbUp_1m_RM": {
+      "credible": false,
+      "peakDegS": 1070,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightFoot peaks at 1070 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Consume": {
+      "credible": true,
+      "peakDegS": 54,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Farm_Harvest": {
+      "credible": true,
+      "peakDegS": 211,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Farm_PlantSeed": {
+      "credible": true,
+      "peakDegS": 442,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Farm_Watering": {
+      "credible": true,
+      "peakDegS": 25,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Hit_Knockback": {
+      "credible": false,
+      "peakDegS": 1206,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 112,
+      "reasons": [
+        "RightFoot peaks at 1206 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 112 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Hit_Knockback_RM": {
+      "credible": false,
+      "peakDegS": 1206,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 112,
+      "reasons": [
+        "RightFoot peaks at 1206 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 112 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_FoldArms_Loop": {
+      "credible": true,
+      "peakDegS": 111,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Lantern_Loop": {
+      "credible": true,
+      "peakDegS": 16,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_No_Loop": {
+      "credible": true,
+      "peakDegS": 17,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Rail_Call": {
+      "credible": true,
+      "peakDegS": 16,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Rail_Loop": {
+      "credible": true,
+      "peakDegS": 14,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Shield_Break": {
+      "credible": true,
+      "peakDegS": 340,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Shield_Loop": {
+      "credible": true,
+      "peakDegS": 17,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_TalkingPhone_Loop": {
+      "credible": true,
+      "peakDegS": 15,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_LayToIdle": {
+      "credible": false,
+      "peakDegS": 211,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 94,
+      "reasons": [
+        "leaves the pelvis 94 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Melee_Hook": {
+      "credible": false,
+      "peakDegS": 1068,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 34,
+      "reasons": [
+        "Hips peaks at 1068 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 34 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Melee_Hook_Rec": {
+      "credible": false,
+      "peakDegS": 108,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 38,
+      "reasons": [
+        "leaves the pelvis 38 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_NinjaJump_Idle_Loop": {
+      "credible": true,
+      "peakDegS": 18,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_NinjaJump_Land": {
+      "credible": false,
+      "peakDegS": 972,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 27,
+      "reasons": [
+        "RightFoot peaks at 972 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 27 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_NinjaJump_Start": {
+      "credible": false,
+      "peakDegS": 1136,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 38,
+      "reasons": [
+        "RightFoot peaks at 1136 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 38 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_OverhandThrow": {
+      "credible": true,
+      "peakDegS": 812,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Shield_Dash_RM": {
+      "credible": false,
+      "peakDegS": 1867,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 68,
+      "reasons": [
+        "LeftFoot peaks at 1867 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 68 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Shield_OneShot": {
+      "credible": true,
+      "peakDegS": 111,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Slide_Exit": {
+      "credible": false,
+      "peakDegS": 929,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 80,
+      "reasons": [
+        "RightFoot peaks at 929 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 80 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Slide_Loop": {
+      "credible": true,
+      "peakDegS": 51,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Slide_Start": {
+      "credible": false,
+      "peakDegS": 1030,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 80,
+      "reasons": [
+        "RightFoot peaks at 1030 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 80 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Block": {
+      "credible": true,
+      "peakDegS": 241,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Dash_RM": {
+      "credible": false,
+      "peakDegS": 2078,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftFoot peaks at 2078 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_A": {
+      "credible": false,
+      "peakDegS": 1054,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 134,
+      "reasons": [
+        "Hips peaks at 1054 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 134 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_A_Rec": {
+      "credible": false,
+      "peakDegS": 472,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 134,
+      "reasons": [
+        "leaves the pelvis 134 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_B": {
+      "credible": false,
+      "peakDegS": 2102,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 141,
+      "reasons": [
+        "LeftFoot peaks at 2102 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 141 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_B_Rec": {
+      "credible": false,
+      "peakDegS": 360,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 40,
+      "reasons": [
+        "leaves the pelvis 40 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_C": {
+      "credible": false,
+      "peakDegS": 1303,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 40,
+      "reasons": [
+        "Hips peaks at 1303 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 40 deg from where it started"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_Combo": {
+      "credible": false,
+      "peakDegS": 2102,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 2,
+      "reasons": [
+        "LeftFoot peaks at 2102 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_TreeChopping_Loop": {
+      "credible": true,
+      "peakDegS": 285,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Walk_Carry_Loop": {
+      "credible": true,
+      "peakDegS": 297,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Yes": {
+      "credible": true,
+      "peakDegS": 38,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Zombie_Idle_Loop": {
+      "credible": true,
+      "peakDegS": 20,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Zombie_Scratch": {
+      "credible": true,
+      "peakDegS": 875,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Zombie_Walk_Fwd_Loop": {
+      "credible": true,
+      "peakDegS": 173,
+      "peakBone": "RightFoot",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "UPPERCUT": {
+      "credible": true,
+      "peakDegS": 684,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "VERTICALBRAINBUSTER": {
+      "credible": false,
+      "peakDegS": 266,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 100,
+      "reasons": [
+        "leaves the pelvis 100 deg from where it started"
+      ]
+    },
+    "VIOLENCEPARTY": {
+      "credible": false,
+      "peakDegS": 446,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 111,
+      "reasons": [
+        "leaves the pelvis 111 deg from where it started"
+      ]
+    },
+    "WAKEUPANIMATION": {
+      "credible": false,
+      "peakDegS": 1660,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "LeftLeg peaks at 1660 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "WALK": {
+      "credible": true,
+      "peakDegS": 204,
+      "peakBone": "LeftToeBase",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "WALKFAST": {
+      "credible": true,
+      "peakDegS": 319,
+      "peakBone": "LeftToeBase",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "WALLYTHROWREACTION": {
+      "credible": false,
+      "peakDegS": 960,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 19,
+      "reasons": [
+        "RightUpLeg peaks at 960 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "WBTC": {
+      "credible": false,
+      "peakDegS": 1155,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 0,
+      "reasons": [
+        "RightUpLeg peaks at 1155 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "Y_BOT": {
+      "credible": true,
+      "peakDegS": 243,
+      "peakBone": "RightToeBase",
+      "pelvisEndDeg": 0,
+      "reasons": []
+    },
+    "ZOMBIE_DYING": {
+      "credible": false,
+      "peakDegS": 488,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 104,
+      "reasons": [
+        "leaves the pelvis 104 deg from where it started"
+      ]
+    },
+    "ZONE_APRON_HOP": {
+      "credible": true,
+      "peakDegS": 417,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 8,
+      "reasons": []
+    },
+    "ZONE_CLIMB_A": {
+      "credible": true,
+      "peakDegS": 770,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 15,
+      "reasons": []
+    },
+    "ZONE_CLIMB_B": {
+      "credible": true,
+      "peakDegS": 648,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 2,
+      "reasons": []
+    },
+    "ZONE_DROP_A": {
+      "credible": true,
+      "peakDegS": 790,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 19,
+      "reasons": []
+    },
+    "ZONE_DROP_B": {
+      "credible": true,
+      "peakDegS": 472,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 4,
+      "reasons": []
+    },
+    "ZONE_DROP_C": {
+      "credible": true,
+      "peakDegS": 521,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 4,
+      "reasons": []
+    },
+    "ZONE_DUCK_A": {
+      "credible": true,
+      "peakDegS": 254,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 5,
+      "reasons": []
+    },
+    "ZONE_DUCK_B": {
+      "credible": true,
+      "peakDegS": 510,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 7,
+      "reasons": []
+    },
+    "ZONE_DUCK_C": {
+      "credible": false,
+      "peakDegS": 1451,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 4,
+      "reasons": [
+        "RightLeg peaks at 1451 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "ZONE_MIDROPE_POSE": {
+      "credible": true,
+      "peakDegS": 243,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 6,
+      "reasons": []
+    },
+    "ZONE_MIDROPE_STEP": {
+      "credible": false,
+      "peakDegS": 1048,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 5,
+      "reasons": [
+        "RightUpLeg peaks at 1048 deg/s, past the 786 the bank's fastest kick reaches"
+      ]
+    },
+    "ZONE_OVER_TOP_IN": {
+      "credible": true,
+      "peakDegS": 617,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 8,
+      "reasons": []
+    },
+    "ZONE_OVER_TOP_OUT": {
+      "credible": true,
+      "peakDegS": 311,
+      "peakBone": "LeftFoot",
+      "pelvisEndDeg": 4,
+      "reasons": []
+    },
+    "ZONE_PERCH_POSE": {
+      "credible": true,
+      "peakDegS": 269,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 7,
+      "reasons": []
+    },
+    "ZONE_PULLUP_A": {
+      "credible": true,
+      "peakDegS": 388,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 12,
+      "reasons": []
+    },
+    "ZONE_PULLUP_B": {
+      "credible": true,
+      "peakDegS": 473,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 11,
+      "reasons": []
+    },
+    "ZONE_PULLUP_C": {
+      "credible": true,
+      "peakDegS": 179,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 4,
+      "reasons": []
+    },
+    "ZONE_ROLL_IN": {
+      "credible": true,
+      "peakDegS": 339,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 22,
+      "reasons": []
+    },
+    "ZONE_ROLL_OUT_A": {
+      "credible": false,
+      "peakDegS": 1897,
+      "peakBone": "Hips",
+      "pelvisEndDeg": 89,
+      "reasons": [
+        "Hips peaks at 1897 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 89 deg from where it started"
+      ]
+    },
+    "ZONE_ROLL_OUT_B": {
+      "credible": false,
+      "peakDegS": 561,
+      "peakBone": "LeftLeg",
+      "pelvisEndDeg": 29,
+      "reasons": [
+        "leaves the pelvis 29 deg from where it started"
+      ]
+    },
+    "ZONE_RUN_SLIDE_IN": {
+      "credible": false,
+      "peakDegS": 1144,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 33,
+      "reasons": [
+        "LeftUpLeg peaks at 1144 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 33 deg from where it started"
+      ]
+    },
+    "ZONE_SLIDE_IN_A": {
+      "credible": false,
+      "peakDegS": 1157,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 52,
+      "reasons": [
+        "LeftUpLeg peaks at 1157 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 52 deg from where it started"
+      ]
+    },
+    "ZONE_SLIDE_IN_B": {
+      "credible": false,
+      "peakDegS": 1440,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 65,
+      "reasons": [
+        "RightUpLeg peaks at 1440 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 65 deg from where it started"
+      ]
+    },
+    "ZONE_SLIDE_IN_C": {
+      "credible": true,
+      "peakDegS": 866,
+      "peakBone": "RightUpLeg",
+      "pelvisEndDeg": 6,
+      "reasons": []
+    },
+    "ZONE_SLIDE_OUT": {
+      "credible": false,
+      "peakDegS": 1567,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 152,
+      "reasons": [
+        "LeftUpLeg peaks at 1567 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 152 deg from where it started"
+      ]
+    },
+    "ZONE_VAULT_A": {
+      "credible": false,
+      "peakDegS": 1410,
+      "peakBone": "LeftUpLeg",
+      "pelvisEndDeg": 30,
+      "reasons": [
+        "LeftUpLeg peaks at 1410 deg/s, past the 786 the bank's fastest kick reaches",
+        "leaves the pelvis 30 deg from where it started"
+      ]
+    },
+    "ZONE_VAULT_IN": {
+      "credible": true,
+      "peakDegS": 118,
+      "peakBone": "RightLeg",
+      "pelvisEndDeg": 2,
+      "reasons": []
+    }
+  }
+}

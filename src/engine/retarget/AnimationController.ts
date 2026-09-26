@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { retargetClipByRestPose, validateRetargetedClip } from './ClipRetarget';
+import { maskForState, upperBodyHalf, lowerBodyHalf, isSplittable, STANCE_STATES, type BoneMask } from '../motion/BoneMask';
 
 export type FighterMotionState =
   | 'idle' | 'walkForward' | 'walkBackward' | 'strafeLeft' | 'strafeRight' |'crouch'| 'crouchWalk' | 'guard' | 'guardLow' |'lightAttack'| 'heavyAttack' | 'lightKick' | 'heavyKick' | 'crouchLightAttack' | 'crouchHeavyAttack' |'jumpAttack'| 'runAttack' |'hit' | 'hitLow' | 'hitHigh' | 'knockdown' | 'wake'
@@ -126,8 +127,17 @@ export function buildAnimationController(
 ) {
   let currentAction: THREE.AnimationAction | null = null;
   let currentState: FighterMotionState = 'idle';
+  /**
+   * THE BASE LAYER. While a masked upper-body state plays, this action holds the
+   * pelvis and both legs at the stance the fighter is actually in, so a jab
+   * cannot rotate the hips 101 degrees the way its capture wants to. See
+   * src/engine/motion/BoneMask.ts for the measurements behind this.
+   */
+  let stanceAction: THREE.AnimationAction | null = null;
+  let stanceState: FighterMotionState = 'idle';
+  let masked = false;
 
-  const getAction = (state: FighterMotionState): THREE.AnimationAction | null => {
+  const resolveClip = (state: FighterMotionState): THREE.AnimationClip | undefined => {
     // Try exact state match first
     let clip = clips.clips.get(state);
     // Fallback chain for combat states
@@ -166,17 +176,52 @@ export function buildAnimationController(
     }
     // Final fallback: idle
     if (!clip) clip = clips.clips.get('idle');
-    if (!clip) return null;
-    return mixer.clipAction(validateRetargetedClip(clip), root);
+    return clip;
+  };
+
+  /**
+   * Bring up the lower-body half of the stance clip, or leave it up if it is
+   * already the right one. The legs keep looping on their own clock — they are a
+   * stance being held, not a phase of the strike.
+   */
+  const raiseStanceLayer = (fade: number) => {
+    const stanceClip = resolveClip(stanceState);
+    const lower = stanceClip ? lowerBodyHalf(validateRetargetedClip(stanceClip)) : null;
+    if (!lower) { masked = false; return false; }
+    const action = mixer.clipAction(lower, root);
+    if (stanceAction && stanceAction !== action) stanceAction.fadeOut(fade);
+    action.setLoop(THREE.LoopRepeat, Infinity);
+    if (!action.isRunning()) action.reset().play();
+    action.fadeIn(fade);
+    stanceAction = action;
+    masked = true;
+    return true;
+  };
+
+  const lowerStanceLayer = (fade: number) => {
+    if (stanceAction) stanceAction.fadeOut(fade);
+    masked = false;
   };
 
   const play = (next: FighterMotionState, overrideFade?: number) => {
     if (next === currentState && currentAction) return;
 
-    const nextAction = getAction(next);
-    if (!nextAction) return;
+    const clip = resolveClip(next);
+    if (!clip) return;
+    const validated = validateRetargetedClip(clip);
 
+    // The mask comes from WHAT WAS PRESSED, never from measuring the clip's own
+    // leg tracks — measuring corrupt data to decide whether to trust it is
+    // circular, and it puts ALTERNATINGFOREARMS in the safe pile.
+    const wantMask = maskForState(next) === 'UPPER_BODY' && isSplittable(validated);
     const fadeDuration = overrideFade ?? CROSSFADE_DURATIONS[next] ?? DEFAULT_FADE;
+
+    // Raise the legs BEFORE choosing the clip: if the stance has no lower-body
+    // half to lend, the strike keeps its own legs rather than losing them.
+    const legsHeld = wantMask ? raiseStanceLayer(fadeDuration) : false;
+    if (!legsHeld) lowerStanceLayer(fadeDuration);
+
+    const nextAction = mixer.clipAction(legsHeld ? upperBodyHalf(validated) : validated, root);
 
     // Configure loop mode
     if (LOOP_STATES.has(next)) {
@@ -202,11 +247,16 @@ export function buildAnimationController(
 
     currentAction = nextAction;
     currentState = next;
+    // Remember the stance to hold the legs at next time a strike is masked. Only
+    // an unmasked stance qualifies: a masked strike never owned the legs, so it
+    // has nothing to hand on.
+    if (!legsHeld && STANCE_STATES.has(next)) stanceState = next;
   };
 
   // Boot into idle immediately
-  const idleAction = getAction('idle');
-  if (idleAction) {
+  const bootClip = resolveClip('idle');
+  if (bootClip) {
+    const idleAction = mixer.clipAction(validateRetargetedClip(bootClip), root);
     idleAction.setLoop(THREE.LoopRepeat, Infinity);
     idleAction.reset().play();
     currentAction = idleAction;
@@ -214,6 +264,10 @@ export function buildAnimationController(
 
   return {
     get state() { return currentState; },
+    /** Which half of the body the playing clip is allowed to drive. */
+    get mask(): BoneMask { return masked ? 'UPPER_BODY' : 'FULL_BODY'; },
+    /** The stance currently holding the pelvis and legs. */
+    get stance() { return stanceState; },
     play,
     update(delta: number) { mixer.update(delta); },
   };

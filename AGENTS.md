@@ -449,3 +449,42 @@ THE RULES, in order of how much they buy:
 THE STANDING QUESTION before any combat change ships: *can a fighter still hit
 the other fighter?* If you have not made something answer that, you have not
 tested the change.
+
+## LAW — THIS ENGINE IS TYPESCRIPT. TRANSLATE C++ ADVICE, DO NOT ARGUE WITH IT (2026-09-26)
+
+Brutal Fist is Vite + React + Three.js + TypeScript. There is no C++ in it, no Unreal, no `.cpp`,
+no build step that compiles a native module. Good advice about this game arrives written in C++
+anyway, because that is the language the fighting-game and animation literature is written in, and
+because the owner's other repositories (BANNON's `native/` and `unreal/`) really are C++.
+
+**THE RULE: take the mechanism, drop the syntax, and say what it became. Never make the owner
+re-explain, never answer with "we're not C++", never refuse advice for being in the wrong language.**
+The thinking in a C++ snippet is almost always right and almost always portable. What changes is the
+seam it attaches to.
+
+The translations that keep coming up:
+
+| written as | here it is |
+|---|---|
+| `enum class BoneMask { … }` | a string union — `type BoneMask = 'FULL_BODY' \| 'UPPER_BODY'` |
+| `Quaternion::Slerp(a, b, w)` | `a.slerp(b, w)` on `THREE.Quaternion` |
+| `for (bone : rig) { if (masked) continue; }` | **there is no evaluate loop to skip inside.** `THREE.AnimationMixer` accumulates per binding, so a mask is a TRACK SPLIT plus a second action — see `src/engine/motion/BoneMask.ts` |
+| `struct Cancel { detection_start; … }` | a field on `MoveWindow` in `FighterStateMachine.ts` |
+| `TransitionMatrix` tag on a clip id | a JSON manifest under `public/motion/` read at load |
+| a compute/vertex shader (DQS, etc.) | `THREE.ShaderMaterial` / `onBeforeCompile`, or a documented refusal with the measured cost |
+| `float dt` in a fixed loop | already there — `FIXED_STEP_S = 1/60`, `MAX_SUBSTEPS = 16` |
+
+Three C++ shapes DO NOT port, and saying so is part of the translation, not a dodge:
+- **a per-bone `continue` inside a pose evaluator** — three has no such loop (see the table).
+- **anything depending on native threading or SIMD** — one main thread, workers only.
+- **memory layout tricks** (bone arrays, cache lines) — not observable from JS.
+
+When a C++ suggestion lands, the reply is the translation plus the measurement, in that order. If the
+mechanism genuinely cannot port, name what replaced it and what it cost. Do not spend the owner's
+time on the language.
+
+**If Gemini (or anything else) keeps assuming C++, this is the line to paste at it:**
+> Brutal Fist is TypeScript — Vite + React + Three.js, no C++ and no Unreal anywhere in it. Keep the
+> mechanism and the math, but express it against `THREE.AnimationMixer`, `THREE.Quaternion` and
+> `THREE.ShaderMaterial`. Three.js has no per-bone pose-evaluation loop, so a bone mask is a track
+> split plus a second action, not a `continue`. Assume ES modules and strict TypeScript.
