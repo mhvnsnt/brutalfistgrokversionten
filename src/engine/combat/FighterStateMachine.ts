@@ -228,6 +228,45 @@ export const DEFAULT_MOVE_WINDOWS: Record<'lightAttack' | 'heavyAttack' | 'light
   },
 };
 
+/**
+ * DOWN + BUTTON. These two states have had frame data in MoveLibrary since it
+ * was written (crouchLightAttack: 6 startup / 4 active / 10 recovery, isLow) and
+ * NOTHING IN THIS FILE EVER ENTERED EITHER ONE — the standing attack checks came
+ * first and matched on the button alone, so a crouching player pressing kick got
+ * the standing kick. Owner: "if I press forward and kick, that it's crouching and
+ * doing a kick when that should be at the down and kick."
+ *
+ * `attackLevel: 'low'` is what makes them genuinely low rather than named low:
+ * FrameDataHitbox already turns it into a real vertical envelope, so these pass
+ * under a jump instead of connecting and being called a leg hit.
+ */
+export const CROUCH_MOVE_WINDOWS: Record<'crouchLightAttack' | 'crouchHeavyAttack', MoveWindow> = {
+  crouchLightAttack: {
+    startup: 0.10,
+    active: 0.07,
+    recovery: 0.17,
+    animation: 'crouchLightAttack',
+    hitboxStartFrame: 6,
+    hitboxEndFrame: 10,
+    totalFrames: 20,
+    damage: 60,
+    attackLevel: 'low',
+    specialName: 'Low Punch',
+  },
+  crouchHeavyAttack: {
+    startup: 0.13,
+    active: 0.10,
+    recovery: 0.25,
+    animation: 'crouchHeavyAttack',
+    hitboxStartFrame: 8,
+    hitboxEndFrame: 14,
+    totalFrames: 29,
+    damage: 95,
+    attackLevel: 'low',
+    specialName: 'Crouching Kick',
+  },
+};
+
 // ── Tekken-style move windows ─────────────────────────────────────────────────
 /** Left Throw (1+3): LP+LK */
 export const LEFT_THROW_MOVE: MoveWindow = {
@@ -1424,6 +1463,23 @@ export class FighterStateMachine {
     if (special) {
       this.walkVelocity = { forward: 0, strafe: 0 };
       return this.beginAttack(special.move.animation, special.move);
+    }
+
+    // ── DOWN + BUTTON, ahead of the standing attacks ──────────────────────
+    // The standing checks below match on the button ALONE, so while they came
+    // first a crouching player pressing kick stood up and threw the standing
+    // kick. Same held-down test the crouch state itself uses further down, so
+    // down-forward and down-back still read as movement rather than a crouch.
+    const crouchingNow = resolvedInput.crouch
+      && Math.abs(resolvedInput.forward) < 0.2
+      && Math.abs(resolvedInput.strafe) < 0.2;
+    if (crouchingNow && (risingLk || risingRk)) {
+      this.walkVelocity = { forward: 0, strafe: 0 };
+      return this.beginAttack('crouchHeavyAttack', CROUCH_MOVE_WINDOWS.crouchHeavyAttack);
+    }
+    if (crouchingNow && (risingLp || risingRp || risingLight || risingHeavy)) {
+      this.walkVelocity = { forward: 0, strafe: 0 };
+      return this.beginAttack('crouchLightAttack', CROUCH_MOVE_WINDOWS.crouchLightAttack);
     }
 
     if (risingLk && !risingLp) {

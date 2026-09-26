@@ -763,3 +763,60 @@ describe('a three-body capture cannot fill a solo slot', () => {
     });
   }
 });
+
+/**
+ * A STANDING ATTACK MUST RESOLVE TO A CLIP THAT IS STANDING UP.
+ *
+ * Owner: "if I press forward and kick, that it's crouching and doing a kick
+ * when that should be at the down and kick."
+ *
+ * He was reading the clip correctly. DROP_KICK led attack_lk and was the first
+ * alias present in the bake, so it WAS the light kick for every character:
+ * spineUp 0.655 — a body leaning about 49 degrees off vertical — and 2.9
+ * seconds long, eleven times the length of a light kick.
+ *
+ * UPRIGHT_SPINE_MIN is 0 and only catches a body that is fully inverted, so
+ * nothing caught it. This is the tighter bar, and it applies to every standing
+ * attack slot rather than the two the finisher gate above covers, because the
+ * next one of these will land somewhere else.
+ */
+const STANDING_ATTACK_SPINE_MIN = 0.85;
+/** No standing light attack is a second and a half long. */
+const STANDING_ATTACK_MAX_SECONDS = 1.6;
+
+test('no standing attack resolves to a crouched or endless clip', { skip: !hasBake }, () => {
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  // What the game PLAYS is the first alias present, so that is what is gated.
+  // Later entries are fallbacks for characters that lack the lead, and keeping
+  // them listed is how a displaced clip stays reachable rather than deleted.
+  let checked = 0;
+  for (const slot of ['attack_1', 'attack_rp', 'attack_lk', 'attack_rk']) {
+    const lead = (SEMANTIC_STATE_ALIASES[slot] ?? []).find((a) => manifest[a]);
+    assert.ok(lead, `${slot} names no clip that exists in the bake`);
+    const m = manifest[lead];
+    checked++;
+    assert.ok((m.spineUp ?? 0) >= STANDING_ATTACK_SPINE_MIN,
+      `${slot} plays ${lead} at spineUp ${m.spineUp} — a standing attack cannot be a crouched clip`);
+    assert.ok((m.dur ?? 0) <= STANDING_ATTACK_MAX_SECONDS,
+      `${slot} plays ${lead}, which runs ${m.dur}s — that is not a standing attack, it is a sequence`);
+  }
+  assert.equal(checked, 4, 'the gate did not reach all four basic attacks');
+});
+
+/**
+ * AND DOWN+BUTTON MUST ACTUALLY CROUCH. The crouch attack states have had frame
+ * data since MoveLibrary was written and no input path ever reached them, so
+ * their semantics pointed at standing clips: crouchLightAttack -> attack_1 (the
+ * standing jab) and crouchHeavyAttack -> attack_lk (the standing kick).
+ */
+test('the crouch kick leads with a clip that is genuinely crouched', { skip: !hasBake }, () => {
+  const manifest = JSON.parse(readFileSync(join(BAKED, 'index.json'), 'utf8')) as Record<string, BakedManifestEntry>;
+  assert.equal(COMBAT_STATE_TO_SEMANTIC.crouchHeavyAttack, 'crouch_kick');
+  assert.equal(COMBAT_STATE_TO_SEMANTIC.crouchLightAttack, 'crouch_punch');
+  const lead = (SEMANTIC_STATE_ALIASES.crouch_kick ?? []).find((a) => manifest[a]);
+  assert.ok(lead, 'crouch_kick names no clip that exists in the bake');
+  const m = manifest[lead];
+  assert.ok((m.spineUp ?? 1) < STANDING_ATTACK_SPINE_MIN,
+    `crouch_kick leads with ${lead} at spineUp ${m.spineUp} — that is a standing kick wearing a crouch's name`);
+  assert.ok((m.dur ?? 0) <= STANDING_ATTACK_MAX_SECONDS, `${lead} runs ${m.dur}s`);
+});
