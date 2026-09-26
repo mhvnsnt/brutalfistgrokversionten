@@ -13,7 +13,13 @@
  * maths the GPU uses, and measure the radius against its own bind value. A
  * ratio near 1 means the limb held; a low one is the candy wrapper, in play.
  *
- * Usage: node tools/model_diag/lbs_in_play.mjs [model.glb] [--clips N]
+ * Usage: node tools/model_diag/lbs_in_play.mjs [model.glb] [--clips N] [--masked] [--dqs]
+ *
+ *   --masked  hold the lower body at the IDLE stance, the way the engine now
+ *             does for a hand strike (src/engine/motion/BoneMask.ts). This is
+ *             the cheap question that has to be asked BEFORE writing a DQS
+ *             shader: how much of the measured collapse was the corrupt leg
+ *             tracks rather than linear blend skinning itself.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -156,7 +162,18 @@ function dqsPoint(dqs, idx, wts, p) {
   return [rot[0] + tr[0], rot[1] + tr[1], rot[2] + tr[2]];
 }
 
-export async function measureInPlay(file, clipNames, jointRe = /UpLeg$/i, mode = 'lbs') {
+/**
+ * The bones a hand strike is no longer allowed to drive. Kept in step with
+ * src/engine/motion/BoneMask.ts — the runtime list is the authority; this is the
+ * offline mirror so the same question can be asked without a browser.
+ */
+const LOWER_BODY = new Set([
+  'mixamorigHips',
+  'mixamorigLeftUpLeg', 'mixamorigLeftLeg', 'mixamorigLeftFoot', 'mixamorigLeftToeBase',
+  'mixamorigRightUpLeg', 'mixamorigRightLeg', 'mixamorigRightFoot', 'mixamorigRightToeBase',
+]);
+
+export async function measureInPlay(file, clipNames, jointRe = /UpLeg$/i, mode = 'lbs', maskLower = false) {
   const { json, bin } = parseGlb(readFileSync(file));
   const read = await makeReader(json, bin);
   const skin = json.skins[0];
@@ -232,6 +249,18 @@ export async function measureInPlay(file, clipNames, jointRe = /UpLeg$/i, mode =
   };
   const base = radiusOf(ibms.map((m, i) => mul(bindWorld[i], m)));
 
+  /**
+   * The stance the legs are held at when a hand strike is masked. Read once; a
+   * missing IDLE means the mask cannot be simulated and is reported, not
+   * silently skipped.
+   */
+  let idleTracks = null;
+  if (maskLower) {
+    try { idleTracks = JSON.parse(readFileSync(join('public/motion/baked', 'IDLE.json'), 'utf8')).tracks ?? null; }
+    catch { idleTracks = null; }
+    if (!idleTracks) return null;
+  }
+
   const rows = [];
   for (const clipName of clipNames) {
     let clip;
@@ -243,9 +272,18 @@ export async function measureInPlay(file, clipNames, jointRe = /UpLeg$/i, mode =
     for (let k = 0; k < keyCount; k += Math.max(1, Math.floor(keyCount / 24))) {
       const world = new Array(names.length);
       for (let i = 0; i < names.length; i++) {
-        const t = tracks[names[i].replace(':', '')] ?? tracks[names[i]];
-        const q = t?.q && t.q.length >= (k + 1) * 4
-          ? [t.q[k * 4], t.q[k * 4 + 1], t.q[k * 4 + 2], t.q[k * 4 + 3]]
+        const plain = names[i].replace(':', '');
+        // With the mask on, a lower-body bone reads the STANCE at the same phase
+        // instead of the strike — which is exactly what the engine now does.
+        const masked = maskLower && LOWER_BODY.has(plain);
+        const t = masked
+          ? (idleTracks[plain] ?? null)
+          : (tracks[plain] ?? tracks[names[i]]);
+        const kk = masked && t?.q
+          ? Math.min(Math.floor((k / Math.max(1, keyCount)) * (t.q.length / 4)), t.q.length / 4 - 1)
+          : k;
+        const q = t?.q && t.q.length >= (kk + 1) * 4
+          ? [t.q[kk * 4], t.q[kk * 4 + 1], t.q[kk * 4 + 2], t.q[kk * 4 + 3]]
           : null;
         const local = q ? trs(localT[i], q) : localBind[i];
         world[i] = parentOf[i] < 0 ? local : mul(world[parentOf[i]], local);
@@ -264,12 +302,15 @@ async function main() {
   const clips = readdirSync('public/motion/baked')
     .filter((f) => f.endsWith('.json') && f !== 'index.json').slice(0, n)
     .map((f) => f.replace('.json', ''));
-  const r = await measureInPlay(file, clips);
+  const maskLower = process.argv.includes('--masked');
+  const mode = process.argv.includes('--dqs') ? 'dqs' : 'lbs';
+  const r = await measureInPlay(file, clips, /UpLeg$/i, mode, maskLower);
   if (!r) { console.log('could not measure'); return; }
   r.rows.sort((a, b) => a.worst - b.worst);
   const vals = r.rows.map((x) => x.worst);
   const q = (p) => vals[Math.floor(vals.length * p)];
-  console.log(`\nLBS IN PLAY — ${file.split('/').pop()}  joint ${r.joint}  (${r.band} vertices)\n`);
+  console.log(`\nLBS IN PLAY — ${file.split('/').pop()}  joint ${r.joint}  (${r.band} vertices)`);
+  console.log(`  skinning ${mode.toUpperCase()}, legs ${maskLower ? 'HELD AT THE STANCE (what a masked hand strike does)' : "driven by the clip's own tracks"}\n`);
   console.log(`  clips measured: ${vals.length}`);
   console.log(`  worst thigh radius as a fraction of bind:`);
   console.log(`    p05 ${q(0.05)?.toFixed(2)}   median ${q(0.5)?.toFixed(2)}   p95 ${q(0.95)?.toFixed(2)}`);

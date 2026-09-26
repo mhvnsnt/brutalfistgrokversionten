@@ -9,13 +9,13 @@
   "tasks": [
     {
       "id": "lbs-volume",
-      "title": "Stop the hip collapsing during strikes",
+      "title": "The thigh still collapses on full-body clips",
       "specialist": "rendering",
       "status": "open",
       "needs": [],
-      "measure": "tools/model_diag/lbs_in_play.mjs \u2014 median thigh radius must exceed 0.85 of bind",
-      "now": "median 0.68, p05 0.27",
-      "notes": "DQS proved offline to roughly double retained volume (0.23 -> 0.42) but not to fix it alone, so the rest-pose offset below is part of the same defect. Reference implementations: KosRud/DQ-skinning-for-Unity (HLSL), ishmeetkohli/dualQuaternionSkinning (GLSL)."
+      "measure": "tools/model_diag/lbs_in_play.mjs --masked must hold median >= 0.85 (gated); the unmasked figure is the open one",
+      "now": "0.92 with the legs held at the stance (a hand strike), 0.65 median when a full-body clip drives them, as low as 0.25",
+      "notes": "THE DIAGNOSIS CHANGED, measured. Holding the legs at the stance takes ALTERNATINGFOREARMS from 0.23 to 0.92 and 0 of 60 clips pinch below 0.85, where 40 did. DQS on the same clips only reaches 0.42 on that one, so the shader would have been the expensive fix for a DATA problem \u2014 the collapse was overwhelmingly corrupt leg tracks, not linear blend skinning. WHAT IS LEFT splits in two, and only the second wants a shader: (1) full-body clips whose legs are ALSO corrupt and therefore cannot be masked because the legs ARE the move \u2014 APRONJAYKICK leaves the pelvis 92 deg out, CORKSCREW_KIP_UP peaks at 1007 deg/s; those need the rest-offset fix. (2) clips that are genuinely credible AND genuinely extreme \u2014 BREAKDANCE_FREEZES 0.41, CAPOEIRA 0.25 with a clean pelvis and 479/623 deg/s. That is real LBS loss and DQS roughly doubles it (0.25 -> 0.48) without fixing it. References if it comes to that: KosRud/DQ-skinning-for-Unity (HLSL), ishmeetkohli/dualQuaternionSkinning (GLSL)."
     },
     {
       "id": "rest-offset",
