@@ -74,6 +74,13 @@ export interface MoveWindow {
   recovery: number;
   animation: FighterMotionState;
   /**
+   * The stance this move LEAVES you in, when it differs from the one it was
+   * thrown from. 50 imported moves declare one — a sweep that ends crouching,
+   * a dash that ends running, a wake-up that takes you off your back. See
+   * `stanceAfterMove`.
+   */
+  endStance?: string;
+  /**
    * How far this move carries the fighter, in metres, in his own frame.
    *
    * ONE representation for two independent sources: the Schwarzerblitz move
@@ -574,6 +581,20 @@ export class FighterStateMachine {
   private commandBuffer: CommandBuffer | null = null;
   /** The stance motion commands are gated on, e.g. 'Ground' or 'Crouch'. */
   private commandStance = 'Ground';
+  /**
+   * A STANCE A MOVE PUT YOU IN, which outlives the input that started it.
+   *
+   * Stance was derived from the pad every frame — crouch while you hold down,
+   * Ground the instant you let go — so a move could never LEAVE you anywhere.
+   * The imported graph authors 50 such transitions (#NEWSTANCE), and they are
+   * the genre's whole grounded/rising/wake-up layer: Ukemi is a breakfall that
+   * takes you from Landing to Ground, SupineReversal gets you off your back,
+   * sweeps end Crouch, dashes end Running.
+   *
+   * It is cleared by a DELIBERATE input, so holding a direction or crouching
+   * always wins — the player is never stuck in a stance a move chose for him.
+   */
+  private moveStance: string | null = null;
 
   private prevInput: FighterInput = {
     forward: 0, strafe: 0, light: false, heavy: false,
@@ -710,9 +731,34 @@ export class FighterStateMachine {
     this.commandBuffer = buffer;
   }
 
-  /** Update the stance motion commands are gated on. */
+  /**
+   * Update the stance motion commands are gated on.
+   *
+   * A stance a MOVE left you in survives a neutral pad, and only a deliberate
+   * input clears it. Without that rule the move-driven stance would be erased
+   * on the very next frame, which is what made #NEWSTANCE unreadable.
+   */
   setCommandStance(stance: string) {
+    if (this.moveStance && stance === 'Ground') {
+      this.commandStance = this.moveStance;
+      return;
+    }
+    if (this.moveStance && stance !== this.moveStance) this.moveStance = null;
     this.commandStance = stance;
+  }
+
+  /** The stance the fighter is really in, including one a move left him in. */
+  get stance(): string { return this.commandStance; }
+
+  /**
+   * Called as a move ends. A move that declares an end stance puts the fighter
+   * into it; one that does not leaves him wherever the pad says.
+   */
+  private applyEndStance(move: MoveWindow | null) {
+    const next = move?.endStance;
+    if (!next) return;
+    this.moveStance = next === 'Ground' ? null : next;
+    this.commandStance = next;
   }
 
   /**
@@ -1290,6 +1336,8 @@ export class FighterStateMachine {
       }
 
       if (this.moveTimer <= 0) {
+        // The move decides where it leaves you BEFORE the reference is cleared.
+        this.applyEndStance(this.currentMove);
         this.currentMove = null;
         this.actionState = 'Idle';
         this.moveElapsed = 0;

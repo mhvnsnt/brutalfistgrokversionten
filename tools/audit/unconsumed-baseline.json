@@ -4,25 +4,24 @@
     "",
     "Being in this file is a DECISION, not an oversight: each entry says why it is",
     "carried. `node tools/audit/unconsumed_fields.mjs --gate` fails on anything NOT",
-    "listed here, so a future import cannot quietly add data the game ignores —",
+    "listed here, so a future import cannot quietly add data the game ignores \u2014",
     "which is exactly how a CC0 animation library, 127 moves of authored root",
     "motion, and every capture's own footwork all went unused at once.",
     "",
     "Clearing an entry is a feature. These are the gaps, written down."
   ],
   "_why": {
-    "SbMove.hidden": "110 of 133 moves are hidden — not listed in the in-game move list. We have no move list screen yet, so nothing can honour it. Wire it when the moveset UI lands, or hidden moves will be shown as if they were normal.",
-    "SbMove.newStance": "50 moves END in a different stance from the one they START in (Ground, Crouch, Running, Landing, Air, Supine). That is a stance SYSTEM, and it is the largest single piece of Tekken-lineage depth still unread here.",
+    "SbMove.hidden": "110 of 133 moves are hidden \u2014 not listed in the in-game move list. We have no move list screen yet, so nothing can honour it. Wire it when the moveset UI lands, or hidden moves will be shown as if they were normal.",
     "SbMove.animationRightSide": "11 moves ship a mirrored animation for the other screen side. Our fighters derive facing rather than carrying a side, so this needs the mirror path first.",
     "SbMove.unknown": "Deliberate. The importer carries every directive it does not model rather than dropping it, so nothing is silently lost at the source. Reading it is not the point; keeping it is.",
-    "SbHitbox.hitClass": "The source's own damage class per hitbox. Our hitboxes resolve region and multiplier geometrically instead, so this is unused rather than missing."
+    "SbHitbox.hitClass": "The source's own damage class per hitbox. Our hitboxes resolve region and multiplier geometrically instead, so this is unused rather than missing.",
+    "_closed_SbMove.newStance": "CLOSED. 50 moves declare an end stance and the engine now honours it \u2014 a sweep leaves you crouching, a dash leaves you running, Ukemi and SupineReversal stand you up off the floor. Kept here as a record that the gate works: the entry disappeared from the report on its own once the field had a reader."
   },
   "unread": {
     "schwarzerblitz-moves": [
       "SbHitbox.hitClass",
       "SbMove.animationRightSide",
       "SbMove.hidden",
-      "SbMove.newStance",
       "SbMove.unknown"
     ]
   }

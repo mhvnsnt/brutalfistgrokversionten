@@ -209,6 +209,8 @@ export function moveWindowFor(move: SbMove, setName = '') {
     // stood still unless it was one of five names in a hand-written table.
     // Expanded over the move's WHOLE length, not just its active window: a
     // move that steps back before it strikes authors that step in its startup.
+    // The stance this move leaves you in, when the source declares one.
+    endStance: move.newStance && move.newStance !== move.stance ? move.newStance : undefined,
     rootTravel: travelFromPerFrame(
       expandRootMotion(move.movement, Math.max(b, a + 1)),
       SB_SOURCE_FPS,

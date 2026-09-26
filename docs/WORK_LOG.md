@@ -10,10 +10,11 @@ cannot drift from what happened. Symptoms are the owner's own words.
 |---|---|---|---|
 | 2026-09-25 | b012d57 | 19h | I'm P1 and I'm trying to fight P2 and it's like P2's not reacting or taking any damage. An… |
 | 2026-09-25 | 61b8216 | 18h | currently can only fire off 4 attack and it's the base ones ... P2's not reacting… |
-| 2026-09-25 | **OPEN** | 21h | on Wreck Patterson and Titan they still have parts of their arms attached to parts of thei… |
+| 2026-09-25 | **OPEN** | 1.5d | on Wreck Patterson and Titan they still have parts of their arms attached to parts of thei… |
 | 2026-09-25 | 70e346f | 19h | pull in any open source so you can actually see and test and play ... pull stuff from open… |
 | 2026-09-25 | 5bc31ef | 20h | combat is a bit smoother, but it's still not on the level of Tekken ... I can tell you're … |
 | 2026-09-25 | 454c782 | 21h | when you press back and attack, it's like kind of doing something where it's making you ke… |
+| 2026-09-25 | PENDING | 1.5d | we need to pull more stuff from Tekken and Schwarzerblitz ... so it feels like something b… |
 | 2026-09-21 | 8e857f3 | 4.8d | a lot of character models, GLBs and attires still having stretching and deformation on cer… |
 
 ## combat-no-damage — fixed in `b012d57` after 19h
@@ -46,7 +47,7 @@ cannot drift from what happened. Symptoms are the owner's own words.
 
 **Lesson.** A metric that cannot express the failure will vouch for it. skinqa scores a broken rig clean because it asks whether weights predict themselves.
 
-## arm-to-hip-webbing — OPEN, 21h old
+## arm-to-hip-webbing — OPEN, 1.5d old
 
 > on Wreck Patterson and Titan they still have parts of their arms attached to parts of their hips and legs ... fix that shit on all the models universally and put in whatever to keep it from ever happening again.
 
@@ -85,3 +86,13 @@ cannot drift from what happened. Symptoms are the owner's own words.
 **Found by.** scripts/audit-combat-feel.mjs — real presses in a real match, measuring displacement, connection and the move that fired per input.
 
 **Lesson.** TWO OF MY OWN READINGS WERE WRONG BEFORE THE RIGHT ONE. First I timed drift over a fixed window around the press and reported 1.76m of 'the attack carrying you' — most of it was legitimate walking, because holding back is supposed to walk you back. Then I took the strike reach as 0.8m from the distance another test happened to swing at, which made the pace gap look like 2.2x and produced a 1.0 m/s walk that was sluggish rather than deliberate. Driving every attack out to its furthest connecting distance says all four reach 1.40m and the real gap was 1.28x. MEASURE THE THING, INCLUDING THE DENOMINATOR.
+
+## stance-system-unread — fixed in `PENDING` after 1.5d
+
+> we need to pull more stuff from Tekken and Schwarzerblitz ... so it feels like something built on top of Tekken and classic fighting games
+
+**Cause.** 50 imported moves declare the stance they END in (#NEWSTANCE) and nothing read it. Stance was derived from the pad every frame — Crouch while you hold down, Ground the instant you release — so a move could never LEAVE you anywhere. That made the genre's whole grounded/rising/wake-up layer unreachable: Ukemi (breakfall to standing), SupineReversal (up off your back), sweeps that end crouching, dashes that end running.
+
+**Found by.** tools/audit/unconsumed_fields.mjs — the consumption gate built after the same shape of bug appeared three times. SbMove.newStance was in its baseline as a named gap, and dropped off the report on its own once the field had a reader.
+
+**Lesson.** A move-imposed stance must survive a NEUTRAL pad but yield to a deliberate input, or it is a trap rather than a position. And the first version of the test called the state machine without attaching a command buffer, so the special could never match, a bare press fell through to the DEFAULT light attack (which carries no end stance), and a correct implementation looked broken. The test now asserts the move under test actually ran.

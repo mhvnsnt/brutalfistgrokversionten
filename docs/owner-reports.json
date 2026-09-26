@@ -73,6 +73,15 @@
       "fixed": "454c782",
       "howFound": "scripts/audit-combat-feel.mjs \u2014 real presses in a real match, measuring displacement, connection and the move that fired per input.",
       "lesson": "TWO OF MY OWN READINGS WERE WRONG BEFORE THE RIGHT ONE. First I timed drift over a fixed window around the press and reported 1.76m of 'the attack carrying you' \u2014 most of it was legitimate walking, because holding back is supposed to walk you back. Then I took the strike reach as 0.8m from the distance another test happened to swing at, which made the pace gap look like 2.2x and produced a 1.0 m/s walk that was sluggish rather than deliberate. Driving every attack out to its furthest connecting distance says all four reach 1.40m and the real gap was 1.28x. MEASURE THE THING, INCLUDING THE DENOMINATOR."
+    },
+    {
+      "id": "stance-system-unread",
+      "reported": "2026-09-25",
+      "symptom": "we need to pull more stuff from Tekken and Schwarzerblitz ... so it feels like something built on top of Tekken and classic fighting games",
+      "rootCause": "50 imported moves declare the stance they END in (#NEWSTANCE) and nothing read it. Stance was derived from the pad every frame \u2014 Crouch while you hold down, Ground the instant you release \u2014 so a move could never LEAVE you anywhere. That made the genre's whole grounded/rising/wake-up layer unreachable: Ukemi (breakfall to standing), SupineReversal (up off your back), sweeps that end crouching, dashes that end running.",
+      "fixed": "PENDING",
+      "howFound": "tools/audit/unconsumed_fields.mjs \u2014 the consumption gate built after the same shape of bug appeared three times. SbMove.newStance was in its baseline as a named gap, and dropped off the report on its own once the field had a reader.",
+      "lesson": "A move-imposed stance must survive a NEUTRAL pad but yield to a deliberate input, or it is a trap rather than a position. And the first version of the test called the state machine without attaching a command buffer, so the special could never match, a bare press fell through to the DEFAULT light attack (which carries no end stance), and a correct implementation looked broken. The test now asserts the move under test actually ran."
     }
   ]
 }
