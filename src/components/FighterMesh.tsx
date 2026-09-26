@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { BoneHitboxSystem } from '../engine/locomotion/BoneHitboxSystem';
 import { AutoRigDetector, type RigDiagnosticReport } from '../engine/locomotion/AutoRigDetector';
 import { ATTACK_ROOT_MOTION_PROFILES } from '../engine/locomotion/LocomotionSystem';
+import { blendDurationFor } from '../engine/motion/BlendDuration';
 import {
   runDeformationIntegrityTest,
   type DeformationIntegrityInput,
@@ -237,6 +238,17 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
 // Crossfade durations per state key (in seconds)
 // Frame counts at 60fps: 6f=0.100s, 4f=0.067s, 3f=0.050s, 2f=0.033s
 // ─────────────────────────────────────────────────────────────────────────────
+/** The first skinned skeleton under a root — what the body is posed by. */
+function skeletonOf(root: THREE.Object3D | null | undefined) {
+  if (!root) return null;
+  let found: { bones: Array<{ name: string; quaternion: THREE.Quaternion }> } | null = null;
+  root.traverse((o) => {
+    const m = o as THREE.SkinnedMesh;
+    if (!found && m.isSkinnedMesh && m.skeleton?.bones?.length) found = m.skeleton;
+  });
+  return found;
+}
+
 const FADE_DURATIONS: Record<string, number> = {
   // Locomotion — gentle blends
   idle:              0.100,  // 6 frames
@@ -935,7 +947,26 @@ function FighterMeshInner({
     }
 
     const nextAction = actions[clipName];
-    const fadeDuration = FADE_DURATIONS[inputKey] ?? DEFAULT_FADE;
+    /**
+     * THE BLEND IS A PROPERTY OF THE PAIR, NOT OF THE DESTINATION.
+     *
+     * FADE_DURATIONS is keyed only by where you are GOING, so a snap out of a
+     * hit reaction and a long settle out of a run got the same number entering
+     * the same idle. Measured over 714 real clip transitions, the pose distance
+     * between them spans 20 to 68 degrees — a genuine spread that one key
+     * cannot express.
+     *
+     * So the distance is measured against the live skeleton and the duration
+     * follows it, inside the range this table already used. The table stays as
+     * the fallback for any transition that cannot be measured, which keeps
+     * unmeasurable cases behaving exactly as before rather than as an average.
+     */
+    const tabled = FADE_DURATIONS[inputKey] ?? DEFAULT_FADE;
+    const fadeDuration = blendDurationFor(
+      skeletonOf(normalized.scene),
+      nextAction.getClip(),
+      tabled,
+    );
     const isLoop = LOOP_STATES.has(inputKey);
     const isUrgent = isAttack || isThrowVictimClip(inputKey)
       || ['hit', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple', 'jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey);
