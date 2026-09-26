@@ -680,6 +680,10 @@ export default function CombatArena3D({
   const particleIdRef = useRef(0);
   const flashRafRef = useRef<number>(0);
   const hitEffectRafRef = useRef<number>(0);
+  /** One loop at a time, however many effects spawn in the same frame. */
+  const hitEffectTickingRef = useRef(false);
+  /** Last rAF timestamp, so the pool is spent in real seconds. */
+  const hitEffectLastTsRef = useRef(0);
   const prevDamageEventRef = useRef<typeof damageEvent>(undefined);
   const prevKnockdownEventRef = useRef<typeof knockdownEvent>(undefined);
   const prevWallSplatEventRef = useRef<typeof wallSplatEvent>(undefined);
@@ -716,16 +720,46 @@ export default function CombatArena3D({
   }, [knockdownEvent]);
 
   // ── AAA hit effect pool tick ──────────────────────────────────────────────
-  useEffect(() => {
-    const tick = () => {
+  //
+  // THIS LOOP WAS DEAD CODE. `tick` was declared, a cleanup was registered, and
+  // the first requestAnimationFrame WAS NEVER SCHEDULED — the effect body ran to
+  // its `return` and that was that. So the only thing that ever advanced the
+  // pool was a one-shot rAF at each spawn site, which ticked exactly once and
+  // never re-armed. An orb spawned with 0.4s of life lost 1/60 of it and then
+  // sat on screen until the next hit happened to tick it again.
+  //
+  // Owner: "the little hit effects ... staying on screen for too long." They
+  // were not lingering, they were never expiring.
+  //
+  // It starts now, spends REAL elapsed time (see tickHitEffectPool), and stops
+  // itself when nothing is active so an idle match is not paying for a state
+  // update every frame. `ensureHitEffectTicking` is what the spawn sites call,
+  // guarded so five events in one frame cannot stack five loops.
+  const ensureHitEffectTicking = useCallback(() => {
+    if (hitEffectTickingRef.current) return;
+    hitEffectTickingRef.current = true;
+    hitEffectLastTsRef.current = 0;
+    const tick = (ts: number) => {
+      const last = hitEffectLastTsRef.current;
+      hitEffectLastTsRef.current = ts;
+      const dt = last ? (ts - last) / 1000 : 1 / 60;
       setHitEffectPool(prev => {
-        const next = tickHitEffectPool(prev);
+        const next = tickHitEffectPool(prev, dt);
         const hasActive = next.slots.some(s => s.active) || next.cameraShake.active || next.screenFlash > 0.01;
-        if (hasActive) hitEffectRafRef.current = requestAnimationFrame(tick);
+        if (hasActive) {
+          hitEffectRafRef.current = requestAnimationFrame(tick);
+        } else {
+          hitEffectTickingRef.current = false;
+        }
         return next;
       });
     };
-    return () => cancelAnimationFrame(hitEffectRafRef.current);
+    hitEffectRafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  useEffect(() => () => {
+    cancelAnimationFrame(hitEffectRafRef.current);
+    hitEffectTickingRef.current = false;
   }, []);
 
   // ── Per-character bloom hit effect on every damage event ─────────────────
@@ -763,9 +797,7 @@ export default function CombatArena3D({
       damage,
     }));
 
-    hitEffectRafRef.current = requestAnimationFrame(() => {
-      setHitEffectPool(prev => tickHitEffectPool(prev));
-    });
+    ensureHitEffectTicking();
   }, [damageEvent, p1Fighter, p2Fighter]);
 
   // ── Wall-splat VFX ────────────────────────────────────────────────────────
@@ -791,9 +823,7 @@ export default function CombatArena3D({
       attackAngle: wall === 'left' ? 0 : Math.PI,
       damage: 150,
     }));
-    hitEffectRafRef.current = requestAnimationFrame(() => {
-      setHitEffectPool(prev => tickHitEffectPool(prev));
-    });
+    ensureHitEffectTicking();
   }, [wallSplatEvent, p1Fighter, p2Fighter]);
 
   // ── Overdrive activation VFX ─────────────────────────────────────────────
@@ -826,9 +856,7 @@ export default function CombatArena3D({
       }
       return pool;
     });
-    hitEffectRafRef.current = requestAnimationFrame(() => {
-      setHitEffectPool(prev => tickHitEffectPool(prev));
-    });
+    ensureHitEffectTicking();
   }, [overdriveEvent, p1Fighter, p2Fighter]);
 
   // ── Finisher cinematic VFX ────────────────────────────────────────────────
@@ -861,9 +889,7 @@ export default function CombatArena3D({
       return pool;
     });
     setScreenFlash(1.0);
-    hitEffectRafRef.current = requestAnimationFrame(() => {
-      setHitEffectPool(prev => tickHitEffectPool(prev));
-    });
+    ensureHitEffectTicking();
   }, [finisherEvent, p1Fighter, p2Fighter]);
 
   useEffect(() => {

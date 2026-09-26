@@ -299,12 +299,34 @@ export function getCameraShakeForHit(type: HitEffectType, damage: number): Camer
 // ── Tick hit effect pool ──────────────────────────────────────────────────────
 const TICK_DT = 1 / 60; // 60fps tick
 
-export function tickHitEffectPool(pool: HitEffectPool): HitEffectPool {
+/**
+ * A HIT EFFECT'S LIFE IS SECONDS, SO IT HAS TO BE SPENT IN SECONDS.
+ *
+ * Owner: "there's still this issue with the little hit effects ... staying on
+ * screen for too long."
+ *
+ * This subtracted a hardcoded 1/60 per call while being driven off
+ * requestAnimationFrame, so an effect's real lifetime was
+ * `authored * (60 / actual fps)` — double on a 30fps phone, triple at 20. Same
+ * defect as the fixed-timestep one in FighterStateMachine, one system along.
+ *
+ * `pointLight.framesRemaining` and the camera shake genuinely count in 60fps
+ * FRAMES, so they are spent in frames — dt * 60 — rather than being rewritten
+ * into seconds. Both are then frame-rate independent for the same reason.
+ *
+ * dt is clamped: a tab-switch or a several-second stall should end the effects,
+ * never leave them mid-flight, and never run the decay backwards.
+ */
+export const HIT_FX_MAX_DT = 0.25;
+
+export function tickHitEffectPool(pool: HitEffectPool, dtSeconds: number = TICK_DT): HitEffectPool {
+  const dt = Math.min(Math.max(dtSeconds, 0), HIT_FX_MAX_DT);
+  const framesElapsed = dt * 60;
   // Tick slots
   const newSlots = pool.slots.map(slot => {
     if (!slot.active) return slot;
 
-    const newLife = slot.life - TICK_DT;
+    const newLife = slot.life - dt;
     if (newLife <= 0) {
       return { ...slot, active: false, life: 0, pointLight: null };
     }
@@ -312,7 +334,7 @@ export function tickHitEffectPool(pool: HitEffectPool): HitEffectPool {
     // Tick point light
     let newPointLight = slot.pointLight;
     if (newPointLight && newPointLight.framesRemaining > 0) {
-      const newFrames = newPointLight.framesRemaining - 1;
+      const newFrames = newPointLight.framesRemaining - framesElapsed;
       const newIntensity = newFrames <= 0 ? 0 :
         newPointLight.maxIntensity * (newFrames / newPointLight.totalFrames);
       newPointLight = newFrames <= 0 ? null : {
@@ -334,15 +356,17 @@ export function tickHitEffectPool(pool: HitEffectPool): HitEffectPool {
       ...newShake,
       offsetX: (Math.random() - 0.5) * 2 * decayedMag,
       offsetY: (Math.random() - 0.5) * 2 * decayedMag,
-      framesRemaining: newShake.framesRemaining - 1,
-      active: newShake.framesRemaining > 1,
+      framesRemaining: newShake.framesRemaining - framesElapsed,
+      active: newShake.framesRemaining > framesElapsed,
     };
   } else if (newShake.active) {
     newShake = createCameraShakeState();
   }
 
   // Fade screen flash
-  const newFlash = pool.screenFlash > 0.01 ? pool.screenFlash * 0.82 : 0;
+  // 0.82 per frame at 60fps, held to that RATE rather than to per-call, so the
+  // flash fades over the same wall-clock time on a phone as on a desktop.
+  const newFlash = pool.screenFlash > 0.01 ? pool.screenFlash * Math.pow(0.82, framesElapsed) : 0;
 
   return { slots: newSlots, cameraShake: newShake, screenFlash: newFlash };
 }
