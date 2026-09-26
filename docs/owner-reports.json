@@ -92,6 +92,15 @@
       "fixed": "23e01a4",
       "howFound": "Checked whether the moves the player actually fires carry the cancel data the source authors \u2014 the same 'imported but never read' shape that has now appeared four times this session.",
       "lesson": "The WINDOW SHAPE is measured (213 authored windows across 133 imported moves open at a median 0.20 of the move) but the PAIRING is a derived default, because the source authors named strings per move and generated slots have none. Same direction, other button \u2014 punch into kick and back. One link, not a licence to cancel into anything, so it cannot become a mash."
+    },
+    {
+      "id": "blend-keyed-by-destination",
+      "reported": "2026-09-26",
+      "symptom": "ours are keyed by destination rather than by from->to pair \u2014 worth doing. And get all fixed and bugs with model stretching tearing and ugly unblended animations ... fixed so we have a better game base",
+      "rootCause": "FADE_DURATIONS was keyed only by the destination state, so a snap out of a hit reaction and a long settle out of a run got the same duration entering the same idle. Measured over 714 real clip transitions, the pose distance between them spans 20 to 68 degrees \u2014 a spread one key cannot express.",
+      "fixed": "05b3049",
+      "howFound": "Read the Namco Cancel struct in Kiloutre/TKMovesets (cloned, not paraphrased) and measured our own corpus's transition distances.",
+      "lesson": "COMPUTED BEATS TABULATED when the table would be 200,000 invented cells. The distance is already knowable from the live skeleton against the incoming clip's first frame. TWO THINGS CHECKED AND FOUND NOT TO APPLY: the Lerp-vs-Slerp diagnosis (1,570 hemisphere flips exist, but every interpolation here goes through THREE.Quaternion.slerp which corrects the sign, and there are no raw quaternion lerps) and LBS candy-wrapping (not yet measured \u2014 the remaining posed stretching is present on every model including ones never reported). STILL OPEN from the reference: Tekken's Cancel carries `starting_frame`, the frame the TARGET move begins at when cancelled into, which lets a string's second hit flow instead of replaying its startup. We have no data to fill it."
     }
   ]
 }
