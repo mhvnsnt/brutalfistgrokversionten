@@ -58,6 +58,7 @@ import { MIN_BLEND_S, MAX_BLEND_S } from '../../src/engine/motion/BlendDuration.
 import { UPPER_BODY_STATES, LOWER_BODY_BONES } from '../../src/engine/motion/BoneMask.ts';
 import { HIT_FX_MAX_DT } from '../../src/engine/combat/HitEffectSystem.ts';
 import { CANCEL_OPENS_AT } from '../../src/engine/combat/GeneratedMovesets.ts';
+import { hitStopFramesFor, blockHitStopFramesFor, parryHitStopFramesFor, hitStopIsWeighted } from '../../src/engine/combat/HitStop.ts';
 
 const FPS = 60;
 const f = (seconds: number) => Math.round(seconds * FPS * 10) / 10;
@@ -269,18 +270,21 @@ add({
 
 // ── FEEL ────────────────────────────────────────────────────────────────────
 add({
-  axis: 'FEEL', system: 'hitstop on impact',
-  reference: 'both bodies freeze for a few frames so a hit reads as contact',
+  axis: 'FEEL', system: 'hitstop on impact, and heavier means longer',
+  reference: 'both bodies freeze for a few frames so a hit reads as contact, and a heavy freezes longer than a jab',
   refSource: 'convention',
-  ours: (() => { const w = declaredIn('hitStop'); return w ? `${w}, 45ms on block` : 'none'; })(),
-  verdict: declaredIn('hitStop') ? 'WIRED' : 'MISSING',
+  ours: `${['lightAttack', 'heavyAttack', 'CommandThrow'].map((k) => `${k.replace('Attack', '')} ${hitStopFramesFor(k)}f`).join(', ')}`
+    + `, block ${blockHitStopFramesFor('heavyAttack')}f, parry ${parryHitStopFramesFor('heavyAttack')}f`,
+  verdict: hitStopIsWeighted(['lightAttack', 'heavyAttack', 'CommandThrow']) && tested('defensive-systems.test.ts')
+    ? 'BEHAVING' : 'WIRED',
+  note: 'was THREE systems: a ms table, a force-derived count clamped to 3-5 frames, and inline literals in the arena. One table now, in frames, with block and parry as fractions of it',
 });
 add({
-  axis: 'FEEL', system: 'pushback on block',
-  reference: 'a blocked hit separates the bodies, which is what resets the spacing game',
+  axis: 'FEEL', system: 'pushback on block separates the bodies',
+  reference: 'a blocked hit resets the spacing game rather than leaving both fighters where they were',
   refSource: 'convention',
-  ours: (() => { const w = declaredIn('applyPushback'); return w ? `${w}, min 0.18m` : 'none'; })(),
-  verdict: declaredIn('applyPushback') ? 'WIRED' : 'MISSING',
+  ours: (() => { const w = declaredIn('applyPushback'); return w ? `${w}, min 0.18m, away from the attacker and wall-clamped` : 'none'; })(),
+  verdict: declaredIn('applyPushback') && tested('defensive-systems.test.ts') ? 'BEHAVING' : 'WIRED',
 });
 
 // ── REPORT ──────────────────────────────────────────────────────────────────

@@ -25,10 +25,15 @@ import {
 import {
   FINISHER_HP_THRESHOLD, FINISHER_DAMAGE, FINISHER_STARTUP_FRAMES,
 } from './OverdriveSystem.ts';
-import { WALL_SPLAT_BONUS_FRAMES } from './WallSystem.ts';
+import { WALL_SPLAT_BONUS_FRAMES, WALL_RIGHT_X } from './WallSystem.ts';
+import { LocomotionSystem } from '../locomotion/LocomotionSystem.ts';
 import {
   createComboState, registerHit, COMBO_WINDOW_MS, WALL_SPLAT_COMBO_EXTENSION_MS,
 } from './ComboSystem.ts';
+import {
+  hitStopFramesFor, blockHitStopFramesFor, parryHitStopFramesFor,
+  hitStopSecondsFor, hitStopIsWeighted, MIN_HITSTOP_FRAMES,
+} from './HitStop.ts';
 import {
   resolveTekkenContact, LOW_PARRY_ATTACKER_STAGGER_S,
   FighterStateMachine, DEFAULT_MOVE_WINDOWS,
@@ -260,5 +265,70 @@ describe('a wall splat buys the attacker frames', () => {
     const inWindowSplat = registerHit(first, 100, 500, 0);
     assert.deepEqual(inWindow.newState, inWindowSplat.newState);
     assert.equal(registerHit(first, 100, COMBO_WINDOW_MS + 5000, 0).newState.count, 1);
+  });
+});
+
+describe('hit stop, from one table instead of three', () => {
+  it('freezes a heavy longer than a light, which is what reads as weight', () => {
+    // The force-derived path clamped every impact into 3..5 frames, so a throw and
+    // a jab froze for almost the same time however hard the throw hit.
+    assert.ok(hitStopIsWeighted(['lightAttack', 'heavyAttack', 'CommandThrow']),
+      `not monotonic: ${['lightAttack', 'heavyAttack', 'CommandThrow'].map(hitStopFramesFor).join(', ')} frames`);
+    assert.ok(hitStopFramesFor('heavyAttack') > hitStopFramesFor('lightAttack'));
+  });
+
+  it('gives an unknown attack the default rather than zero', () => {
+    assert.equal(hitStopFramesFor('somethingNobodyAuthored'), hitStopFramesFor(undefined));
+    assert.ok(hitStopFramesFor(undefined) >= MIN_HITSTOP_FRAMES);
+    assert.ok(hitStopFramesFor('') >= MIN_HITSTOP_FRAMES, 'an empty key must not fall through to 0');
+  });
+
+  it('makes a block shorter than the hit and a parry longer than the block', () => {
+    for (const key of ['lightAttack', 'heavyAttack']) {
+      const hit = hitStopFramesFor(key);
+      const block = blockHitStopFramesFor(key);
+      const parry = parryHitStopFramesFor(key);
+      assert.ok(block < hit, `${key}: a block should not freeze as long as a clean hit`);
+      assert.ok(parry >= block, `${key}: a parry stops the attacker dead, so at least a block`);
+      assert.ok(block >= MIN_HITSTOP_FRAMES, `${key}: a block must still register`);
+    }
+  });
+
+  it('is expressed in frames, and the seconds view agrees with it', () => {
+    for (const key of ['lightAttack', 'heavyAttack', 'CommandThrow']) {
+      assert.ok(Math.abs(hitStopSecondsFor(key) - hitStopFramesFor(key) / 60) < 1e-9, key);
+    }
+  });
+});
+
+describe('pushback on block', () => {
+  /** The constructor takes (x, z, facing); position is the public reader. */
+  const at = (x: number, facing: 1 | -1) => new LocomotionSystem(x, 0, facing);
+
+  it('moves the defender away from the attacker, not toward', () => {
+    // This is the half of "feel" that resets the spacing game, and the sign of
+    // `facing` is the whole thing: pushback TOWARD the attacker would be a vacuum.
+    for (const facing of [1, -1] as const) {
+      const loco = at(0, facing);
+      loco.applyPushback(0.3);
+      const moved = loco.position.x;
+      assert.ok(Math.abs(moved) > 1e-6, `facing ${facing}: pushback did nothing`);
+      assert.equal(Math.sign(moved), -facing,
+        `facing ${facing}: pushed to ${moved.toFixed(3)}, which is toward the attacker`);
+    }
+  });
+
+  it('scales with the amount asked for', () => {
+    const small = at(0, 1); small.applyPushback(0.1);
+    const big = at(0, 1); big.applyPushback(0.4);
+    assert.ok(Math.abs(big.position.x) > Math.abs(small.position.x));
+  });
+
+  it('never pushes a fighter through a wall', () => {
+    const loco = at(0, -1);   // facing -1, so pushback goes +X toward the right wall
+    for (let i = 0; i < 200; i++) loco.applyPushback(0.5);
+    const x = loco.position.x;
+    assert.ok(Number.isFinite(x), 'pushback left the position non-finite');
+    assert.ok(x <= WALL_RIGHT_X + 1e-6, `pushed to ${x.toFixed(2)} past the wall at ${WALL_RIGHT_X}`);
   });
 });

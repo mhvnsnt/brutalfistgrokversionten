@@ -83,13 +83,13 @@ const gates = [
   },
   {
     name: 'baseline parity does not slide',
-    why: 'Owner: start from a good base instead of hand-tooling. 89% with 0 declared-and-dead rows was the mark after rage, low parry and armour landed.',
+    why: 'Owner: start from a good base instead of hand-tooling. 92% with 0 dead was the mark after rage, low parry, armour and the hitstop unification.',
     check: () => {
       const r = run('node', ['--experimental-strip-types', '--import', './scripts/register-ts-resolve.mjs', 'tools/parity/baseline.ts']);
       const m = /OVERALL\s+(\d+)% of baseline across (\d+) rows/.exec(r.out);
       const pct = Number(m?.[1] ?? 0);
       const dead = /(\d+) declared and dead/.exec(r.out)?.[1] ?? '?';
-      return { pass: pct >= 89 && dead === '0', detail: `${pct || '?'}% of baseline across ${m?.[2] ?? '?'} rows, ${dead} declared and dead (want >= 89%, 0 dead)` };
+      return { pass: pct >= 92 && dead === '0', detail: `${pct || '?'}% of baseline across ${m?.[2] ?? '?'} rows, ${dead} declared and dead (want >= 92%, 0 dead)` };
     },
   },
   ...(QUICK ? [] : [{

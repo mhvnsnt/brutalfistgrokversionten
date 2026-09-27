@@ -70,11 +70,11 @@
       "id": "feel-axis",
       "title": "The impact layer is half of baseline",
       "specialist": "combat",
-      "status": "open",
+      "status": "done",
       "needs": [],
       "measure": "tools/parity/baseline.ts \u2014 FEEL axis above 50%",
-      "now": "hitstop and pushback are both WIRED but neither is under a registered test, so neither is proven",
-      "notes": "45ms hitstop on block and a 0.18m minimum pushback both exist and are called. What is missing is a measurement: does a hit actually freeze both bodies for those frames, and does the pushback reset spacing. Two probes, not new systems."
+      "now": "FEEL 50% -> 100%; overall 89% -> 92%",
+      "notes": "Not two probes after all \u2014 hitstop was three systems with three scales. Unified into src/engine/combat/HitStop.ts, in frames, with the arena reading it instead of inline literals. Pushback measured on the real LocomotionSystem: away from the attacker at both facings, scaling with the amount, and wall-clamped."
     }
   ]
 }

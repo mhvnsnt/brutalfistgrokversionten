@@ -46,7 +46,10 @@ import { LocomotionSystem, ATTACK_ROOT_MOTION_PROFILES, locomotionBoundsFromStag
 import { createTekkenStick } from '../engine/combat/TekkenInput';
 import { receiverClipFor } from '../engine/combat/GrapplePairing';
 import { bakedClipNames } from '../engine/retarget/BakedMotionBank';
-import { BoneHitboxSystem, HIT_STOP_DURATIONS, HIT_STOP_DEFAULT_MS } from '../engine/locomotion/BoneHitboxSystem';
+import { BoneHitboxSystem } from '../engine/locomotion/BoneHitboxSystem';
+import {
+  hitStopSecondsFor, blockHitStopSecondsFor, parryHitStopSecondsFor,
+} from '../engine/combat/HitStop';
 // ── Announcer system ──────────────────────────────────────────────────────────
 import { getAnnouncerSystem } from '../engine/announcer/AnnouncerSystem';
 // ── Momentum system ──────────────────────────────────────────────────────────
@@ -1724,7 +1727,7 @@ export default function GameBattleArena({
           audioManagerRef.current.playSFX('whiff');
           p1SMRef.current.applyBlockStun(guardResult.attackerStagger, false);
           p1LocoRef.current.applyPushback(0.22);
-          hitStopTimerRef.current = Math.max(hitStopTimerRef.current, 0.06);
+          hitStopTimerRef.current = Math.max(hitStopTimerRef.current, parryHitStopSecondsFor(p1HitMove?.animation));
           hitStopActiveRef.current = true;
           setHitStopActive(true);
           logHit('p1', 'p2', 0, true, 'block');
@@ -1767,7 +1770,7 @@ export default function GameBattleArena({
           engine.applyIncomingHit('p2', blockedDamage, true, stun);
           p2SMRef.current.applyBlockStun(stun, (p1HitMove?.attackLevel ?? 'mid') === 'low');
           p2LocoRef.current.applyPushback(Math.max(0.18, p1Hit.pushback || 0.3));
-          hitStopTimerRef.current = Math.max(hitStopTimerRef.current, 0.045);
+          hitStopTimerRef.current = Math.max(hitStopTimerRef.current, blockHitStopSecondsFor(p1HitMove?.animation));
           hitStopActiveRef.current = true;
           setHitStopActive(true);
           logHit('p1', 'p2', blockedDamage, true, 'block');
@@ -1840,13 +1843,13 @@ export default function GameBattleArena({
         if (!guardResult.blocked) {
           const attackKey = p1HbWindow.move?.animation ?? 'lightAttack';
           const isHeavy = p1Hit.damage > 120 || p1HbWindow.move?.isSpecial;
-          const stopMs = isHeavy
-            ? (HIT_STOP_DURATIONS[attackKey] ?? HIT_STOP_DEFAULT_MS)
-            : HIT_STOP_DURATIONS.lightAttack;
-          hitStopTimerRef.current = stopMs / 1000;
+          const stopSeconds = isHeavy
+            ? hitStopSecondsFor(attackKey)
+            : hitStopSecondsFor('lightAttack');
+          hitStopTimerRef.current = stopSeconds;
           hitStopActiveRef.current = true;
           setHitStopActive(true);
-          console.log(`[Arena] ❄️ Hit stop triggered: ${stopMs}ms for "${attackKey}"`);
+          console.log(`[Arena] ❄️ Hit stop triggered: ${Math.round(stopSeconds*1000)}ms for "${attackKey}"`);
         }
 
         const isBlocked = guardResult.blocked;
@@ -2140,7 +2143,7 @@ export default function GameBattleArena({
           audioManagerRef.current.playSFX('whiff');
           p2SMRef.current.applyBlockStun(p1GuardResult.attackerStagger, false);
           p2LocoRef.current.applyPushback(0.22);
-          hitStopTimerRef.current = Math.max(hitStopTimerRef.current, 0.06);
+          hitStopTimerRef.current = Math.max(hitStopTimerRef.current, parryHitStopSecondsFor(p2HitMove?.animation));
           hitStopActiveRef.current = true;
           setHitStopActive(true);
           logHit('p2', 'p1', 0, true, 'block');
@@ -2166,7 +2169,7 @@ export default function GameBattleArena({
           engine.applyIncomingHit('p1', p2BlockedDamage, true, stun);
           p1SMRef.current.applyBlockStun(stun, (p2HitMove?.attackLevel ?? 'mid') === 'low');
           p1LocoRef.current.applyPushback(Math.max(0.18, p2Hit.pushback || 0.3));
-          hitStopTimerRef.current = Math.max(hitStopTimerRef.current, 0.045);
+          hitStopTimerRef.current = Math.max(hitStopTimerRef.current, blockHitStopSecondsFor(p2HitMove?.animation));
           hitStopActiveRef.current = true;
           setHitStopActive(true);
           logHit('p2', 'p1', p2BlockedDamage, true, 'block');
@@ -2224,10 +2227,10 @@ export default function GameBattleArena({
         if (!p1GuardResult.blocked) {
           const attackKey = p2HbWindow.move?.animation ?? 'lightAttack';
           const isHeavy = p2Hit.damage > 120 || p2HbWindow.move?.isSpecial;
-          const stopMs = isHeavy
-            ? (HIT_STOP_DURATIONS[attackKey] ?? HIT_STOP_DEFAULT_MS)
-            : HIT_STOP_DURATIONS.lightAttack;
-          hitStopTimerRef.current = stopMs / 1000;
+          const stopSeconds = isHeavy
+            ? hitStopSecondsFor(attackKey)
+            : hitStopSecondsFor('lightAttack');
+          hitStopTimerRef.current = stopSeconds;
           hitStopActiveRef.current = true;
           setHitStopActive(true);
         }
