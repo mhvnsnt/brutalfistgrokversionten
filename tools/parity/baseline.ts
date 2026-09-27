@@ -72,6 +72,13 @@ function callers(symbol: string): number {
     return out.split('\n').filter((l) => l && !/\.test\.tsx?$/.test(l) && !l.endsWith(`/${symbol}.ts`)).length;
   } catch { return 0; }
 }
+/** Call sites for a symbol, NOT counting the file that declares it or any test. */
+function callSitesOutside(symbol: string, declaringFile: string): number {
+  try {
+    const out = execFileSync('grep', ['-rlE', symbol, 'src', '--include=*.ts', '--include=*.tsx'], { encoding: 'utf8' });
+    return out.split('\n').filter((l) => l && !/\.test\.tsx?$/.test(l) && !l.endsWith(`/${declaringFile}`)).length;
+  } catch { return 0; }
+}
 /** Is this system declared anywhere at all? */
 function declaredIn(pattern: string): string | null {
   try {
@@ -428,7 +435,83 @@ add({
 });
 
 // ── REPORT ──────────────────────────────────────────────────────────────────
-const AXES = ['TIMEBASE', 'FRAME DATA', 'MECHANICS', 'MOVESET', 'MOVEMENT', 'INPUT', 'ANIMATION', 'FEEL'];
+
+// ── INTEGRITY ───────────────────────────────────────────────────────────────
+// THE AXIS THAT WAS MISSING, AND THE REASON THE AUDIT READ 95% WHILE THE OWNER
+// WAS WATCHING BODIES FLOAT.
+//
+// Every other axis asks DOES THE FEATURE EXIST. None of them asks DOES IT HOLD
+// TOGETHER. A launcher existed, was called, and was under a test — BEHAVING by
+// every rule here — and it still left the body hanging in the air playing the
+// idle clip, because updateStep had no case for the state the launcher set.
+//
+// These rows are invariants, not features. A fighting game holds them on every
+// frame, and the only way to score one is a test that tries to break it.
+add({
+  axis: 'INTEGRITY', system: 'a body off the mat is in an airborne state',
+  reference: 'a launched fighter is juggled until they land; nothing else leaves the ground',
+  refSource: 'convention',
+  ours: tested('combat-invariants.test.ts')
+    ? 'fuzzed over 200 seeded input+reaction sequences, checked every frame'
+    : 'not checked',
+  verdict: tested('combat-invariants.test.ts') ? 'BEHAVING' : 'MISSING',
+  note: 'found the floating body: updateStep had no Juggled case, so the action reset to Idle while the arc kept lifting the body and the renderer kept reading juggleHeight for Y',
+});
+add({
+  axis: 'INTEGRITY', system: 'a fall clip only plays on a falling body',
+  reference: 'a stagger is a stagger; the knockdown animation belongs to a knockdown',
+  refSource: 'convention',
+  ours: tested('combat-invariants.test.ts') ? 'checked every frame under the fuzzer' : 'not checked',
+  verdict: tested('combat-invariants.test.ts') ? 'BEHAVING' : 'MISSING',
+  note: 'applyStun(_, true) set motionState knockdown, so a strong hit started a collapse on a standing body and snapped upright when the stun ended',
+});
+add({
+  axis: 'INTEGRITY', system: 'every state ends',
+  reference: 'no input for a few seconds returns a fighter to neutral from any state',
+  refSource: 'convention',
+  ours: tested('combat-invariants.test.ts') ? 'every reaction, 12s of neutral input, must reach Idle/Walking/Guard' : 'not checked',
+  verdict: tested('combat-invariants.test.ts') ? 'BEHAVING' : 'MISSING',
+});
+add({
+  axis: 'INTEGRITY', system: 'a hit reaction is shorter than the hitstun that holds it',
+  reference: 'a jab flinch is about 10 frames; playing a 2.4s collapse for 0.28s and cutting it is the glitch',
+  refSource: 'convention',
+  ours: (() => {
+    try {
+      const a = readFileSync('src/engine/retarget/SemanticStateAliases.ts', 'utf8');
+      const m = a.match(/hit_reaction:\s*\[([^\]]*)\]/);
+      const first = m ? m[1].split(',')[0].replace(/['\s]/g, '') : '';
+      return first ? `hit_reaction leads with ${first}` : 'unknown';
+    } catch { return 'unknown'; }
+  })(),
+  verdict: (() => {
+    try {
+      const a = readFileSync('src/engine/retarget/SemanticStateAliases.ts', 'utf8');
+      const m = a.match(/hit_reaction:\s*\[([^\]]*)\]/);
+      const first = m ? m[1].split(',')[0].replace(/['\s]/g, '') : '';
+      return /^REACTION_/.test(first) ? 'BEHAVING' : 'WIRED';
+    } catch { return 'MISSING'; }
+  })(),
+  note: 'the short Schwarzerblitz reactions must lead the alias list; the long Mixamo captures stay as fallbacks',
+});
+add({
+  axis: 'INTEGRITY', system: 'no vertex is bound to a bone that is nowhere near it',
+  reference: 'skin weights hold the mesh together; a stray binding is the stretched strand across the screen',
+  refSource: 'convention',
+  // callers() counts the file that DECLARES the symbol, so it reads 1 for a
+  // function nothing calls. That is the "probe matched a WORD" trap, and it is
+  // the exact trap this row exists to catch — so count the call sites directly.
+  ours: (() => {
+    const n = callSitesOutside('reassignDistantWeights', 'SkinWeightRepair.ts');
+    return n > 0 ? `${declaredIn('reassignDistantWeights')}, called from ${n} site${n > 1 ? 's' : ''}` : 'declared and never called';
+  })(),
+  verdict: callSitesOutside('reassignDistantWeights', 'SkinWeightRepair.ts') > 0 && tested('skin-weight-repair.test.ts')
+    ? 'BEHAVING'
+    : declaredIn('reassignDistantWeights') ? 'DECLARED' : 'MISSING',
+  note: 'the webbing: a vertex weighted ONLY to a far bone is not a pair, so the pair-pruning repair never saw it',
+});
+
+const AXES = ['TIMEBASE', 'FRAME DATA', 'MECHANICS', 'MOVESET', 'MOVEMENT', 'INPUT', 'ANIMATION', 'INTEGRITY', 'FEEL'];
 const ai = process.argv.indexOf('--axis');
 const only = ai > 0 ? process.argv[ai + 1].replace('_', ' ') : null;
 const gapsOnly = process.argv.includes('--gaps');

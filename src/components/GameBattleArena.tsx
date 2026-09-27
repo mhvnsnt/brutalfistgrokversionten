@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
+import { BACK_TURN_HOLD_MS, crossedOnX } from '../engine/V7OrientationContract';
 import { preFightSequence, type IntroBeat } from '../engine/combat/PreFightIntros';
 import { reactionFor, resolveHitReaction } from '../engine/combat/HitReactions';
 import { type BannonFighterProfile } from '../data/bannonRoster';
@@ -635,11 +636,24 @@ export default function GameBattleArena({
   // ── Position state (X and Z axes) ────────────────────────────────────────
   const [p1X, setP1X] = useState(-1.8);
   const [p1Y, setP1Y] = useState(0);
+  const [p1BackTurned, setP1BackTurned] = useState(false);
+  const [p2BackTurned, setP2BackTurned] = useState(false);
   const [p2X, setP2X] = useState(1.8);
   const [p2Y, setP2Y] = useState(0);
   const [p1Z, setP1Z] = useState(0);
   const [p2Z, setP2Z] = useState(0);
   const p1XRef = useRef(-1.8);
+  // ── BACK-TURN ────────────────────────────────────────────────────────────
+  // Walk through your opponent and you come out the other side facing away.
+  // The contract (V7OrientationContract) declared BACK_TURN_HOLD_MS and
+  // crossedOnX and CombatArena3D already takes p1BackTurned/p2BackTurned —
+  // nothing in between ever set them, so the whole thing was inert.
+  const p1BackTurnUntilRef = useRef(0);
+  const p2BackTurnUntilRef = useRef(0);
+  const p1BackTurnedRef = useRef(false);
+  const p2BackTurnedRef = useRef(false);
+  const p1ForwardPrevRef = useRef(0);
+  const p2ForwardPrevRef = useRef(0);
   const p2XRef = useRef(1.8);
   const p1ZRef = useRef(0);
   const p2ZRef = useRef(0);
@@ -2647,6 +2661,7 @@ export default function GameBattleArena({
         // The one who is CLOSING gives way. The other is not moved at all,
         // so there is nothing to bounce off and no shove to fight.
         const MIN_SEPARATION = 0.85;
+        const prevDx = p2XRef.current - p1XRef.current;
         let newP1X = p1LocoRef.current.position.x;
         let newP2X = p2LocoRef.current.position.x;
 
@@ -2689,6 +2704,42 @@ export default function GameBattleArena({
           newP1X = p1LocoRef.current.position.x;
           newP2X = p2LocoRef.current.position.x;
         }
+
+        // A crossing on X means they walked through each other, so each is now
+        // looking at the other's back. Held for half a second: pressing toward
+        // them, or throwing anything, turns you round immediately — there are no
+        // back-turned attack clips, so a strike turns first and then plays.
+        const nextDx = newP2X - newP1X;
+        if (crossedOnX(prevDx, nextDx)) {
+          const until = now + BACK_TURN_HOLD_MS;
+          p1BackTurnUntilRef.current = until;
+          p2BackTurnUntilRef.current = until;
+        }
+        const settleBackTurn = (
+          untilRef: { current: number },
+          shownRef: { current: boolean },
+          setShown: (v: boolean) => void,
+          forward: number,
+          prevForward: { current: number },
+          action: string,
+        ) => {
+          const rose = forward > 0.45 && prevForward.current <= 0.45;
+          prevForward.current = forward;
+          if (rose || action === 'Attacking' || action === 'CommandThrow') untilRef.current = 0;
+          const on = now < untilRef.current;
+          if (on !== shownRef.current) {
+            shownRef.current = on;
+            setShown(on);
+          }
+        };
+        settleBackTurn(
+          p1BackTurnUntilRef, p1BackTurnedRef, setP1BackTurned,
+          p1Vel.forward, p1ForwardPrevRef, p1SMRef.current.action,
+        );
+        settleBackTurn(
+          p2BackTurnUntilRef, p2BackTurnedRef, setP2BackTurned,
+          p2Vel.forward, p2ForwardPrevRef, p2SMRef.current.action,
+        );
 
         // Only trigger React re-render when position changes meaningfully (>0.01 units)
         if (Math.abs(newP1X - p1XRef.current) > 0.01) {
@@ -3080,6 +3131,8 @@ export default function GameBattleArena({
           p2LocomotionVelocity={p2LocomotionVelocity}
           p1X={p1X}
           p2X={p2X}
+          p1BackTurned={p1BackTurned}
+          p2BackTurned={p2BackTurned}
           p1Y={p1Y}
           p2Y={p2Y}
           onP1BoneHitboxReady={(sys: BoneHitboxSystem) => { p1BoneHitboxRef.current = sys; }}

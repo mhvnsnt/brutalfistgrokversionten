@@ -64,7 +64,7 @@
 
 import * as THREE from 'three';
 import { SkeletonUtils } from 'three-stdlib';
-import { repairSkinWeights } from './SkinWeightRepair';
+import { repairSkinWeights, reassignDistantWeights } from './SkinWeightRepair';
 import { repairBindSpace } from './BindSpaceRepair';
 import { type PsxRenderOptions } from '../../render/psx';
 import { getActiveRenderProfile } from '../../lib/graphicsSettings';
@@ -1150,6 +1150,17 @@ export async function runCharacterPipeline(
     console.log(
       `[CharacterPipeline] ✂️ "${modelName}" — pruned ${skinRepair.repaired}/${skinRepair.verts} ` +
       `vertices pulled across the body (worst span ${skinRepair.worstSpan} joints)`,
+    );
+  }
+  // A vertex weighted ONLY to the hip is not a pair, so the prune above
+  // never sees it. Once the arm leaves the bind that vertex stays behind and
+  // the triangle becomes the wrist-to-hip shred, or a beam if the bone is
+  // nowhere near the vertex. Same rule for every model.
+  const distant = reassignDistantWeights(cloned);
+  if (distant.reassigned > 0) {
+    console.log(
+      `[CharacterPipeline] ✂️ "${modelName}" — rebound ${distant.reassigned}/${distant.verts} ` +
+      `vertices whose bone sat off the vertex`,
     );
   }
 

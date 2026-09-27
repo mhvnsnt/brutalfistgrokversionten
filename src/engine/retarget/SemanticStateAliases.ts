@@ -21,7 +21,7 @@
  */
 export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
   idle:           ['idle', 'Idle', 'IDLE', 'BOX_IDLE', 'STANCE_BLADED', 'STANCE_WIDE', 'DRUNK_IDLE_VARIATION', 'ACTION_IDLE_TO_STANDING_IDLE', 'neutral', 'Neutral', 'standing', 'Standing', 'stance', 'Stance', 'combatIdle', 'CombatIdle', 'idle_procedural_placeholder', 'STANCE', 'LOWSTANCE', 'LOWSTANCENEW', 'TIGERSTANCE', 'GRAFSTANCE', 'SHAZSTANCE', 'JOHNSON_STANCE', 'KRAVESTANCE'],
-  walk_forward:   ['walk_forward', 'walk', 'Walk', 'DWARF_WALK', 'DRUNK_WALK', 'GINGA_FORWARD', 'LOCO_STRUT', 'LOCO_LIGHT', 'DRUNK_RUN_FORWARD', 'walkForward', 'WalkForward', 'walking', 'Walking', 'walk_fwd', 'SBW_walk_fwd', 'walk_forward_procedural_placeholder', 'WALK', 'WALKFAST', 'SHAZWALK'],
+  walk_forward:   ['walk_forward', 'walk', 'Walk', 'DRUNK_WALK', 'GINGA_FORWARD', 'LOCO_STRUT', 'LOCO_LIGHT', 'DRUNK_RUN_FORWARD', 'walkForward', 'WalkForward', 'walking', 'Walking', 'walk_fwd', 'SBW_walk_fwd', 'walk_forward_procedural_placeholder', 'SHAZWALK'],
   walk_back:      ['walk_back', 'walkBack', 'WalkBack', 'GINGA_BACKWARD', 'INJURED_RUN_BACKWARDS_RIGHT_TURN', 'walkBackward', 'WalkBackward', 'walk_bwd', 'SBW_walk_back', 'walk_back_procedural_placeholder', 'WALK'],
   strafe_left:    ['strafe_left', 'strafeLeft', 'StrafeLeft', 'GINGA_SIDEWAYS_2', 'LOCO_PROWL', 'sidestepLeft', 'SidestepLeft', 'SBW_strafe_left', 'sidestepUp', 'SIDESTEP', 'SIDESTEPF', 'SIDESTEPMEDIUM', 'SIDESTEPFAST'],
   strafe_right:   ['strafe_right', 'strafeRight', 'StrafeRight', 'CROUCH_TORCH_WALK_RIGHT', 'INJURED_TURN_RIGHT', 'sidestepRight', 'SidestepRight', 'SBW_strafe_right', 'sidestepDown', 'SIDESTEPF', 'SIDESTEP', 'SIDESTEPMEDIUM'],
@@ -123,9 +123,24 @@ export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
   finisher:       ['finisher', 'Finisher', 'ORAORAORA', 'TIGER_HEAVYKICKCOMBO', 'GYAKUZUKI_COMBO', 'GRAFSURPRISEPUNCHLOW', 'attack_rk'],
   overdrive:      ['overdrive', 'Overdrive', 'GYAKUZUKI_COMBO', 'TIGER_HEAVYKICKCOMBO', 'GRAFJUMPKICK', 'ORAORAORA', 'attack_rp'],
   block:          ['block', 'guard', 'Guard', 'CENTER_BLOCK', 'GUARD_HIGH', 'GUARD_LOW', 'DEFENDER', 'ESQUIVA_4', 'Block', 'defend', 'Defend', 'SBW_guard', 'T_guard', 'block_procedural_placeholder', 'GUARD', 'LOWSTANCEGUARD'],
-  hit_reaction:   ['hit_reaction', 'hit', 'Hit', 'HIT_REACTION', 'HIT_TO_BODY', 'HIT_TO_HEAD', 'BIG_RIB_HIT', 'HIT_ON_THE_BACK', 'HIT_ON_SIDE_OF_HEAD', 'BIG_BODY_BLOW', 'hurt', 'Hurt', 'flinch', 'Flinch', 'hitstun', 'Hitstun', 'SBW_hit', 'T_hit', 'hit_reaction_procedural_placeholder', 'REACTION_HITWEAKHIGH', 'REACTION_HITWEAKMEDIUM', 'REACTION_HITSTRONGHIGH', 'REACTION_HITSTRONGMID'],
+  // A POKE IS A 10-FRAME FLINCH, NOT A 2.4-SECOND CINEMATIC.
+  //
+  // HIT_REACTION is 2.43s. Hitstun on a jab is about 0.28s, so the body
+  // started a long Mixamo collapse and was ripped out of it — the "glitchy
+  // broken" reaction. The Schwarzerblitz reactions already in the bank are
+  // the Tekken lengths: weak 0.17s (10 frames), strong 0.54s. They lead.
+  // The long captures stay as fallbacks.
+  hit_reaction:   ['REACTION_HITWEAKHIGH', 'REACTION_HITWEAKMEDIUM', 'hit_reaction', 'hit', 'Hit', 'HIT_TO_BODY', 'HIT_REACTION', 'HIT_TO_HEAD', 'BIG_RIB_HIT', 'HIT_ON_THE_BACK', 'HIT_ON_SIDE_OF_HEAD', 'BIG_BODY_BLOW', 'hurt', 'Hurt', 'flinch', 'Flinch', 'hitstun', 'Hitstun', 'SBW_hit', 'T_hit', 'hit_reaction_procedural_placeholder', 'REACTION_HITWEAKMEDIUMBACK', 'REACTION_HITSTRONGHIGH', 'REACTION_HITSTRONGMID'],
+  hit_strong:     ['REACTION_HITSTRONGHIGH', 'REACTION_HITSTRONGMID', 'HIT_TO_BODY', 'HIT_REACTION', 'hitHigh', 'hit'],
+  hit_low:        ['REACTION_HITWEAKMEDIUM', 'REACTION_HITWEAKHIGH', 'HIT_TO_BODY', 'hitLow', 'hit'],
   knockdown:      ['knockdown', 'Knockdown', 'FALLING_FLAT_IMPACT', 'FALLING_FORWARD_DEATH', 'DEFEAT', 'DYING_BACKWARDS', 'ko', 'KO', 'fall', 'Fall', 'SBW_knockdown', 'T_knockdown', 'knockdown_procedural_placeholder', 'REACTION_HEAVYHITAIRREVOLT', 'REACTION_HEAVYHITAIRREVOLTBACK', 'SUPINE'],
   getup:          ['getup', 'getUp', 'GetUp', 'KIP_UP', 'CORKSCREW_KIP_UP', 'CORKSCREW_EVADE', 'quickStand', 'QuickStand', 'gettingUp', 'GettingUp', 'T_quickstand', 'getup_procedural_placeholder', 'WAKEUPANIMATION', 'ROLLOUT', 'ROLLOUTRIGHT', 'LAZORFORWARDROLL', 'LAZORBACKROLL'],
+  // Wakeup used to be one list, so a tech roll, a back roll and a kip-up
+  // all played whichever clip happened to be first. Each option now has
+  // its own clip. KIP_UP is 2.03s and is fit to the stand window.
+  getup_kip:      ['KIP_UP', 'CORKSCREW_KIP_UP', 'WAKEUPANIMATION', 'getup', 'GetUp'],
+  getup_roll:     ['ROLLOUT', 'ROLLOUTRIGHT', 'LAZORFORWARDROLL', 'WAKEUPANIMATION', 'getup'],
+  getup_back:     ['LAZORBACKROLL', 'ROLLOUTRIGHT', 'ROLLOUT', 'getup'],
   // THE FIVE CLIPS THAT USED TO LEAD THIS LIST WERE THE RECEIVER'S HALF.
   // Measured head height at the first frame, over the clip's tallest:
   // NECKBREAKER 0.04, DDT 0.04, CHOKESLAM -0.10, GERMANSUPLEX -0.08,
@@ -199,17 +214,17 @@ export const COMBAT_STATE_TO_SEMANTIC: Record<string, string> = {
   Hitstun:           'hit_reaction',
   HitStun:           'hit_reaction',
   Stunned:           'hit_reaction',
-  hitLow:            'hit_reaction',
-  hitHigh:           'hit_reaction',
+  hitLow:            'hit_low',
+  hitHigh:           'hit_strong',
   knockdown:         'knockdown',
   Knockdown:         'knockdown',
   ko:                'knockdown',
   KO:                'knockdown',
-  Crumple:           'knockdown',
-  WakeupTechRoll:    'getup',
-  WakeupBackrise:    'getup',
-  WakeupQuickStand:  'getup',
-  wake:              'getup',
+  Crumple:           'hit_strong',
+  WakeupTechRoll:    'getup_roll',
+  WakeupBackrise:    'getup_back',
+  WakeupQuickStand:  'getup_kip',
+  wake:              'getup_kip',
   victory:           'victory',
   defeat:            'knockdown',
   taunt:             'taunt',

@@ -153,9 +153,58 @@ export function buildAnimationController(
     currentAction.setEffectiveTimeScale(rate);
   };
 
+  /**
+   * DOES THIS CLIP ACTUALLY DRIVE THIS SKELETON?
+   *
+   * An AnimationClip whose track names do not match any bone on the rig binds to
+   * NOTHING. three.js does not complain — the mixer runs, the action reports a
+   * weight of 1, and every bone is left exactly where the skeleton's rest pose
+   * put it. On a rig whose rest is a literal T-pose that is a T-pose on screen
+   * for the whole length of the clip.
+   *
+   * MEASURED: over a 300-frame match sample BANNON sat within 0.71 degrees of
+   * bind across all 58 bones on frames 84, 87-89, 208, 210-211 — two bursts of
+   * about 0.4s each, mid-fight, while VIPER (whose rest is a stance) never went
+   * near bind. Not at boot, so it was not the bank arriving late.
+   *
+   * So coverage is checked before a clip is allowed on the mixer. Below the
+   * threshold the clip is refused and the body keeps what it is already playing,
+   * which is always better than the bind pose.
+   */
+  const boneNames = (() => {
+    const names = new Set<string>();
+    root.traverse((o) => { if ((o as THREE.Bone).isBone) names.add(o.name); });
+    return names;
+  })();
+  const BIND_COVERAGE_MIN = 0.34;
+  const refusedClips = new Set<string>();
+  const bindCoverage = (clip: THREE.AnimationClip): number => {
+    if (!clip.tracks.length || !boneNames.size) return 1;
+    let hit = 0;
+    for (const t of clip.tracks) {
+      const dot = t.name.indexOf('.');
+      const target = dot > 0 ? t.name.slice(0, dot) : t.name;
+      if (boneNames.has(target)) hit++;
+    }
+    return hit / clip.tracks.length;
+  };
+  /** True when the clip binds well enough to be worth playing. Logs once per clip. */
+  const drivesThisRig = (clip: THREE.AnimationClip): boolean => {
+    const cov = bindCoverage(clip);
+    if (cov >= BIND_COVERAGE_MIN) return true;
+    if (!refusedClips.has(clip.name)) {
+      refusedClips.add(clip.name);
+      console.warn(`[AnimationController] 🚫 "${clip.name}" binds ${(cov * 100).toFixed(0)}% of its ${clip.tracks.length} tracks to this rig — refused, it would have shown the rest pose`);
+    }
+    return false;
+  };
+
   const resolveClip = (state: FighterMotionState): THREE.AnimationClip | undefined => {
-    // Try exact state match first
-    let clip = clips.clips.get(state);
+    // Try exact state match first. A clip that cannot bind to this rig is
+    // treated as absent, so the fallback chain gets a chance instead of the
+    // body dropping to its rest pose.
+    const usable = (c: THREE.AnimationClip | undefined) => (c && drivesThisRig(c) ? c : undefined);
+    let clip = usable(clips.clips.get(state));
     // Fallback chain for combat states
     if (!clip) {
       const fallbacks: Partial<Record<FighterMotionState, FighterMotionState[]>> = {
@@ -186,12 +235,12 @@ export function buildAnimationController(
       };
       const chain = fallbacks[state] ?? [];
       for (const fb of chain) {
-        clip = clips.clips.get(fb);
+        clip = usable(clips.clips.get(fb));
         if (clip) break;
       }
     }
     // Final fallback: idle
-    if (!clip) clip = clips.clips.get('idle');
+    if (!clip) clip = usable(clips.clips.get('idle'));
     return clip;
   };
 

@@ -21,6 +21,7 @@
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   FighterStateMachine, DEFAULT_MOVE_WINDOWS,
   type FighterInput, type ActionState,
@@ -161,5 +162,60 @@ describe('combat invariants (fuzzed)', () => {
     for (let f = 0; f < 60 * 5 && !landed; f++) landed = fsm.tickAirborne(1 / 60);
     assert.equal(landed, true, 'a launched body never came down');
     assert.equal(fsm.juggleHeight, 0);
+  });
+});
+
+/**
+ * THE REACTION CLIP MUST FIT THE HITSTUN THAT HOLDS IT.
+ *
+ * Measured off the shipped bank, not asserted from a name. The old alias list
+ * led with HIT_REACTION at 2.4333s while a jab's hitstun is BASE_STUN 0.28s, so
+ * the body began a long Mixamo collapse and was ripped out of it 11% in. That is
+ * the reaction the owner called "buggy and glitchy", and it is why bodies looked
+ * like they were starting to fall over for no reason.
+ *
+ * The Schwarzerblitz reactions in the same bank are the Tekken lengths:
+ * REACTION_HITWEAKHIGH 0.1667s = 10 frames, REACTION_HITSTRONGHIGH 0.5417s.
+ */
+describe('a hit reaction fits inside the stun that holds it', () => {
+  const read = (): { aliases: string; durOf: (n: string) => number | null } => {
+    const aliases = readFileSync('src/engine/retarget/SemanticStateAliases.ts', 'utf8');
+    const durOf = (n: string) => {
+      try { return JSON.parse(readFileSync(`public/motion/baked/${n}.json`, 'utf8')).dur as number; }
+      catch { return null; }
+    };
+    return { aliases, durOf };
+  };
+  const leadOf = (aliases: string, key: string): string | null => {
+    const m = aliases.match(new RegExp(`${key}:\\s*\\[([^\\]]*)\\]`));
+    if (!m) return null;
+    const first = m[1].split(',')[0]?.replace(/['\s]/g, '');
+    return first || null;
+  };
+
+  it('the clip a poke resolves to is no longer than the stun, and it exists', () => {
+    const { aliases, durOf } = read();
+    const lead = leadOf(aliases, 'hit_reaction');
+    assert.ok(lead, 'hit_reaction has no alias list');
+    const dur = durOf(lead!);
+    assert.ok(dur !== null, `hit_reaction leads with ${lead}, which is not in the baked bank`);
+    // BASE_STUN is 0.28s. A flinch that outlasts its own stun gets cut.
+    assert.ok(dur! <= 0.30, `hit_reaction leads with ${lead} at ${dur}s — a 0.28s stun cannot play it`);
+  });
+
+  it('a strong reaction is longer than a poke but still fits a heavy stun', () => {
+    const { aliases, durOf } = read();
+    const weak = durOf(leadOf(aliases, 'hit_low') ?? '');
+    const strong = durOf(leadOf(aliases, 'hit_strong') ?? '');
+    assert.ok(weak !== null && strong !== null, 'hit_low / hit_strong do not resolve to baked clips');
+    assert.ok(strong! > weak!, 'a strong reaction should be the longer of the two');
+    assert.ok(strong! <= 0.70, `hit_strong is ${strong}s — longer than any stun that holds it`);
+  });
+
+  it('each wakeup option has its own clip', () => {
+    const { aliases } = read();
+    const leads = ['getup_kip', 'getup_roll', 'getup_back'].map((k) => leadOf(aliases, k));
+    assert.ok(leads.every(Boolean), 'a wakeup option has no alias list');
+    assert.equal(new Set(leads).size, 3, `tech roll, back rise and quick stand share a clip: ${leads.join(', ')}`);
   });
 });
