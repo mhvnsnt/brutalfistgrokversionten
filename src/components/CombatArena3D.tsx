@@ -11,8 +11,8 @@ import { UrbanNightStage } from './UrbanNightStage';
 import { ProceduralStage } from './ProceduralStage';
 import { type StageId, resolveStageConfig } from '../engine/combat/StageConfig';
 import { CHARACTER_BLOOM } from './PostMatchScreen';
-import { createHitEffectPool, spawnHitEffect, tickHitEffectPool, getHitEffectRenderData, getActivePointLights, type HitEffectPool, type HitEffectType, type PointLightFlash,  } from '../engine/combat/HitEffectSystem';
-import { COMBAT_P1_YAW, COMBAT_P2_YAW, COMBAT_FIGHTER_Y, HIT_FX_WORLD_Y, HIT_FX_SCREEN_Y, faceOpponentYaw } from '../engine/V7OrientationContract';
+import { createHitEffectPool, spawnHitEffect, tickHitEffectPool, getHitEffectRenderData, getActivePointLights, sparkReachCss, type HitEffectPool, type HitEffectType, type PointLightFlash,  } from '../engine/combat/HitEffectSystem';
+import { COMBAT_P1_YAW, COMBAT_P2_YAW, COMBAT_FIGHTER_Y, HIT_FX_WORLD_Y, HIT_FX_SCREEN_Y, faceOpponentYaw, yawWithBackTurn } from '../engine/V7OrientationContract';
 
 // Stage IDs come from StageConfig — every catalog arena is legal here.
 
@@ -38,7 +38,12 @@ interface Particle {
   maxLife: number;
   color: string;
   size: number;
-  type: 'impact' | 'burst' | 'trail';
+  /**
+   * 'ground' is the knockdown pass: a few dust specks at the feet and a flat scuff,
+   * replacing the stroked circles that were drawn at twenty times the particle size
+   * and stacked into halos bigger than the fighter.
+   */
+  type: 'impact' | 'burst' | 'trail' | 'ground';
 }
 
 // ── Announcer voice lines (Web Speech API) ────────────────────────────────────
@@ -225,119 +230,124 @@ interface VFXOverlayProps {
   hitEffectPool?: HitEffectPool;
 }
 
-function VFXOverlay({ particles, screenFlash, hitStopActive, hitEffectPool }: VFXOverlayProps) {
+function drawSlash(ctx: CanvasRenderingContext2D, length: number, color: string) {
+  const half = Math.max(1.2, length * 0.13);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(length * 0.28, half);
+  ctx.lineTo(length, 0);
+  ctx.lineTo(length * 0.28, -half);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(length * 0.62, 0);
+  ctx.lineTo(length * 0.78, half * 0.28);
+  ctx.lineTo(length, 0);
+  ctx.lineTo(length * 0.78, -half * 0.28);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawSparkCore(ctx: CanvasRenderingContext2D, radius: number) {
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.moveTo(0, -radius);
+  ctx.lineTo(radius * 0.28, 0);
+  ctx.lineTo(0, radius);
+  ctx.lineTo(-radius * 0.28, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-radius * 0.72, 0);
+  ctx.lineTo(0, radius * 0.22);
+  ctx.lineTo(radius * 0.72, 0);
+  ctx.lineTo(0, -radius * 0.22);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function VFXOverlay({ particles, screenFlash, hitEffectPool }: VFXOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [viewport, setViewport] = useState({ w: 0, h: 0 });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const parent = canvas?.parentElement;
+    if (!parent) return;
+    const watch = () => setViewport({ w: parent.clientWidth, h: parent.clientHeight });
+    watch();
+    const ro = new ResizeObserver(watch);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const parent = canvas.parentElement;
+    const cssW = Math.max(1, parent?.clientWidth || viewport.w || 800);
+    const cssH = Math.max(1, parent?.clientHeight || viewport.h || 600);
+    const dpr = Math.min(2, typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1);
+    const bw = Math.round(cssW * dpr);
+    const bh = Math.round(cssH * dpr);
+    if (canvas.width !== bw || canvas.height !== bh) {
+      canvas.width = bw;
+      canvas.height = bh;
+    }
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Backing store matches the element, then we draw in CSS pixels.
+    // A fixed 800×600 bitmap stretched over a portrait phone turned every
+    // circle into a tall ellipse and the near edge of a ring into a beam.
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssW, cssH);
+    const px = (x: number) => (x / 800) * cssW;
+    const py = (y: number) => (y / 600) * cssH;
 
-    // ── Screen flash ──────────────────────────────────────────────────────
     const totalFlash = Math.max(screenFlash, hitEffectPool?.screenFlash ?? 0);
     if (totalFlash > 0.01) {
-      ctx.fillStyle = `rgba(255,255,255,${totalFlash * 0.35})`;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = `rgba(255,255,255,${Math.min(0.2, totalFlash * 0.35)})`;
+      ctx.fillRect(0, 0, cssW, cssH);
     }
 
-    if (hitStopActive) {
-      ctx.fillStyle = 'rgba(255,50,50,0.06)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-
-    // ── Legacy particles (dust, knockdown) ───────────────────────────────
     for (const p of particles) {
-      // CRITICAL: clamp alpha to [0,1] — p.life can exceed p.maxLife on the
-      // frame a particle is spawned (delta overshoot) producing alpha > 1,
-      // which makes (1 - alpha) negative and causes ctx.arc() to throw
-      // IndexSizeError: negative radius.
       const alpha = Math.min(1, Math.max(0, p.life / p.maxLife));
-      ctx.globalAlpha = alpha;
-      if (p.type === 'impact') {
+      if (p.type === 'ground') {
+        const rx = Math.min(cssW * 0.045, 36) * (0.5 + alpha * 0.5);
+        ctx.globalAlpha = alpha * 0.4;
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, Math.max(0, p.size * alpha), 0, Math.PI * 2);
+        ctx.ellipse(px(p.x), py(p.y), rx, Math.max(2, rx * 0.18), 0, 0, Math.PI * 2);
         ctx.fill();
-      } else if (p.type === 'burst') {
-        ctx.strokeStyle = p.color;
-        ctx.lineWidth = p.size * 0.5;
-        ctx.beginPath();
-        // (1 - alpha) is always in [0,1] now that alpha is clamped, so radius >= 0
-        ctx.arc(p.x, p.y, Math.max(0, p.size * (1 - alpha) * 20), 0, Math.PI * 2);
-        ctx.stroke();
-      } else if (p.type === 'trail') {
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size * 2);
+        continue;
       }
+      ctx.globalAlpha = alpha * 0.85;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(px(p.x), py(p.y), Math.min(4, Math.max(0.5, p.size * alpha)), 0, Math.PI * 2);
+      ctx.fill();
     }
 
-    // ── AAA 3-layer billboarded hit effects ───────────────────────────────
     if (hitEffectPool) {
       const renderData = getHitEffectRenderData(hitEffectPool);
       for (const effect of renderData) {
-        const { screenX, screenY, characterColor, scale, alpha, type, streaks, coreRadius, coronaRadius } = effect;
-
+        const { screenX, screenY, scale, alpha, type, streaks } = effect;
+        const reach = sparkReachCss(cssW, cssH, type, scale);
         ctx.save();
-        ctx.translate(screenX, screenY);
-
-        // ── Layer 3: Directional streaks (behind everything) ──────────────
+        ctx.translate(px(screenX), py(screenY));
         for (const streak of streaks) {
           ctx.save();
           ctx.rotate(streak.angle);
-          ctx.globalAlpha = streak.alpha * alpha;
-          ctx.strokeStyle = streak.color;
-          ctx.lineWidth = streak.width;
-          ctx.lineCap = 'round';
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-          ctx.lineTo(streak.length, 0);
-          ctx.stroke();
+          ctx.globalAlpha = Math.min(1, streak.alpha * alpha);
+          const len = reach * (0.45 + Math.min(1, streak.length / 14) * 0.55);
+          drawSlash(ctx, len, streak.color);
           ctx.restore();
         }
-
-        // ── Layer 2: Character color corona ───────────────────────────────
-        if (type === 'block') {
-          // Block: circular shield spark (pale blue/grey)
-          ctx.globalAlpha = alpha * 0.8;
-          const safeCoronaBlock = Math.max(0.001, coronaRadius);
-          const shieldGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, safeCoronaBlock);
-          shieldGrad.addColorStop(0, 'rgba(138,180,212,0.9)');
-          shieldGrad.addColorStop(0.5, 'rgba(138,180,212,0.4)');
-          shieldGrad.addColorStop(1, 'rgba(138,180,212,0)');
-          ctx.fillStyle = shieldGrad;
-          ctx.beginPath();
-          ctx.arc(0, 0, safeCoronaBlock, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          // Clean hit / counter-hit: character color corona
-          ctx.globalAlpha = alpha * 0.85;
-          const safeCorona = Math.max(0.001, coronaRadius);
-          const coronaGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, safeCorona);
-          const hex = characterColor;
-          coronaGrad.addColorStop(0, `${hex}ff`);
-          coronaGrad.addColorStop(0.4, `${hex}cc`);
-          coronaGrad.addColorStop(1, `${hex}00`);
-          ctx.fillStyle = coronaGrad;
-          ctx.beginPath();
-          ctx.arc(0, 0, safeCorona, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // ── Layer 1: White-hot core (always pure white, always on top) ────
-        ctx.globalAlpha = alpha;
-        const safeCore = Math.max(0.001, coreRadius);
-        const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, safeCore);
-        coreGrad.addColorStop(0, 'rgba(255,255,255,1)');
-        coreGrad.addColorStop(0.6, 'rgba(255,255,255,0.8)');
-        coreGrad.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = coreGrad;
-        ctx.beginPath();
-        ctx.arc(0, 0, safeCore, 0, Math.PI * 2);
-        ctx.fill();
-
+        ctx.globalAlpha = Math.min(1, alpha);
+        drawSparkCore(ctx, Math.max(2, reach * (type === 'block' ? 0.16 : 0.22)));
         ctx.restore();
       }
     }
@@ -348,8 +358,6 @@ function VFXOverlay({ particles, screenFlash, hitStopActive, hitEffectPool }: VF
   return (
     <canvas
       ref={canvasRef}
-      width={800}
-      height={600}
       className="absolute inset-0 w-full h-full pointer-events-none z-20"
       style={{ mixBlendMode: 'screen' }}
     />
@@ -491,45 +499,50 @@ function getCharacterHitBloom(fighterId: string, factionColor: string) {
   return bloom.primary ?? factionColor;
 }
 
-// ── Dust particle burst on knockdown ─────────────────────────────────────────
+/** Design-space X (0–800) for an impact on a side-view camera. */
+function impactScreenX(worldX: number, otherX: number): number {
+  const mid = (worldX + otherX) / 2;
+  const frac = Math.min(0.82, Math.max(0.18, 0.5 + (worldX - mid) / 7.2));
+  return frac * 800;
+}
+
 function spawnKnockdownDust(
   screenX: number,
   screenY: number,
   particleIdRef: React.MutableRefObject<number>,
+  tint: string,
 ): Particle[] {
   const dust: Particle[] = [];
-  // Ground-level dust cloud — 16 particles spreading outward
-  for (let i = 0; i < 16; i++) {
-    const angle = (Math.PI * i) / 8; // spread in semicircle upward
-    const speed = 2 + Math.random() * 5;
+  for (let i = 0; i < 8; i++) {
+    const angle = (Math.PI * i) / 8;
+    const speed = 0.6 + Math.random() * 1.4;
+    const life = 0.18 + Math.random() * 0.14;
     dust.push({
       id: ++particleIdRef.current,
-      x: screenX + (Math.random() - 0.5) * 30,
+      x: screenX + (Math.random() - 0.5) * 16,
       y: screenY,
       vx: Math.cos(angle) * speed,
-      vy: -Math.abs(Math.sin(angle) * speed) - 1, // always upward
-      life: 0.8 + Math.random() * 0.5,
-      maxLife: 0.8 + Math.random() * 0.5,
-      color: '#c4a882', // dust/sand color
-      size: 5 + Math.random() * 8,
+      vy: -Math.abs(Math.sin(angle) * speed) * 0.4,
+      life,
+      maxLife: life,
+      color: i % 2 === 0 ? '#8a7560' : tint,
+      size: 1.5 + Math.random() * 2,
       type: 'impact',
     });
   }
-  // Larger slow-rising dust puffs
-  for (let i = 0; i < 5; i++) {
-    dust.push({
-      id: ++particleIdRef.current,
-      x: screenX + (Math.random() - 0.5) * 50,
-      y: screenY,
-      vx: (Math.random() - 0.5) * 2,
-      vy: -0.5 - Math.random() * 1.5,
-      life: 1.2 + Math.random() * 0.6,
-      maxLife: 1.2 + Math.random() * 0.6,
-      color: '#a89070',
-      size: 14 + Math.random() * 12,
-      type: 'burst',
-    });
-  }
+  const scuff = 0.22;
+  dust.push({
+    id: ++particleIdRef.current,
+    x: screenX,
+    y: screenY + 8,
+    vx: 0,
+    vy: 0,
+    life: scuff,
+    maxLife: scuff,
+    color: tint,
+    size: 10,
+    type: 'ground',
+  });
   return dust;
 }
 
@@ -547,7 +560,7 @@ function HitPointLights({ lights }: { lights: PointLightFlash[] }) {
           position={[light.x, light.y, light.z]}
           color={light.color}
           intensity={light.intensity}
-          distance={4}
+          distance={2.2}
           decay={2}
         />
       ))}
@@ -585,11 +598,14 @@ export interface CombatArena3DProps {
   p2X?: number;
   p1Y?: number;
   p2Y?: number;
+  /** Cross-up: mesh faces away until the fighter turns or attacks. */
+  p1BackTurned?: boolean;
+  p2BackTurned?: boolean;
   cinematicPhase?: CinematicPhase;
   winnerName?: string;
   cameraFov?: number;
   announcerEnabled?: boolean;
-  damageEvent?: { count: number; player: 'p1' | 'p2'; damage: number; isCounter: boolean; factionColor: string };
+  damageEvent?: { count: number; player: 'p1' | 'p2'; damage: number; isCounter: boolean; factionColor: string; blocked?: boolean };
   /** Knockdown event — triggers dust particle burst */
   knockdownEvent?: { count: number; player: 'p1' | 'p2' };
   /** Stage selection — defaults to 'urban_night' */
@@ -603,6 +619,9 @@ export interface CombatArena3DProps {
   /** Locomotion velocity from FighterStateMachine — used for velocity-gated animation blending */
   p1LocomotionVelocity?: { forward: number; strafe: number };
   p2LocomotionVelocity?: { forward: number; strafe: number };
+  /** Metres/second, written by the match loop. Drives foot playback rate. */
+  p1GroundSpeedRef?: { current: number };
+  p2GroundSpeedRef?: { current: number };
   /** Callbacks to receive bone hitbox system references from FighterMesh */
   onP1BoneHitboxReady?: (system: import('../engine/locomotion/BoneHitboxSystem').BoneHitboxSystem) => void;
   onP2BoneHitboxReady?: (system: import('../engine/locomotion/BoneHitboxSystem').BoneHitboxSystem) => void;
@@ -651,6 +670,8 @@ export default function CombatArena3D({
   p2X: p2XProp = P2_X,
   p1Y: p1YProp = 0,
   p2Y: p2YProp = 0,
+  p1BackTurned = false,
+  p2BackTurned = false,
   cinematicPhase = 'fight',
   winnerName,
   cameraFov = 55,
@@ -664,6 +685,8 @@ export default function CombatArena3D({
   p2AttackDurationSeconds,
   p1LocomotionVelocity,
   p2LocomotionVelocity,
+  p1GroundSpeedRef,
+  p2GroundSpeedRef,
   onP1BoneHitboxReady,
   onP2BoneHitboxReady,
   wallSplatEvent,
@@ -711,13 +734,17 @@ export default function CombatArena3D({
     prevKnockdownEventRef.current = knockdownEvent;
 
     const { player } = knockdownEvent;
-    const baseX = player === 'p1' ? 0.3 : 0.7;
-    const screenX = baseX * 800;
-    const screenY = 340; // near floor level
+    const fighter = player === 'p1' ? p1Fighter : p2Fighter;
+    const worldX = player === 'p1' ? p1XProp : p2XProp;
+    const otherX = player === 'p1' ? p2XProp : p1XProp;
+    const screenX = impactScreenX(worldX, otherX);
+    const screenY = 470;
 
-    const dustParticles = spawnKnockdownDust(screenX, screenY, particleIdRef);
+    const dustParticles = spawnKnockdownDust(
+      screenX, screenY, particleIdRef, getCharacterHitBloom(fighter.id, '#8a7560'),
+    );
     setParticles(prev => [...prev.slice(-50), ...dustParticles]);
-  }, [knockdownEvent]);
+  }, [knockdownEvent, p1Fighter, p2Fighter, p1XProp, p2XProp]);
 
   // ── AAA hit effect pool tick ──────────────────────────────────────────────
   //
@@ -770,20 +797,15 @@ export default function CombatArena3D({
     if (prevDamageEventRef.current?.count === damageEvent.count) return;
     prevDamageEventRef.current = damageEvent;
 
-    const { player, damage, isCounter, factionColor } = damageEvent;
-    // Attacker is the opposite player
+    const { player, damage, isCounter, factionColor, blocked } = damageEvent;
+    if (!blocked && !(damage > 0)) return;
     const attackerFighter = player === 'p2' ? p1Fighter : p2Fighter;
     const bloomColor = getCharacterHitBloom(attackerFighter.id, factionColor);
-
-    // Screen-space position near the hit recipient
-    const baseX = player === 'p1' ? 0.28 : 0.72;
-    const screenX = baseX * 800;
-    const screenY = HIT_FX_SCREEN_Y + Math.random() * 80;
-
-    // World-space position near the fighter torso
-    const worldX = player === 'p1' ? -1.5 : 1.5;
-
-    const effectType: HitEffectType = isCounter ? 'counter_hit' : 'clean_hit';
+    const worldX = player === 'p1' ? p1XProp : p2XProp;
+    const otherX = player === 'p1' ? p2XProp : p1XProp;
+    const screenX = impactScreenX(worldX, otherX);
+    const screenY = HIT_FX_SCREEN_Y + Math.random() * 16;
+    const effectType: HitEffectType = blocked ? 'block' : isCounter ? 'counter_hit' : 'clean_hit';
 
     setHitEffectPool(prev => spawnHitEffect(prev, {
       type: effectType,
@@ -791,14 +813,14 @@ export default function CombatArena3D({
       screenY,
       worldX,
       worldY: HIT_FX_WORLD_Y,
-      worldZ: 0,
+      worldZ: player === 'p1' ? p1Z : p2Z,
       characterColor: bloomColor,
       attackAngle: player === 'p1' ? Math.PI : 0,
       damage,
     }));
 
     ensureHitEffectTicking();
-  }, [damageEvent, p1Fighter, p2Fighter]);
+  }, [damageEvent, p1Fighter, p2Fighter, p1XProp, p2XProp, p1Z, p2Z]);
 
   // ── Wall-splat VFX ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -807,16 +829,16 @@ export default function CombatArena3D({
     prevWallSplatEventRef.current = wallSplatEvent;
 
     const { player, wall } = wallSplatEvent;
-    const baseX = player === 'p1' ? (wall === 'left' ? 0.05 : 0.95) : (wall === 'left' ? 0.05 : 0.95);
-    const screenX = baseX * 800;
-    const screenY = HIT_FX_SCREEN_Y + 20 + Math.random() * 80;
+    const worldX = wall === 'left' ? -4.2 : 4.2;
+    const screenX = impactScreenX(worldX, 0);
+    const screenY = HIT_FX_SCREEN_Y + 10;
     const attackerFighter = player === 'p2' ? p1Fighter : p2Fighter;
     const bloomColor = getCharacterHitBloom(attackerFighter.id, '#ffffff');
 
     setHitEffectPool(prev => spawnHitEffect(prev, {
       type: 'wall_splat',
       screenX, screenY,
-      worldX: wall === 'left' ? -4.5 : 4.5,
+      worldX,
       worldY: HIT_FX_WORLD_Y,
       worldZ: 0,
       characterColor: bloomColor,
@@ -833,31 +855,30 @@ export default function CombatArena3D({
     prevOverdriveEventRef.current = overdriveEvent;
 
     const { player } = overdriveEvent;
-    const screenX = player === 'p1' ? 0.3 * 800 : 0.7 * 800;
-    const screenY = HIT_FX_SCREEN_Y;
     const fighter = player === 'p1' ? p1Fighter : p2Fighter;
     const bloomColor = getCharacterHitBloom(fighter.id, '#ff8800');
-
-    // Spawn multiple sparks for Overdrive activation
+    const worldX = player === 'p1' ? p1XProp : p2XProp;
+    const otherX = player === 'p1' ? p2XProp : p1XProp;
+    const screenX = impactScreenX(worldX, otherX);
     setHitEffectPool(prev => {
       let pool = prev;
-      for (let i = 0; i < 3; i++) {
+      for (const angle of [-Math.PI / 2, -Math.PI / 2 + 0.55]) {
         pool = spawnHitEffect(pool, {
-          type: 'counter_hit',
-          screenX: screenX + (Math.random() - 0.5) * 60,
-          screenY: screenY + (Math.random() - 0.5) * 40,
-          worldX: player === 'p1' ? -1.8 : 1.8,
-          worldY: HIT_FX_WORLD_Y + 0.3,
+          type: 'clean_hit',
+          screenX,
+          screenY: HIT_FX_SCREEN_Y - 16,
+          worldX,
+          worldY: HIT_FX_WORLD_Y + 0.35,
           worldZ: 0,
           characterColor: bloomColor,
-          attackAngle: Math.random() * Math.PI * 2,
-          damage: 200,
+          attackAngle: angle,
+          damage: 160,
         });
       }
       return pool;
     });
     ensureHitEffectTicking();
-  }, [overdriveEvent, p1Fighter, p2Fighter]);
+  }, [overdriveEvent, p1Fighter, p2Fighter, p1XProp, p2XProp]);
 
   // ── Finisher cinematic VFX ────────────────────────────────────────────────
   useEffect(() => {
@@ -866,31 +887,25 @@ export default function CombatArena3D({
     prevFinisherEventRef.current = finisherEvent;
 
     const { player } = finisherEvent;
-    const screenX = player === 'p1' ? 0.3 * 800 : 0.7 * 800;
     const fighter = player === 'p1' ? p1Fighter : p2Fighter;
     const bloomColor = getCharacterHitBloom(fighter.id, '#ff0000');
+    const worldX = player === 'p1' ? p1XProp : p2XProp;
+    const otherX = player === 'p1' ? p2XProp : p1XProp;
 
-    // Massive Finisher spark burst
-    setHitEffectPool(prev => {
-      let pool = prev;
-      for (let i = 0; i < 5; i++) {
-        pool = spawnHitEffect(pool, {
-          type: 'counter_hit',
-          screenX: screenX + (Math.random() - 0.5) * 120,
-          screenY: HIT_FX_SCREEN_Y - 30 + Math.random() * 200,
-          worldX: player === 'p1' ? -1.8 : 1.8,
-          worldY: HIT_FX_WORLD_Y + Math.random() * 0.8,
-          worldZ: 0,
-          characterColor: bloomColor,
-          attackAngle: Math.random() * Math.PI * 2,
-          damage: 400,
-        });
-      }
-      return pool;
-    });
-    setScreenFlash(1.0);
+    setHitEffectPool(prev => spawnHitEffect(prev, {
+      type: 'counter_hit',
+      screenX: impactScreenX(worldX, otherX),
+      screenY: HIT_FX_SCREEN_Y,
+      worldX,
+      worldY: HIT_FX_WORLD_Y,
+      worldZ: 0,
+      characterColor: bloomColor,
+      attackAngle: player === 'p1' ? 0 : Math.PI,
+      damage: 300,
+    }));
+    setScreenFlash(0.08);
     ensureHitEffectTicking();
-  }, [finisherEvent, p1Fighter, p2Fighter]);
+  }, [finisherEvent, p1Fighter, p2Fighter, p1XProp, p2XProp]);
 
   useEffect(() => {
     if (particles.length === 0) return;
@@ -905,8 +920,8 @@ export default function CombatArena3D({
     return () => clearInterval(interval);
   }, [particles.length]);
 
-  const p1XOffset = p1State === 'Startup' || p1State === 'Active' ? 0.3 : 0;
-  const p2XOffset = p2State === 'Startup' || p2State === 'Active' ? -0.3 : 0;
+  const p1XOffset = 0;
+  const p2XOffset = 0;
   const p1FinalX = p1XProp + p1XOffset;
   const p2FinalX = p2XProp + p2XOffset;
   const p1FinalZ = Math.max(-Z_RANGE, Math.min(Z_RANGE, p1Z));
@@ -918,8 +933,14 @@ export default function CombatArena3D({
   // so a fighter orbiting his opponent slid sideways without ever looking at
   // him — see `faceOpponentYaw` for the measurement and why this reproduces
   // the image-tested table exactly when the two are level on Z.
-  const p1RotationY = faceOpponentYaw({ x: p1FinalX, z: p1FinalZ }, { x: p2FinalX, z: p2FinalZ }, COMBAT_P1_YAW);
-  const p2RotationY = faceOpponentYaw({ x: p2FinalX, z: p2FinalZ }, { x: p1FinalX, z: p1FinalZ }, COMBAT_P2_YAW);
+  const p1RotationY = yawWithBackTurn(
+    faceOpponentYaw({ x: p1FinalX, z: p1FinalZ }, { x: p2FinalX, z: p2FinalZ }, COMBAT_P1_YAW),
+    p1BackTurned,
+  );
+  const p2RotationY = yawWithBackTurn(
+    faceOpponentYaw({ x: p2FinalX, z: p2FinalZ }, { x: p1FinalX, z: p1FinalZ }, COMBAT_P2_YAW),
+    p2BackTurned,
+  );
 
   // ── Stage-specific fog / clear color (training + urban_night stay locked) ─
   const stageCfg = resolveStageConfig(stageId);
@@ -977,6 +998,7 @@ export default function CombatArena3D({
           animationTrigger={p1AnimTrigger}
           attackDurationSeconds={p1AttackDurationSeconds}
           locomotionVelocity={p1LocomotionVelocity}
+          groundSpeedRef={p1GroundSpeedRef}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP1BoneHitboxReady}
           attackClip={p1AttackClip}
@@ -1006,6 +1028,7 @@ export default function CombatArena3D({
           animationTrigger={p2AnimTrigger}
           attackDurationSeconds={p2AttackDurationSeconds}
           locomotionVelocity={p2LocomotionVelocity}
+          groundSpeedRef={p2GroundSpeedRef}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP2BoneHitboxReady}
           attackClip={p2AttackClip}
@@ -1031,7 +1054,6 @@ export default function CombatArena3D({
           shakeOffset={cameraShakeOffset}
         />
 
-        {hitStopActive && <ambientLight intensity={0.8} color="#ffffff" />}
       </Canvas>
 
       <VFXOverlay

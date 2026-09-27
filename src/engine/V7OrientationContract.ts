@@ -81,6 +81,24 @@ export function faceOpponentYaw(
   return Math.atan2(-dz, dx);
 }
 
+/** How long a cross-up leaves you back-turned before you auto-face. */
+export const BACK_TURN_HOLD_MS = 500;
+
+/**
+ * Back to the opponent. Tekken keeps this after a cross-up: you can turn
+ * (press toward them) or attack, and the attack turns you first because
+ * there is no back-turned strike clip. The mesh yaw is the facing yaw plus
+ * a half turn; lane facing for hitboxes stays the +/-1 it already is.
+ */
+export function yawWithBackTurn(yaw: number, backTurned: boolean): number {
+  return backTurned ? yaw + Math.PI : yaw;
+}
+
+/** The pair swapped X order. A zero gap is not a cross. */
+export function crossedOnX(prevDx: number, nextDx: number): boolean {
+  return prevDx * nextDx < 0;
+}
+
 /**
  * Combat group Y is 0. The clone plants feet with plantFeetOnFloor.
  * Extra group lifts stacked fallback clones into the floor.

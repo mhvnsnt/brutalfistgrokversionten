@@ -17,23 +17,29 @@ describe('the moves a player fires can continue into a string', () => {
    * another: throw one, sit through its whole recovery, throw the next. This
    * is the regression test for "the combat doesn't flow".
    */
-  it('every generated move with a partner carries a cancel window', { skip: !hasTable }, () => {
+  it('punches carry a cancel into the kick, and kicks end the string', { skip: !hasTable }, () => {
     const set = generatedMoveset('bannon');
-    assert.ok(set.length >= 20, `expected a full matrix, got ${set.length}`);
-    const withCancel = set.filter((m) => (m.move?.cancelInto ?? []).length > 0);
+    const punches = set.filter((m) => /P$/.test(m.id));
+    const kicks = set.filter((m) => /K$/.test(m.id));
+    const withCancel = punches.filter((m) => (m.move?.cancelInto ?? []).length > 0);
     assert.ok(
-      withCancel.length >= set.length * 0.8,
-      `only ${withCancel.length}/${set.length} generated moves can be cancelled`,
+      withCancel.length >= punches.length * 0.8,
+      `only ${withCancel.length}/${punches.length} punches can continue`,
+    );
+    assert.equal(
+      kicks.filter((m) => (m.move?.cancelInto ?? []).length > 0).length,
+      0,
+      'a kick continuing would let the string loop',
     );
   });
 
-  it('a punch continues into the kick on the same direction, and back', { skip: !hasTable }, () => {
+  it('a punch continues into the kick on the same direction, and the kick ends the string', { skip: !hasTable }, () => {
     const set = generatedMoveset('bannon');
     const punch = set.find((m) => /_6P$/.test(m.id));
     const kick = set.find((m) => /_6K$/.test(m.id));
     if (!punch || !kick) return;
     assert.equal(punch.move?.cancelInto?.[0]?.move, kick.id, '6P should chain into 6K');
-    assert.equal(kick.move?.cancelInto?.[0]?.move, punch.id, '6K should chain back into 6P');
+    assert.equal(kick.move?.cancelInto?.length ?? 0, 0, '6K is the ender — a kick must not chain back into the punch');
   });
 
   it('never chains a move into itself', { skip: !hasTable }, () => {
@@ -67,6 +73,14 @@ describe('the moves a player fires can continue into a string', () => {
         assert.ok(link.to <= total + 1e-6, `${m.id} cancels past its own end`);
       }
     }
+  });
+
+  it('a rising kick launches, a low punch does not', { skip: !hasTable }, () => {
+    const set = generatedMoveset('bannon');
+    const hop = set.find((m) => /_9K$/.test(m.id) || /_8K$/.test(m.id));
+    const low = set.find((m) => /_2P$/.test(m.id));
+    assert.equal(hop?.move?.reaction, 'Flight');
+    assert.equal(low?.move?.reaction, 'WeakLow');
   });
 });
 

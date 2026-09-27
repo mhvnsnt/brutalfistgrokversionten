@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 import {
   MAX_JOINT_SPAN_HOPS, jointHopMatrix, largestComponentShare, repairSkinnedMesh,
-  skeletonIsConnected,
+  reassignDistantWeights, skeletonIsConnected,
 } from './SkinWeightRepair.ts';
 
 /**
@@ -174,5 +174,76 @@ describe('a skeleton that is a body plus some bits', () => {
     const report = repairSkinnedMesh(mesh, hops, MAX_JOINT_SPAN_HOPS);
     assert.equal(report.repaired, 1, 'the cross-component influence was not pruned');
     assert.equal(weightsOf(mesh)[1], 0, 'the stray joint still carries weight');
+  });
+});
+
+describe('a vertex weighted only to the wrong bone', () => {
+  function posed(spacing: number, verts: number[], weights: number[], index?: number[]) {
+    const names = ['Hips', 'Spine', 'Spine1', 'Spine2', 'Shoulder', 'Arm', 'ForeArm', 'Hand'];
+    const bones = names.map((n) => { const b = new THREE.Bone(); b.name = n; return b; });
+    for (let i = 1; i < bones.length; i++) {
+      bones[i - 1].add(bones[i]);
+      bones[i].position.set(spacing, 0, 0);
+    }
+    const root = new THREE.Group();
+    root.add(bones[0]);
+    root.updateMatrixWorld(true);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+    const influences = verts.length / 3;
+    const idx = new Array<number>(influences * 4).fill(0);
+    const wts = new Array<number>(influences * 4).fill(0);
+    for (let i = 0; i < influences; i++) {
+      idx[i * 4] = weights[i * 2];
+      wts[i * 4] = weights[i * 2 + 1];
+    }
+    geo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(idx, 4));
+    geo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(wts, 4));
+    if (index) geo.setIndex(index);
+    const mesh = new THREE.SkinnedMesh(geo, new THREE.MeshBasicMaterial());
+    root.add(mesh);
+    mesh.bind(new THREE.Skeleton(bones));
+    return mesh;
+  }
+
+  it('rebinds a vertex whose only bone is on the other side of the body', () => {
+    // Hand sits 0.84 m from the hips. The vertex is on the hand and weighted
+    // 100% to the hips — pairwise repair has nothing to prune.
+    const mesh = posed(0.12, [0.84, 0, 0], [0, 1]);
+    const r = reassignDistantWeights(mesh);
+    assert.ok(r.reassigned >= 1, 'the lone wrong influence was left in place');
+    assert.equal(mesh.geometry.attributes.skinIndex.getComponent(0, 0), 7);
+  });
+
+  it('leaves a coat hem that is far from every bone', () => {
+    const mesh = posed(0.12, [0, -0.6, 0], [0, 1]);
+    const r = reassignDistantWeights(mesh);
+    assert.equal(r.reassigned, 0, 'a hem with no nearby bone was rebound');
+    assert.equal(mesh.geometry.attributes.skinIndex.getComponent(0, 0), 0);
+  });
+
+  it('gives an A-pose hand vertex back to the hand when its neighbours already are', () => {
+    // Hands hang 0.14 m from the hips, under the 0.42 m lone-bone rule, which
+    // is why the shred survived the first spatial check. The triangle knows.
+    const mesh = posed(
+      0.02,
+      [0.14, 0, 0, 0.14, 0.02, 0, 0.14, -0.02, 0],
+      [0, 1, 7, 1, 7, 1],
+      [0, 1, 2],
+    );
+    reassignDistantWeights(mesh);
+    assert.equal(mesh.geometry.attributes.skinIndex.getComponent(0, 0), 7, 'the hand vertex stayed on the hips');
+    assert.equal(mesh.geometry.attributes.skinIndex.getComponent(1, 0), 7);
+  });
+
+  it('does not pull a real hip vertex onto the hand hanging beside it', () => {
+    const mesh = posed(
+      0.02,
+      [0.02, 0, 0, 0.14, 0, 0, 0.14, 0.02, 0],
+      [0, 1, 7, 1, 7, 1],
+      [0, 1, 2],
+    );
+    reassignDistantWeights(mesh);
+    assert.equal(mesh.geometry.attributes.skinIndex.getComponent(0, 0), 0, 'the hip was stolen by the hand');
   });
 });

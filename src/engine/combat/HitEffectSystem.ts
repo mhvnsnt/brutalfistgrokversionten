@@ -1,32 +1,14 @@
 /**
- * HitEffectSystem — AAA billboarded 3-layer spark system
+ * Hit sparks are a Tekken contact flash, drawn by the arena as slashes.
  *
- * Architecture (Tekken hit effect layers):
- *  Layer 1: White-hot core — pure white center, always blown-out
- *  Layer 2: Character color corona — surrounds white core with fighter's identity color
- *  Layer 3: Directional streaks — sharp jagged streaks along attack trajectory
+ * A hit is a white-hot core plus a few short shards in the attacker's color,
+ * biased along the attack. A block is a smaller pale slash. A counter is the
+ * same spark, a little longer, still gone in a fraction of a second.
  *
- * Contextual shapes:
- *  - Clean hit: explosive jagged starbursts in character color
- *  - Block: universal pale blue/grey circular shield spark
- *  - Counter-hit: same as clean hit but 200% scale, longer duration, + screen shake
- *
- * Environmental illumination:
- *  - THREE.PointLight at impact XYZ, tinted to attacker's color
- *  - Exists for exactly 3-5 frames then vanishes (flashbulb, not glow stick)
- *
- * Object pooling:
- *  - Pre-allocate pool of 5 hit-spark effect slots
- *  - Reuse slots instead of creating new meshes on every hit
- *  - Prevents mobile GC stutter
- *
- * Camera shake:
- *  - Light punch: 1px for 3 frames
- *  - Heavy punch: 5px for 10 frames
- *  - Counter-hit: 8px for 15 frames
- *
- * NOTE: This system provides the data/state for hit effects.
- * The actual Three.js rendering is done in CombatArena3D.tsx using this data.
+ * Nothing here is a disc. The old corona was a radial fill; on a portrait
+ * phone the overlay stretched it into the cream rings and the yellow beam.
+ * `sparkReachCss` is the longest a shard may be, in CSS pixels of an
+ * aspect-correct canvas. The renderer must not stroke a circle with it.
  */
 
 // ── Hit effect types ──────────────────────────────────────────────────────────
@@ -155,46 +137,45 @@ function generateStreaks(
   const streaks: DirectionalStreak[] = [];
 
   if (type === 'block') {
-    // Block: circular shield sparks — no directional streaks, just radial
-    for (let i = 0; i < 6; i++) {
+    // A small pale slash. Not a plus-sign, not a shield the size of the fighter.
+    for (let i = 0; i < 3; i++) {
       streaks.push({
-        angle: (Math.PI * 2 * i) / 6,
-        length: 12 * scale,
-        width: 2,
-        color: '#8ab4d4', // pale blue shield color
-        alpha: 0.7,
+        angle: attackAngle + (i - 1) * 0.5,
+        length: 6 * scale,
+        width: 1.2,
+        color: '#d7e6f4',
+        alpha: 0.9,
       });
     }
     return streaks;
   }
 
-  // Clean hit / counter-hit: jagged directional streaks
-  const baseCount = type === 'counter_hit' ? 12 : 8;
-  const baseLength = type === 'counter_hit' ? 35 * scale : 20 * scale;
+  // Clean / counter / slam: character-colored shards along the attack,
+  // plus a short white core. The spread is a slash, not a starburst.
+  const baseCount = type === 'counter_hit' ? 7 : type === 'wall_splat' || type === 'floor_slam' ? 6 : 5;
+  const baseLength = type === 'counter_hit' ? 12 * scale : 8 * scale;
+  const spread = type === 'wall_splat' || type === 'floor_slam' ? Math.PI * 0.45 : Math.PI * 0.55;
 
   for (let i = 0; i < baseCount; i++) {
-    // Bias streaks toward attack direction
-    const spread = Math.PI * 0.7;
     const angle = attackAngle + (Math.random() - 0.5) * spread;
-    const length = baseLength * (0.5 + Math.random() * 0.8);
+    const length = baseLength * (0.55 + Math.random() * 0.6);
     streaks.push({
       angle,
       length,
-      width: 1.5 + Math.random() * 2,
+      width: 1.4,
       color: characterColor,
-      alpha: 0.8 + Math.random() * 0.2,
+      alpha: 0.9,
     });
   }
 
-  // Add a few white-hot core streaks
-  for (let i = 0; i < 4; i++) {
-    const angle = attackAngle + (Math.random() - 0.5) * 0.8;
+  const cores = type === 'counter_hit' ? 3 : 2;
+  for (let i = 0; i < cores; i++) {
     streaks.push({
-      angle,
-      length: baseLength * 0.6,
+      angle: attackAngle + (Math.random() - 0.5) * 0.4,
+      length: baseLength * 0.55,
       width: 1,
       color: '#ffffff',
-      alpha: 1.0,
+      alpha: 1,
     });
   }
 
@@ -215,6 +196,70 @@ export interface SpawnHitEffectParams {
 }
 
 /**
+ * Tekken's hit flash is a contact glint, not a faction-colored orb.
+ * A jab is gone in about 5 frames. A counter is a little larger and a
+ * little longer, still under a sixth of a second. The old 0.35–0.6s
+ * lives and 2× coronas were the circles that sat on screen.
+ */
+export const HIT_FX_CLEAN_LIFE = 0.09;
+export const HIT_FX_HEAVY_LIFE = 0.12;
+export const HIT_FX_COUNTER_LIFE = 0.16;
+export const HIT_FX_BLOCK_LIFE = 0.07;
+
+/**
+ * Longest shard, in CSS pixels, on a canvas whose backing store matches the
+ * element. Geometric-mean sizing keeps a phone and a desktop in the same
+ * ballpark. The cap is a fraction of the SHORT side so a portrait stretch
+ * cannot turn the spark into a beam or a body halo.
+ *
+ * Measured against the owner's screenshot viewport (675×1500): a clean hit
+ * stays under ~80px and a counter under ~110px. The rings that filled the
+ * frame were several hundred pixels across.
+ */
+export function sparkReachCss(cssW: number, cssH: number, type: HitEffectType, scale = 1): number {
+  const w = Math.max(1, cssW);
+  const h = Math.max(1, cssH);
+  const unit = Math.sqrt(w * h);
+  const frac = type === 'block' ? 0.045
+    : type === 'counter_hit' ? 0.09
+    : type === 'wall_splat' || type === 'floor_slam' ? 0.08
+    : 0.062;
+  const reach = unit * frac * Math.max(0.2, scale);
+  const cap = Math.min(w, h) * (type === 'counter_hit' ? 0.16 : 0.12);
+  return Math.min(reach, cap);
+}
+
+function sparkProfile(type: HitEffectType, damage: number): {
+  scale: number;
+  life: number;
+  lightFrames: number;
+  lightIntensity: number;
+  flash: number;
+  shake: number;
+  shakeFrames: number;
+} {
+  if (type === 'block') {
+    return { scale: 0.8, life: HIT_FX_BLOCK_LIFE, lightFrames: 1, lightIntensity: 0.35, flash: 0, shake: 0.4, shakeFrames: 2 };
+  }
+  if (type === 'counter_hit') {
+    return { scale: 1.25, life: HIT_FX_COUNTER_LIFE, lightFrames: 2, lightIntensity: 0.9, flash: 0.05, shake: 2.5, shakeFrames: 6 };
+  }
+  if (type === 'floor_slam' || type === 'wall_splat') {
+    return { scale: 1.3, life: 0.14, lightFrames: 2, lightIntensity: 0.8, flash: 0.04, shake: 3, shakeFrames: 6 };
+  }
+  const heavy = damage > 150;
+  return {
+    scale: heavy ? 1.12 : 1,
+    life: heavy ? HIT_FX_HEAVY_LIFE : HIT_FX_CLEAN_LIFE,
+    lightFrames: 2,
+    lightIntensity: heavy ? 0.7 : 0.45,
+    flash: heavy ? 0.03 : 0,
+    shake: heavy ? 1.6 : 0.6,
+    shakeFrames: heavy ? 4 : 2,
+  };
+}
+
+/**
  * Spawn a hit effect into the pool.
  * Finds the oldest/inactive slot and reuses it.
  */
@@ -228,22 +273,17 @@ export function spawnHitEffect(pool: HitEffectPool, params: SpawnHitEffectParams
   let slotIdx = pool.slots.findIndex(s => !s.active);
   if (slotIdx === -1) slotIdx = 0; // steal first slot
 
-  const isCounter = type === 'counter_hit';
-  const isHeavy = damage > 150 || isCounter;
-  const scale = isCounter ? 2.0 : isHeavy ? 1.4 : 1.0;
-  const maxLife = isCounter ? 0.6 : isHeavy ? 0.45 : 0.35;
-
-  // Point light: 3-5 frames
-  const pointLightFrames = isCounter ? 5 : isHeavy ? 4 : 3;
-  const pointLightIntensity = isCounter ? 8.0 : isHeavy ? 5.0 : 3.0;
+  const profile = sparkProfile(type, damage);
 
   const pointLight: PointLightFlash = {
     x: worldX, y: worldY, z: worldZ,
-    color: type === 'block' ? '#8ab4d4' : characterColor,
-    intensity: pointLightIntensity,
-    maxIntensity: pointLightIntensity,
-    framesRemaining: pointLightFrames,
-    totalFrames: pointLightFrames,
+    // The attacker's color, for two frames. A white flood was wiping the
+    // roster out; a sustained light was the "lights for no reason".
+    color: type === 'block' ? '#d5e2ee' : characterColor,
+    intensity: profile.lightIntensity,
+    maxIntensity: profile.lightIntensity,
+    framesRemaining: profile.lightFrames,
+    totalFrames: profile.lightFrames,
   };
 
   const newSlot: HitEffectSlot = {
@@ -252,10 +292,10 @@ export function spawnHitEffect(pool: HitEffectPool, params: SpawnHitEffectParams
     screenX, screenY,
     worldX, worldY, worldZ,
     characterColor,
-    scale,
-    life: maxLife,
-    maxLife,
-    streaks: generateStreaks(type, characterColor, attackAngle, scale),
+    scale: profile.scale,
+    life: profile.life,
+    maxLife: profile.life,
+    streaks: generateStreaks(type, characterColor, attackAngle, profile.scale),
     attackAngle,
     pointLight,
   };
@@ -263,16 +303,17 @@ export function spawnHitEffect(pool: HitEffectPool, params: SpawnHitEffectParams
   const newSlots = [...pool.slots];
   newSlots[slotIdx] = newSlot;
 
-  // Camera shake
-  const shake = getCameraShakeForHit(type, damage);
-
-  // Screen flash
-  const flashIntensity = isCounter ? 0.9 : isHeavy ? 0.5 : 0.25;
-
   return {
     slots: newSlots,
-    cameraShake: shake,
-    screenFlash: Math.max(pool.screenFlash, flashIntensity),
+    cameraShake: {
+      active: true,
+      offsetX: 0,
+      offsetY: 0,
+      magnitude: profile.shake,
+      framesRemaining: profile.shakeFrames,
+      totalFrames: profile.shakeFrames,
+    },
+    screenFlash: Math.max(pool.screenFlash, profile.flash),
   };
 }
 
@@ -398,7 +439,12 @@ export function getHitEffectRenderData(pool: HitEffectPool): HitEffectRenderData
     .filter(s => s.active)
     .map(s => {
       const alpha = s.life / s.maxLife;
-      const baseRadius = s.type === 'block' ? 18 : s.type === 'counter_hit' ? 40 : 24;
+      // Screen pixels on the 800-wide overlay. A counter used to be an 80px
+      // disc; stretched to a desktop that was a third of the fighter.
+      const baseRadius = s.type === 'block' ? 6
+        : s.type === 'counter_hit' ? 11
+        : s.type === 'wall_splat' || s.type === 'floor_slam' ? 12
+        : 8;
       return {
         screenX: s.screenX,
         screenY: s.screenY,

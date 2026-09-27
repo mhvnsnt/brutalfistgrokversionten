@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { COMBAT_P1_YAW, COMBAT_P2_YAW, faceOpponentYaw } from './V7OrientationContract.ts';
+import { COMBAT_P1_YAW, COMBAT_P2_YAW, crossedOnX, faceOpponentYaw, yawWithBackTurn } from './V7OrientationContract.ts';
 
 
 /**
@@ -36,5 +36,14 @@ describe('facing the opponent, not the lane', () => {
   it('keeps the lane yaw when the two are on top of each other', () => {
     // No bearing to read; spinning here would look like a glitch, not a turn.
     assert.equal(faceOpponentYaw({ x: 0, z: 0 }, { x: 0.01, z: 0 }, COMBAT_P1_YAW), COMBAT_P1_YAW);
+  });
+
+  it('turns the mesh around after a cross-up and not otherwise', () => {
+    const face = faceOpponentYaw({ x: -1, z: 0 }, { x: 1, z: 0 }, COMBAT_P1_YAW);
+    near(yawWithBackTurn(face, false), face, 'still facing');
+    near(Math.abs(yawWithBackTurn(face, true) - face), Math.PI, 'back turned');
+    assert.equal(crossedOnX(1, -0.2), true);
+    assert.equal(crossedOnX(1, 0.2), false);
+    assert.equal(crossedOnX(0, -1), false);
   });
 });

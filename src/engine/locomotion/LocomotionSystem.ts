@@ -427,10 +427,29 @@ export class LocomotionSystem {
     const sidestepVector = hasSidestep && target
       ? this.targetedSidestepVelocity(target, Math.sign(strafeInput), strafeMax)
       : null;
-    const targetVX = Math.abs(forwardInput) > 0.1
-      ? Math.sign(forwardInput) * maxSpeed * this.state.facing
-      : sidestepVector?.x ?? 0;
-    const targetVZ = sidestepVector?.z ?? 0;
+    // WALK TOWARD THE OPPONENT, INCLUDING IN Z. Stepping along the facing lane
+    // alone means a sidestepped opponent can never be walked into, which is the
+    // "sometimes you can't reach them" the owner reported. With no target — tests,
+    // a spawn — the old lane step remains.
+    let targetVX = 0;
+    let targetVZ = 0;
+    const forwardLive = Math.abs(forwardInput) > 0.1;
+    if (forwardLive && target) {
+      const dx = target.x - this.state.rootX;
+      const dz = target.z - this.state.rootZ;
+      const dist = Math.hypot(dx, dz);
+      if (dist > 0.05) {
+        const sign = Math.sign(forwardInput);
+        targetVX = (dx / dist) * maxSpeed * sign;
+        targetVZ = (dz / dist) * maxSpeed * sign;
+      }
+    } else if (forwardLive) {
+      targetVX = Math.sign(forwardInput) * maxSpeed * this.state.facing;
+    }
+    if (sidestepVector) {
+      targetVX += sidestepVector.x;
+      targetVZ += sidestepVector.z;
+    }
 
     // Smooth velocity with acceleration/deceleration
     this.state.velocityX = this.smoothVel(this.state.velocityX, targetVX, dt);
@@ -507,7 +526,11 @@ export class LocomotionSystem {
     const tangentX = -nz * side;
     const tangentZ = nx * side;
 
-    const desiredGap = 2.8;
+    // 0.82m, NOT 2.8. The longest authored strike reach in the moveset is 0.937m
+    // (measured across 286 moves), so a 2.8m separation put every fighter three
+    // times further apart than their longest attack can travel — nothing could
+    // reach anything. This is the "you can't get close enough" defect.
+    const desiredGap = 0.82;
     const radial = Math.max(-0.65, Math.min(0.65, (distance - desiredGap) * 0.5));
     return {
       x: tangentX * speed + nx * radial,

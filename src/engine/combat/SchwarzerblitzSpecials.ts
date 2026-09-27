@@ -260,9 +260,17 @@ function normaliseStep(step: CommandStep): CommandStep {
  * exactly as it was.
  */
 let commandClips: { sets?: Record<string, Record<string, string>>; fighters?: Record<string, Record<string, string>> } = {};
+const clipListeners = new Set<() => void>();
 
 export function setCommandClipMap(map: typeof commandClips): void {
   commandClips = map ?? {};
+  for (const fn of clipListeners) fn();
+}
+
+export function onCommandClips(fn: () => void): () => void {
+  clipListeners.add(fn);
+  if (commandClips.sets || commandClips.fighters) fn();
+  return () => { clipListeners.delete(fn); };
 }
 
 function clipForCommand(id: string, setName: string, fighterId?: string): string | undefined {

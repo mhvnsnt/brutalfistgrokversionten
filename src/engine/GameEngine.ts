@@ -4,6 +4,7 @@ import { BannonFighterProfile, getBannonFighter } from '../data/bannonRoster';
 import { GrappleSystem } from './GrappleSystem';
 import { hitStopFramesForImpact } from './BannonCombatContract';
 import { getMoveById } from './BrutalFistMoveCatalog';
+import { capSingleHit } from './combat/DamageScale';
 
 type RangeMove = FrameData & { minRange?: number; maxRange?: number };
 
@@ -125,7 +126,11 @@ export class GameEngine {
   }
 
   public applyIncomingHit(target: 'p1' | 'p2', damage: number, blocked: boolean, hitstunSeconds = 0.3) {
-    const dmg = Math.max(0, Math.round(Number.isFinite(damage) ? damage : 0));
+    // THE SINGLE-HIT CAP, applied in the ONE place every hit passes through, after
+    // counter hit, rage, combo scaling and everything else. Without a ceiling a
+    // counter-hit rage art inside a combo can take a third of a bar in one frame,
+    // and a round decided by one exchange is what the cap exists to stop.
+    const dmg = capSingleHit(Number.isFinite(damage) ? damage : 0);
     const frames = Math.max(6, Math.round(Math.max(0.1, hitstunSeconds) * 60));
     this.hitStopFrames = Math.max(this.hitStopFrames, blocked ? 2 : 5);
     this.suppressInternalHit = true;

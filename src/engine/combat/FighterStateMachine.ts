@@ -118,6 +118,13 @@ export interface MoveWindow {
    */
   attackLevel?: 'high' | 'mid' | 'low';
   /**
+   * What the body does when this connects. Weak is a poke flinch, Strong is the
+   * longer stagger, Flight leaves the floor. Absent, the arena falls back to the
+   * launch number — which is why every generated move reacted identically before
+   * this existed: a jab and a rising kick produced the same flinch.
+   */
+  reaction?: string;
+  /**
    * The SOURCE CLIP this move was authored with, when it has one — e.g. an
    * imported Schwarzerblitz animation name. `animation` stays a typed motion
    * state so every existing consumer is unaffected; this is the preferred clip
@@ -1021,14 +1028,14 @@ export class FighterStateMachine {
    * move that landed, clamped between HITSTUN_MIN and HITSTUN_MAX.
    * This replaces the old applyStun for normal hits.
    */
-  applyHitStun(sourceMove: MoveWindow | null, fallbackDuration = 0.3) {
+  applyHitStun(sourceMove: MoveWindow | null, fallbackDuration = 0.3, motion: FighterMotionState = 'hit') {
     const duration = sourceMove
       ? this.computeHitStunDuration(sourceMove)
       : Math.max(HITSTUN_MIN, Math.min(HITSTUN_MAX, fallbackDuration));
 
-    this.beginCrossfade(this.motionState, 'hit', CROSSFADE_HIT_FRAMES / this.FPS);
+    this.beginCrossfade(this.motionState, motion, CROSSFADE_HIT_FRAMES / this.FPS);
     this.actionState = 'HitStun';
-    this.motionState = 'hit';
+    this.motionState = motion;
     this.hitStunTimer = duration;
     this.blockStunTimer = 0;
     this.hitStunSourceMove = sourceMove;
@@ -1047,7 +1054,10 @@ export class FighterStateMachine {
     if (isCrumple) {
       this.blockStunTimer = 0;
       this.actionState = 'Crumple';
-      this.motionState = 'knockdown';
+      // A strong hit is a stagger, not a knockdown. Playing the fall clip
+      // here made the body start collapsing and then snap upright when the
+      // stun ended.
+      this.motionState = 'hitHigh';
       this.stunTimer = duration;
       this.currentMove = null;
       this.moveTimer = 0;
@@ -1107,7 +1117,9 @@ export class FighterStateMachine {
         return effect;
       default:
         if (this.juggle.airborne) { applyAirHit(this.juggle, effect); return effect; }
-        this.applyHitStun(sourceMove, effect.stun);
+        // Low reactions use the body flinch. Everything else is the short
+        // standing flinch. The 2.4s Mixamo hit is not a poke reaction.
+        this.applyHitStun(sourceMove, effect.stun, /low/i.test(reactionName ?? '') ? 'hitLow' : 'hit');
         return effect;
     }
   }
@@ -1573,6 +1585,27 @@ export class FighterStateMachine {
     } else if (this.throwComboQueue.length > 0 && this.throwComboIndex >= this.throwComboQueue.length) {
       this.throwComboQueue = [];
       this.throwComboIndex = 0;
+    }
+
+    // ── Airborne (juggled) — a body off the mat cannot act ───────────────────
+    // A launcher sets 'Juggled' and tickAirborne() advances the arc. updateStep
+    // had NO case for it, so it fell straight through to the movement logic and
+    // reset the action to Idle on the very next frame — while the renderer kept
+    // reading juggleHeight for Y. That is the floating body: it rose in the idle
+    // pose, took input in mid-air, and then dropped into a knockdown out of
+    // nowhere when the arc landed.
+    // The airborne FLAG is the authority, not actionState: a stale action must
+    // never let a floating body act.
+    if (this.juggle.airborne) {
+      this.actionState = 'Juggled';
+      this.motionState = 'knockdown';
+      this.hitStunTimer = Math.max(0, this.hitStunTimer - dt);
+      this.walkVelocity = { forward: 0, strafe: 0 };
+      this.isBackdashing = false;
+      this.currentMove = null;
+      this.moveTimer = 0;
+      this.moveElapsed = 0;
+      return this.motionState;
     }
 
     // ── Knockdown / wakeup tick ──────────────────────────────────────────────

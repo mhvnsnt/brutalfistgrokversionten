@@ -176,6 +176,21 @@ describe('the state machine actually juggles', () => {
     fsm.applyReaction('WeakMid');
     assert.equal(fsm.isAirborne, false);
     assert.equal(fsm.action, 'HitStun');
+    assert.equal(fsm.current, 'hit', 'a jab plays the short flinch, not a fall');
+  });
+
+  it('a low poke uses the body flinch and a heavy hit does not play the knockdown', async () => {
+    const { FighterStateMachine } = await import('./FighterStateMachine.ts');
+    const low = new FighterStateMachine();
+    low.applyReaction('WeakLow');
+    assert.equal(low.action, 'HitStun');
+    assert.equal(low.current, 'hitLow');
+
+    const heavy = new FighterStateMachine();
+    heavy.applyReaction('StrongMid');
+    assert.equal(heavy.action, 'Crumple');
+    assert.equal(heavy.current, 'hitHigh', 'a strong hit was playing the knockdown clip');
+    assert.notEqual(heavy.action, 'Knockdown');
   });
 
   it('a heavy hit CONTINUES a juggle instead of dropping into a standing stagger', async () => {

@@ -55,9 +55,18 @@ export interface GeneratedMove {
 }
 
 let table: Record<string, GeneratedMove[]> = {};
+const movesetListeners = new Set<() => void>();
 
 export function setGeneratedMovesets(t: Record<string, GeneratedMove[]>): void {
   table = t ?? {};
+  for (const fn of movesetListeners) fn();
+}
+
+/** Fires immediately if a table is already loaded, and again when one arrives. */
+export function onGeneratedMovesets(fn: () => void): () => void {
+  movesetListeners.add(fn);
+  if (Object.keys(table).length) fn();
+  return () => { movesetListeners.delete(fn); };
 }
 
 export function generatedMovesetsLoaded(): number {
@@ -88,16 +97,33 @@ export const CANCEL_OPENS_AT = 0.20;
  *
  * THE WINDOW SHAPE IS MEASURED; THE PAIRING IS A DERIVED DEFAULT, and the
  * distinction matters. The source authors named strings per move and we have
- * none for generated slots, so each move chains into the SAME DIRECTION on the
- * OTHER BUTTON — punch into kick, kick into punch. That gives a real two-hit
- * string per direction and cannot become a mash: it is one link, not a licence
- * to cancel into anything.
+ * none for generated slots, so a punch continues into the kick on the SAME
+ * direction and the kick ends the string. A kick that cancelled back into
+ * the punch let one direction loop for as long as you mashed, which is not
+ * a Tekken string.
  */
 function stringPartner(id: string): string | null {
   // ids are `bf_<fighter>_<stance>_<numpad><button>`, e.g. bf_bannon_Ground_6P
   const m = /^(.*_)([1-9])([PK])$/.exec(id);
-  if (!m) return null;
-  return `${m[1]}${m[2]}${m[3] === 'P' ? 'K' : 'P'}`;
+  if (!m || m[3] !== 'P') return null;
+  return `${m[1]}${m[2]}K`;
+}
+
+/**
+ * Hopkicks and jump kicks leave the floor. A hard kick staggers. A low
+ * punch is a low flinch. Everything else is a poke. The clip name and the
+ * direction are what the move already is — this does not invent a new move.
+ */
+function reactionForGenerated(m: GeneratedMove): string {
+  const kick = m.command.some((c) => c.buttons.includes('K'));
+  const dirs = m.command.flatMap((c) => c.dirs);
+  const rising = dirs.some((d) => d === 7 || d === 8 || d === 9);
+  const low = dirs.some((d) => d === 1 || d === 2 || d === 3);
+  const clip = (m.clip ?? '').toUpperCase();
+  if (kick && (rising || /JUMP|AXE|SPIN/.test(clip))) return 'Flight';
+  if (kick && (m.damage ?? 0) >= 96) return 'StrongMid';
+  if (!kick && low) return 'WeakLow';
+  return kick ? 'WeakMid' : 'WeakHigh';
 }
 
 /** This fighter's generated commands, as the state machine wants them. */
@@ -132,6 +158,7 @@ export function generatedMoveset(fighterId: string): SpecialMoveDefinition[] {
       hitboxEndFrame: Math.max(2, Math.round((m.startup + m.active) * 60)),
       totalFrames: Math.round((m.startup + m.active + m.recovery) * 60),
       damage: m.damage,
+      reaction: reactionForGenerated(m),
       contactReach: m.contactReach,
       isSpecial: true,
       specialName: m.name,

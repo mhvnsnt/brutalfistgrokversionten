@@ -311,3 +311,177 @@ export function repairSkinWeights(
   });
   return total;
 }
+
+/**
+ * A vertex whose ONLY weight is the wrong bone is invisible to the pairwise
+ * pass: there is no second influence to prune, and in an A-pose the hand sits
+ * against the hip so the bad bone is centimetres away until the arm lifts and
+ * the triangle stretches into the wrist-to-hip shred (and, when the bone is
+ * nowhere near the vertex, the long beam across the screen).
+ *
+ * Two rules, both spatial, both at bind:
+ *   - the heaviest bone is more than DISTANT_BONE_M from the vertex and some
+ *     body bone is within NEAR_BONE_M — rigid-bind to that bone;
+ *   - or a mesh neighbour is bound to a joint more than MAX_JOINT_SPAN_HOPS
+ *     away and that joint is closer to this vertex than its own bone is.
+ * A coat hem that is far from every bone stays where it was authored.
+ */
+export const DISTANT_BONE_M = 0.42;
+export const NEAR_BONE_M = 0.22;
+const CLOSER_BY_M = 0.04;
+const REASSIGN_PASSES = 3;
+
+export interface DistantWeightReport {
+  reassigned: number;
+  verts: number;
+}
+
+function bodyBoneMask(hops: number[][]): boolean[] {
+  let anchor = 0;
+  let best = 0;
+  hops.forEach((row, i) => {
+    let reach = 0;
+    for (const d of row) if (Number.isFinite(d)) reach++;
+    if (reach > best) { best = reach; anchor = i; }
+  });
+  return hops[anchor].map((d) => Number.isFinite(d));
+}
+
+function boneLocalPositions(mesh: THREE.SkinnedMesh): THREE.Vector3[] {
+  const bindInv = mesh.bindMatrixInverse ?? new THREE.Matrix4();
+  const m = new THREE.Matrix4();
+  return mesh.skeleton.boneInverses.map((inverse) => {
+    m.copy(inverse).invert().premultiply(bindInv);
+    const p = new THREE.Vector3().setFromMatrixPosition(m);
+    if (!Number.isFinite(p.x) || !Number.isFinite(p.y) || !Number.isFinite(p.z)) {
+      p.set(1e6, 1e6, 1e6);
+    }
+    return p;
+  });
+}
+
+function dominantBone(skinIndex: THREE.BufferAttribute, skinWeight: THREE.BufferAttribute, v: number): number {
+  let best = skinIndex.getComponent(v, 0);
+  let bestW = -1;
+  for (let k = 0; k < 4; k++) {
+    const w = skinWeight.getComponent(v, k);
+    if (w > bestW) { bestW = w; best = skinIndex.getComponent(v, k); }
+  }
+  return best;
+}
+
+function rigidBind(
+  skinIndex: THREE.BufferAttribute,
+  skinWeight: THREE.BufferAttribute,
+  v: number,
+  bone: number,
+) {
+  skinIndex.setComponent(v, 0, bone);
+  skinWeight.setComponent(v, 0, 1);
+  for (let k = 1; k < 4; k++) {
+    skinIndex.setComponent(v, k, 0);
+    skinWeight.setComponent(v, k, 0);
+  }
+}
+
+function reassignMeshWeights(mesh: THREE.SkinnedMesh): DistantWeightReport {
+  const report: DistantWeightReport = { reassigned: 0, verts: 0 };
+  const bones = mesh.skeleton?.bones;
+  const skinIndex = mesh.geometry.attributes.skinIndex as THREE.BufferAttribute | undefined;
+  const skinWeight = mesh.geometry.attributes.skinWeight as THREE.BufferAttribute | undefined;
+  const position = mesh.geometry.attributes.position as THREE.BufferAttribute | undefined;
+  if (!bones?.length || !skinIndex || !skinWeight || !position) return report;
+  if (mesh.skeleton.boneInverses.length !== bones.length) return report;
+
+  const hops = jointHopMatrix(bones);
+  const connected = skeletonIsConnected(hops);
+  const body = bodyBoneMask(hops);
+  const bonePos = boneLocalPositions(mesh);
+  const count = skinIndex.count;
+  report.verts = count;
+
+  const index = mesh.geometry.index;
+  const adj: number[][] = Array.from({ length: count }, () => []);
+  const triCount = index ? Math.floor(index.count / 3) : Math.floor(position.count / 3);
+  const vertAt = (t: number, k: number) => (index ? index.getX(t * 3 + k) : t * 3 + k);
+  for (let t = 0; t < triCount; t++) {
+    const a = vertAt(t, 0);
+    const b = vertAt(t, 1);
+    const c = vertAt(t, 2);
+    if (a < 0 || b < 0 || c < 0 || a >= count || b >= count || c >= count) continue;
+    if (a !== b) { adj[a].push(b); adj[b].push(a); }
+    if (b !== c) { adj[b].push(c); adj[c].push(b); }
+    if (c !== a) { adj[c].push(a); adj[a].push(c); }
+  }
+
+  const v = new THREE.Vector3();
+  let changed = false;
+  for (let pass = 0; pass < REASSIGN_PASSES; pass++) {
+    const next: number[] = new Array(count);
+    let passChanged = false;
+    for (let i = 0; i < count; i++) {
+      v.fromBufferAttribute(position, i);
+      const own = dominantBone(skinIndex, skinWeight, i);
+      next[i] = own;
+      if (own < 0 || own >= bonePos.length) continue;
+      const ownD = v.distanceTo(bonePos[own]);
+
+      let nearest = own;
+      let nearestD = ownD;
+      for (let b = 0; b < bonePos.length; b++) {
+        if (!body[b]) continue;
+        const d = v.distanceTo(bonePos[b]);
+        if (d < nearestD) { nearestD = d; nearest = b; }
+      }
+      if (ownD > DISTANT_BONE_M && nearest !== own && nearestD <= NEAR_BONE_M) {
+        next[i] = nearest;
+        passChanged = true;
+        continue;
+      }
+
+      if (!connected) continue;
+      let better = -1;
+      let betterD = Infinity;
+      for (const n of adj[i]) {
+        if (n < 0 || n >= count) continue;
+        const nb = dominantBone(skinIndex, skinWeight, n);
+        if (!body[nb]) continue;
+        const raw = hops[own]?.[nb];
+        const span = raw === undefined ? 0 : (Number.isFinite(raw) ? raw : UNREACHABLE_SPAN);
+        if (span <= MAX_JOINT_SPAN_HOPS) continue;
+        const d = v.distanceTo(bonePos[nb]);
+        if (d < betterD) { betterD = d; better = nb; }
+      }
+      if (better >= 0 && betterD <= NEAR_BONE_M && betterD + CLOSER_BY_M < ownD) {
+        next[i] = better;
+        passChanged = true;
+      }
+    }
+    if (!passChanged) break;
+    for (let i = 0; i < count; i++) {
+      if (next[i] === dominantBone(skinIndex, skinWeight, i)) continue;
+      rigidBind(skinIndex, skinWeight, i, next[i]);
+      report.reassigned++;
+    }
+    changed = true;
+  }
+  if (changed) {
+    skinIndex.needsUpdate = true;
+    skinWeight.needsUpdate = true;
+  }
+  return report;
+}
+
+/** Repair every skinned mesh under a root. Scenes with no skin report zero. */
+export function reassignDistantWeights(root: THREE.Object3D): DistantWeightReport {
+  const total: DistantWeightReport = { reassigned: 0, verts: 0 };
+  root.traverse((o) => {
+    const mesh = o as THREE.SkinnedMesh;
+    if (!mesh.isSkinnedMesh || !mesh.skeleton?.bones?.length) return;
+    const r = reassignMeshWeights(mesh);
+    total.reassigned += r.reassigned;
+    total.verts += r.verts;
+  });
+  return total;
+}
+

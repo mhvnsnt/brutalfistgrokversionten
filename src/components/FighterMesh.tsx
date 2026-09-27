@@ -6,8 +6,8 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { BoneHitboxSystem } from '../engine/locomotion/BoneHitboxSystem';
 import { AutoRigDetector, type RigDiagnosticReport } from '../engine/locomotion/AutoRigDetector';
-import { ATTACK_ROOT_MOTION_PROFILES, groundSpeedCap } from '../engine/locomotion/LocomotionSystem';
-import { playbackRateFor } from '../engine/motion/DistanceMatching';
+import { ATTACK_ROOT_MOTION_PROFILES } from '../engine/locomotion/LocomotionSystem';
+import { attackPlaybackRate, jumpPlaybackRate, knockdownPlaybackRate, locomotionPlaybackRate } from '../engine/combat/ClipPlayback';
 import { blendDurationFor } from '../engine/motion/BlendDuration';
 import {
   runDeformationIntegrityTest,
@@ -76,6 +76,8 @@ export interface FighterMeshProps {
    * Used for velocity-weighted blend gating to prevent jitter on micro-inputs.
    */
   locomotionVelocity?: { forward: number; strafe: number };
+  /** Live metres/second. Lets the walk cycle keep up with a dash. */
+  groundSpeedRef?: { current: number };
   /**
    * Hit-stop freeze: when true, the animation mixer is paused.
    * Set by GameBattleArena when a heavy attack lands.
@@ -317,6 +319,14 @@ const LOOP_STATES = new Set([
   'strafeLeft', 'strafeRight', 'sidestepLeft', 'sidestepRight',
   'run', 'dash', 'dashForward', 'crouch',
   'Backdashing',
+]);
+
+const WAKE_STATES = new Set(['WakeupTechRoll', 'WakeupBackrise', 'WakeupQuickStand', 'wake']);
+
+const LOCO_RATE_STATES = new Set([
+  'walk', 'walkForward', 'walkBackward', 'Walking',
+  'strafeLeft', 'strafeRight', 'sidestepLeft', 'sidestepRight',
+  'run', 'dash', 'dashForward', 'Backdashing', 'crouchWalk',
 ]);
 
 const ATTACK_STATES = new Set([
@@ -619,6 +629,7 @@ function FighterMeshInner({
   animationTrigger = 0,
   attackDurationSeconds,
   locomotionVelocity,
+  groundSpeedRef,
   hitStopActive = false,
   onRigDiagnostic,
   onBoneHitboxReady,
@@ -642,6 +653,7 @@ function FighterMeshInner({
   animationTrigger?: number;
   attackDurationSeconds?: number;
   locomotionVelocity?: { forward: number; strafe: number };
+  groundSpeedRef?: { current: number };
   hitStopActive?: boolean;
   onRigDiagnostic?: (report: RigDiagnosticReport) => void;
   onBoneHitboxReady?: (system: BoneHitboxSystem) => void;
@@ -679,6 +691,7 @@ function FighterMeshInner({
   const lastCrossfadeTimeRef = useRef<number>(0);
   /** The resolved clip name of the last state we committed to */
   const committedClipRef = useRef<string | null>(null);
+  const inputKeyRef = useRef<string>(state);
   const lastPlayedTriggerRef = useRef(0);
   /** Attack owns the mixer until its authored state-machine window expires. */
   const attackLockUntilRef = useRef(0);
@@ -969,8 +982,8 @@ function FighterMeshInner({
       tabled,
     );
     const isLoop = LOOP_STATES.has(inputKey);
-    const isUrgent = isAttack || isThrowVictimClip(inputKey)
-      || ['hit', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple', 'jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey);
+    const isUrgent = isAttack || isThrowVictimClip(inputKey) || WAKE_STATES.has(inputKey)
+      || ['hit', 'hitLow', 'hitHigh', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple', 'jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey);
     /**
      * BEING THROWN OUTRANKS WHATEVER HE WAS DOING.
      *
@@ -980,7 +993,8 @@ function FighterMeshInner({
      * and the crossfade hold, or dropped. A knockdown interrupts; so does
      * the thing that causes it.
      */
-    const isDefensiveInterrupt = ['hit', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple'].includes(inputKey)
+    const isDefensiveInterrupt = WAKE_STATES.has(inputKey)
+      || ['hit', 'hitLow', 'hitHigh', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple'].includes(inputKey)
       || isThrowVictimClip(inputKey);
     const isSameClip = clipName === committedClipRef.current;
     const now = performance.now() / 1000;
@@ -1022,31 +1036,20 @@ function FighterMeshInner({
       ? attackDurationSeconds
       : null;
     const jumpWindow = ['jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey) ? 0.55 : null;
-    // DISTANCE MATCHING for a locomotion clip. An attack or a jump is already
-    // rate-fitted to its own window above; everything else used to play at a flat
-    // 1 while the engine translated the root at its own speed, which slides the
-    // feet by the difference — measured 0.77 m/s on the back-walk and 1.02 on the
-    // dash. `groundSpeedCap` is the same function the locomotion side uses to pick
-    // that speed, so the two cannot disagree.
-    //
-    // NOTE THE LIVE PATH: this component does its own action management and does
-    // NOT use buildAnimationController, so wiring the rate there alone would have
-    // been dead code. Both now do it.
-    const isDashLike = inputKey === 'dash' || inputKey === 'dashForward' || inputKey === 'run';
-    const isBackdashLike = inputKey === 'Backdashing';
-    // `normalized` is already the normalized SCENE in this scope — tsc caught the
-    // shadow. The stick magnitude needs its own name.
-    const stickMagnitude = locomotionVelocity
-      ? Math.hypot(locomotionVelocity.forward, locomotionVelocity.strafe)
-      : 0;
-    const groundSpeed = stickMagnitude * groundSpeedCap(isDashLike, isBackdashLike);
-    const strideRate = attackWindow || jumpWindow
-      ? 1
-      : playbackRateFor(nextAction.getClip().name, groundSpeed);
+    const downWindow = ['knockdown', 'Knockdown', 'ko', 'KO'].includes(inputKey) ? 1.7 : null;
+    const wakeWindow = inputKey === 'WakeupQuickStand' || inputKey === 'wake' ? 1.15
+      : inputKey === 'WakeupTechRoll' || inputKey === 'WakeupBackrise' ? 0.55
+      : null;
+    // A clip already near the window is nudged onto the active frames.
+    // A long demo is NOT squeezed into that window — that fast-forward is
+    // the twitch. The state machine cuts it and the last frame holds.
+    // A knockdown is the exception: the body has to reach the ground.
     nextAction.setEffectiveTimeScale(
-      attackWindow ? clipDuration / attackWindow
-        : jumpWindow ? clipDuration / jumpWindow
-        : strideRate,
+      attackWindow ? attackPlaybackRate(clipDuration, attackWindow)
+        : jumpWindow ? jumpPlaybackRate(clipDuration, jumpWindow)
+        : downWindow ? knockdownPlaybackRate(clipDuration, downWindow)
+        : wakeWindow ? knockdownPlaybackRate(clipDuration, wakeWindow)
+        : 1,
     );
     nextAction.setEffectiveWeight(1);
     if (isAttack && attackWindow) {
@@ -1073,6 +1076,7 @@ function FighterMeshInner({
 
     activeClipRef.current = clipName;
     committedClipRef.current = clipName;
+    inputKeyRef.current = inputKey;
     lastCrossfadeTimeRef.current = now;
   // `deferTick` is here so a transition refused for a TIMING reason gets
   // another go. Without it a refusal is permanent, because an effect does not
@@ -1107,21 +1111,20 @@ function FighterMeshInner({
   useFrame((_, delta) => {
     if (!groupRef.current) return;
 
-    const attacking = state === 'Startup' || state === 'Active' || ATTACK_STATES.has(state);
     groupRef.current.position.set(position[0], position[1], position[2]);
-
-    // Rotation — driven entirely by rotationY prop from parent screen
     groupRef.current.rotation.y = rotationY;
+    groupRef.current.scale.set(1, 1, 1);
 
-    // Attack pulse — uniform scale, no mirroring
-    const attackScale = attacking ? 1.03 : 1.0;
-    groupRef.current.scale.set(attackScale, attackScale, attackScale);
-
-    // AGENT LAW: ALWAYS call mixer.update() every frame.
-    // Hit-stop is handled by mixer.timeScale = 0 (set in useEffect above).
-    // Skipping mixer.update() entirely causes animation state to desync —
-    // the mixer's internal clock stops tracking and crossfades break on resume.
     if (normalized) {
+      const locoKey = inputKeyRef.current;
+      const clip = committedClipRef.current;
+      const loco = clip ? normalized.actions[clip] : null;
+      if (loco && normalized.mixer.timeScale > 0 && LOCO_RATE_STATES.has(locoKey)) {
+        // THE CLIP NAME IS WHAT MAKES THE DIVISOR THE MEASURED ONE. Without it
+        // locomotionPlaybackRate falls back to a flat 1.72 m/s for every clip, which
+        // leaves the back-walk (authored 2.492) and the dash clip (3.277) skating.
+        loco.timeScale = locomotionPlaybackRate(groundSpeedRef?.current ?? 0, clip);
+      }
       normalized.mixer.update(delta);
       // Update skeleton helper world matrices so bone lines track correctly
       if (normalized.skeletonHelper && showHitbox) {
@@ -1217,10 +1220,14 @@ export function FighterMesh({
   state,
   animation,
   tint,
+  characterId,
+  fightingStyle,
   showHitbox = false,
   hitboxGeometry = null,
   animationTrigger = 0,
+  attackDurationSeconds,
   locomotionVelocity,
+  groundSpeedRef,
   hitStopActive = false,
   onRigDiagnostic,
   onBoneHitboxReady,
@@ -1248,7 +1255,11 @@ export function FighterMesh({
         showHitbox={showHitbox}
         hitboxGeometry={hitboxGeometry}
         animationTrigger={animationTrigger}
+        attackDurationSeconds={attackDurationSeconds}
+        characterId={characterId}
+        fightingStyle={fightingStyle}
         locomotionVelocity={locomotionVelocity}
+        groundSpeedRef={groundSpeedRef}
         hitStopActive={hitStopActive}
         onRigDiagnostic={onRigDiagnostic}
         onBoneHitboxReady={onBoneHitboxReady}
