@@ -209,6 +209,15 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   Stunned:           ['hit', 'Hit', 'hurt', 'Hurt', 'flinch', 'Flinch', 'damage', 'Damage'],
   hitLow:            ['hitLow', 'HitLow', 'lowHit', 'LowHit', 'hit', 'Hit', 'hurt', 'Hurt'],
   hitHigh:           ['hitHigh', 'HitHigh', 'highHit', 'HighHit', 'hit', 'Hit', 'hurt', 'Hurt'],
+  // ── Victim-state reactions (ReactionMatrix) ────────────────────────────────
+  // These three are the animations Tekken picks by what the victim was DOING,
+  // and every one of them was already in the bank. They are listed HERE as well
+  // as in SemanticStateAliases because FighterMesh is the live playback path —
+  // adding a motion state to one of the two animation systems and not the other
+  // is how a reaction resolves to nothing.
+  hitAir:            ['REACTION_HEAVYHITAIRREVOLT', 'REACTION_HEAVYHITAIRREVOLTBACK', 'REACTION_HITSTRONGHIGH', 'hitHigh', 'hit', 'Hit'],
+  hitBack:           ['REACTION_HITWEAKMEDIUMBACK', 'REACTION_HEAVYHITAIRREVOLTBACK', 'REACTION_HITWEAKMEDIUM', 'hit', 'Hit'],
+  hitGround:         ['FALLING_FLAT_IMPACT', 'SUPINE', 'FALLING_FORWARD_DEATH', 'knockdown', 'Knockdown'],
   // ── Knockdown ───────────────────────────────────────────────────────────────
   knockdown:         ['knockdown', 'Knockdown', 'ko', 'KO', 'knockout', 'Knockout', 'death', 'Death', 'fall', 'Fall', 'down', 'Down', 'fallingBack', 'FallingBack', 'fallingForward', 'FallingForward', 'knockedDown', 'KnockedDown', 'SBW_knockdown', 'T_knockdown', 'bf_knockdown', 'bf_hard_knockdown'],
   Knockdown:         ['knockdown', 'Knockdown', 'ko', 'KO', 'fall', 'Fall', 'down', 'Down'],
@@ -291,6 +300,12 @@ const FADE_DURATIONS: Record<string, number> = {
   Hitstun:           0.033,
   HitStun:           0.033,
   Stunned:           0.033,
+  // Victim-state reactions. The air reaction blends a touch slower because the
+  // body it is taking over from is already in motion; the ground impact is the
+  // fastest of the three because the landing must not lag the fall.
+  hitAir:            0.050,
+  hitBack:           0.033,
+  hitGround:         0.033,
   // Knockdown
   knockdown:         0.067,
   Knockdown:         0.067,
@@ -1024,7 +1039,7 @@ function FighterMeshInner({
     );
     const isLoop = LOOP_STATES.has(inputKey);
     const isUrgent = isAttack || isThrowVictimClip(inputKey) || WAKE_STATES.has(inputKey)
-      || ['hit', 'hitLow', 'hitHigh', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple', 'jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey);
+      || ['hit', 'hitLow', 'hitHigh', 'hitAir', 'hitBack', 'hitGround', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple', 'jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey);
     /**
      * BEING THROWN OUTRANKS WHATEVER HE WAS DOING.
      *
@@ -1035,7 +1050,7 @@ function FighterMeshInner({
      * the thing that causes it.
      */
     const isDefensiveInterrupt = WAKE_STATES.has(inputKey)
-      || ['hit', 'hitLow', 'hitHigh', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple'].includes(inputKey)
+      || ['hit', 'hitLow', 'hitHigh', 'hitAir', 'hitBack', 'hitGround', 'Hitstun', 'HitStun', 'Stunned', 'knockdown', 'Knockdown', 'ko', 'KO', 'Crumple'].includes(inputKey)
       || isThrowVictimClip(inputKey);
     const isSameClip = clipName === committedClipRef.current;
     const now = performance.now() / 1000;

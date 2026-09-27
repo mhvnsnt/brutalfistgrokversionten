@@ -11,6 +11,7 @@
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   resolveReaction, distinctOutcomes, VICTIM_STATES, REACTION_KINDS,
 } from './ReactionMatrix.ts';
@@ -248,6 +249,58 @@ describe('the hit spin', () => {
       const r = resolveReaction({ kind: 'hitstun', victim });
       assert.equal(spinFrom(r).total, r.pushbackFrames,
         `${victim}: the spin and the pushback run on different clocks`);
+    }
+  });
+});
+
+/**
+ * A MOTION STATE HAS TO BE KNOWN TO BOTH ANIMATION SYSTEMS.
+ *
+ * This repo has two: AnimationController (SemanticStateAliases) and
+ * FighterMesh (its own CLIP_ALIASES), and FighterMesh is the live playback path
+ * in a match. Adding a state to one and not the other is how a reaction
+ * resolves to nothing — which is exactly what happened when hitAir, hitBack and
+ * hitGround shipped: they reached the alias table, the state union and the frame
+ * data, and FighterMesh had never heard of them.
+ *
+ * Read from the source rather than imported, because FighterMesh is a React
+ * component that pulls in three.js and the whole renderer.
+ */
+describe('every reaction state the matrix can emit is playable', () => {
+  const mesh = readFileSync('src/components/FighterMesh.tsx', 'utf8');
+  const aliases = readFileSync('src/engine/retarget/SemanticStateAliases.ts', 'utf8');
+
+  /** Every motion state resolveReaction can return, from the matrix itself. */
+  const emitted = (): string[] => {
+    const out = new Set<string>();
+    for (const victim of VICTIM_STATES) {
+      for (const kind of REACTION_KINDS) {
+        for (const ch of [false, true]) out.add(resolveReaction({ kind, victim, counterHit: ch }).motion);
+      }
+    }
+    return [...out];
+  };
+
+  it('FighterMesh knows a clip list for each of them', () => {
+    const missing = emitted().filter((m) => !new RegExp(`^\\s{2}${m}:\\s*\\[`, 'm').test(mesh));
+    assert.deepEqual(missing, [], `FighterMesh has no clip aliases for: ${missing.join(', ')}`);
+  });
+
+  it('each one is treated as urgent, so a reaction is never deferred behind an attack', () => {
+    // A hit reaction that can be held back by the victim's own attack lock is a
+    // hit reaction that gets dropped — the body keeps swinging through the hit.
+    const notUrgent = emitted().filter((m) => !mesh.includes(`'${m}'`));
+    assert.deepEqual(notUrgent, [], `not in FighterMesh's urgency lists: ${notUrgent.join(', ')}`);
+  });
+
+  it('the semantic table maps each one to a list that leads with a real capture', () => {
+    for (const m of emitted()) {
+      const sem = aliases.match(new RegExp(`\\n\\s*${m}:\\s*'([a-z_]+)'`));
+      if (!sem) continue; // states like 'guard' are mapped elsewhere in the table
+      const list = aliases.match(new RegExp(`\\n\\s*${sem[1]}:\\s*\\[([^\\]]*)\\]`));
+      assert.ok(list, `${m} maps to semantic ${sem[1]}, which has no alias list`);
+      const lead = list![1].split(',')[0].replace(/['\s]/g, '');
+      assert.ok(lead.length > 0, `${sem[1]} has an empty alias list`);
     }
   });
 });
