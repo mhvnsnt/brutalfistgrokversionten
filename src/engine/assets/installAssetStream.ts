@@ -16,6 +16,7 @@ import { GLTFLoader as StdGLTFLoader } from 'three-stdlib';
 import type { WebGLRenderer } from 'three';
 
 import { createSerialLane } from './serialLane.ts';
+import { MeshoptDecoder as workerCapableDecoder } from './meshoptDecoderShim.ts';
 
 const lane = createSerialLane();
 let ktx2: KTX2Loader | null = null;
@@ -71,12 +72,37 @@ function patchLoader(Loader: { prototype: { load: LoadFn } }): void {
   proto.load = load;
 }
 
+/**
+ * THE ALIAS THIS FILE'S OWN COMMENT PROMISED, WHICH WAS NEVER MADE.
+ *
+ * The header says meshopt decode runs in workers "also aliased over drei's
+ * synchronous copy". It was not: `useWorkers(2)` was called on three's decoder
+ * and drei was left alone, so every roster model still decoded on the main
+ * thread. meshoptDecoderShim.ts exists for exactly this and had ZERO callers.
+ *
+ * drei's `useGLTF(url, draco, meshopt)` fetches three-stdlib's decoder and hands
+ * it to `setMeshoptDecoder`. A module export cannot be reassigned, so the
+ * substitution happens at the setter: whatever drei passes in, the loader gets
+ * the worker-capable decoder instead. Both implement the same two-member
+ * interface GLTFLoader uses (`ready`, `decodeGltfBuffer`), which is what makes
+ * the swap safe rather than clever.
+ */
+function aliasMeshoptDecoder(proto: { setMeshoptDecoder?: (d: unknown) => unknown } & { __bfMeshopt?: boolean }): void {
+  const original = proto.setMeshoptDecoder;
+  if (typeof original !== 'function' || proto.__bfMeshopt) return;
+  proto.__bfMeshopt = true;
+  proto.setMeshoptDecoder = function patched(this: unknown) {
+    return original.call(this, workerCapableDecoder());
+  };
+}
+
 export function installAssetStream(): void {
   if (installed || typeof window === 'undefined') return;
   installed = true;
   if (typeof MeshoptDecoder.useWorkers === 'function') MeshoptDecoder.useWorkers(2);
   patchLoader(ThreeGLTFLoader as unknown as { prototype: { load: LoadFn } });
   patchLoader(StdGLTFLoader as unknown as { prototype: { load: LoadFn } });
+  aliasMeshoptDecoder((StdGLTFLoader as unknown as { prototype: { setMeshoptDecoder?: (d: unknown) => unknown } }).prototype);
 }
 
 installAssetStream();
