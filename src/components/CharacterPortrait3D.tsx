@@ -9,6 +9,7 @@ import { restoreAuthoredTextures } from '../engine/pipeline/restoreAuthoredTextu
 import { FOOT_PLANT_SINK, selectYaw } from '../engine/V7OrientationContract';
 import { sanitizeMotionClip } from '../engine/retarget/neutralizeRootMotion';
 import { loadGLTF } from '../engine/pipeline/glbCache';
+import { bindBasisRenderer } from '../engine/assets/installAssetStream';
 import { rosterHeightScale } from '../engine/pipeline/rosterHeightScale';
 
 interface CharacterPortrait3DProps {
@@ -235,6 +236,7 @@ export default function CharacterPortrait3D({
       <Canvas
         gl={{ antialias: false, alpha: true, premultipliedAlpha: false }}
         onCreated={({ gl }) => {
+          bindBasisRenderer(gl);
           gl.setClearColor(0x000000, 0);
         }}
         style={{

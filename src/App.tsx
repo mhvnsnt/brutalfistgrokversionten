@@ -1,5 +1,6 @@
+import './engine/assets/installAssetStream';
 import { TitleScreen } from './components/TitleScreen';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { AppScreen } from './types';
 import { BANNON_GLB_PLAYABLE_MODELS } from './data/bannonGlbRoster';
 import { type BannonFighterProfile, getBannonFighter, getAllBannonFighters } from './data/bannonRoster';
@@ -37,7 +38,7 @@ const PreCombatValidationScreen = dynamic(() => import('./components/PreCombatVa
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
-  const [screen, setScreen] = useState<AppScreen>(AppScreen?.Boot);
+  const [screen, setScreen] = useState<AppScreen>(AppScreen.Title);
   const [p1BannonFighter, setP1BannonFighter] = useState<BannonFighterProfile | null>(null);
   const [p2BannonFighter, setP2BannonFighter] = useState<BannonFighterProfile | null>(null);
   const [matchWinner, setMatchWinner] = useState<'p1' | 'p2' | 'draw' | null>(null);
@@ -46,19 +47,12 @@ export default function App() {
   const [tournamentSettings, setTournamentSettings] = useState<TournamentSettings>(DEFAULT_TOURNAMENT_SETTINGS);
   const [selectedStageId, setSelectedStageId] = useState<StageId>('urban_night');
 
-  useEffect(() => {
-    if (screen !== AppScreen?.Boot) return;
-    const timer = window.setTimeout(() => setScreen(AppScreen?.Title), 1400);
-    return () => window.clearTimeout(timer);
-  }, [screen]);
-
   if (!BANNON_GLB_PLAYABLE_MODELS?.length) {
     return (
-      <div className="fixed inset-0 bg-black text-white flex items-center justify-center font-mono">
+      <div className="bf-stage fixed inset-0 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-xs tracking-[0.45em] text-red-400">ROSTER LOCKED</div>
-          <div className="mt-3 text-xl font-black tracking-widest">NO VALID BANNON GLB FIGHTERS</div>
-          <div className="mt-3 text-xs text-slate-500">NO GLB = NO CHARACTER</div>
+          <div className="text-xs tracking-[0.4em] text-[var(--color-muted)]">ROSTER LOCKED</div>
+          <div className="bf-display mt-3 text-4xl">NO VALID FIGHTERS</div>
         </div>
       </div>
     );
@@ -67,8 +61,8 @@ export default function App() {
   // ── Auth loading ──
   if (authLoading) {
     return (
-      <div className="fixed inset-0 bg-black text-white flex items-center justify-center font-mono">
-        <div className="text-[9px] tracking-[0.45em] text-zinc-600 animate-pulse">AUTHENTICATING...</div>
+      <div className="bf-stage fixed inset-0 flex items-center justify-center">
+        <div className="bf-display text-5xl">BRUTAL FIST</div>
       </div>
     );
   }
@@ -76,10 +70,9 @@ export default function App() {
   // ── Boot ──
   if (screen === AppScreen?.Boot) {
     return (
-      <div className="fixed inset-0 bg-black text-white flex items-center justify-center font-mono">
+      <div className="bf-stage fixed inset-0 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-xs tracking-[0.45em] text-slate-500">SCHWARZERBLITZ RUNTIME</div>
-          <div className="mt-3 text-2xl font-black tracking-widest">BRUTAL FIST</div>
+          <div className="bf-display text-6xl">BRUTAL FIST</div>
         </div>
       </div>
     );
@@ -93,9 +86,12 @@ export default function App() {
   // ── Main Menu ──
   if (screen === AppScreen?.MainMenu) {
     return (
-      <div className="fixed inset-0 bg-[#10131a] text-white flex items-center justify-center font-mono p-safe">
-        <div className="w-[min(86vw,420px)] mobile-menu-scroll">
-          <div className="mb-2 text-xs tracking-[0.45em] text-slate-500">3D FIGHTING GAME</div>
+      <div className="bf-menu fixed inset-0 flex items-center justify-center p-safe">
+        <div className="w-[min(92vw,440px)] mobile-menu-scroll pb-8">
+          <div className="mb-4">
+            <div className="text-xs tracking-[0.42em] text-[var(--color-muted)]">UNDERGROUND CIRCUIT</div>
+            <div className="bf-display text-6xl">BRUTAL FIST</div>
+          </div>
           {user && (
             <div className="mb-6 flex items-center justify-between">
               <div className="text-[8px] tracking-widest text-zinc-600">
@@ -112,115 +108,115 @@ export default function App() {
           <div className="space-y-2">
             <button
               onClick={() => { setGameMode('arcade'); setScreen(AppScreen?.Select); }}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               ARCADE
             </button>
             <button
               onClick={() => { setGameMode('versus'); setScreen(AppScreen?.Select); }}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               VERSUS
             </button>
             <button
               onClick={() => { setGameMode('tournament'); setScreen('tournament_browser' as any); }}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               TOURNAMENT
-              <span className="ml-3 text-[10px] text-yellow-400 tracking-widest">BRACKET MODE</span>
+              <span>BRACKET MODE</span>
             </button>
             <button
               onClick={() => setScreen('seasonal_tournament' as any)}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               SEASONAL
-              <span className="ml-3 text-[10px] text-orange-400 tracking-widest">ELO BRACKET</span>
+              <span>ELO BRACKET</span>
             </button>
             <button
               onClick={() => {
                 if (!user) { setScreen('auth' as any); }
                 else { setScreen('matchmaking_queue' as any); }
               }}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               RANKED QUEUE
-              <span className="ml-3 text-[10px] text-cyan-400 tracking-widest">LIVE MATCHMAKING</span>
+              <span>LIVE MATCHMAKING</span>
             </button>
             <button
               onClick={() => setScreen('spectator' as any)}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               SPECTATE
-              <span className="ml-3 text-[10px] text-red-400 tracking-widest">LIVE MATCHES</span>
+              <span>LIVE MATCHES</span>
             </button>
             <button
               onClick={() => setScreen('practice' as any)}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               TRAINING
-              <span className="ml-3 text-[10px] text-green-400 tracking-widest">PRACTICE ARENA</span>
+              <span>PRACTICE ARENA</span>
             </button>
             <button
               onClick={() => setScreen('photo_booth' as any)}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               PHOTO BOOTH
-              <span className="ml-3 text-[10px] text-zinc-400 tracking-widest">CONCEPT + PIXEL</span>
+              <span>CONCEPT + PIXEL</span>
             </button>
             <button
               onClick={() => setScreen('art_book' as any)}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               ART BOOK
-              <span className="ml-3 text-[10px] text-zinc-400 tracking-widest">HQ vs SPRITE</span>
+              <span>HQ vs SPRITE</span>
             </button>
             <button
               onClick={() => setScreen('move_library' as any)}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               MOVE LIBRARY
-              <span className="ml-3 text-[10px] text-yellow-400 tracking-widest">EVERY CLIP · LABEL THEM</span>
+              <span>EVERY CLIP · LABEL THEM</span>
             </button>
             <button
               onClick={() => setScreen('anim_test_arena' as any)}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               ANIM TEST
-              <span className="ml-3 text-[10px] text-purple-400 tracking-widest">MOVESET CREATION</span>
+              <span>MOVESET CREATION</span>
             </button>
             <button
               onClick={() => setScreen('story' as any)}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               STORY
-              <span className="ml-3 text-[10px] text-purple-400 tracking-widest">CHARACTER ARCS</span>
+              <span>CHARACTER ARCS</span>
             </button>
             <button
               onClick={() => setScreen('leaderboard' as any)}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               LEADERBOARD
-              <span className="ml-3 text-[10px] text-yellow-400 tracking-widest">GLOBAL RANKS</span>
+              <span>GLOBAL RANKS</span>
             </button>
             <button
               onClick={() => {
                 if (!user) { setScreen('auth' as any); }
                 else { setScreen('stats' as any); }
               }}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               STATS
-              <span className="ml-3 text-[10px] text-zinc-500 tracking-widest">RECORDS & RANK</span>
+              <span>RECORDS & RANK</span>
             </button>
             <button
               onClick={() => {
                 if (!user) { setScreen('auth' as any); }
                 else { setScreen('profile' as any); }
               }}
-              className="block w-full border border-slate-600 px-6 py-4 text-left text-xl font-black tracking-widest hover:bg-white hover:text-black transition-all"
+              className="bf-item"
             >
               PROFILE
-              <span className="ml-3 text-[10px] text-zinc-500 tracking-widest">MASTERY & COSMETICS</span>
+              <span>MASTERY & COSMETICS</span>
             </button>
           </div>
         </div>
@@ -434,27 +430,16 @@ export default function App() {
     const p2 = p2BannonFighter ?? getBannonFighter('maime')!;
     const winnerName = matchWinner === 'p1' ? p1.name : matchWinner === 'p2' ? p2.name : null;
     return (
-      <div className="fixed inset-0 bg-black text-white flex flex-col items-center justify-center font-mono gap-6">
-        <div className="text-xs tracking-[0.45em] text-slate-500">MATCH COMPLETE</div>
+      <div className="bf-stage fixed inset-0 flex flex-col items-center justify-center gap-6">
+        <div className="text-xs tracking-[0.42em] text-[var(--color-muted)]">MATCH COMPLETE</div>
         {winnerName ? (
-          <div className="text-3xl font-black tracking-widest text-yellow-400">{winnerName.toUpperCase()} WINS</div>
+          <div className="bf-display text-5xl">{winnerName.toUpperCase()} WINS</div>
         ) : (
-          <div className="text-3xl font-black tracking-widest text-zinc-400">DRAW</div>
+          <div className="bf-display text-5xl">DRAW</div>
         )}
-        <div className="text-4xl font-black tracking-widest text-white">BRUTAL FIST</div>
-        <div className="flex gap-4 mt-4">
-          <button
-            onClick={() => setScreen('stage_select' as any)}
-            className="border border-slate-600 px-6 py-3 text-sm font-black tracking-widest hover:bg-white hover:text-black transition-all"
-          >
-            REMATCH
-          </button>
-          <button
-            onClick={() => setScreen(AppScreen?.MainMenu)}
-            className="border border-slate-600 px-6 py-3 text-sm font-black tracking-widest hover:bg-white hover:text-black transition-all"
-          >
-            MAIN MENU
-          </button>
+        <div className="flex gap-3 mt-2">
+          <button onClick={() => setScreen('stage_select' as any)} className="bf-fight">REMATCH</button>
+          <button onClick={() => setScreen(AppScreen?.MainMenu)} className="bf-item w-auto px-5">MAIN MENU</button>
         </div>
       </div>
     );

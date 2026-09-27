@@ -3,6 +3,7 @@ import { PerspectiveCamera } from '@react-three/drei';
 import { FighterMesh } from './FighterMesh';
 import { DEFAULT_PSX_RENDER } from '../render/psx';
 import { COMBAT_P1_YAW, COMBAT_P2_YAW, COMBAT_FIGHTER_Y } from '../engine/V7OrientationContract';
+import { bindBasisRenderer } from '../engine/assets/installAssetStream';
 
 interface PSXCanvasProps {
   fighterState: string;
@@ -36,7 +37,7 @@ export function PSXCanvas({ fighterState, opponentState, fighterAnimation, oppon
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-black">
-      <Canvas dpr={1} shadows gl={{ antialias: false, powerPreference: 'high-performance' }} onCreated={({ gl }) => { gl.setPixelRatio(1); gl.setSize(DEFAULT_PSX_RENDER.renderWidth, DEFAULT_PSX_RENDER.renderHeight, false); }} camera={{ position: [0, 3.1, 10], fov: 38 }} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }}>
+      <Canvas dpr={1} shadows gl={{ antialias: false, powerPreference: 'high-performance' }} onCreated={({ gl }) => { bindBasisRenderer(gl); gl.setPixelRatio(1); gl.setSize(DEFAULT_PSX_RENDER.renderWidth, DEFAULT_PSX_RENDER.renderHeight, false); }} camera={{ position: [0, 3.1, 10], fov: 38 }} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }}>
         <PerspectiveCamera makeDefault position={[midX, 3.0, separation + midZ * 0.25]} fov={38} />
         <color attach="background" args={['#10131a']} />
         <fog attach="fog" args={['#10131a', 11, 28]} />

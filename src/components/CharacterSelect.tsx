@@ -78,18 +78,13 @@ function FighterPortrait({
         <div className="absolute inset-0 opacity-10" style={{
           backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.4) 2px, rgba(0,0,0,0.4) 4px)'
         }} />
-        <div className="relative z-10 flex flex-col items-center justify-center h-full w-full gap-3">
-          <div className="w-28 h-40 md:w-40 md:h-56 bg-zinc-800 rounded-sm opacity-60"
-            style={{ clipPath: 'polygon(20% 0%, 80% 0%, 100% 15%, 100% 85%, 80% 100%, 20% 100%, 0% 85%, 0% 15%)' }}
-          />
-          <div className="text-zinc-500 font-mono text-xs tracking-[0.3em] animate-pulse">
-            {isP1 ? 'SELECT FIGHTER' : 'PUSH P2 START'}
+        <div className="relative z-10 flex flex-col items-center justify-center h-full w-full gap-3 px-6">
+          <div className="bf-plate px-5 py-4 text-center">
+            <div className="bf-prompt text-3xl">{isP1 ? 'SELECT FIGHTER' : 'PUSH P2 START'}</div>
           </div>
         </div>
         <div className={`absolute top-3 ${isP1 ? 'left-3' : 'right-3'} z-20`}>
-          <span className={`font-mono text-xs font-black tracking-[0.3em] px-2 py-1 border ${isP1 ? 'border-blue-600 text-blue-400 bg-blue-950/60' : 'border-red-600 text-red-400 bg-red-950/60'}`}>
-            {slot}
-          </span>
+          <span className={`bf-side ${isP1 ? 'bf-side-p1' : 'bf-side-p2'}`}>{slot}</span>
         </div>
       </div>
     );
@@ -154,15 +149,13 @@ function FighterPortrait({
           side={isP1 ? 1 : -1}
         />
       </div>
-      <div className="relative z-20 w-full flex justify-center pb-2 pointer-events-none">
-        <div className="text-zinc-400 font-mono text-[9px] tracking-[0.25em] uppercase bg-black/50 px-2 py-0.5">
+      <div className="relative z-20 w-full flex justify-center pb-3 pointer-events-none">
+        <div className="bf-plate px-3 py-1 text-[0.7rem] tracking-[0.22em] uppercase text-[var(--color-fg)]">
           {fighter.role.split('/')[0].trim()}
         </div>
       </div>
       <div className={`absolute top-3 ${isP1 ? 'left-3' : 'right-3'} z-30`}>
-        <span className={`font-mono text-xs font-black tracking-[0.3em] px-2 py-1 border ${isP1 ? 'border-blue-500 text-blue-300 bg-blue-950/80' : 'border-red-500 text-red-300 bg-red-950/80'}`}>
-          {slot}
-        </span>
+        <span className={`bf-side ${isP1 ? 'bf-side-p1' : 'bf-side-p2'}`}>{slot}</span>
       </div>
       {active && (
         <div className="absolute inset-0 z-20 pointer-events-none border-2 animate-pulse"
@@ -179,18 +172,14 @@ function CardArtPicker({ characterId }: { characterId: string }) {
   const current = getCardArtStyle(characterId);
   const styles: CardArtStyle[] = ['likeness', 'painted', 'concept', 'pixel'];
   return (
-    <div className="flex flex-wrap items-center gap-1 px-2 py-1 border-t border-zinc-800/80 bg-black/40">
-      <span className="text-[8px] text-zinc-500 tracking-[0.2em]">CARD ART</span>
+    <div className="flex flex-wrap items-center gap-1 px-2 py-1">
+      <span className="text-[10px] tracking-[0.18em] text-[var(--color-muted)]">CARD</span>
       {styles.map((style) => (
         <button
           key={style}
           type="button"
           onClick={() => { setCardArtStyle(characterId, style); bump((n) => n + 1); }}
-          className={`text-[8px] font-mono px-2 py-1 min-h-8 border ${
-            current === style
-              ? 'border-yellow-500 text-yellow-300 bg-yellow-950/40'
-              : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
-          }`}
+          className={`bf-chip ${current === style ? 'on' : ''}`}
         >
           {CARD_ART_LABELS[style]}
         </button>
@@ -209,7 +198,6 @@ function GraphicsQualityBar({
   const modes: GraphicsQuality[] = ['ps1', 'retro8', 'native'];
   return (
     <div className="flex items-center gap-1">
-      <span className="text-[7px] text-zinc-600 tracking-[0.2em]">MESH</span>
       {modes.map((mode) => (
         <button
           key={mode}
@@ -218,11 +206,7 @@ function GraphicsQualityBar({
             setGraphicsQuality(mode);
             onChange(mode);
           }}
-          className={`text-[7px] font-mono px-1.5 py-0.5 border ${
-            quality === mode
-              ? 'border-cyan-500 text-cyan-300 bg-cyan-950/40'
-              : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
-          }`}
+          className={`bf-chip ${quality === mode ? 'on' : ''}`}
         >
           {GRAPHICS_QUALITY_LABELS[mode]}
         </button>
@@ -252,10 +236,8 @@ function AttireSelector({
         <button
           key={a.model}
           onClick={() => onSelectAttire(a.attire, a.portraitUrl)}
-          className={`text-[8px] font-mono px-2 py-0.5 border transition-all truncate max-w-[80px] ${
-            selectedAttire === a.attire
-              ? isP1
-                ? 'border-blue-500 text-blue-300 bg-blue-950/60' :'border-red-500 text-red-300 bg-red-950/60' :'border-zinc-700 text-zinc-500 hover:border-zinc-500 hover:text-zinc-300'
+          className={`bf-chip truncate max-w-[96px] ${
+            selectedAttire === a.attire ? (isP1 ? 'on-p1' : 'on-p2') : ''
           }`}
           title={a.attire}
         >
@@ -280,7 +262,6 @@ function RosterSlot({
   cursorOn: boolean;
   onClick: () => void;
 }) {
-  const factionColor = FACTION_COLOR[fighter.factionAlignment];
   const moveSet = useMemo(() => getCharacterMoveSet(fighter.id), [fighter.id]);
   const isCustomized = moveSet?.isCustomized ?? false;
   const face = cardArtUrlFor(fighter.id, {
@@ -295,21 +276,18 @@ function RosterSlot({
   return (
     <button
       onClick={onClick}
-      className={`relative flex flex-col items-center justify-center w-full aspect-square border transition-all duration-100 overflow-hidden group
-        ${cursorOn ? 'scale-110 z-10' : 'scale-100'}
-        ${p1Selected ? 'border-blue-500' : p2Selected ? 'border-red-500' : 'border-zinc-700 hover:border-zinc-500'}
+      className={`bf-slot relative flex flex-col items-center justify-center w-full aspect-square overflow-hidden group
+        ${cursorOn ? 'scale-105 z-10' : 'scale-100'}
       `}
       style={{
-        background: '#0a0a0c',
+        background: '#140f0c',
         boxShadow: cursorOn
-          ? `0 0 0 2px #facc15, 0 0 12px #22d3ee, 0 0 18px ${factionColor}88`
+          ? '0 0 0 2px #e23d2b, 0 10px 18px rgba(0,0,0,0.45)'
           : p1Selected
-            ? '0 0 8px #3b82f6aa'
+            ? 'inset 0 0 0 2px #7ec8c3'
             : p2Selected
-              ? '0 0 8px #ef4444aa'
-              : undefined,
-        outline: cursorOn ? '1px solid #22d3ee' : undefined,
-        outlineOffset: cursorOn ? 1 : undefined,
+              ? 'inset 0 0 0 2px #e08a6d'
+              : 'inset 0 0 0 1px rgba(243,234,223,0.16)',
       }}
     >
       {/* High-res concept plate — Tekken-style HQ mug, never the in-game pixel sprite */}
@@ -348,18 +326,16 @@ function RosterSlot({
       }} />
 
       {/* Name label overlay */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 bg-black/70 py-0.5">
-        <div className="text-[7px] font-mono text-zinc-300 tracking-widest truncate w-full text-center px-1">
+      <div className="absolute bottom-0 left-0 right-0 z-10 bg-[rgba(16,12,10,0.82)] py-0.5">
+        <div className="bf-slot-name truncate w-full text-center px-1">
           {fighter.name.toUpperCase()}
         </div>
       </div>
-
-      {/* P1/P2 badge */}
       {p1Selected && (
-        <div className="absolute top-0.5 left-0.5 z-20 text-[7px] font-mono font-black text-blue-300 bg-blue-900/80 px-1">P1</div>
+        <div className="bf-side bf-side-p1 absolute top-0.5 left-0.5 z-20 text-sm">P1</div>
       )}
       {p2Selected && (
-        <div className="absolute top-0.5 right-0.5 z-20 text-[7px] font-mono font-black text-red-300 bg-red-900/80 px-1">P2</div>
+        <div className="bf-side bf-side-p2 absolute top-0.5 right-0.5 z-20 text-sm">P2</div>
       )}
       {/* Customized dot */}
       {isCustomized && (
@@ -512,11 +488,7 @@ export default function CharacterSelect({ onSelectP1, onSelectP2, onStartMatch }
   }
 
   return (
-    <div className="fixed inset-0 screen-safe overflow-hidden select-none font-mono flex flex-col"
-      style={{
-        background: 'linear-gradient(180deg, #0a0a0a 0%, #111113 40%, #0d0d0f 100%)',
-      }}
-    >
+    <div className="bf-select fixed inset-0 screen-safe overflow-hidden select-none flex flex-col">
       {/* ── Industrial metallic background texture ── */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.07]" style={{
         backgroundImage: `
@@ -531,8 +503,8 @@ export default function CharacterSelect({ onSelectP1, onSelectP2, onStartMatch }
 
       {/* ── PLAYER SELECT watermark ── */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-        <div className="text-[6vw] font-black tracking-[0.35em] text-white uppercase select-none"
-          style={{ opacity: 0.04, fontFamily: 'monospace', filter: 'blur(0.5px)' }}
+        <div className="bf-display text-[8vw] tracking-[0.2em] text-[var(--color-fg)] uppercase select-none"
+          style={{ opacity: 0.05 }}
         >
           PLAYER SELECT
         </div>
@@ -568,16 +540,7 @@ export default function CharacterSelect({ onSelectP1, onSelectP2, onStartMatch }
             ))}
           </div>
           <div className="flex flex-col items-center mt-4">
-            <div className="text-3xl md:text-4xl font-black tabular-nums"
-              style={{
-                color: countdown <= 10 ? '#ef4444' : '#facc15',
-                textShadow: countdown <= 10
-                  ? '0 0 16px #ef4444, 0 0 32px #ef444488' :'0 0 16px #facc15, 0 0 32px #facc1588',
-                fontFamily: 'monospace',
-              }}
-            >
-              {String(countdown).padStart(2, '0')}
-            </div>
+            <div className="bf-timer">{String(countdown).padStart(2, '0')}</div>
             <div className="text-[7px] text-zinc-600 tracking-widest mt-0.5">TIME</div>
           </div>
           <div className="mt-3 text-xs font-black text-zinc-700 tracking-widest">VS</div>
@@ -607,10 +570,8 @@ export default function CharacterSelect({ onSelectP1, onSelectP2, onStartMatch }
         style={{ background: 'linear-gradient(90deg, #0a0a0a 0%, #111 50%, #0a0a0a 100%)' }}
       >
         <div className="flex-1 flex items-center px-4">
-          <span className="text-white font-black text-sm tracking-[0.2em] uppercase truncate"
-            style={{ textShadow: p1Fighter ? `0 0 8px ${FACTION_COLOR[p1Fighter.factionAlignment]}` : undefined }}
-          >
-            {p1Fighter?.name ?? '───'}
+          <span className="bf-display text-lg tracking-[0.14em] uppercase truncate">
+            {p1Fighter?.name ?? '———'}
           </span>
           {p1Fighter && p1Attire !== 'Default' && (
             <span className="ml-2 text-[9px] text-zinc-500 tracking-widest truncate">{p1Attire.toUpperCase()}</span>
@@ -623,10 +584,8 @@ export default function CharacterSelect({ onSelectP1, onSelectP2, onStartMatch }
           {p2Fighter && p2Attire !== 'Default' && (
             <span className="mr-2 text-[9px] text-zinc-500 tracking-widest truncate">{p2Attire.toUpperCase()}</span>
           )}
-          <span className="text-white font-black text-sm tracking-[0.2em] uppercase truncate text-right"
-            style={{ textShadow: p2Fighter ? `0 0 8px ${FACTION_COLOR[p2Fighter.factionAlignment]}` : undefined }}
-          >
-            {p2Fighter?.name ?? '───'}
+          <span className="bf-display text-lg tracking-[0.14em] uppercase truncate text-right">
+            {p2Fighter?.name ?? '———'}
           </span>
         </div>
       </div>
@@ -639,14 +598,12 @@ export default function CharacterSelect({ onSelectP1, onSelectP2, onStartMatch }
         <div className="flex items-center justify-between px-3 py-1 border-b border-zinc-800/50">
           <div className="flex items-center gap-2">
             <span className="text-[8px] text-zinc-600 tracking-[0.3em]">SELECTING FOR</span>
-            <span className={`text-[9px] font-black tracking-[0.3em] px-2 py-0.5 border ${
-              activeSlot === 'p1' ?'border-blue-600 text-blue-400 bg-blue-950/40' :'border-red-600 text-red-400 bg-red-950/40'
-            }`}>
+            <span className={`bf-side ${activeSlot === 'p1' ? 'bf-side-p1' : 'bf-side-p2'}`}>
               {activeSlot === 'p1' ? 'PLAYER 1' : 'PLAYER 2'}
             </span>
             <button
               onClick={() => setActiveSlot(activeSlot === 'p1' ? 'p2' : 'p1')}
-              className="text-[8px] text-zinc-600 hover:text-zinc-400 border border-zinc-800 hover:border-zinc-600 px-2 py-0.5 transition-colors"
+              className="bf-chip"
             >
               SWITCH
             </button>
@@ -656,7 +613,7 @@ export default function CharacterSelect({ onSelectP1, onSelectP2, onStartMatch }
             {cursorFighter && (
               <button
                 onClick={() => { setCustomizerCharId(cursorFighter.id); setCustomizerOpen(true); }}
-                className="text-[8px] text-zinc-500 hover:text-yellow-400 border border-zinc-800 hover:border-yellow-700 px-2 py-0.5 transition-colors"
+                className="bf-chip"
               >
                 CUSTOMIZE
               </button>
@@ -664,7 +621,7 @@ export default function CharacterSelect({ onSelectP1, onSelectP2, onStartMatch }
             {canStart && (
               <button
                 onClick={handleStartMatch}
-                className="text-[10px] font-black text-black bg-yellow-400 hover:bg-yellow-300 px-4 py-0.5 tracking-widest transition-colors"
+                className="bf-fight"
               >
                 FIGHT!
               </button>
@@ -682,7 +639,7 @@ export default function CharacterSelect({ onSelectP1, onSelectP2, onStartMatch }
             >
               <button
                 type="button"
-                className="aspect-square border border-zinc-800 bg-zinc-900/50 flex items-center justify-center text-zinc-700 text-[10px] font-mono hover:border-zinc-600 hover:text-zinc-400 transition-colors"
+                className="bf-chip aspect-square min-h-0 p-0"
                 onClick={() => {
                   const pick = characters[Math.floor(Math.random() * characters.length)];
                   if (pick) { setCursorIndex(characters.indexOf(pick)); handleFighterSelect(pick); }
@@ -708,7 +665,7 @@ export default function CharacterSelect({ onSelectP1, onSelectP2, onStartMatch }
               ))}
               <button
                 type="button"
-                className="aspect-square border border-zinc-800 bg-zinc-900/50 flex items-center justify-center text-zinc-700 text-[10px] font-mono hover:border-zinc-600 hover:text-zinc-400 transition-colors"
+                className="bf-chip aspect-square min-h-0 p-0"
                 onClick={() => {
                   const pick = characters[Math.floor(Math.random() * characters.length)];
                   if (pick) { setCursorIndex(characters.indexOf(pick)); handleFighterSelect(pick); }

@@ -25,6 +25,11 @@ export const Route = createRootRoute({
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){if(window.__bfTitleArm)return;window.__bfTitleArm=1;function arm(e){if(e.type==="keydown"&&e.key!=="Enter"&&e.key!==" ")return;window.__bfTitleGo=1;window.removeEventListener("pointerdown",arm,true);window.removeEventListener("keydown",arm,true);}window.addEventListener("pointerdown",arm,true);window.addEventListener("keydown",arm,true);})();`,
+          }}
+        />
       </head>
       <body>
         <PreviewHostBridge />

@@ -56,6 +56,27 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
     return () => { live = false; };
   }, []);
 
+  useEffect(() => {
+    const w = window as unknown as { __bfTitleGo?: boolean };
+    if (w.__bfTitleGo) {
+      w.__bfTitleGo = false;
+      onStart();
+    }
+    const go = (e: Event) => {
+      if (e.type === 'keydown') {
+        const key = (e as KeyboardEvent).key;
+        if (key !== 'Enter' && key !== ' ') return;
+      }
+      onStart();
+    };
+    window.addEventListener('pointerdown', go, true);
+    window.addEventListener('keydown', go, true);
+    return () => {
+      window.removeEventListener('pointerdown', go, true);
+      window.removeEventListener('keydown', go, true);
+    };
+  }, [onStart]);
+
   // Autoplay can still be refused; the poster and the wordmark cover that.
   useEffect(() => {
     const v = videoRef.current;
@@ -76,9 +97,12 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
     onStart();
   };
 
+  const ready = !!warm && warm.total > 0 && warm.done >= warm.total;
+  const pct = !warm || !warm.total ? 12 : Math.round((warm.done / warm.total) * 100);
+
   return (
     <div
-      className="fixed inset-0 bg-black text-white font-mono overflow-hidden"
+      className="bf-stage fixed inset-0 overflow-hidden"
       onPointerDown={armTheme}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ' || e.code === 'Space') {
@@ -138,17 +162,23 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
         className="absolute inset-0 flex flex-col items-center justify-end w-full pb-safe px-safe"
       >
         <span
-          className={`text-4xl font-black italic tracking-[0.18em] transition-opacity duration-700 ${videoUp ? 'opacity-0' : 'opacity-100'}`}
+          className={`bf-display text-6xl transition-opacity duration-700 ${videoUp ? 'opacity-0' : 'opacity-100'}`}
         >
           BRUTAL FIST
         </span>
-        <span className="mt-8 text-sm tracking-[0.45em] text-yellow-400 animate-pulse drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
-          PRESS START
+        <span className="bf-plate mt-6 px-8 py-3">
+          <span className="bf-prompt">PRESS START</span>
         </span>
-        {/* Honest about what it is doing, and never a gate: the player can
-            start at any point and the warm simply stops. */}
-        <span className="mt-3 mb-[18vh] h-3 text-[9px] tracking-[0.3em] text-white/45 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-          {warm && warm.done < warm.total ? `LOADING ${warm.done}/${warm.total}` : ''}
+        <span className="bf-plate bf-stream mt-4 mb-[14vh]">
+          <span className="block text-center text-xs tracking-[0.22em] text-[var(--color-muted)]">
+            {ready ? 'ROSTER READY' : 'STREAMING ROSTER'}
+          </span>
+          <span className="bf-stream-track block">
+            <span
+              className="bf-stream-fill block"
+              style={{ width: `${ready ? 100 : pct}%` }}
+            />
+          </span>
         </span>
       </button>
     </div>

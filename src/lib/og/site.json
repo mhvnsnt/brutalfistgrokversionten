@@ -1,6 +1,6 @@
 {
-  "title": "Brutal Fist",
-  "type": "x:game",
   "card": "custom",
-  "color": "0a0a0b"
+  "type": "x:game",
+  "title": "Brutal Fist",
+  "description": "3D fighting game. Pick a fighter and step into the ring."
 }

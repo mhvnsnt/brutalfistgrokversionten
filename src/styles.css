@@ -1,23 +1,27 @@
 @import "tailwindcss";
+@import "@fontsource/teko/600.css";
+@import "@fontsource/barlow-condensed/500.css";
+@import "@fontsource/barlow-condensed/700.css";
 
 @theme {
-  --color-bg: #0a0a0b;
-  --color-surface: #121214;
-  --color-elevated: #1a1a1e;
-  --color-fg: #f4f4f5;
-  --color-muted: #a1a1aa;
-  --color-subtle: #71717a;
-  --color-border: #26262c;
-  --color-accent: #c8ccd4;
-  --color-accent-fg: #0a0a0b;
-  --color-p1: #7dd3fc;
-  --color-p2: #fca5a5;
-  --color-fight: #e4e4e7;
+  --color-bg: #100c0a;
+  --color-surface: #1c1612;
+  --color-elevated: #2a221c;
+  --color-fg: #f3eadf;
+  --color-muted: #b7a898;
+  --color-subtle: #8a7b6c;
+  --color-border: #3a3128;
+  --color-accent: #e23d2b;
+  --color-accent-fg: #1a0c09;
+  --color-p1: #7ec8c3;
+  --color-p2: #e08a6d;
+  --color-fight: #f3eadf;
   --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --font-sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-sans: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-display: "Teko", "Arial Narrow", sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
@@ -137,4 +141,160 @@
     0%, 78% { opacity: 1; }
     100%    { opacity: 0; }
   }
+}
+
+/* Presentation layer — fight-card chrome, not a debug console. */
+.bf-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 0.9;
+}
+.bf-plate {
+  background: linear-gradient(180deg, rgba(243, 234, 223, 0.08), rgba(16, 12, 10, 0.72));
+  border: 1px solid rgba(243, 234, 223, 0.16);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+}
+.bf-stage {
+  background:
+    radial-gradient(90% 60% at 50% 100%, rgba(226, 61, 43, 0.22), transparent 55%),
+    #100c0a;
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+}
+.bf-prompt {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  letter-spacing: 0.14em;
+  color: var(--color-fg);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.65);
+}
+.bf-stream {
+  width: min(72vw, 280px);
+  padding: 0.45rem 0.8rem 0.55rem;
+}
+.bf-stream-track {
+  height: 3px;
+  margin-top: 0.35rem;
+  background: rgba(243, 234, 223, 0.16);
+}
+.bf-stream-fill {
+  height: 3px;
+  background: var(--color-accent);
+  box-shadow: 0 0 10px rgba(226, 61, 43, 0.85);
+}
+.bf-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  min-height: 32px;
+  padding: 0.4rem 0.55rem;
+  color: var(--color-muted);
+  background: rgba(16, 12, 10, 0.55);
+  border: 1px solid rgba(243, 234, 223, 0.16);
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+}
+.bf-chip.on {
+  color: var(--color-fg);
+  border-color: var(--color-accent);
+  background: rgba(226, 61, 43, 0.32);
+}
+.bf-chip.on-p1 {
+  color: #10211f;
+  border-color: var(--color-p1);
+  background: var(--color-p1);
+}
+.bf-chip.on-p2 {
+  color: #2a1410;
+  border-color: var(--color-p2);
+  background: var(--color-p2);
+}
+.bf-menu {
+  font-family: var(--font-sans);
+  color: var(--color-fg);
+  background:
+    radial-gradient(80% 50% at 100% 0%, rgba(126, 200, 195, 0.12), transparent 50%),
+    radial-gradient(70% 50% at 0% 100%, rgba(226, 61, 43, 0.18), transparent 46%),
+    var(--color-bg);
+}
+.bf-item {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 52px;
+  padding: 0.35rem 1rem 0.2rem;
+  text-align: left;
+  color: var(--color-fg);
+  background: linear-gradient(180deg, rgba(243, 234, 223, 0.06), rgba(16, 12, 10, 0.55));
+  border: 1px solid rgba(243, 234, 223, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+.bf-item:hover {
+  border-color: rgba(226, 61, 43, 0.7);
+  background: linear-gradient(180deg, rgba(226, 61, 43, 0.22), rgba(16, 12, 10, 0.72));
+}
+.bf-item span {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--color-muted);
+}
+.bf-select {
+  font-family: var(--font-sans);
+  color: var(--color-fg);
+  background:
+    radial-gradient(120% 70% at 50% -10%, rgba(226, 61, 43, 0.14), transparent 42%),
+    linear-gradient(180deg, #181310 0%, #100c0a 100%);
+}
+.bf-select .font-mono {
+  font-family: var(--font-sans);
+}
+.bf-side {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  padding: 0.15rem 0.55rem 0;
+  color: var(--color-accent-fg);
+}
+.bf-side-p1 { background: var(--color-p1); }
+.bf-side-p2 { background: var(--color-p2); }
+.bf-timer {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 0.85;
+  color: var(--color-fg);
+  text-shadow: 0 8px 18px rgba(0, 0, 0, 0.55);
+}
+.bf-fight {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  padding: 0.2rem 0.9rem 0;
+  color: var(--color-accent-fg);
+  background: var(--color-accent);
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+.bf-slot-name {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  font-size: 0.62rem;
+  color: var(--color-fg);
 }

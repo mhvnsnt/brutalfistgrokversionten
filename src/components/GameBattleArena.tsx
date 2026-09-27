@@ -1684,6 +1684,16 @@ export default function GameBattleArena({
       );
 
       if (p1Hit) {
+        const p1HitMove = p1HbWindow.move;
+        const guardResult = p1HitMove
+          ? p2SMRef.current.processIncomingHit(p1HitMove)
+          : { blocked: false, whiffed: false, chipDamage: 0, guardBroken: false, finalDamage: p1Hit.damage, blockstun: 0 };
+
+        if (guardResult.whiffed) {
+          // A high over a crouch is a miss. No damage, no stun, no push.
+          audioManagerRef.current.playSFX('whiff');
+        } else {
+
         // ── Momentum: apply counter-hit bonus and consume charge ─────────
         const p1MomentumActive = p1MomentumChargeRef.current.active;
         const isMomentumCounter = p1MomentumActive;
@@ -1693,35 +1703,39 @@ export default function GameBattleArena({
           setP1MomentumCharge({ ...p1MomentumChargeRef.current });
         }
 
-        // ── Guard system: check if P2 blocks, apply chip damage or full damage ──
-        const p1HitMove = p1HbWindow.move;
-        const guardResult = p1HitMove
-          ? p2SMRef.current.processIncomingHit(p1HitMove)
-          : { blocked: false, chipDamage: 0, guardBroken: false, finalDamage: p1Hit.damage };
-
-        // Momentum chip damage on block
-        let effectiveDamage = guardResult.blocked
-          ? (p1MomentumActive
-              ? Math.round(p1Hit.damage * p1MomentumChargeRef.current.chipDamageMultiplier)
-              : guardResult.finalDamage)
-          : p1Hit.damage;
-
-        // Momentum counter-hit bonus
+        let effectiveDamage = guardResult.blocked ? guardResult.finalDamage : p1Hit.damage;
         if (p1MomentumActive && !guardResult.blocked) {
           effectiveDamage = applyMomentumChargeCounterHit(effectiveDamage);
         }
 
-        // ── Combo system: register hit and apply damage scaling ──────────
-        const { scaledDamage: p1ScaledDmg, newState: newP1Combo } = registerHit(
-          p1ComboRef.current, effectiveDamage, now,
-        );
-        p1ComboRef.current = newP1Combo;
-        setP1Combo({ ...newP1Combo });
-        if (!guardResult.blocked) {
-          // COMBO SCALING ON TOP OF THE EXISTING SCALING. registerHit already
-          // scales a ground combo; this is the AIRBORNE scaling, which is a
-          // separate rule and the one that stops a juggle being an infinite.
-          // It is 1.0 for anyone standing, so nothing off the ground changes.
+        // A blocked hit does not start a combo. Tekken blockstun and pushback
+        // are the cost; a normal block does not chip.
+        let p1ScaledDmg = 0;
+        // MOMENTUM IS THIS GAME'S RAGE, AND RAGE DOES DAMAGE ON BLOCK.
+        // Tekken is right that a NORMAL block chips for nothing, and the merge
+        // took that rule — but it dropped the momentum exception with it, which
+        // left MomentumSystem's `chipDamageMultiplier` set and read by nobody
+        // (caught by tools/audit/unconsumed_fields). A charged momentum hit is
+        // the one case that gets through a guard, the same way a Rage Art does.
+        if (guardResult.blocked) {
+          const stun = guardResult.blockstun > 0 ? guardResult.blockstun : 0.15;
+          const blockedDamage = p1MomentumActive
+            ? Math.round(p1Hit.damage * p1MomentumChargeRef.current.chipDamageMultiplier)
+            : guardResult.finalDamage;
+          engine.applyIncomingHit('p2', blockedDamage, true, stun);
+          p2SMRef.current.applyBlockStun(stun, (p1HitMove?.attackLevel ?? 'mid') === 'low');
+          p2LocoRef.current.applyPushback(Math.max(0.18, p1Hit.pushback || 0.3));
+          hitStopTimerRef.current = Math.max(hitStopTimerRef.current, 0.045);
+          hitStopActiveRef.current = true;
+          setHitStopActive(true);
+          logHit('p1', 'p2', blockedDamage, true, 'block');
+        } else {
+          const { scaledDamage, newState: newP1Combo } = registerHit(
+            p1ComboRef.current, effectiveDamage, now,
+          );
+          p1ScaledDmg = scaledDamage;
+          p1ComboRef.current = newP1Combo;
+          setP1Combo({ ...newP1Combo });
           const p1Air = p2SMRef.current.juggleDamageScale();
           const p1Dealt = Math.max(1, Math.round(p1ScaledDmg * p1Air));
           engine.applyIncomingHit('p2', p1Dealt, false, p1Hit.hitstun || 0.3);
@@ -1847,6 +1861,7 @@ export default function GameBattleArena({
             isBlocked,
           };
           p1ImpactMarkersRef.current = [...p1ImpactMarkersRef.current.slice(-4), marker];
+        }
         }
       }
 
@@ -2067,21 +2082,43 @@ export default function GameBattleArena({
       );
 
       if (p2Hit) {
-        // ── Guard system: check if P1 blocks, apply chip damage or full damage ──
         const p2HitMove = p2HbWindow.move;
         const p1GuardResult = p2HitMove
           ? p1SMRef.current.processIncomingHit(p2HitMove)
-          : { blocked: false, chipDamage: 0, guardBroken: false, finalDamage: p2Hit.damage };
+          : { blocked: false, whiffed: false, chipDamage: 0, guardBroken: false, finalDamage: p2Hit.damage, blockstun: 0 };
+
+        if (p1GuardResult.whiffed) {
+          audioManagerRef.current.playSFX('whiff');
+        } else {
 
         const p1EffectiveDamage = p1GuardResult.blocked ? p1GuardResult.finalDamage : p2Hit.damage;
 
-        // ── Combo system: register hit and apply damage scaling ──────────
-        const { scaledDamage: p2ScaledDmg, newState: newP2Combo } = registerHit(
-          p2ComboRef.current, p1EffectiveDamage, now,
-        );
-        p2ComboRef.current = newP2Combo;
-        setP2Combo({ ...newP2Combo });
-        if (!p1GuardResult.blocked) {
+        let p2ScaledDmg = 0;
+        // MOMENTUM IS THIS GAME'S RAGE, AND RAGE DOES DAMAGE ON BLOCK.
+        // Tekken is right that a NORMAL block chips for nothing, and the merge
+        // took that rule — but it dropped the momentum exception with it, which
+        // left MomentumSystem's `chipDamageMultiplier` set and read by nobody
+        // (caught by tools/audit/unconsumed_fields). A charged momentum hit is
+        // the one case that gets through a guard, the same way a Rage Art does.
+        if (p1GuardResult.blocked) {
+          const stun = p1GuardResult.blockstun > 0 ? p1GuardResult.blockstun : 0.15;
+          const p2BlockedDamage = p2MomentumChargeRef.current.active
+            ? Math.round(p2Hit.damage * p2MomentumChargeRef.current.chipDamageMultiplier)
+            : p1GuardResult.finalDamage;
+          engine.applyIncomingHit('p1', p2BlockedDamage, true, stun);
+          p1SMRef.current.applyBlockStun(stun, (p2HitMove?.attackLevel ?? 'mid') === 'low');
+          p1LocoRef.current.applyPushback(Math.max(0.18, p2Hit.pushback || 0.3));
+          hitStopTimerRef.current = Math.max(hitStopTimerRef.current, 0.045);
+          hitStopActiveRef.current = true;
+          setHitStopActive(true);
+          logHit('p2', 'p1', p2BlockedDamage, true, 'block');
+        } else {
+          const { scaledDamage, newState: newP2Combo } = registerHit(
+            p2ComboRef.current, p1EffectiveDamage, now,
+          );
+          p2ScaledDmg = scaledDamage;
+          p2ComboRef.current = newP2Combo;
+          setP2Combo({ ...newP2Combo });
           const p2Dealt = Math.max(1, Math.round(p2ScaledDmg * p1SMRef.current.juggleDamageScale()));
           engine.applyIncomingHit('p1', p2Dealt, false, p2Hit.hitstun || 0.3);
           logHit('p2', 'p1', p2Dealt, false, 'hitbox');
@@ -2193,6 +2230,7 @@ export default function GameBattleArena({
             isBlocked,
           };
           p2ImpactMarkersRef.current = [...p2ImpactMarkersRef.current.slice(-4), marker];
+        }
         }
       }
 
@@ -2437,17 +2475,27 @@ export default function GameBattleArena({
         armRootMotion(p1SMRef.current, p1LocoRef.current, p1NextMotion, p1HbWindow);
         armRootMotion(p2SMRef.current, p2LocoRef.current, p2NextMotion, p2HbWindow);
 
+        const stickLive = (action: string) =>
+          action !== 'Attacking' && action !== 'CommandThrow' && action !== 'ThrowWhiff'
+          && action !== 'Guard' && action !== 'HitStun' && action !== 'Crumple'
+          && action !== 'Juggled' && action !== 'Knockdown';
+        const p1Stick = stickLive(p1SMRef.current.action);
+        const p2Stick = stickLive(p2SMRef.current.action);
         if (cmd.jump) p1LocoRef.current.beginJump();
         else p1LocoRef.current.armJump();
         p1LocoRef.current.update(
-          p1Vel.forward, p1Vel.strafe, dt, p1IsDashing, p1IsBackdashing,
+          p1Stick ? p1Vel.forward : 0, p1Stick ? p1Vel.strafe : 0, dt,
+          p1Stick && p1IsDashing, p1Stick && p1IsBackdashing,
           { x: p2XRef.current, z: p2ZRef.current },
+          p1Stick,
         );
         if (p2AIInput.jump) p2LocoRef.current.beginJump();
         else p2LocoRef.current.armJump();
         p2LocoRef.current.update(
-          p2Vel.forward, p2Vel.strafe, dt, false, p2IsBackdashing,
+          p2Stick ? p2Vel.forward : 0, p2Stick ? p2Vel.strafe : 0, dt,
+          false, p2Stick && p2IsBackdashing,
           { x: p1XRef.current, z: p1ZRef.current },
+          p2Stick,
         );
 
         // ── Feed locomotion positions back to visual state ────────────────
@@ -3591,7 +3639,7 @@ function buildP2AIInput(
   if ((aerialStyle || speedStyle) && cycle === 6)
     return {forward:1,strafe:orbit,light:false,heavy:false,guard:false,crouch:false,jump:true};
   if (powerStyle && cycle === 5)
-    return {forward:-1,strafe:0,light:false,heavy:false,guard:true,crouch:false,jump:false};
+    return {forward:-1,strafe:0,light:false,heavy:false,guard:false,crouch:false,jump:false};
 
   // Directional throws are an explicit AI intent, not a fake button chord.
   // The arena validates range/state and opens the same authoritative break
@@ -3610,7 +3658,7 @@ function buildP2AIInput(
     };
 
   if (healthPressure && cycle === 4)
-    return {forward:0,strafe:orbit,light:false,heavy:false,guard:true,crouch:false,jump:false};
+    return {forward:-1,strafe:0,light:false,heavy:false,guard:false,crouch:true,jump:false};
   /**
    * THE AI CAN THROW YOU NOW.
    *
@@ -3631,7 +3679,7 @@ function buildP2AIInput(
     case 0: case 1: return {forward:0,strafe:orbit,light:true,heavy:false,guard:false,crouch:false,jump:false};
     case 2: return {forward:0,strafe:orbit,light:false,heavy:true,guard:false,crouch:false,jump:false};
     case 3: return {forward:aggressive ? 1 : 0,strafe:orbit,light:true,heavy:false,guard:false,crouch:false,jump:false};
-    case 7: return {forward:-1,strafe:orbit,light:false,heavy:false,guard:true,crouch:false,jump:false};
+    case 7: return {forward:-1,strafe:orbit,light:false,heavy:false,guard:false,crouch:false,jump:false};
     default: return {forward:0,strafe:orbit,light:false,heavy:false,guard:false,crouch:false,jump:false};
   }
 }
