@@ -81,6 +81,17 @@ const gates = [
       return { pass: r.ok, detail: `${m?.[1] ?? '?'} of 455 not credible, and the manifest agrees` };
     },
   },
+  {
+    name: 'baseline parity does not slide',
+    why: 'Owner: start from a good base instead of hand-tooling. 76% was the mark when it was first measured.',
+    check: () => {
+      const r = run('node', ['--experimental-strip-types', '--import', './scripts/register-ts-resolve.mjs', 'tools/parity/baseline.ts']);
+      const m = /OVERALL\s+(\d+)% of baseline across (\d+) rows/.exec(r.out);
+      const pct = Number(m?.[1] ?? 0);
+      const dead = /(\d+) declared and dead/.exec(r.out)?.[1] ?? '?';
+      return { pass: pct >= 76, detail: `${pct || '?'}% of baseline across ${m?.[2] ?? '?'} rows, ${dead} declared and dead (want >= 76%)` };
+    },
+  },
   ...(QUICK ? [] : [{
     name: 'hip volume under real clips',
     why: 'The thigh pinching to a quarter of its width is the visible tearing.',
