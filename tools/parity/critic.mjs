@@ -83,13 +83,13 @@ const gates = [
   },
   {
     name: 'baseline parity does not slide',
-    why: 'Owner: start from a good base instead of hand-tooling. 76% was the mark when it was first measured.',
+    why: 'Owner: start from a good base instead of hand-tooling. 79% was the mark after frame advantage landed.',
     check: () => {
       const r = run('node', ['--experimental-strip-types', '--import', './scripts/register-ts-resolve.mjs', 'tools/parity/baseline.ts']);
       const m = /OVERALL\s+(\d+)% of baseline across (\d+) rows/.exec(r.out);
       const pct = Number(m?.[1] ?? 0);
       const dead = /(\d+) declared and dead/.exec(r.out)?.[1] ?? '?';
-      return { pass: pct >= 76, detail: `${pct || '?'}% of baseline across ${m?.[2] ?? '?'} rows, ${dead} declared and dead (want >= 76%)` };
+      return { pass: pct >= 79, detail: `${pct || '?'}% of baseline across ${m?.[2] ?? '?'} rows, ${dead} declared and dead (want >= 79%)` };
     },
   },
   ...(QUICK ? [] : [{

@@ -11,7 +11,7 @@
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { FighterStateMachine, CROUCH_MOVE_WINDOWS, type FighterInput } from './FighterStateMachine.ts';
+import { FighterStateMachine, CROUCH_MOVE_WINDOWS, DEFAULT_MOVE_WINDOWS, type FighterInput } from './FighterStateMachine.ts';
 
 const NEUTRAL: FighterInput = {
   forward: 0, strafe: 0, light: false, heavy: false, guard: false, crouch: false,
@@ -58,9 +58,19 @@ describe('down + button', () => {
     assert.equal(CROUCH_MOVE_WINDOWS.crouchHeavyAttack.attackLevel, 'low');
   });
 
-  it('is faster than the standing attack it replaces', () => {
+  it('trades for hitting low, rather than for being fast', () => {
+    // THIS ASSERTION USED TO READ "faster than the standing attack it replaces"
+    // and it was wrong — it was written against ad-hoc timings before the frame
+    // data was brought to the baseline. At baseline a crouching kick is i13 and a
+    // standing light kick is i11, so the crouch is SLOWER, which is correct: what
+    // it buys is a low that passes under a jump, and what it pays is being deeply
+    // minus on block. Speed is not the trade.
     const crouch = CROUCH_MOVE_WINDOWS.crouchHeavyAttack;
-    assert.ok(crouch.startup < 0.14, `a crouching kick should beat the standing kick's 0.14s startup, has ${crouch.startup}`);
-    assert.ok(crouch.damage! < 170, 'and pay for it in damage');
+    const standing = DEFAULT_MOVE_WINDOWS.lightKick;
+    assert.equal(crouch.attackLevel, 'low', 'the whole point is that it hits low');
+    assert.ok(crouch.startup > standing.startup, 'a crouching kick is slower than a standing light kick, not faster');
+    assert.ok((crouch.onBlock ?? 0) <= -10, `a low must be punishable, is ${crouch.onBlock}`);
+    assert.ok((standing.onBlock ?? -99) > (crouch.onBlock ?? 0), 'and worse on block than the standing kick');
+    assert.ok(crouch.damage! < DEFAULT_MOVE_WINDOWS.heavyKick.damage!, 'and pays in damage too');
   });
 });

@@ -91,6 +91,17 @@ export interface MoveWindow {
    */
   rootTravel?: { t: number[]; f: number[]; l: number[] };
   /**
+   * FRAME ADVANTAGE ON BLOCK, in frames at 60fps. Positive means the attacker
+   * recovers first and may press; negative means the defender does and the
+   * attacker is open. This is the number a player learns a move BY, and until it
+   * existed nothing in this game was plus or minus on block — blockstun was a
+   * flat per-animation duration that was never compared against the attacker's
+   * own recovery, so every move was neutral and there was no reason to press or
+   * to wait. See `blockstunFramesFor`, which DERIVES the stun from this rather
+   * than the other way round.
+   */
+  onBlock?: number;
+  /**
    * The height band this move strikes at. The hitbox turns it into a real
    * vertical envelope, so a low kick genuinely passes under a jump instead of
    * connecting and being labelled a leg hit. Defaults to 'mid' when absent.
@@ -183,90 +194,93 @@ export interface SpecialMoveDefinition {
 }
 
 // ── Built-in move windows ─────────────────────────────────────────────────────
+/** 60fps is the timebase; every window below is a whole number of frames. */
+export const FRAMES_PER_SECOND = 60;
+const F = (frames: number) => frames / FRAMES_PER_SECOND;
+
+/**
+ * THE SIX BASICS, BROUGHT TO THE LINEAGE BASELINE.
+ *
+ * tools/parity/baseline.ts measured the light punch at 7.2 frames of startup
+ * against an i10 standard — too FAST, not too slow, which was the opposite of
+ * what I expected. A jab that quick outruns every reaction window the rest of the
+ * system assumes, and it made the whole scale wrong: totals of 26-48 frames in a
+ * genre where a jab is about 20 and a heavy about 40.
+ *
+ * `onBlock` is the advantage each move is DESIGNED to have; blockstunFramesFor
+ * derives the stun that realises it, and realisedAdvantageOnBlock is what it
+ * actually comes out as. The two are asserted equal in frame-advantage.test.ts,
+ * because a table claiming +1 while the engine plays -6 is the defect this
+ * replaces.
+ *
+ *   move                 startup  active  recovery  total  contact  onBlock  stun
+ *   light punch  (i10)      10       3        7        20      10      +1      11
+ *   light kick   (i11)      11       3        9        23      11       0      12
+ *   heavy punch  (i15)      15       4       20        39      15      -9      15
+ *   heavy kick   (i16)      16       4       22        42      16     -10      16
+ *   crouch punch (i11)      11       3        9        23      11      -3       9
+ *   crouch kick  (i13)      13       3       14        30      13     -12       5
+ *
+ * The SHAPE matters more than the exact figures: a jab is plus and safe, a heavy
+ * launcher is deeply minus and punishable, a low is minus. That risk/reward is
+ * what the genre runs on and none of it existed here — every move was neutral on
+ * block, so there was never a reason to press or to wait. Per-move values for
+ * real movesets come from Kiloutre/TKMovesets, not from this table.
+ */
 export const DEFAULT_MOVE_WINDOWS: Record<'lightAttack' | 'heavyAttack' | 'lightKick' | 'heavyKick', MoveWindow> = {
   lightAttack: {
-    startup: 0.12,
-    active: 0.10,
-    recovery: 0.22,
+    startup: F(10), active: F(3), recovery: F(7),
     animation: 'lightAttack',
-    hitboxStartFrame: 8,
-    hitboxEndFrame: 14,
-    totalFrames: 26,
-    damage: 80,
-    attackLevel: 'high',
+    hitboxStartFrame: 10, hitboxEndFrame: 13, totalFrames: 20,
+    damage: 80, attackLevel: 'high', onBlock: 1,
   },
   heavyAttack: {
-    startup: 0.20,
-    active: 0.14,
-    recovery: 0.38,
+    startup: F(15), active: F(4), recovery: F(20),
     animation: 'heavyAttack',
-    hitboxStartFrame: 12,
-    hitboxEndFrame: 20,
-    totalFrames: 43,
-    damage: 150,
-    attackLevel: 'high',
+    hitboxStartFrame: 15, hitboxEndFrame: 19, totalFrames: 39,
+    damage: 150, attackLevel: 'high', onBlock: -9,
   },
   lightKick: {
-    startup: 0.14,
-    active: 0.12,
-    recovery: 0.28,
+    startup: F(11), active: F(3), recovery: F(9),
     animation: 'lightKick',
-    hitboxStartFrame: 9,
-    hitboxEndFrame: 16,
-    totalFrames: 32,
-    damage: 90,
-    attackLevel: 'mid',
+    hitboxStartFrame: 11, hitboxEndFrame: 14, totalFrames: 23,
+    damage: 90, attackLevel: 'mid', onBlock: 0,
     specialName: 'Left Kick',
   },
   heavyKick: {
-    startup: 0.22,
-    active: 0.16,
-    recovery: 0.42,
+    startup: F(16), active: F(4), recovery: F(22),
     animation: 'heavyKick',
-    hitboxStartFrame: 13,
-    hitboxEndFrame: 22,
-    totalFrames: 48,
-    damage: 170,
-    attackLevel: 'mid',
+    hitboxStartFrame: 16, hitboxEndFrame: 20, totalFrames: 42,
+    damage: 170, attackLevel: 'mid', onBlock: -10,
     specialName: 'Right Kick',
   },
 };
 
 /**
- * DOWN + BUTTON. These two states have had frame data in MoveLibrary since it
- * was written (crouchLightAttack: 6 startup / 4 active / 10 recovery, isLow) and
- * NOTHING IN THIS FILE EVER ENTERED EITHER ONE — the standing attack checks came
- * first and matched on the button alone, so a crouching player pressing kick got
- * the standing kick. Owner: "if I press forward and kick, that it's crouching and
- * doing a kick when that should be at the down and kick."
+ * DOWN + BUTTON. These two states have had frame data in MoveLibrary since it was
+ * written and NOTHING IN THIS FILE EVER ENTERED EITHER ONE — the standing attack
+ * checks came first and matched on the button alone, so a crouching player
+ * pressing kick got the standing kick. Owner: "if I press forward and kick, that
+ * it's crouching and doing a kick when that should be at the down and kick."
  *
  * `attackLevel: 'low'` is what makes them genuinely low rather than named low:
- * FrameDataHitbox already turns it into a real vertical envelope, so these pass
- * under a jump instead of connecting and being called a leg hit.
+ * FrameDataHitbox turns it into a real vertical envelope, so these pass under a
+ * jump instead of connecting and being called a leg hit. And a low being MINUS on
+ * block is the reason a low is a risk rather than a free poke.
  */
 export const CROUCH_MOVE_WINDOWS: Record<'crouchLightAttack' | 'crouchHeavyAttack', MoveWindow> = {
   crouchLightAttack: {
-    startup: 0.10,
-    active: 0.07,
-    recovery: 0.17,
+    startup: F(11), active: F(3), recovery: F(9),
     animation: 'crouchLightAttack',
-    hitboxStartFrame: 6,
-    hitboxEndFrame: 10,
-    totalFrames: 20,
-    damage: 60,
-    attackLevel: 'low',
+    hitboxStartFrame: 11, hitboxEndFrame: 14, totalFrames: 23,
+    damage: 60, attackLevel: 'low', onBlock: -3,
     specialName: 'Low Punch',
   },
   crouchHeavyAttack: {
-    startup: 0.13,
-    active: 0.10,
-    recovery: 0.25,
+    startup: F(13), active: F(3), recovery: F(14),
     animation: 'crouchHeavyAttack',
-    hitboxStartFrame: 8,
-    hitboxEndFrame: 14,
-    totalFrames: 29,
-    damage: 95,
-    attackLevel: 'low',
+    hitboxStartFrame: 13, hitboxEndFrame: 16, totalFrames: 30,
+    damage: 95, attackLevel: 'low', onBlock: -12,
     specialName: 'Crouching Kick',
   },
 };
@@ -465,21 +479,51 @@ export function resolveTekkenContact(level: TekkenAttackLevel, stance: TekkenGua
   return 'hit';
 }
 
-const BLOCKSTUN_BY_ANIM: Record<string, number> = {
-  lightAttack: 0.15,
-  lightKick: 0.16,
-  heavyAttack: 0.25,
-  heavyKick: 0.28,
-  crouchLightAttack: 0.14,
-  crouchHeavyAttack: 0.20,
-};
+/**
+ * BLOCKSTUN IS DERIVED FROM THE ADVANTAGE, NOT AUTHORED BESIDE IT.
+ *
+ * The advantage is what the design decides and what the player learns. The stun
+ * that produces it is arithmetic:
+ *
+ *   attacker is free again  (total - contactFrame) frames after contact
+ *   defender is free again  blockstun frames after contact
+ *   advantage               blockstun - (total - contactFrame)
+ *   so                      blockstun = (total - contactFrame) + onBlock
+ *
+ * Authoring both independently is how a table ends up claiming +1 while the
+ * engine plays -6, which is exactly what a flat per-animation table did here.
+ *
+ * Contact is taken at the first active frame, which is the frame the whole
+ * genre quotes frame data at.
+ */
+/** Outside this a "blockstun" is either a free hit or a stun-lock. */
+export const BLOCKSTUN_CLAMP_FRAMES = { min: 3, max: 30 } as const;
+
+const totalFramesOf = (move: MoveWindow): number =>
+  move.totalFrames ?? Math.round((move.startup + move.active + move.recovery) * FRAMES_PER_SECOND);
+const contactFrameOf = (move: MoveWindow): number =>
+  move.hitboxStartFrame ?? Math.round(move.startup * FRAMES_PER_SECOND);
+
+/** Frames of blockstun that realise this move's authored advantage. */
+export function blockstunFramesFor(move: MoveWindow): number {
+  const recoveryAfterContact = totalFramesOf(move) - contactFrameOf(move);
+  const wanted = recoveryAfterContact + (move.onBlock ?? 0);
+  return Math.max(BLOCKSTUN_CLAMP_FRAMES.min, Math.min(BLOCKSTUN_CLAMP_FRAMES.max, wanted));
+}
+
+/**
+ * The advantage this move ACTUALLY produces, which is what the authored number
+ * has to be checked against. They differ only when the clamp bites — and when
+ * they do, the authored advantage is unreachable with this move's recovery and
+ * that is a frame-data problem, not a blockstun one.
+ */
+export function realisedAdvantageOnBlock(move: MoveWindow): number {
+  return blockstunFramesFor(move) - (totalFramesOf(move) - contactFrameOf(move));
+}
 
 /** Blockstun is shorter than the hit. A normal Tekken block does not chip. */
 export function tekkenBlockstunSeconds(move: MoveWindow): number {
-  const named = BLOCKSTUN_BY_ANIM[move.animation];
-  if (named !== undefined) return named;
-  const scaled = (move.active ?? 0.12) + (move.recovery ?? 0.2) * 0.2;
-  return Math.max(0.12, Math.min(0.4, scaled));
+  return blockstunFramesFor(move) / FRAMES_PER_SECOND;
 }
 
 // ── Grab range check result ───────────────────────────────────────────────────

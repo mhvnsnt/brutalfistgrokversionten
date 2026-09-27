@@ -50,7 +50,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 
-import { DEFAULT_MOVE_WINDOWS, CROUCH_MOVE_WINDOWS, FIXED_STEP_S, MAX_SUBSTEPS } from '../../src/engine/combat/FighterStateMachine.ts';
+import { DEFAULT_MOVE_WINDOWS, CROUCH_MOVE_WINDOWS, FIXED_STEP_S, MAX_SUBSTEPS, realisedAdvantageOnBlock, blockstunFramesFor } from '../../src/engine/combat/FighterStateMachine.ts';
 import { THROW_BREAK_WINDOW_FRAMES, THROW_WHIFF_RECOVERY_FRAMES, THROW_GRAB_RANGE } from '../../src/engine/combat/DirectionalThrowSystem.ts';
 import { WALL_SPLAT_BONUS_FRAMES, WALL_RECOVERY_FRAMES } from '../../src/engine/combat/WallSystem.ts';
 import { BUFFER_MS, BUFFER_SIZE, STEP_WINDOW_MS } from '../../src/engine/combat/CommandInput.ts';
@@ -134,17 +134,21 @@ for (const [name, w] of [['heavy punch', DEFAULT_MOVE_WINDOWS.heavyAttack], ['li
     verdict: total <= 70 ? 'BEHAVING' : 'WIRED',
   });
 }
+const advs = Object.entries({ ...DEFAULT_MOVE_WINDOWS, ...CROUCH_MOVE_WINDOWS })
+  .map(([n, w]) => ({ n, authored: w.onBlock, realised: realisedAdvantageOnBlock(w), stun: blockstunFramesFor(w) }));
+const allHonest = advs.every((a) => a.authored === a.realised);
+const spread = new Set(advs.map((a) => a.realised)).size;
 add({
   axis: 'FRAME DATA', system: 'advantage on block, in frames',
   reference: 'every move carries a frame advantage on block — that number IS the mind game',
   refSource: 'convention',
-  ours: (() => {
-    const hasAdv = declaredIn('frameAdvantage|advantageOnBlock|onBlockFrames');
-    return hasAdv ? `declared in ${hasAdv}` : 'not modelled — blockstun is a flat per-animation duration';
-  })(),
-  verdict: declaredIn('frameAdvantage|advantageOnBlock|onBlockFrames') ? 'WIRED' : 'MISSING',
-  note: 'blockstun exists (0.15s default) but recovery is not compared against it, so no move is plus or minus on block',
-  fillFrom: 'Kiloutre/TKMovesets — its move structs carry the real recovery and blockstun figures to derive advantage from',
+  ours: advs.map((a) => `${a.n.replace('Attack', 'P').replace('Kick', 'K')} ${a.realised > 0 ? '+' : ''}${a.realised}`).join(', '),
+  verdict: allHonest && spread >= 4 && Math.max(...advs.map((a) => a.realised)) > 0 && Math.min(...advs.map((a) => a.realised)) < 0
+    ? 'BEHAVING' : 'WIRED',
+  note: allHonest
+    ? 'blockstun is DERIVED from the authored advantage, so the table cannot claim +1 while the engine plays -6'
+    : 'authored and realised advantages disagree — a move recovery cannot support its advantage',
+  fillFrom: 'Kiloutre/TKMovesets — per-move advantages for real movesets, instead of six hand-set values',
 });
 add({
   axis: 'FRAME DATA', system: 'throw break window',

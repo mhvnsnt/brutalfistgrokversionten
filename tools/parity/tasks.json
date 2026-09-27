@@ -19,13 +19,13 @@
     },
     {
       "id": "rest-offset",
-      "title": "Stop the retarget parking the thigh 81 degrees from bind",
+      "title": "Clips with impossible legs no longer own them",
       "specialist": "pipeline",
-      "status": "open",
+      "status": "done",
       "needs": [],
-      "measure": "tools/model_diag/rest_offset.mjs \u2014 median thigh delta from bind under 40 degrees",
-      "now": "median 81 degrees, 210 of 455 clips past 90",
-      "notes": "A standing jab measures 74 degrees, which is not anatomy. Suspected rest-pose mismatch between source and canonical binds baked into the thigh track. upf-gti/retargeting-threejs solves joint-level offsets between mismatched binds."
+      "measure": "tools/model_diag/stance_gap.mjs \u2014 world-space leg direction against the stance, not bind",
+      "now": "the 81-degree target was retired as a bad proxy; 190 non-credible clips now borrow the stance",
+      "notes": "Measured in world space the idles sit 0-17 degrees from the stance and are correct; ALTERNATINGFOREARMS is 90-129 and CHOKESLAM 91-142, the same clips the credibility audit names. There is no global retarget offset. upf-gti/retargeting-threejs is in tools/reference as the basis for the next re-rig (BindPoseModes.CURRENT)."
     },
     {
       "id": "bone-mask",
@@ -55,6 +55,26 @@
       "needs": [],
       "measure": "tools/audit/unconsumed_fields.mjs no longer lists SbMove.hidden",
       "now": "110 of 133 imported moves are hidden and nothing reads it"
+    },
+    {
+      "id": "mechanics-declared-and-dead",
+      "title": "Three systems exist and nothing calls them",
+      "specialist": "combat",
+      "status": "open",
+      "needs": [],
+      "measure": "tools/parity/baseline.ts \u2014 MECHANICS axis above 69%, 0 rows DECLARED",
+      "now": "low parry, rage, and wall-splat advantage are declared with no caller outside their own file",
+      "notes": "Rage is the biggest of the three: a comeback state at low health plus a Rage Art off it is a core lineage system and only PreFightIntros mentions it. Fill from Kiloutre/TKMovesets for the move structs and SchwarzerblitzEngine for the loop, rather than authoring another one by hand."
+    },
+    {
+      "id": "feel-axis",
+      "title": "The impact layer is half of baseline",
+      "specialist": "combat",
+      "status": "open",
+      "needs": [],
+      "measure": "tools/parity/baseline.ts \u2014 FEEL axis above 50%",
+      "now": "hitstop and pushback are both WIRED but neither is under a registered test, so neither is proven",
+      "notes": "45ms hitstop on block and a 0.18m minimum pushback both exist and are called. What is missing is a measurement: does a hit actually freeze both bodies for those frames, and does the pushback reset spacing. Two probes, not new systems."
     }
   ]
 }
