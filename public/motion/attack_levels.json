@@ -1,0 +1,3196 @@
+{
+  "generatedBy": "tools/motion/attack_level.mjs",
+  "model": "public/models/TITAN.glb",
+  "bands": {
+    "lowBelow": 0.314,
+    "highFrom": 0.828
+  },
+  "what": "level is derived from the striking limb height at the contact frame, as a fraction of standing height. Never from a name.",
+  "clips": {
+    "ACTION_IDLE_TO_STANDING_IDLE": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.244,
+      "frame": 5
+    },
+    "ALTERNATINGFOREARMS": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.701,
+      "frame": 20
+    },
+    "AMYTHROW_REACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.612,
+      "frame": 29
+    },
+    "ANIMATIONMASTERFILE_BLEND": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.318,
+      "frame": 1
+    },
+    "APRONJAYKICK": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.571,
+      "frame": 4
+    },
+    "ARMADA": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.487,
+      "frame": 16
+    },
+    "ASSISTEDCUTTER": {
+      "level": "high",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.915,
+      "frame": 8
+    },
+    "ASSISTEDDIVSENTON": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.899,
+      "frame": 0
+    },
+    "ASSISTEDREVERSEGOOZLECHOP": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.564,
+      "frame": 14
+    },
+    "AU": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.578,
+      "frame": 15
+    },
+    "AXEKICK": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.582,
+      "frame": 8
+    },
+    "BACKBREAKER_REACTION": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.325,
+      "frame": 41
+    },
+    "BASEBALL_HIT": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.434,
+      "frame": 20
+    },
+    "BASH": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.785,
+      "frame": 6
+    },
+    "BIG_BODY_BLOW": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.71,
+      "frame": 20
+    },
+    "BIG_JUMP": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.763,
+      "frame": 9
+    },
+    "BIG_RIB_HIT": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.387,
+      "frame": 13
+    },
+    "BLASTFLIGHT": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.952,
+      "frame": 0
+    },
+    "BODY_JAB_CROSS": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.284,
+      "frame": 11
+    },
+    "BOXING": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.632,
+      "frame": 6
+    },
+    "BOXING__1_": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.099,
+      "frame": 0
+    },
+    "BOXING__2_": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.674,
+      "frame": 6
+    },
+    "BOXING__3_": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.814,
+      "frame": 6
+    },
+    "BOXING__4_": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.158,
+      "frame": 11
+    },
+    "BOXING__5_": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.857,
+      "frame": 6
+    },
+    "BOX_IDLE": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.087,
+      "frame": 16
+    },
+    "BRACED_HANG_HOP_UP": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.487,
+      "frame": 5
+    },
+    "BRAINBUSTER": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.782,
+      "frame": 20
+    },
+    "BREAKDANCE_FOOTWORK_3": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.741,
+      "frame": 16
+    },
+    "BREAKDANCE_FOOTWORK_3__1_": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.741,
+      "frame": 16
+    },
+    "BREAKDANCE_FOOTWORK_TO_FREEZE": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.818,
+      "frame": 23
+    },
+    "BREAKDANCE_FREEZES": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.779,
+      "frame": 7
+    },
+    "BREAKDANCE_READY": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.197,
+      "frame": 4
+    },
+    "BREAKDANCE_UPROCK_TO_GROUND": {
+      "level": "high",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.942,
+      "frame": 21
+    },
+    "BROOKLYN_UPROCK": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.626,
+      "frame": 18
+    },
+    "BRUTAL_ASSASSINATION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.784,
+      "frame": 6
+    },
+    "BUCKLEBOMBENZUGIRI": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.579,
+      "frame": 10
+    },
+    "CAN_CAN": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.564,
+      "frame": 21
+    },
+    "CAPITALPUNISHMENT": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.822,
+      "frame": 11
+    },
+    "CAPOEIRA": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.402,
+      "frame": 14
+    },
+    "CAPOEIRA__1_": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.716,
+      "frame": 17
+    },
+    "CARTWHEEL": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.564,
+      "frame": 3
+    },
+    "CEMETERYDRIVE": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.686,
+      "frame": 16
+    },
+    "CENTER_BLOCK": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.758,
+      "frame": 5
+    },
+    "CH06_NONPBR": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.786,
+      "frame": 0
+    },
+    "CH24_NONPBR": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.796,
+      "frame": 0
+    },
+    "CH44_NONPBR": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.786,
+      "frame": 0
+    },
+    "CHOKESLAM": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.67,
+      "frame": 18
+    },
+    "CLIMBING_A_ROPE": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.392,
+      "frame": 17
+    },
+    "CLIMBING_A_ROPE__1_": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.575,
+      "frame": 13
+    },
+    "CLIMBING_UP_WALL": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.454,
+      "frame": 17
+    },
+    "CODERED": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.733,
+      "frame": 22
+    },
+    "COMBO_PUNCH": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.77,
+      "frame": 5
+    },
+    "CORKSCREW_EVADE": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.706,
+      "frame": 14
+    },
+    "CORKSCREW_KIP_UP": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.72,
+      "frame": 17
+    },
+    "CROSS_JUMPS": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.186,
+      "frame": 0
+    },
+    "CROTCHCHOP": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.627,
+      "frame": 1
+    },
+    "CROUCHING": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.136,
+      "frame": 0
+    },
+    "CROUCHINGKICK": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.319,
+      "frame": 5
+    },
+    "CROUCH_IDLE_02_LOOKING_AROUND": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.682,
+      "frame": 12
+    },
+    "CROUCH_TORCH_WALK_RIGHT": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.558,
+      "frame": 17
+    },
+    "CROUCH_WALK_FORWARD": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.439,
+      "frame": 1
+    },
+    "CRUCIFIXPIN": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.554,
+      "frame": 19
+    },
+    "CYPHRTHROWREACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.695,
+      "frame": 22
+    },
+    "CYPHRTHROWREACTION_FIX": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.727,
+      "frame": 23
+    },
+    "DANCING": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.768,
+      "frame": 20
+    },
+    "DANCING_RUNNING_MAN": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.538,
+      "frame": 1
+    },
+    "DANCING_TWERK": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.433,
+      "frame": 16
+    },
+    "DANCING__1_": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.73,
+      "frame": 20
+    },
+    "DANCING__2_": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.313,
+      "frame": 17
+    },
+    "DDT": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.731,
+      "frame": 20
+    },
+    "DDT_REACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.398,
+      "frame": 39
+    },
+    "DEATH_FROM_BACK_HEADSHOT": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.697,
+      "frame": 17
+    },
+    "DEFAULTJUMPKICK": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.353,
+      "frame": 6
+    },
+    "DEFAULTJUMPPUNCH": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.734,
+      "frame": 2
+    },
+    "DEFAULTJUMPPUNCH2": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.791,
+      "frame": 2
+    },
+    "DEFEAT": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.621,
+      "frame": 20
+    },
+    "DEFENDER": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.658,
+      "frame": 9
+    },
+    "DOLL_PAPERREACTION": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.131,
+      "frame": 10
+    },
+    "DOUBLESUPLEX": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.794,
+      "frame": 9
+    },
+    "DOUBLE_LEG_TAKEDOWN___VICTIM": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.669,
+      "frame": 7
+    },
+    "DOUBLE_LEG_TAKEDOWN___VICTIM__1_": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.717,
+      "frame": 8
+    },
+    "DRAGONSCREW": {
+      "level": "high",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 1.012,
+      "frame": 23
+    },
+    "DROP_KICK": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.53,
+      "frame": 20
+    },
+    "DROP_KICK__1_": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.536,
+      "frame": 20
+    },
+    "DRUNK_IDLE_VARIATION": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.771,
+      "frame": 2
+    },
+    "DRUNK_RUN_FORWARD": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.323,
+      "frame": 13
+    },
+    "DRUNK_WALK": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.097,
+      "frame": 16
+    },
+    "DUCKINGCOMET": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.778,
+      "frame": 12
+    },
+    "DUCKINGCOMET_2": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.691,
+      "frame": 14
+    },
+    "DWARF_WALK": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.19,
+      "frame": 4
+    },
+    "DYING_BACKWARDS": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.674,
+      "frame": 13
+    },
+    "ELENATHROWREACTION": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.187,
+      "frame": 6
+    },
+    "ESQUIVA_3": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 4
+    },
+    "ESQUIVA_4": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.399,
+      "frame": 0
+    },
+    "ESQUIVA_4__1_": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.613,
+      "frame": 17
+    },
+    "FACEGOUGE": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.717,
+      "frame": 11
+    },
+    "FALLING_FLAT_IMPACT": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 1,
+      "frame": 0
+    },
+    "FALLING_FORWARD_DEATH": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.82,
+      "frame": 2
+    },
+    "FALL_B_LOOP": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.484,
+      "frame": 6
+    },
+    "FATALITY": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.628,
+      "frame": 8
+    },
+    "FENCEM_KICK": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.694,
+      "frame": 19
+    },
+    "FENCETHROW": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.719,
+      "frame": 12
+    },
+    "FENCETHROW_002": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.823,
+      "frame": 5
+    },
+    "FIN_F10": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.76,
+      "frame": 2
+    },
+    "GERMANSUPLEX": {
+      "level": "high",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.846,
+      "frame": 9
+    },
+    "GIANTSWING": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.718,
+      "frame": 22
+    },
+    "GIANTSWINGREACTION": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.244,
+      "frame": 22
+    },
+    "GINGA_BACKWARD": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.395,
+      "frame": 23
+    },
+    "GINGA_FORWARD": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.434,
+      "frame": 0
+    },
+    "GINGA_SIDEWAYS_2": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.398,
+      "frame": 0
+    },
+    "GRAFCROUCHEXTENDARM": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.519,
+      "frame": 5
+    },
+    "GRAFCROUCHEXTENDARM_RISE": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.554,
+      "frame": 6
+    },
+    "GRAFHAMMER": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.454,
+      "frame": 10
+    },
+    "GRAFHAMMERCOMBO": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.519,
+      "frame": 19
+    },
+    "GRAFHAMMERCOMBO2": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.595,
+      "frame": 20
+    },
+    "GRAFINTRO": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.895,
+      "frame": 73
+    },
+    "GRAFJUMPKICK": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.538,
+      "frame": 4
+    },
+    "GRAFJUMPKICK2": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.668,
+      "frame": 5
+    },
+    "GRAFJUMPPUNCH": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.57,
+      "frame": 8
+    },
+    "GRAFKNEEASSAULT": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.303,
+      "frame": 6
+    },
+    "GRAFPUNCHCOMBO": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 1.01,
+      "frame": 3
+    },
+    "GRAFPUNCHCOMBO_SLOWER": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 1.01,
+      "frame": 3
+    },
+    "GRAFPUSHINGKICK": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.723,
+      "frame": 4
+    },
+    "GRAFQUICKJAB": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.824,
+      "frame": 3
+    },
+    "GRAFQUICKSWEEP": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.513,
+      "frame": 5
+    },
+    "GRAFSHOULDERTHRUST": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.315,
+      "frame": 9
+    },
+    "GRAFSTANCE": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.208,
+      "frame": 0
+    },
+    "GRAFSTANCE2": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.189,
+      "frame": 19
+    },
+    "GRAFSTANCE3": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.128,
+      "frame": 0
+    },
+    "GRAFSURPRISEPUNCH": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.939,
+      "frame": 9
+    },
+    "GRAFSURPRISEPUNCHLONGER": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.938,
+      "frame": 9
+    },
+    "GRAFSURPRISEPUNCHLOW": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.186,
+      "frame": 18
+    },
+    "GRAFSURPRISEPUNCHLOW2": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.186,
+      "frame": 18
+    },
+    "GRAFSURPRISEPUNCHSLOWER": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.939,
+      "frame": 12
+    },
+    "GRAFTHROW": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.425,
+      "frame": 3
+    },
+    "GRAFTHROWREACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.599,
+      "frame": 23
+    },
+    "GRAFUPPERCUT": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.287,
+      "frame": 1
+    },
+    "GUARD": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.853,
+      "frame": 0
+    },
+    "GUARD_HIGH": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.108,
+      "frame": 14
+    },
+    "GUARD_LOW": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.175,
+      "frame": 26
+    },
+    "GYAKUZUKI": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.3,
+      "frame": 5
+    },
+    "GYAKUZUKI_COMBO": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.957,
+      "frame": 12
+    },
+    "HAMMERLOCKDDT": {
+      "level": "high",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.968,
+      "frame": 23
+    },
+    "HAMMERTHROW": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.473,
+      "frame": 22
+    },
+    "HEAVYKICK": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.717,
+      "frame": 5
+    },
+    "HEAVY_WEAPON_SWING": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.963,
+      "frame": 17
+    },
+    "HIGHPUNCH": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 1.038,
+      "frame": 5
+    },
+    "HIT_ON_SIDE_OF_HEAD": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.351,
+      "frame": 3
+    },
+    "HIT_ON_THE_BACK": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.43,
+      "frame": 1
+    },
+    "HIT_REACTION": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.822,
+      "frame": 11
+    },
+    "HIT_TO_BODY": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.264,
+      "frame": 9
+    },
+    "HIT_TO_HEAD": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.783,
+      "frame": 19
+    },
+    "HOUSE_DANCING": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.947,
+      "frame": 11
+    },
+    "HURRICANERANA": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.726,
+      "frame": 5
+    },
+    "HURRICANE_KICK": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.651,
+      "frame": 2
+    },
+    "IDLE": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.073,
+      "frame": 15
+    },
+    "ILLEGAL_ELBOW_PUNCH": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.19,
+      "frame": 3
+    },
+    "ILLEGAL_ELBOW_PUNCH__1_": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.197,
+      "frame": 4
+    },
+    "ILLEGAL_ELBOW_PUNCH__2_": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.197,
+      "frame": 4
+    },
+    "ILLEGAL_KNEE": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.508,
+      "frame": 6
+    },
+    "INJURED_HURTING_IDLE": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.899,
+      "frame": 1
+    },
+    "INJURED_RUN_BACKWARDS_RIGHT_TURN": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.285,
+      "frame": 20
+    },
+    "INJURED_TURN_RIGHT": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.108,
+      "frame": 23
+    },
+    "JAYKICK": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.763,
+      "frame": 7
+    },
+    "JENNCROSSKICKTHROWREACTION": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.094,
+      "frame": 0
+    },
+    "JENNCROSSKICKTHROWREACTION2": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.388,
+      "frame": 2
+    },
+    "JENNLEGLOCKREACTION": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.282,
+      "frame": 0
+    },
+    "JENNLEGLOCKREACTION2": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.388,
+      "frame": 2
+    },
+    "JOHNSONINTROPOSE": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.74,
+      "frame": 58
+    },
+    "JOHNSONINTROPOSE2": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.767,
+      "frame": 59
+    },
+    "JOHNSONINTROPOSE3": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.765,
+      "frame": 58
+    },
+    "JOHNSONRUNNINGTACKLE": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.263,
+      "frame": 9
+    },
+    "JOHNSONWAVESWEEPER": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.16,
+      "frame": 8
+    },
+    "JOHNSONWAVESWEEPERLAUNCHER": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.595,
+      "frame": 14
+    },
+    "JOHNSONWAVESWEEPERLAUNCHER_VAR": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.427,
+      "frame": 14
+    },
+    "JOHNSONWINPOSE": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.853,
+      "frame": 0
+    },
+    "JOHNSONWINPOSE_EDIT": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.853,
+      "frame": 0
+    },
+    "JOHNSONWINPOSE_EDIT_PONCHOFIX": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.853,
+      "frame": 0
+    },
+    "JOHNSON_CANNONBALL_REACTION": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.664,
+      "frame": 10
+    },
+    "JOHNSON_CANNONBALL_REACTION2": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.404,
+      "frame": 8
+    },
+    "JOHNSON_STANCE": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.861,
+      "frame": 0
+    },
+    "JUMP": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.136,
+      "frame": 0
+    },
+    "JUMP2": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.544,
+      "frame": 0
+    },
+    "JUMPAXEKICK": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.807,
+      "frame": 4
+    },
+    "JUMPSPIN": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.577,
+      "frame": 17
+    },
+    "JUNGLE_JUICE": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.527,
+      "frame": 17
+    },
+    "JUNGLE_JUICE__RECV": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.776,
+      "frame": 31
+    },
+    "KIP_UP": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.788,
+      "frame": 11
+    },
+    "KIYOKOTHROWREACTION": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.307,
+      "frame": 31
+    },
+    "KNEETHROW": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.115,
+      "frame": 11
+    },
+    "KNEETHROWREACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.596,
+      "frame": 10
+    },
+    "KNEETHROWREACTION_NEW": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.556,
+      "frame": 12
+    },
+    "KNEETHROWREACTION_SLOW": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.604,
+      "frame": 21
+    },
+    "KNEETHROW_SLOW": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.115,
+      "frame": 18
+    },
+    "KRAVESTANCE": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.916,
+      "frame": 0
+    },
+    "LAZORBACKROLL": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.504,
+      "frame": 4
+    },
+    "LAZORFORWARDROLL": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.72,
+      "frame": 0
+    },
+    "LAZORTHROWREACTION": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.259,
+      "frame": 11
+    },
+    "LOBSTER_ESS_REACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.456,
+      "frame": 62
+    },
+    "LOBSTER_ESS_REACTION_FIX": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.456,
+      "frame": 62
+    },
+    "LOCO_LIGHT": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.061,
+      "frame": 19
+    },
+    "LOCO_LUMBER": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.133,
+      "frame": 24
+    },
+    "LOCO_PROWL": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.427,
+      "frame": 4
+    },
+    "LOCO_STALK": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.141,
+      "frame": 7
+    },
+    "LOCO_STRUT": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.13,
+      "frame": 20
+    },
+    "LOLA_B_STYPEREK": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.753,
+      "frame": 0
+    },
+    "LOWSTANCE": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.853,
+      "frame": 0
+    },
+    "LOWSTANCEGUARD": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.769,
+      "frame": 5
+    },
+    "LOWSTANCENEW": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.742,
+      "frame": 12
+    },
+    "MIRAAIRTHROWREACTION": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.246,
+      "frame": 9
+    },
+    "MIRATHROWREACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.663,
+      "frame": 32
+    },
+    "NECKBREAKER": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.607,
+      "frame": 0
+    },
+    "NIGHTTHROWREACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.443,
+      "frame": 20
+    },
+    "NOFUTURE": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.791,
+      "frame": 4
+    },
+    "ORAORAORA": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.925,
+      "frame": 4
+    },
+    "ORAORAORAREACTION": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.136,
+      "frame": 0
+    },
+    "OVREHEADPRESS": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.459,
+      "frame": 23
+    },
+    "PALADIN_J_NORDSTROM": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.749,
+      "frame": 0
+    },
+    "PASSIVE_MARKER_MAN": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.863,
+      "frame": 0
+    },
+    "PIERCINGHANDREACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.326,
+      "frame": 35
+    },
+    "POPUPGERMANSUPLEX": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.633,
+      "frame": 8
+    },
+    "POWERBOMBREACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.507,
+      "frame": 38
+    },
+    "POWERBOMBWHIP": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.741,
+      "frame": 20
+    },
+    "PRONEROTATION": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.709,
+      "frame": 0
+    },
+    "PUMPKINHULK_L_SHAW": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.785,
+      "frame": 0
+    },
+    "PUNCHKICKCOMBO": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.684,
+      "frame": 28
+    },
+    "QUESHADA_2": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.817,
+      "frame": 17
+    },
+    "QUICKKICK": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.527,
+      "frame": 4
+    },
+    "RAINTRIGGER": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.527,
+      "frame": 22
+    },
+    "RAPIDCHESTBEATING": {
+      "level": "high",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.916,
+      "frame": 16
+    },
+    "REACTION_HEAVYHITAIRREVOLT": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.045,
+      "frame": 0
+    },
+    "REACTION_HEAVYHITAIRREVOLTBACK": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.045,
+      "frame": 0
+    },
+    "REACTION_HITSTRONGHIGH": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.171,
+      "frame": 7
+    },
+    "REACTION_HITSTRONGMID": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.186,
+      "frame": 7
+    },
+    "REACTION_HITWEAKHIGH": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 1.003,
+      "frame": 0
+    },
+    "REACTION_HITWEAKMEDIUM": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.798,
+      "frame": 4
+    },
+    "REACTION_HITWEAKMEDIUMBACK": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.205,
+      "frame": 4
+    },
+    "REACTION_LANDING": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.27,
+      "frame": 0
+    },
+    "REACTION_MONOCROSS": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.326,
+      "frame": 8
+    },
+    "RENZOTHROW": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.561,
+      "frame": 12
+    },
+    "RENZOTHROWREACTION": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.363,
+      "frame": 4
+    },
+    "REVERSEGOOZLEDIVFOOTSTOMP": {
+      "level": "high",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.883,
+      "frame": 16
+    },
+    "RISINGCOMET": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.294,
+      "frame": 5
+    },
+    "ROADROLLERDAB": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.506,
+      "frame": 75
+    },
+    "ROADROLLERDAB_REACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.527,
+      "frame": 37
+    },
+    "ROLLOUT": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.318,
+      "frame": 1
+    },
+    "ROLLOUTRIGHT": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.318,
+      "frame": 12
+    },
+    "ROUNDHOUSEKICK": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.684,
+      "frame": 20
+    },
+    "ROUNDHOUSELOW": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.267,
+      "frame": 8
+    },
+    "RUNNING": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.195,
+      "frame": 7
+    },
+    "RUNNINGLOW": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.18,
+      "frame": 0
+    },
+    "SCHOOLBOYSUPERKICK": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.807,
+      "frame": 20
+    },
+    "SHARKNADO": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.483,
+      "frame": 18
+    },
+    "SHARKNADO_REACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.713,
+      "frame": 19
+    },
+    "SHARKNADO_REACTION_2": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.713,
+      "frame": 17
+    },
+    "SHARKNADO_REACTION_3": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.713,
+      "frame": 17
+    },
+    "SHARPSHOOTER": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.46,
+      "frame": 23
+    },
+    "SHAZENTRANCE": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.88,
+      "frame": 79
+    },
+    "SHAZLOWRUSH": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.407,
+      "frame": 10
+    },
+    "SHAZLOWRUSH_CROUCH": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.464,
+      "frame": 12
+    },
+    "SHAZSTANCE": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.795,
+      "frame": 19
+    },
+    "SHAZWALK": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.157,
+      "frame": 11
+    },
+    "SHOULDERBAG": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.898,
+      "frame": 20
+    },
+    "SIDESTEP": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.853,
+      "frame": 0
+    },
+    "SIDESTEPF": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.2,
+      "frame": 4
+    },
+    "SIDESTEPFAST": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.853,
+      "frame": 0
+    },
+    "SIDESTEPMEDIUM": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.853,
+      "frame": 0
+    },
+    "SKELETONFACEPRESSREACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.577,
+      "frame": 23
+    },
+    "SNAPPILEDRIVERS": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.799,
+      "frame": 13
+    },
+    "SPINJUMPB": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.893,
+      "frame": 3
+    },
+    "SPINJUMPBFAST": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.884,
+      "frame": 1
+    },
+    "SPINJUMPF": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.893,
+      "frame": 3
+    },
+    "SPINJUMPFFAST": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.884,
+      "frame": 1
+    },
+    "SPINNINGARMSSPREAD": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.779,
+      "frame": 15
+    },
+    "SPINTORTURERACKBOMB": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.726,
+      "frame": 1
+    },
+    "STANCE": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.853,
+      "frame": 0
+    },
+    "STANCE_BLADED": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": -0.003,
+      "frame": 27
+    },
+    "STANCE_CROUCH": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.143,
+      "frame": 15
+    },
+    "STANCE_WIDE": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": -0.015,
+      "frame": 19
+    },
+    "STEREOSUPERKICK": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.827,
+      "frame": 10
+    },
+    "STRONGZERO": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.816,
+      "frame": 3
+    },
+    "SUPINE": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.674,
+      "frame": 0
+    },
+    "SUPLEX": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.555,
+      "frame": 3
+    },
+    "TABLEIMPACT": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.85,
+      "frame": 23
+    },
+    "TAGSUPERKICK": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.63,
+      "frame": 9
+    },
+    "TAUNT": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.661,
+      "frame": 8
+    },
+    "TAUNT2": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.777,
+      "frame": 20
+    },
+    "TAUNT_ARMS_WIDE": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.937,
+      "frame": 2
+    },
+    "TAUNT_CALLOUT": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.92,
+      "frame": 3
+    },
+    "TAUNT_FLEX": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.959,
+      "frame": 0
+    },
+    "TAUNT_KOFIKINGSTON": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.698,
+      "frame": 15
+    },
+    "TAUNT_POINT": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.023,
+      "frame": 27
+    },
+    "TAU_BUTTSLAP": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.754,
+      "frame": 15
+    },
+    "TAU_DIVA": {
+      "level": "high",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.861,
+      "frame": 12
+    },
+    "TAU_GAMEOVER": {
+      "level": "high",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.83,
+      "frame": 13
+    },
+    "TAU_GENERALFEMALE": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.701,
+      "frame": 21
+    },
+    "TAU_HEADCRACK": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.75,
+      "frame": 5
+    },
+    "TEMPMONOREACTION": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.186,
+      "frame": 13
+    },
+    "THROWSTART": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.229,
+      "frame": 8
+    },
+    "THROWSTART_STEP": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.229,
+      "frame": 8
+    },
+    "THUNDERGODREACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.326,
+      "frame": 16
+    },
+    "THUNDERGODREACTION2": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.326,
+      "frame": 16
+    },
+    "TIGERCOMMANDOCOMBO1": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.832,
+      "frame": 17
+    },
+    "TIGERDOUBLEHAMMERCOMBO": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.888,
+      "frame": 2
+    },
+    "TIGERDYNAMOPUNCH": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.896,
+      "frame": 0
+    },
+    "TIGERDYNAMOPUNCH_FIX": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.986,
+      "frame": 4
+    },
+    "TIGERINTROPOSE": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.774,
+      "frame": 31
+    },
+    "TIGERINTROPOSE2": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.774,
+      "frame": 31
+    },
+    "TIGERKNEEBASHSLOW": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.832,
+      "frame": 21
+    },
+    "TIGERQUICKPUNCH": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.888,
+      "frame": 2
+    },
+    "TIGERSCARLETSCREW": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.674,
+      "frame": 17
+    },
+    "TIGERSCARLETSCREW_FIX": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.674,
+      "frame": 17
+    },
+    "TIGERSCARLETSCREW_LOWKICK": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.844,
+      "frame": 4
+    },
+    "TIGERSCARLETSCREW_NOKICK": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.844,
+      "frame": 4
+    },
+    "TIGERSCARLETSCREW_NOKICK_FIX": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.844,
+      "frame": 4
+    },
+    "TIGERSTANCE": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 1.032,
+      "frame": 11
+    },
+    "TIGERSTANCEUPDATED": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.972,
+      "frame": 0
+    },
+    "TIGERWINPOSE": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.973,
+      "frame": 11
+    },
+    "TIGER_FEINT_KICK": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.727,
+      "frame": 19
+    },
+    "TIGER_FEINT_KICK__RECV": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.582,
+      "frame": 14
+    },
+    "TIGER_HEAVYKICK": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.7,
+      "frame": 5
+    },
+    "TIGER_HEAVYKICKCOMBO": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.39,
+      "frame": 27
+    },
+    "TOMBSTONE": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.654,
+      "frame": 20
+    },
+    "TPOSE": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.877,
+      "frame": 0
+    },
+    "TZ_SCOOP_SLAM": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.424,
+      "frame": 10
+    },
+    "TZ_SCOOP_SLAM__RECV": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.599,
+      "frame": 18
+    },
+    "TZ_TILT_WHIRL_SLAM": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.424,
+      "frame": 10
+    },
+    "TZ_TILT_WHIRL_SLAM__RECV": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.475,
+      "frame": 13
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_A_TPose": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Crouch_Fwd_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Crouch_Idle_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Dance_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Death01": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Driving_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Fixing_Kneeling": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Hit_Chest": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Hit_Head": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Idle_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Idle_Talking_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Idle_Torch_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Interact": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Jog_Fwd_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Jump_Land": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Jump_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Jump_Start": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_PickUp_Table": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Pistol_Aim_Down": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Pistol_Aim_Neutral": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Pistol_Aim_Up": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Pistol_Idle_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Pistol_Reload": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Pistol_Shoot": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Punch_Cross": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Punch_Enter": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Punch_Jab": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Push_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Roll": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Roll_RM": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sitting_Enter": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sitting_Exit": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sitting_Idle_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sitting_Talking_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Spell_Simple_Enter": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Spell_Simple_Exit": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Spell_Simple_Idle_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Spell_Simple_Shoot": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sprint_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Swim_Fwd_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Swim_Idle_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sword_Attack": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sword_Attack_RM": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Sword_Idle": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Walk_Formal_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL1_vendor_quaternius-ual-1_Godot_AnimationLibrary_Godot_Standard_Walk_Loop": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.907,
+      "frame": 0
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_A_TPose": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.631,
+      "frame": 0
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Chest_Open": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.952,
+      "frame": 31
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_ClimbUp_1m_RM": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.995,
+      "frame": 4
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Consume": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.884,
+      "frame": 10
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Farm_Harvest": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.952,
+      "frame": 70
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Farm_PlantSeed": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.952,
+      "frame": 73
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Farm_Watering": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.952,
+      "frame": 110
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Hit_Knockback": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.522,
+      "frame": 2
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Hit_Knockback_RM": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.522,
+      "frame": 2
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_FoldArms_Loop": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.95,
+      "frame": 5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Lantern_Loop": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.95,
+      "frame": 5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_No_Loop": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.95,
+      "frame": 5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Rail_Call": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 1.27,
+      "frame": 38
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Rail_Loop": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 1.274,
+      "frame": 38
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Shield_Break": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.423,
+      "frame": 0
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Shield_Loop": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.95,
+      "frame": 5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_TalkingPhone_Loop": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.953,
+      "frame": 5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_LayToIdle": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.574,
+      "frame": 46
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Melee_Hook": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.764,
+      "frame": 6
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Melee_Hook_Rec": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.724,
+      "frame": 18
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_NinjaJump_Idle_Loop": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.415,
+      "frame": 0
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_NinjaJump_Land": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.669,
+      "frame": 0
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_NinjaJump_Start": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.656,
+      "frame": 23
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_OverhandThrow": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.818,
+      "frame": 8
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Shield_Dash_RM": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.685,
+      "frame": 15
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Shield_OneShot": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.903,
+      "frame": 0
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Slide_Exit": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.659,
+      "frame": 13
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Slide_Loop": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": -0.006,
+      "frame": 23
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Slide_Start": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.679,
+      "frame": 1
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Block": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.966,
+      "frame": 37
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Dash_RM": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.735,
+      "frame": 6
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_A": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.673,
+      "frame": 13
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_A_Rec": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.649,
+      "frame": 6
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_B": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.667,
+      "frame": 1
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_B_Rec": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.952,
+      "frame": 29
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_C": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.655,
+      "frame": 11
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_Combo": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.661,
+      "frame": 38
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_TreeChopping_Loop": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.829,
+      "frame": 0
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Walk_Carry_Loop": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.403,
+      "frame": 60
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Yes": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.92,
+      "frame": 10
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Zombie_Idle_Loop": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.977,
+      "frame": 19
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Zombie_Scratch": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.552,
+      "frame": 25
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Zombie_Walk_Fwd_Loop": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 1.083,
+      "frame": 20
+    },
+    "UPPERCUT": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.853,
+      "frame": 0
+    },
+    "VERTICALBRAINBUSTER": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.616,
+      "frame": 12
+    },
+    "VIOLENCEPARTY": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.644,
+      "frame": 22
+    },
+    "WAKEUPANIMATION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.386,
+      "frame": 4
+    },
+    "WALK": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.157,
+      "frame": 11
+    },
+    "WALKFAST": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.157,
+      "frame": 7
+    },
+    "WALLYTHROWREACTION": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.326,
+      "frame": 8
+    },
+    "WBTC": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.588,
+      "frame": 6
+    },
+    "Y_BOT": {
+      "level": "mid",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.738,
+      "frame": 0
+    },
+    "ZOMBIE_DYING": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.31,
+      "frame": 6
+    },
+    "ZONE_APRON_HOP": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.112,
+      "frame": 11
+    },
+    "ZONE_CLIMB_A": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.357,
+      "frame": 19
+    },
+    "ZONE_CLIMB_B": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.329,
+      "frame": 14
+    },
+    "ZONE_DROP_A": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.445,
+      "frame": 25
+    },
+    "ZONE_DROP_B": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.148,
+      "frame": 5
+    },
+    "ZONE_DROP_C": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.232,
+      "frame": 9
+    },
+    "ZONE_DUCK_A": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.14,
+      "frame": 10
+    },
+    "ZONE_DUCK_B": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.97,
+      "frame": 0
+    },
+    "ZONE_DUCK_C": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.606,
+      "frame": 15
+    },
+    "ZONE_MIDROPE_POSE": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.053,
+      "frame": 6
+    },
+    "ZONE_MIDROPE_STEP": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.572,
+      "frame": 12
+    },
+    "ZONE_OVER_TOP_IN": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.077,
+      "frame": 11
+    },
+    "ZONE_OVER_TOP_OUT": {
+      "level": "high",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.951,
+      "frame": 27
+    },
+    "ZONE_PERCH_POSE": {
+      "level": "high",
+      "limb": "LeftHand",
+      "kind": "hand",
+      "heightFrac": 0.96,
+      "frame": 1
+    },
+    "ZONE_PULLUP_A": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.416,
+      "frame": 21
+    },
+    "ZONE_PULLUP_B": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.206,
+      "frame": 23
+    },
+    "ZONE_PULLUP_C": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.055,
+      "frame": 19
+    },
+    "ZONE_ROLL_IN": {
+      "level": "low",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.168,
+      "frame": 25
+    },
+    "ZONE_ROLL_OUT_A": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.83,
+      "frame": 7
+    },
+    "ZONE_ROLL_OUT_B": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.616,
+      "frame": 22
+    },
+    "ZONE_RUN_SLIDE_IN": {
+      "level": "high",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.96,
+      "frame": 4
+    },
+    "ZONE_SLIDE_IN_A": {
+      "level": "mid",
+      "limb": "RightHand",
+      "kind": "hand",
+      "heightFrac": 0.747,
+      "frame": 3
+    },
+    "ZONE_SLIDE_IN_B": {
+      "level": "mid",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.506,
+      "frame": 27
+    },
+    "ZONE_SLIDE_IN_C": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.613,
+      "frame": 16
+    },
+    "ZONE_SLIDE_OUT": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.715,
+      "frame": 10
+    },
+    "ZONE_VAULT_A": {
+      "level": "mid",
+      "limb": "RightFoot",
+      "kind": "foot",
+      "heightFrac": 0.651,
+      "frame": 25
+    },
+    "ZONE_VAULT_IN": {
+      "level": "low",
+      "limb": "LeftFoot",
+      "kind": "foot",
+      "heightFrac": 0.028,
+      "frame": 27
+    }
+  }
+}

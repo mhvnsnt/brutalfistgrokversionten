@@ -37,6 +37,7 @@ import {
 import {
   FighterStateMachine, DEFAULT_MOVE_WINDOWS, type FighterInput, type MoveWindow,
 } from './FighterStateMachine.ts';
+import { checkSidestepWhiff, SIDESTEP_WHIFF_THRESHOLD } from './CombatStateTick.ts';
 
 const NEUTRAL = { forward: 0, strafe: 0, light: false, heavy: false, guard: false, crouch: false } as FighterInput;
 const input = (o: Partial<FighterInput>): FighterInput => ({ ...NEUTRAL, ...o });
@@ -247,5 +248,32 @@ describe('recoverable (white) damage', () => {
     assert.equal(tickRecoverable(s, 10).restored, 0);
     assert.equal(addRecoverable(s, 0).pool, 0);
     assert.equal(addRecoverable(s, -5).pool, 0, 'negative damage must not create health');
+  });
+});
+
+describe('a sidestep leaves the attack plane', () => {
+  it('makes a linear attack whiff once the step is wide enough', () => {
+    // This is the answer to pressure in a 3D fighter, and it is what separates this
+    // genre from a 2D one. The arena already gates `checkCollision` on it
+    // (`p1HitWhiffs`), so this proves the rule the gate reads.
+    assert.equal(checkSidestepWhiff(0, 0, false), false, 'standing in line must connect');
+    assert.equal(checkSidestepWhiff(0, SIDESTEP_WHIFF_THRESHOLD - 0.01, false), false,
+      'half a step is not a step — it must still connect, or pressure is free to escape');
+    assert.equal(checkSidestepWhiff(0, SIDESTEP_WHIFF_THRESHOLD, false), true,
+      'a full step off the line must make a linear attack miss');
+    assert.equal(checkSidestepWhiff(0, -SIDESTEP_WHIFF_THRESHOLD, false), true, 'either direction');
+  });
+
+  it('does not save you from a tracking attack', () => {
+    // Otherwise sidestep is a free answer to everything and the neutral game
+    // collapses into circling.
+    assert.equal(checkSidestepWhiff(0, SIDESTEP_WHIFF_THRESHOLD * 3, true), false,
+      'a homing move must follow the step');
+  });
+
+  it('asks for a step that a sidestep can actually cover', () => {
+    // A threshold wider than one sidestep would make the mechanic unreachable.
+    assert.ok(SIDESTEP_WHIFF_THRESHOLD > 0.2 && SIDESTEP_WHIFF_THRESHOLD < 1.5,
+      `${SIDESTEP_WHIFF_THRESHOLD}m is not a step`);
   });
 });

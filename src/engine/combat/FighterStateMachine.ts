@@ -4,6 +4,7 @@
 import type { FighterMotionState } from '../retarget/AnimationController.ts';
 import { powerCrushWindow, resolveDefensiveWindows, type DefensiveWindow } from './DefensiveWindows.ts';
 import { counterWindowOf, counterScaledDamage, counterBonusHitstun, isCounterWindow, type CounterWindow } from './CounterHit.ts';
+import { attackLevelFor } from './DerivedAttackLevels.ts';
 import {
   applyAirHit, applyLaunch, freshJuggle, juggleScale, reactionFor, tickJuggle,
   type JuggleState, type ReactionEffect,
@@ -1155,7 +1156,10 @@ export class FighterStateMachine {
 
   processIncomingHit(move: MoveWindow): GuardResult {
     const rawDamage = move.damage ?? 100;
-    const level: TekkenAttackLevel = move.attackLevel ?? 'mid';
+    // AUTHORED FIRST, THEN THE LEVEL DERIVED FROM THE CLIP'S FRAMES, then 'mid'.
+    // Falling straight to 'mid' is what made 286 of 292 moves height-less and the
+    // whole guard layer inert for them. See DerivedAttackLevels.
+    const level: TekkenAttackLevel = attackLevelFor(move.attackLevel, move.clip ?? move.animation);
     // COUNTER HIT: was I mid-swing when this landed? Taken BEFORE any early
     // return, so a throw or an unblockable that interrupts a swing still counts.
     const own = this.ownMoveFrame();

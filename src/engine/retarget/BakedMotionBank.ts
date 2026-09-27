@@ -8,6 +8,7 @@ import type { RootTravelCurve } from '../motion/RootTravel.ts';
 import { fetchZstdJson } from '../assets/zstdJson.ts';
 import { setLowerBodyCredibility } from '../motion/BoneMask.ts';
 import { setAuthoredStrideSpeeds } from '../motion/DistanceMatching.ts';
+import { setDerivedAttackLevels } from '../combat/DerivedAttackLevels.ts';
 
 /**
  * CLIPS ALREADY RESOLVED ONTO THE ONE SKELETON.
@@ -876,6 +877,19 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
     // AUTHORED STRIDE SPEEDS. Measured by FK on the planted foot; the controller
     // scales a looping clip's playback by actual/authored so the feet stop
     // sliding. Silent on failure, and absent it every rate stays 1.
+    // ATTACK LEVELS derived from the frames, for the 286 imported moves that carry
+    // none. Authored levels still win; this only fills the gap.
+    void fetchZstdJson('/motion/attack_levels.json')
+      .then((m) => {
+        const clips = (m as { clips?: Record<string, { level?: string }> } | null)?.clips;
+        if (!clips) return;
+        setDerivedAttackLevels(
+          Object.entries(clips)
+            .filter(([, r]) => r.level === 'high' || r.level === 'mid' || r.level === 'low')
+            .map(([name, r]) => [name, r.level as 'high' | 'mid' | 'low'] as const),
+        );
+      })
+      .catch(() => {});
     void fetchZstdJson('/motion/stride_speed.json')
       .then((m) => {
         const clips = (m as { clips?: Record<string, { speedMps?: number }> } | null)?.clips;

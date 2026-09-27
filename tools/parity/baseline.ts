@@ -332,8 +332,103 @@ add({
   verdict: declaredIn('applyPushback') && tested('defensive-systems.test.ts') ? 'BEHAVING' : 'WIRED',
 });
 
+// ── MOVESET ─────────────────────────────────────────────────────────────────
+const movesets = existsSync('public/motion/movesets.json')
+  ? JSON.parse(readFileSync('public/motion/movesets.json', 'utf8')) as Record<string, unknown>
+  : null;
+const allMoves: Array<Record<string, unknown>> = [];
+if (movesets) {
+  for (const v of Object.values(movesets)) {
+    for (const mv of (Array.isArray(v) ? v : Object.values(v as object))) allMoves.push(mv as Record<string, unknown>);
+  }
+}
+const perChar = movesets
+  ? Object.values(movesets).map((v) => (Array.isArray(v) ? v.length : Object.keys(v as object).length))
+  : [];
+add({
+  axis: 'MOVESET', system: 'moves per character',
+  reference: 'a roster fighter carries roughly 100-150 distinct moves',
+  refSource: 'convention',
+  ours: perChar.length ? `${Math.min(...perChar)}-${Math.max(...perChar)} across ${perChar.length} characters, ${allMoves.length} entries total` : 'no moveset manifest',
+  verdict: perChar.length && Math.min(...perChar) >= 60 ? 'BEHAVING' : 'WIRED',
+  note: perChar.length && Math.min(...perChar) < 60
+    ? `${Math.min(...perChar)} is well under the baseline — the SHAPE is right (command, stance, clip, frame data, reach per move) and the count is thin`
+    : undefined,
+  fillFrom: 'Kiloutre/TKMovesets for real per-character move lists; the 455-clip bank already here is the animation half',
+});
+const levels = existsSync('public/motion/attack_levels.json')
+  ? JSON.parse(readFileSync('public/motion/attack_levels.json', 'utf8')).clips as Record<string, { level: string }>
+  : null;
+const authoredLevels = allMoves.filter((m) => typeof m.attackLevel === 'string').length;
+add({
+  axis: 'MOVESET', system: 'every move strikes at a height',
+  reference: 'high, mid or low on every move — the height game is what a guard is FOR',
+  refSource: 'convention',
+  ours: levels
+    ? `${authoredLevels} of ${allMoves.length} imported moves author one; ${Object.keys(levels).length} clips have a level derived from their frames`
+    : `${authoredLevels} of ${allMoves.length} author one, and nothing derives the rest — every one of them is a mid`,
+  verdict: levels && tested('derived-attack-levels.test.ts') ? 'BEHAVING' : 'MISSING',
+  note: levels
+    ? (() => {
+      const d = { high: 0, mid: 0, low: 0 } as Record<string, number>;
+      for (const c of Object.values(levels)) d[c.level] = (d[c.level] ?? 0) + 1;
+      return `derived spread: ${d.high} high / ${d.mid} mid / ${d.low} low. Authored always wins`;
+    })()
+    : 'the guard, the low parry and the crouch whiff are all inert without this',
+  fillFrom: levels ? undefined : 'run tools/motion/attack_level.mjs --write',
+});
+add({
+  axis: 'MOVESET', system: 'stances with their own moves',
+  reference: 'a move can leave you in a stance that has its own list',
+  refSource: 'convention',
+  ours: (() => {
+    const st = new Set(allMoves.map((m) => String(m.stance ?? 'none')));
+    return st.size > 1 ? `${st.size} stances: ${[...st].join(', ')}` : 'one stance';
+  })(),
+  verdict: tested('character-stances.test.ts') ? 'BEHAVING' : 'WIRED',
+});
+add({
+  axis: 'MOVESET', system: 'per-move reach, rather than one range for everything',
+  reference: 'a jab and a roundhouse do not reach the same distance',
+  refSource: 'convention',
+  ours: (() => {
+    const r = allMoves.map((m) => m.contactReach).filter((x): x is number => typeof x === 'number').sort((a, b) => a - b);
+    return r.length ? `${r.length} moves carry a reach, ${r[0]}m to ${r[r.length - 1]}m (median ${r[Math.floor(r.length / 2)]})` : 'none';
+  })(),
+  verdict: allMoves.some((m) => typeof m.contactReach === 'number') ? 'BEHAVING' : 'MISSING',
+  note: 'measured per move at import, not a single hitbox radius',
+});
+
+// ── MOVEMENT ────────────────────────────────────────────────────────────────
+add({
+  axis: 'MOVEMENT', system: 'walk, dash and backdash are different speeds',
+  reference: 'the neutral game is built on the difference between them',
+  refSource: 'convention',
+  ours: `walk ${WALK_SPEED}, dash ${DASH_SPEED} m/s, chosen by one exported function (groundSpeedCap)`,
+  verdict: DASH_SPEED > WALK_SPEED * 1.5 ? 'BEHAVING' : 'WIRED',
+});
+add({
+  axis: 'MOVEMENT', system: 'a sidestep leaves the attack plane',
+  reference: 'stepping off-axis makes a linear move miss — the answer to pressure in a 3D fighter',
+  refSource: 'convention',
+  ours: (() => {
+    const z = declaredIn('rootZ|sidestepZ|targetedSidestep');
+    return z ? `${z} — there is a Z axis and sidesteps move along it` : 'no Z movement';
+  })(),
+  verdict: declaredIn('checkSidestepWhiff') && tested('mechanics-proven.test.ts') ? 'BEHAVING' : 'WIRED',
+  note: 'a linear attack whiffs past SIDESTEP_WHIFF_THRESHOLD and a tracking attack follows the step — proven, not assumed',
+  fillFrom: 'a probe, not a system: drive a sidestep into a linear move and assert the hitbox misses',
+});
+add({
+  axis: 'MOVEMENT', system: 'the stick dies when a move starts',
+  reference: 'no move coasts on walk momentum; only its own authored travel continues',
+  refSource: 'convention',
+  ours: 'stickLive, default true, false during a move',
+  verdict: tested('tekken-commit.test.ts') ? 'BEHAVING' : 'WIRED',
+});
+
 // ── REPORT ──────────────────────────────────────────────────────────────────
-const AXES = ['TIMEBASE', 'FRAME DATA', 'MECHANICS', 'INPUT', 'ANIMATION', 'FEEL'];
+const AXES = ['TIMEBASE', 'FRAME DATA', 'MECHANICS', 'MOVESET', 'MOVEMENT', 'INPUT', 'ANIMATION', 'FEEL'];
 const ai = process.argv.indexOf('--axis');
 const only = ai > 0 ? process.argv[ai + 1].replace('_', ' ') : null;
 const gapsOnly = process.argv.includes('--gaps');

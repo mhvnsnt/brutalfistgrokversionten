@@ -75,6 +75,16 @@
       "measure": "tools/parity/baseline.ts \u2014 FEEL axis above 50%",
       "now": "FEEL 50% -> 100%; overall 89% -> 92%",
       "notes": "Not two probes after all \u2014 hitstop was three systems with three scales. Unified into src/engine/combat/HitStop.ts, in frames, with the arena reading it instead of inline literals. Pushback measured on the real LocomotionSystem: away from the attacker at both facings, scaling with the amount, and wall-clamped."
+    },
+    {
+      "id": "moveset-depth",
+      "title": "26 moves a character against a 100-150 baseline",
+      "specialist": "moveset",
+      "status": "open",
+      "needs": [],
+      "measure": "tools/parity/baseline.ts MOVESET axis \u2014 min moves per character at or above 60",
+      "now": "26 per character across 11 characters, 286 entries",
+      "notes": "The only WIRED row left. The shape is already right: every move carries a numpad command, a stance, a clip, frame data and its own contactReach, and all 455 clips now have a derived attack height. What is missing is COUNT, and the bank has 455 clips against 286 mapped moves \u2014 so a large part of it is mapping clips that already exist rather than importing anything. Kiloutre/TKMovesets for real per-character lists."
     }
   ]
 }
