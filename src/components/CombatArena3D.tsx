@@ -82,7 +82,7 @@ function CinematicCamera({
   fov: number;
   shakeOffset?: { x: number; y: number };
 }) {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const sweepAngleRef = useRef(0);
   const phaseTimeRef = useRef(0);
 
@@ -109,13 +109,21 @@ function CinematicCamera({
       cam.updateProjectionMatrix();
     } else if (phase === 'intro') {
       const t = Math.min(1, phaseTimeRef.current / 1.5);
-      const targetX = 0;
+      // The intro clipped both fighters off the edges for the same reason the
+      // fight camera did: they start further apart than a 26 degree horizontal
+      // view can hold. Back off to whatever actually fits them.
+      const introAspect = Math.max(0.2, size.width / Math.max(1, size.height));
+      const introVFov = Math.min(85, Math.max(fov, (2 * Math.atan(Math.tan((38 * (Math.PI / 180)) / 2) / introAspect)) * (180 / Math.PI)));
+      if (Math.abs(cam.fov - introVFov) > 0.25) cam.fov = introVFov;
+      const introHHalf = Math.atan(Math.tan((introVFov * (Math.PI / 180)) / 2) * introAspect);
+      const introSpan = Math.abs(p2X - p1X) / 2 + 0.9;
+      const targetX = (p1X + p2X) / 2;
       const targetY = 1.0 + (1 - t) * 2;
-      const targetZ = 6 + (1 - t) * 3;
+      const targetZ = Math.max(6, introSpan / Math.max(0.05, Math.tan(introHHalf))) + (1 - t) * 3;
       cam.position.x += (targetX - cam.position.x) * 0.05;
       cam.position.y += (targetY - cam.position.y) * 0.05;
       cam.position.z += (targetZ - cam.position.z) * 0.05;
-      cam.lookAt(0, 1.2, 0);
+      cam.lookAt(targetX, 1.2, (p1Z + p2Z) / 2);
       cam.updateProjectionMatrix();
     } else if (phase === 'fight') {
       const midX = (p1X + p2X) / 2;
@@ -157,7 +165,42 @@ function CinematicCamera({
       const nLen = Math.max(0.001, Math.hypot(normalX, normalZ));
       normalX /= nLen;
       normalZ /= nLen;
-      const targetDistance = Math.max(4.5, Math.min(11, dist * 1.05 + 3.0));
+      // ── FRAME BOTH FIGHTERS. THIS IS ARITHMETIC, AND IT WAS WRONG. ──────
+      //
+      // Owner: "I can't visually really tell that it's a fight or what's
+      // happening going on." Looked at, not measured: in a captured frame both
+      // fighters were CLIPPED OFF THE LEFT AND RIGHT EDGES with empty floor in
+      // the middle.
+      //
+      // three.js `fov` is VERTICAL. On a portrait phone (412x915, aspect 0.45)
+      // a 55 degree vertical fov is only a 26 degree HORIZONTAL one, and the
+      // distance rule below was written as if the view were wide:
+      //
+      //     pair gap   cam distance   half-width visible   fighter at
+      //      0.85m       4.50m            1.05m              0.42m   ok
+      //      1.50m       4.58m            1.07m              0.75m   CLIPPED
+      //      2.50m       5.63m            1.32m              1.25m   CLIPPED
+      //      3.60m       6.78m            1.59m              1.80m   CLIPPED
+      //
+      // So the moment they were not touching, somebody left the screen.
+      //
+      // The fix is to guarantee a minimum HORIZONTAL field of view by deriving
+      // the vertical one from the live aspect, and then to back off far enough
+      // that the pair plus a margin fits inside it. On a landscape screen the
+      // derived value is smaller than the authored fov, so `Math.max` leaves
+      // desktop exactly as it was — only portrait changes.
+      const aspect = Math.max(0.2, size.width / Math.max(1, size.height));
+      const MIN_HORIZONTAL_FOV = 38 * (Math.PI / 180);
+      const neededVFov = 2 * Math.atan(Math.tan(MIN_HORIZONTAL_FOV / 2) / aspect);
+      const vFov = Math.min(85 * (Math.PI / 180), Math.max(fov * (Math.PI / 180), neededVFov));
+      if (Math.abs(cam.fov - vFov * (180 / Math.PI)) > 0.25) {
+        cam.fov = vFov * (180 / Math.PI);
+      }
+      const hHalf = Math.atan(Math.tan(vFov / 2) * aspect);
+      // Half the pair's span, plus a body's width so nobody rides the edge.
+      const FRAME_MARGIN_M = 0.75;
+      const fitDistance = (dist / 2 + FRAME_MARGIN_M) / Math.max(0.05, Math.tan(hHalf));
+      const targetDistance = Math.max(4.5, Math.min(13, Math.max(dist * 1.05 + 3.0, fitDistance)));
       const targetCamX = midX + normalX * targetDistance;
       const targetCamZ = midZ + normalZ * targetDistance;
       const targetCamY = 2.0 + dist * 0.05;
