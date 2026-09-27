@@ -160,7 +160,10 @@ export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
   run:            ['run', 'Run', 'DRUNK_RUN_FORWARD', 'LOCO_LIGHT', 'running', 'Running', 'sprint', 'Sprint', 'RUNNING', 'RUNNINGLOW'],
   dash_forward:   ['dash_forward', 'dashForward', 'DashForward', 'dash', 'Dash', 'DRUNK_RUN_FORWARD', 'SPINJUMPF', 'SPINJUMPFFAST', 'RUNNING'],
   backdash:       ['backdash', 'Backdash', 'backDash', 'BackDash', 'GINGA_BACKWARD', 'SBW_backdash', 'T_backdash', 'Backdashing', 'SPINJUMPB', 'SPINJUMPBFAST'],
-  jump:           ['jump', 'Jump', 'hop', 'Hop', 'CROSS_JUMPS', 'jumpForward', 'jumpBack', 'JUMP', 'JUMP2', 'SPINJUMPF', 'SPINJUMPB', 'JUMPAXEKICK', 'DEFAULTJUMPKICK'],
+  // REAL CAPTURES LEAD. 'jump' is the name of the SYNTHESISED gap filler
+  // (BindRelativeMotion), and it was winning over JUMP (0.625s, a real capture)
+  // on every character. CROSS_JUMPS is a jumping-jack loop, so it stays last.
+  jump:           ['JUMP', 'JUMP2', 'BIG_JUMP', 'SPINJUMPF', 'SPINJUMPB', 'jump', 'Jump', 'hop', 'Hop', 'jumpForward', 'jumpBack', 'JUMPAXEKICK', 'DEFAULTJUMPKICK', 'CROSS_JUMPS'],
   victory:        ['victory', 'Victory', 'win', 'Win', 'BREAKDANCE_READY', 'STANCE_WIDE', 'victoryPose', 'VictoryPose', 'TIGERWINPOSE', 'JOHNSONWINPOSE'],
   defeat:         ['defeat', 'Defeat', 'DEFEAT', 'lose', 'Lose', 'knockdown', 'Knockdown'],
   taunt:          ['taunt', 'Taunt', 'TAUNT', 'TAUNT_CALLOUT', 'BREAKDANCE_READY', 'CAPOEIRA', 'idle', 'Idle', 'TIGERINTROPOSE', 'JOHNSONINTROPOSE', 'GRAFINTRO', 'SHAZENTRANCE'],

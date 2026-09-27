@@ -95,7 +95,19 @@ await p.evaluate(() => {
       S.prev.set(key, cur);
       const wp = { y: 0 };
       try { const v = bones[0].getWorldPosition(new bones[0].position.constructor()); wp.y = v.y; } catch(e) {}
-      row.per.push({ dev: n? sum/n : 0, move: prev? move/n : 0, y: wp.y, bones: n });
+      const dev = n ? sum/n : 0;
+      // On a frame where the whole skeleton is at bind, ask the mixer what it
+      // thinks it is playing. That is the difference between "a clip is driving
+      // the body to a pose that happens to look like bind" and "nothing is
+      // driving the body at all".
+      let anim = null;
+      if (dev * 180 / Math.PI < 3) {
+        try {
+          const fns = Object.values(window.__BF_ANIM || {});
+          anim = fns[i] ? fns[i]() : null;
+        } catch (e) { anim = { err: String(e).slice(0, 80) }; }
+      }
+      row.per.push({ dev, move: prev? move/n : 0, y: wp.y, bones: n, anim });
     }
     S.samples.push(row);
     if (S.samples.length > 4000) S.samples.shift();
@@ -141,6 +153,7 @@ const out = await p.evaluate(() => {
       // are a state that resolves to no clip.
       nearBindAt: devs.map((d,i)=>[i,d*DEG]).filter(([,d])=>d<3).map(([i])=>i).slice(0,40),
       devFirst10: devs.slice(0,10).map(d=>+(d*DEG).toFixed(2)),
+      atBindMixer: S.samples.filter(s=>s.per[i]?.anim).slice(0,4).map(s=>s.per[i].anim),
       frozenFrames: frozen, frozenPct: +(100*frozen/moves.length).toFixed(1),
       yMin: +Math.min(...ys).toFixed(3), yMax: +Math.max(...ys).toFixed(3),
     });

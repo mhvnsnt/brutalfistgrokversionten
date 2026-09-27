@@ -797,6 +797,47 @@ function FighterMeshInner({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene, gltfUrl]);
 
+  // ── Harness hook: what is actually driving this skeleton right now ───────
+  // The T-pose shows up as every bone sitting at its bind rotation, which means
+  // NOTHING is writing them. Reading that from outside needs the mixer's own
+  // view, so the probe gets one. Read-only, and only ever inspected by
+  // tools/harness/combat_probe.mjs.
+  useEffect(() => {
+    if (!normalized) return;
+    const w = window as unknown as { __BF_ANIM?: Record<string, unknown> };
+    const key = gltfUrl.split('/').pop() ?? 'rig';
+    w.__BF_ANIM = w.__BF_ANIM ?? {};
+    const w2 = window as unknown as { __BF_BUILDS?: Record<string, number> };
+    w2.__BF_BUILDS = w2.__BF_BUILDS ?? {};
+    w2.__BF_BUILDS[key] = (w2.__BF_BUILDS[key] ?? 0) + 1;
+    (w.__BF_ANIM as Record<string, unknown>)[key] = () => {
+      const { actions } = normalized;
+      const rows: Array<{ clip: string; w: number; running: boolean; enabled: boolean; t: number }> = [];
+      for (const [name, a] of Object.entries(actions)) {
+        if (!a) continue;
+        const weight = a.getEffectiveWeight();
+        if (weight > 0.001 || a.isRunning()) {
+          rows.push({ clip: name, w: +weight.toFixed(3), running: a.isRunning(), enabled: a.enabled, t: +a.time.toFixed(3) });
+        }
+      }
+      // Dedupe by the ACTION OBJECT: `actions` is keyed by alias, so several
+      // names can point at one action and a naive count reports it many times.
+      const seen = new Set<THREE.AnimationAction>();
+      const unique = rows.filter((r) => {
+        const a = actions[r.clip];
+        if (!a || seen.has(a)) return false;
+        seen.add(a); return true;
+      });
+      return {
+        active: activeClipRef.current,
+        rows: unique,
+        distinctActions: unique.length,
+        totalWeight: +unique.reduce((s, r) => s + r.w, 0).toFixed(3),
+        builds: (window as unknown as { __BF_BUILDS?: Record<string, number> }).__BF_BUILDS?.[key] ?? 0,
+      };
+    };
+  }, [normalized, gltfUrl]);
+
   // ── Bind FighterStateMachine state → AnimationMixer playback ─────────────
   useEffect(() => {
     if (!normalized) return;

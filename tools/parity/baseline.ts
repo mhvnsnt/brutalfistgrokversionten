@@ -495,6 +495,16 @@ add({
   note: 'the short Schwarzerblitz reactions must lead the alias list; the long Mixamo captures stay as fallbacks',
 });
 add({
+  axis: 'INTEGRITY', system: 'a synthesised clip poses the whole body',
+  reference: 'a missing capture degrades to a stance, never to the bind pose',
+  refSource: 'convention',
+  ours: tested('combat-invariants.test.ts')
+    ? 'every gap-filler clip tracks every bone; gated by tools/motion/gap_filler_coverage.mjs --gate'
+    : 'not checked',
+  verdict: tested('combat-invariants.test.ts') ? 'BEHAVING' : 'MISSING',
+  note: 'THE T-POSE. BindRelativeMotion emitted no track for a bone with no authored delta, and a bone with no track sits at BIND — the procedural idle posed 3 of 19 bones, the jump 6. Measured in the browser: 8 near-bind frames per 320 on BANNON (whose rest IS a T-pose), 0 on VIPER (whose rest is a stance). After: 0 of 309, closest approach 0.71 -> 4.11 degrees',
+});
+add({
   axis: 'INTEGRITY', system: 'no vertex is bound to a bone that is nowhere near it',
   reference: 'skin weights hold the mesh together; a stray binding is the stretched strand across the screen',
   refSource: 'convention',

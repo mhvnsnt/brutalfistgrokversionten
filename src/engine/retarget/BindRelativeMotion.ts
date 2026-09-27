@@ -60,6 +60,55 @@ function qMul(bind: THREE.Quaternion, dx: number, dy: number, dz: number): numbe
   return [_out.x, _out.y, _out.z, _out.w];
 }
 
+
+/**
+ * THE STANCE EVERY PROCEDURAL CLIP IS BUILT ON TOP OF.
+ *
+ * THIS IS THE T-POSE THE OWNER KEPT SEEING, AND IT IS MEASURED.
+ *
+ * These clips are gap fillers: `fillBindRelativeGaps` adds one only when a
+ * character's bank has no capture for that semantic. They are authored as a few
+ * joint deltas — the jump moves five bones, the idle moves two — and
+ * `clipFromDeltas` used to emit NO TRACK for a bone with no delta. A bone with
+ * no track is not "left alone", it sits at its BIND rotation. So on a rig whose
+ * bind is a literal T-pose, every one of these clips IS a T-pose with a couple
+ * of joints moving.
+ *
+ * Caught in the browser: BANNON sat within 0.71 degrees of bind across all 58
+ * bones on frames 84, 87-89, 222, 225-227 of a 332-frame match, and the mixer
+ * named one action at full weight for every one of them — the synthesised
+ * `jump`. VIPER, whose rest is a stance, never went near bind on the same input.
+ * Pressing jump was showing a T-pose, every time, on any character whose bank is
+ * missing a jump.
+ *
+ * So the base is a fighting stance rather than the bind pose, and EVERY bone
+ * gets a track. A missing capture now degrades to "stance, with the authored
+ * joints moving" instead of to a mannequin. Arms down and in, elbows bent,
+ * knees soft, slight forward lean — the pose a fighter stands in.
+ */
+const STANCE_BASE: Record<string, [number, number, number]> = {
+  '^LeftArm$':       [-0.20, 0.10, 0.95],
+  '^RightArm$':      [-0.20, -0.10, -0.95],
+  '^LeftForeArm$':   [-0.55, 0, 0.30],
+  '^RightForeArm$':  [-0.55, 0, -0.30],
+  '^LeftShoulder$':  [0, 0, 0.10],
+  '^RightShoulder$': [0, 0, -0.10],
+  '^LeftUpLeg$':     [0.12, 0, 0.04],
+  '^RightUpLeg$':    [0.12, 0, -0.04],
+  '^LeftLeg$':       [-0.22, 0, 0],
+  '^RightLeg$':      [-0.22, 0, 0],
+  '^Spine$':         [0.06, 0, 0],
+  '^Head$':          [-0.04, 0, 0],
+};
+
+/** The stance delta for a bone, or zero when the stance says nothing about it. */
+function stanceDelta(boneName: string): [number, number, number] {
+  for (const [re, d] of Object.entries(STANCE_BASE)) {
+    if (match(boneName, re)) return d;
+  }
+  return [0, 0, 0];
+}
+
 function clipFromDeltas(
   name: string,
   semantic: string,
@@ -72,20 +121,22 @@ function clipFromDeltas(
   for (const rest of rests) {
     const times: number[] = [];
     const values: number[] = [];
-    let used = false;
+    // EVERY bone gets a track. A bone with no track is not held where it was —
+    // it sits at its BIND rotation, which on a T-posed rig is a T-pose. Bones
+    // this clip says nothing about hold the STANCE instead.
+    const base = stanceDelta(rest.name);
     for (const key of keys) {
-      let delta: [number, number, number] = [0, 0, 0];
+      let delta: [number, number, number] | null = null;
       for (const [re, d] of Object.entries(key.d)) {
-        if (match(rest.name, re)) {
-          delta = d;
-          used = true;
-          break;
-        }
+        if (match(rest.name, re)) { delta = d; break; }
       }
+      // The authored delta REPLACES the stance for a bone the clip drives —
+      // the deltas were authored against rest, so adding the stance on top
+      // would double the rotation on exactly the joints that matter.
+      const use = delta ?? base;
       times.push(key.t);
-      values.push(...qMul(rest.q, delta[0], delta[1], delta[2]));
+      values.push(...qMul(rest.q, use[0], use[1], use[2]));
     }
-    if (!used) continue;
     tracks.push(new THREE.QuaternionKeyframeTrack(`${rest.name}.quaternion`, times, values));
   }
   const clip = new THREE.AnimationClip(name, duration, tracks);

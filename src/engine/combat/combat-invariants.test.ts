@@ -219,3 +219,63 @@ describe('a hit reaction fits inside the stun that holds it', () => {
     assert.equal(new Set(leads).size, 3, `tech roll, back rise and quick stand share a clip: ${leads.join(', ')}`);
   });
 });
+
+/**
+ * A GAP FILLER MUST POSE THE WHOLE BODY.
+ *
+ * BindRelativeMotion synthesises a clip when a character's bank has no capture
+ * for a semantic. Those clips are a few authored joint deltas, and a bone with
+ * NO TRACK is not held where it was — it sits at its bind rotation. On a rig
+ * whose bind is a T-pose (BANNON_rigged's is) that makes the whole clip a
+ * T-pose with two or three joints moving.
+ *
+ * Measured in the browser before the fix: pressing jump put BANNON within 0.71
+ * degrees of bind across all 58 bones, with the mixer naming one action at full
+ * weight — the synthesised `jump`.
+ */
+describe('a synthesised clip poses every bone', () => {
+  it('no generated clip leaves a bone without a track', async () => {
+    const THREE = await import('three');
+    const { buildBindRelativeClips } = await import('../retarget/BindRelativeMotion.ts');
+
+    // A minimal Mixamo-named skeleton, the shape these clips are authored for.
+    const names = [
+      'mixamorigHips', 'mixamorigSpine', 'mixamorigSpine1', 'mixamorigNeck', 'mixamorigHead',
+      'mixamorigLeftShoulder', 'mixamorigLeftArm', 'mixamorigLeftForeArm', 'mixamorigLeftHand',
+      'mixamorigRightShoulder', 'mixamorigRightArm', 'mixamorigRightForeArm', 'mixamorigRightHand',
+      'mixamorigLeftUpLeg', 'mixamorigLeftLeg', 'mixamorigLeftFoot',
+      'mixamorigRightUpLeg', 'mixamorigRightLeg', 'mixamorigRightFoot',
+    ];
+    const root = new THREE.Object3D();
+    let parent: THREE.Object3D = root;
+    for (const n of names) {
+      const b = new THREE.Bone();
+      b.name = n;
+      parent.add(b);
+      parent = b === null ? parent : root; // flat is fine; only names and quaternions are read
+      root.add(b);
+    }
+    const clips = buildBindRelativeClips(root);
+    assert.ok(clips.length > 0, 'no clips were generated for a Mixamo-named rig');
+
+    const thin: string[] = [];
+    for (const clip of clips) {
+      const tracked = new Set(clip.tracks.map((t) => t.name.split('.')[0]));
+      if (tracked.size < names.length) {
+        thin.push(`${clip.name}: ${tracked.size}/${names.length} bones`);
+      }
+    }
+    assert.deepEqual(thin, [], `generated clips leave bones at the bind pose:\n${thin.join('\n')}`);
+  });
+
+  it('the jump semantic prefers a real capture over the synthesised one', async () => {
+    const aliases = readFileSync('src/engine/retarget/SemanticStateAliases.ts', 'utf8');
+    const m = aliases.match(/\n\s*jump:\s*\[([^\]]*)\]/);
+    assert.ok(m, 'no jump alias list');
+    const list = m![1].split(',').map((x) => x.replace(/['\s]/g, '')).filter(Boolean);
+    const synth = list.indexOf('jump');
+    const real = list.indexOf('JUMP');
+    assert.ok(real >= 0, 'JUMP is not in the jump alias list');
+    assert.ok(real < synth, `the synthesised "jump" (index ${synth}) outranks the capture JUMP (index ${real})`);
+  });
+});
