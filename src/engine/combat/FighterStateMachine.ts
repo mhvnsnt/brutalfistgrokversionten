@@ -3,6 +3,7 @@
 // sets allowImportingTsExtensions and Vite/esbuild resolve them unchanged.
 import type { FighterMotionState } from '../retarget/AnimationController.ts';
 import { powerCrushWindow, resolveDefensiveWindows, type DefensiveWindow } from './DefensiveWindows.ts';
+import { counterWindowOf, counterScaledDamage, counterBonusHitstun, isCounterWindow, type CounterWindow } from './CounterHit.ts';
 import {
   applyAirHit, applyLaunch, freshJuggle, juggleScale, reactionFor, tickJuggle,
   type JuggleState, type ReactionEffect,
@@ -455,6 +456,14 @@ export interface GuardResult {
   /** Seconds of stagger the parried attacker owes. 0 unless parried. */
   attackerStagger: number;
   /**
+   * WAS THIS A COUNTER HIT, and in which window. Derived here rather than in the
+   * arena, where it was re-derived twice from a pre-tick state snapshot and used
+   * for nothing but a spark and a sound.
+   */
+  counter: CounterWindow;
+  /** Extra hitstun the counter buys the attacker, in seconds. 0 when not a counter. */
+  counterBonusHitstun: number;
+  /**
    * What the defender's OWN move did with the hit: absorbed it behind armour,
    * ignored it under invincibility, or nothing. A defender whose armour ate the
    * hit keeps attacking — the arena must not apply a reaction to them.
@@ -504,6 +513,22 @@ export type TekkenContact = 'block' | 'hit' | 'whiff' | 'parry';
  * This does not move the fighter. The stick keeps walking until a block
  * actually connects and blockstun starts.
  */
+/**
+ * A GuardResult for "nothing defended this" — full damage, no block, no counter.
+ *
+ * Exists because the arena hand-wrote this object literal twice as a fallback for
+ * a hit with no move attached, and every field added to GuardResult since has
+ * broken both copies: `parried`/`attackerStagger`, then `counter`. Three rounds of
+ * the same fix. One factory, and adding a field is a one-line change.
+ */
+export function unguardedResult(damage: number): GuardResult {
+  return {
+    blocked: false, whiffed: false, parried: false, attackerStagger: 0,
+    counter: 'none', counterBonusHitstun: 0,
+    chipDamage: 0, guardBroken: false, finalDamage: damage, blockstun: 0,
+  };
+}
+
 export function resolveTekkenContact(level: TekkenAttackLevel, stance: TekkenGuardStance): TekkenContact {
   // THE LOW PARRY, and it is checked first because it BEATS a block rather than
   // being a fallback from one. Ported from SchwarzerblitzEngine's shape: a
@@ -1131,9 +1156,15 @@ export class FighterStateMachine {
   processIncomingHit(move: MoveWindow): GuardResult {
     const rawDamage = move.damage ?? 100;
     const level: TekkenAttackLevel = move.attackLevel ?? 'mid';
+    // COUNTER HIT: was I mid-swing when this landed? Taken BEFORE any early
+    // return, so a throw or an unblockable that interrupts a swing still counts.
+    const own = this.ownMoveFrame();
+    const counter = counterWindowOf(own, this.FPS);
+    const counterDamage = counterScaledDamage(counter, rawDamage);
     const miss: GuardResult = {
       blocked: false, whiffed: false, parried: false, attackerStagger: 0,
-      chipDamage: 0, guardBroken: false, finalDamage: rawDamage, blockstun: 0,
+      counter, counterBonusHitstun: counterBonusHitstun(counter),
+      chipDamage: 0, guardBroken: false, finalDamage: counterDamage, blockstun: 0,
     };
 
     if (move.isThrow || move.isCommandThrow) {
@@ -1147,9 +1178,8 @@ export class FighterStateMachine {
     // crush does not block — it absorbs while continuing to attack, which is why
     // this is checked ahead of the stance and not folded into it. Throws are
     // already returned above, which is Schwarzerblitz's `isBeingThrown()` guard.
-    const own = this.ownMoveFrame();
     if (own?.move.defence?.length) {
-      const absorbed = resolveDefensiveWindows(own.move.defence, own.frame, level, rawDamage);
+      const absorbed = resolveDefensiveWindows(own.move.defence, own.frame, level, counterDamage);
       if (absorbed.absorbed) {
         return {
           ...miss,
@@ -1179,8 +1209,12 @@ export class FighterStateMachine {
       // Tekken 7 does not chip a normal block. The cost is stun and pushback,
       // applied by the arena when it sees `blocked`.
       const blockstun = tekkenBlockstunSeconds(move);
+      // A BLOCK IS NEVER A COUNTER HIT. Blocking is the correct answer; being
+      // interrupted mid-swing is the mistake, and a guard means you were not
+      // swinging.
       return {
         blocked: true, whiffed: false, parried: false, attackerStagger: 0,
+        counter: 'none', counterBonusHitstun: 0,
         chipDamage: 0, guardBroken: false, finalDamage: 0, blockstun,
       };
     }

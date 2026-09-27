@@ -177,10 +177,10 @@ const MECHANICS: Array<[string, string, string, string, string?]> = [
   ['sidestep', 'a third axis — the answer to linear pressure', 'sidestepLeft|sidestepRight', 'command-input.test.ts'],
   ['backdash', 'the neutral-game movement tool', 'Backdashing|backdash', 'command-input.test.ts'],
   ['throws and directional throws', 'front, back and side, with different damage and break difficulty', 'DirectionalThrowSystem', 'directional-throw-system.test.ts'],
-  ['combo damage scaling', 'a long combo pays for its length or the game is one-touch', 'ComboSystem', undefined],
-  ['wall combos', 'a carry into a wall extends the combo', 'WallSystem', undefined],
-  ['juggles', 'a launcher opens an air combo', 'juggle|Juggled', undefined],
-  ['wakeup options', 'tech roll, back rise, quick stand — the defender chooses', 'WakeupTechRoll|WakeupBackrise|WakeupQuickStand', undefined],
+  ['combo damage scaling', 'a long combo pays for its length or the game is one-touch', 'registerHit', 'mechanics-proven.test.ts'],
+  ['wall combos', 'a carry into a wall extends the combo', 'applyWallSplat', 'mechanics-proven.test.ts'],
+  ['juggles', 'a launcher opens an air combo that scales and comes down', 'applyAirHit', 'mechanics-proven.test.ts'],
+  ['wakeup options', 'tech roll, back rise, quick stand — the defender chooses', 'getBufferedWakeup', 'mechanics-proven.test.ts'],
   // PROBE THE SYSTEM, NOT THE WORD. The first version of this row searched for
   // 'Rage|rage' and reported it MISSING while a complete health-gated super with
   // armoured startup sat in OverdriveSystem under the name `Finisher`. Searching
@@ -189,9 +189,14 @@ const MECHANICS: Array<[string, string, string, string, string?]> = [
   ['low parry', 'the punish for spamming lows', 'lowParryIntent', 'defensive-systems.test.ts'],
   ['power crush / armour', 'absorbs a mid or high during startup and keeps coming, and loses to a low and a throw', 'resolveDefensiveWindows', 'defensive-systems.test.ts'],
   ['rage — a comeback state at low health', 'damage bonus while under the threshold, plus one Rage Art off it', 'rageScaledDamage', 'defensive-systems.test.ts'],
-  ['counter hit', 'hitting a mid-startup opponent pays extra and changes the reaction', 'isCounter|counterHit', undefined],
+  // COUNTER HIT was detected in the arena twice and used for a spark and a sound
+  // only — no damage, no reaction. Probing 'isCounter' found the VFX and called it
+  // wired. The probe is the mechanic now.
+  ['counter hit', 'interrupting a startup pays extra AND buys the attacker frames', 'counterScaledDamage', 'mechanics-proven.test.ts'],
   ['ring out / stage boundary', 'the stage is a win condition, not scenery', 'ringOut|stageBoundar', 'stage-boundaries.test.ts'],
-  ['recoverable (white) damage', 'chip and blocked damage that comes back', 'recoverable|whiteDamage', undefined],
+  // RECOVERABLE DAMAGE read as wired because the probe matched the word
+  // "unrecoverable" in two comments about a cinematic and about frame pacing.
+  ['recoverable (white) damage', 'armour bleed and chip come back while you are not being hit; a clean hit locks it', 'tickRecoverable', 'mechanics-proven.test.ts'],
   ['move cancels and strings', 'a move continues into another inside a window', 'cancelInto', 'cancel-windows.test.ts'],
   ['stance system', 'a move can leave you in a different stance with its own moveset', 'endStance|moveStance', 'character-stances.test.ts'],
 ];

@@ -89,7 +89,7 @@ const gates = [
       const m = /OVERALL\s+(\d+)% of baseline across (\d+) rows/.exec(r.out);
       const pct = Number(m?.[1] ?? 0);
       const dead = /(\d+) declared and dead/.exec(r.out)?.[1] ?? '?';
-      return { pass: pct >= 87 && dead === '0', detail: `${pct || '?'}% of baseline across ${m?.[2] ?? '?'} rows, ${dead} declared and dead (want >= 87%, 0 dead)` };
+      return { pass: pct >= 95 && dead === '0', detail: `${pct || '?'}% of baseline across ${m?.[2] ?? '?'} rows, ${dead} declared and dead (want >= 95%, 0 dead)` };
     },
   },
   ...(QUICK ? [] : [{

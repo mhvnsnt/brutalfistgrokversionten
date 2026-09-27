@@ -218,7 +218,13 @@ describe('armour through the real state machine, not just the resolver', () => {
     const low = { ...DEFAULT_MOVE_WINDOWS.lightAttack, attackLevel: 'low' as const, damage: 100 };
     const r = fsm.processIncomingHit(low);
     assert.notEqual(r.armoured, 'armoured', 'a low under a power crush is the counterplay');
-    assert.equal(r.finalDamage, 100);
+    // AND IT IS A COUNTER HIT, which is the two systems meeting correctly: the low
+    // went under the armour AND interrupted the swing, so it pays twice. This
+    // assertion used to read `finalDamage === 100` and the counter system rightly
+    // broke it.
+    assert.equal(r.counter, 'startup', 'interrupting a startup is a counter hit');
+    assert.ok(r.finalDamage > 100, `a counter should pay more than the raw 100, got ${r.finalDamage}`);
+    assert.ok(r.counterBonusHitstun > 0, 'and buy the attacker frames');
   });
 
   it('carries no armour when standing still', () => {

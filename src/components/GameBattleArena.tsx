@@ -84,6 +84,12 @@ import { selectAIDirectionalThrowId, type AIDirectionalThrowId } from '../engine
 import { getGlobalAudioManager } from '../engine/audio/GlobalAudioManager';
 // ── Hit Effect System ─────────────────────────────────────────────────────────
 import { type HitEffectPool } from '../engine/combat/HitEffectSystem';
+import { isCounterWindow } from '../engine/combat/CounterHit';
+import {
+  createRecoverableState, addRecoverable, tickRecoverable, lockRecoverable,
+  type RecoverableState,
+} from '../engine/combat/RecoverableDamage';
+import { unguardedResult } from '../engine/combat/FighterStateMachine';
 import {
   createRageState, tickRage, rageScaledDamage, rageArtAvailable,
   RAGE_THRESHOLD, RAGE_DAMAGE_MULTIPLIER, type RageState,
@@ -160,6 +166,14 @@ export default function GameBattleArena({
    * nothing — no damage bonus, no state. RageSystem owns it now and imports those
    * constants rather than declaring new ones.
    */
+  /**
+   * RECOVERABLE (white) DAMAGE. Armour bleed and chip go to a pool that comes back
+   * while you are not being hit; a CLEAN hit locks whatever is outstanding. Without
+   * it, armouring a mid and blocking are both strictly worse deals than they look
+   * and a long round becomes attrition.
+   */
+  const p1RecoverRef = useRef<RecoverableState>(createRecoverableState());
+  const p2RecoverRef = useRef<RecoverableState>(createRecoverableState());
   const p1RageRef = useRef<RageState>(createRageState());
   const p2RageRef = useRef<RageState>(createRageState());
   const [p1Health, setP1Health] = useState(p1Fighter.hp);
@@ -1682,6 +1696,16 @@ export default function GameBattleArena({
       // literal 0.25 in two places that can drift apart from the system that
       // owns it. `artAvailable` is what stops a heal handing out a second Rage
       // Art, so the HUD reads the STATE rather than re-deriving the fraction.
+      // Recoverable damage comes back on its own clock. Ticked beside rage because
+      // both are per-frame health-derived state, and both read prevHealth.
+      {
+        const r1 = tickRecoverable(p1RecoverRef.current, dt);
+        p1RecoverRef.current = r1.state;
+        const r2 = tickRecoverable(p2RecoverRef.current, dt);
+        p2RecoverRef.current = r2.state;
+        if (r1.restored > 0) engine.restoreHealth('p1', r1.restored);
+        if (r2.restored > 0) engine.restoreHealth('p2', r2.restored);
+      }
       p1RageRef.current = tickRage(p1RageRef.current, prevP1HealthRef.current, p1Fighter.hp);
       p2RageRef.current = tickRage(p2RageRef.current, prevP2HealthRef.current, p2Fighter.hp);
       setP1FinisherAvailable(rageArtAvailable(p1RageRef.current));
@@ -1715,11 +1739,20 @@ export default function GameBattleArena({
         const p1HitMove = p1HbWindow.move;
         const guardResult = p1HitMove
           ? p2SMRef.current.processIncomingHit(p1HitMove)
-          : { blocked: false, whiffed: false, parried: false, attackerStagger: 0, chipDamage: 0, guardBroken: false, finalDamage: p1Hit.damage, blockstun: 0 };
+          : unguardedResult(p1Hit.damage);
 
         if (guardResult.whiffed) {
           // A high over a crouch is a miss. No damage, no stun, no push.
           audioManagerRef.current.playSFX('whiff');
+        } else if (guardResult.armoured === 'armoured' || guardResult.armoured === 'invincible') {
+          // ARMOUR ABSORBED IT. The bleed is recoverable, and the defender keeps
+          // attacking — no reaction, no blockstun.
+          if (guardResult.finalDamage > 0) {
+            engine.applyIncomingHit('p2', guardResult.finalDamage, true, 0);
+            p2RecoverRef.current = addRecoverable(p2RecoverRef.current, guardResult.finalDamage);
+          }
+          audioManagerRef.current.playSFX('block');
+          logHit('p1', 'p2', guardResult.finalDamage, true, 'block');
         } else if (guardResult.parried) {
           // A LOW PARRY. The defender takes nothing and the ATTACKER pays — this
           // is the punish for spamming lows, so it must not run the block branch
@@ -1746,9 +1779,14 @@ export default function GameBattleArena({
         // RAGE SCALES WHAT THE ATTACKER DEALS, before momentum and before combo
         // scaling — it is a property of the body throwing the punch, not of the
         // combo it lands in. Not enraged is exactly the damage that came in.
+        // COUNTER HIT scales the damage in the ENGINE (processIncomingHit already
+        // returned finalDamage with it applied), so the unblocked path takes that
+        // figure rather than the raw hit. Rage then scales what the attacker deals
+        // on top, since one is a property of the defender's mistake and the other
+        // of the attacker's state.
         let effectiveDamage = guardResult.blocked
           ? guardResult.finalDamage
-          : rageScaledDamage(p1RageRef.current, p1Hit.damage);
+          : rageScaledDamage(p1RageRef.current, guardResult.finalDamage);
         if (p1MomentumActive && !guardResult.blocked) {
           effectiveDamage = applyMomentumChargeCounterHit(effectiveDamage);
         }
@@ -1778,6 +1816,9 @@ export default function GameBattleArena({
           // The DEFENDER's wall-splat window is what extends the ATTACKER's combo.
           // WallSystem has always written `comboExtensionFrames` and nothing had
           // ever read it, so a wall carry bought no frames at all.
+          // A CLEAN HIT LOCKS THE VICTIM'S WHITE BAR. Without this, armouring through
+          // pressure and then running away launders every point of chip.
+          p2RecoverRef.current = lockRecoverable(p2RecoverRef.current).state;
           const { scaledDamage, newState: newP1Combo } = registerHit(
             p1ComboRef.current, effectiveDamage, now,
             combatStateRef.current.p2.wallSplat.comboExtensionFrames,
@@ -1830,6 +1871,12 @@ export default function GameBattleArena({
           }
         } else if (!guardResult.blocked) {
           p2SMRef.current.applyReaction(p2Reaction, p1HbWindow.move ?? null);
+          // AND THE REASON A COUNTER MATTERS: extra hitstun. A counter that only
+          // did more damage would be a louder normal hit; the extra frames are
+          // what turn an interrupted swing into a combo opening.
+          if (guardResult.counterBonusHitstun > 0) {
+            p2SMRef.current.applyBlockStun(guardResult.counterBonusHitstun, false);
+          }
           // A body in the air is not pushed along the floor.
           if (!p2SMRef.current.isAirborne) p2LocoRef.current.applyPushback(p1Hit.pushback ?? 0.3);
         }
@@ -1853,7 +1900,11 @@ export default function GameBattleArena({
         }
 
         const isBlocked = guardResult.blocked;
-        const isCounter = prevP2State === FighterState.Startup || prevP2State === FighterState.Active;
+        // THE ENGINE ANSWERS THIS NOW. It was derived here, twice, from a pre-tick
+        // state snapshot, and used only for a spark and a sound — no damage, no
+        // reaction. processIncomingHit sees the defender's own move and frame, so it
+        // decides once and this reads it. See CounterHit.ts.
+        const isCounter = isCounterWindow(guardResult.counter);
         if (settings.soundEnabled) {
           if (isBlocked) sfx.playBlock();
           else if (isCounter) sfx.playCounter();
@@ -2134,10 +2185,17 @@ export default function GameBattleArena({
         const p2HitMove = p2HbWindow.move;
         const p1GuardResult = p2HitMove
           ? p1SMRef.current.processIncomingHit(p2HitMove)
-          : { blocked: false, whiffed: false, parried: false, attackerStagger: 0, chipDamage: 0, guardBroken: false, finalDamage: p2Hit.damage, blockstun: 0 };
+          : unguardedResult(p2Hit.damage);
 
         if (p1GuardResult.whiffed) {
           audioManagerRef.current.playSFX('whiff');
+        } else if (p1GuardResult.armoured === 'armoured' || p1GuardResult.armoured === 'invincible') {
+          if (p1GuardResult.finalDamage > 0) {
+            engine.applyIncomingHit('p1', p1GuardResult.finalDamage, true, 0);
+            p1RecoverRef.current = addRecoverable(p1RecoverRef.current, p1GuardResult.finalDamage);
+          }
+          audioManagerRef.current.playSFX('block');
+          logHit('p2', 'p1', p1GuardResult.finalDamage, true, 'block');
         } else if (p1GuardResult.parried) {
           // See the P1 side: the parried ATTACKER is the one who pays.
           audioManagerRef.current.playSFX('whiff');
@@ -2152,7 +2210,7 @@ export default function GameBattleArena({
 
         const p1EffectiveDamage = p1GuardResult.blocked
           ? p1GuardResult.finalDamage
-          : rageScaledDamage(p2RageRef.current, p2Hit.damage);
+          : rageScaledDamage(p2RageRef.current, p1GuardResult.finalDamage);
 
         let p2ScaledDmg = 0;
         // MOMENTUM IS THIS GAME'S RAGE, AND RAGE DOES DAMAGE ON BLOCK.
@@ -2174,6 +2232,7 @@ export default function GameBattleArena({
           setHitStopActive(true);
           logHit('p2', 'p1', p2BlockedDamage, true, 'block');
         } else {
+          p1RecoverRef.current = lockRecoverable(p1RecoverRef.current).state;
           const { scaledDamage, newState: newP2Combo } = registerHit(
             p2ComboRef.current, p1EffectiveDamage, now,
             combatStateRef.current.p1.wallSplat.comboExtensionFrames,
@@ -2217,6 +2276,11 @@ export default function GameBattleArena({
             p2HbWindow.move ?? null,
           );
           p1LocoRef.current.applyPushback(p2Hit.pushback ?? 0.3);
+          // See the P1-attacking side: the extra frames are what make a counter a
+          // combo opening rather than a louder normal hit.
+          if (p1GuardResult.counterBonusHitstun > 0) {
+            p1SMRef.current.applyBlockStun(p1GuardResult.counterBonusHitstun, false);
+          }
         }
         if (p1GuardResult.guardBroken) {
           p1SMRef.current.applyStun(p2Hit.hitstun || 0.3, false);
@@ -2236,7 +2300,11 @@ export default function GameBattleArena({
         }
 
         const isBlocked = p1GuardResult.blocked;
-        const isCounter = prevP1State === FighterState.Startup || prevP1State === FighterState.Active;
+        // THE ENGINE ANSWERS THIS NOW. It was derived here, twice, from a pre-tick
+        // state snapshot, and used only for a spark and a sound — no damage, no
+        // reaction. processIncomingHit sees the defender's own move and frame, so it
+        // decides once and this reads it. See CounterHit.ts.
+        const isCounter = isCounterWindow(p1GuardResult.counter);
         if (settings.soundEnabled) {
           if (isBlocked) sfx.playBlock();
           else if (isCounter) sfx.playCounter();

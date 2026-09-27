@@ -161,9 +161,18 @@
       "reported": "2026-09-27",
       "symptom": "pull in rage and low parry and other combat and animations and blending and etc gaps from open source",
       "rootCause": "The ANIMATION axis read 100% on four thin rows. Probed against what modern open-source locomotion actually does, we had NONE of foot IK/locking, inertialisation, turn-in-place, stride/distance matching, or motion matching. The measurable one is foot sliding: every locomotion clip has zero hips travel because root motion is neutralised and the engine translates the root, so the stride is the clip's while the speed is the engine's. Measured by FK on the planted foot \u2014 GINGA_BACKWARD authored at 2.492 m/s and played while moving at 1.72 (sliding 0.77 m/s), DRUNK_RUN_FORWARD authored at 3.277 and played at 4.30 (sliding 1.02). The forward walk was nearly right by luck at 1.839 vs 1.72.",
-      "fixed": "PENDING",
+      "fixed": "1245d88",
       "howFound": "Probed for the features by name first and got nothing, then measured the one that has a number: authored stride speed against engine speed. TPOSE reading 0.000 m/s is the control that says the FK measurement works.",
       "lesson": "AN AUDIT THAT ONLY ASKS EASY QUESTIONS SCORES WELL. Adding three real animation rows took the baseline from 92% of 36 rows to 87% of 39, and two came back MISSING \u2014 the audit got more truthful and the game did not get worse. The gate now holds 0-declared-and-dead as the figure that must never regress, because the percentage moves whenever the question set improves. AND: FighterMesh is the live animation path and does not use buildAnimationController, so wiring the playback rate into the controller alone would have been dead code \u2014 the same trap this file has recorded four times. Foot IK and turn-in-place are left MISSING with the reason stated: the stage is flat, and a fighting game holds facing to the opponent."
+    },
+    {
+      "id": "prove-the-six-mechanics-rows",
+      "reported": "2026-09-27",
+      "symptom": "prove out those 6 mechanics rows, also keep bringing in open source and doing the Tekken audit",
+      "rootCause": "WIRED only ever meant 'a symbol outside its own file references this'. Writing the proofs found two of the six were not mechanics at all. COUNTER HIT was detected in the arena \u2014 twice, from a pre-tick state snapshot \u2014 and spent entirely on a bigger spark and a different sound: no damage bonus, no stronger reaction, which in this genre is one of the core loops and the reason half a move list exists. RECOVERABLE (white) DAMAGE read as wired because the probe matched the word 'unrecoverable' in a comment about a cinematic and another about frame pacing; there was no pool anywhere. The other four \u2014 combo scaling, wall combos, juggles, wakeup options \u2014 were real and now have numbers.",
+      "fixed": "PENDING",
+      "howFound": "Wrote the test for each row instead of trusting the probe. Two of them had nothing to test.",
+      "lesson": "A PROBE CAN ONLY SAY A SYMBOL IS REFERENCED. Proving is what separates a mechanic from its feedback \u2014 a spark that fires when nothing happens is worse than no spark, because it tells the player they were punished when they were not. Counter hit now lives in the engine (the defender already knows whether it is mid-startup, so the arena reads one verdict instead of deriving it twice) and pays in BOTH damage and hitstun, because damage alone would be a louder normal hit. A good interaction fell out of it unasked: a low that goes under a power crush now counts as a counter, so it pays twice \u2014 the armour was beaten AND the swing was interrupted. AND: the arena hand-wrote the same GuardResult fallback twice, so every new field on that type broke both copies \u2014 three rounds of the same fix before I exported `unguardedResult()`. When a shape is built by hand in two places, make the factory the first time it changes."
     }
   ]
 }

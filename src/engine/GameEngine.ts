@@ -107,6 +107,23 @@ export class GameEngine {
   public isMatchOver() { return this.p1Health <= 0 || this.p2Health <= 0; }
 
   /** SM/hitbox path — HUD health and hitstun live here. */
+  /**
+   * GIVE BACK recoverable (white) damage. Bounded by the fighter's starting health
+   * and refused once they are out, so regeneration can never resurrect a body or
+   * push a bar past full. RecoverableDamage owns the POOL; this owns the health, and
+   * keeping those separate is what stops the two disagreeing.
+   */
+  public restoreHealth(target: 'p1' | 'p2', amount: number) {
+    if (!(amount > 0)) return;
+    if (target === 'p1') {
+      if (this.p1Health <= 0) return;
+      this.p1Health = Math.min(this.p1MaxHealth, this.p1Health + amount);
+    } else {
+      if (this.p2Health <= 0) return;
+      this.p2Health = Math.min(this.p2MaxHealth, this.p2Health + amount);
+    }
+  }
+
   public applyIncomingHit(target: 'p1' | 'p2', damage: number, blocked: boolean, hitstunSeconds = 0.3) {
     const dmg = Math.max(0, Math.round(Number.isFinite(damage) ? damage : 0));
     const frames = Math.max(6, Math.round(Math.max(0.1, hitstunSeconds) * 60));
