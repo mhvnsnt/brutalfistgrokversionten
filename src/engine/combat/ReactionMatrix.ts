@@ -82,6 +82,14 @@ export interface ResolvedReaction {
   /** Multiplier on the attack's authored pushback. */
   pushbackScale: number;
   /**
+   * How many frames the push is spread over. Tekken authors a `duration` per
+   * pushback per victim state — a blocked hit is a short sharp shove, a
+   * back-turned one carries further and longer, a downed body barely moves at
+   * all. A displacement over time is what reads as being knocked back; the same
+   * distance in one frame reads as a teleport.
+   */
+  pushbackFrames: number;
+  /**
    * Degrees the hit spins the victim about their own up axis. Tekken stores a
    * rotation per side because a hit landing on your flank turns you; without it
    * a side hit reads as a front hit played off-centre.
@@ -107,7 +115,8 @@ const R = (
   rotationDeg: number,
   direction: ResolvedReaction['direction'],
   keepsAirborne = false,
-): ResolvedReaction => ({ motion, stunScale, pushbackScale, rotationDeg, direction, keepsAirborne });
+  pushbackFrames = 8,
+): ResolvedReaction => ({ motion, stunScale, pushbackScale, rotationDeg, direction, keepsAirborne, pushbackFrames });
 
 /**
  * AIRBORNE BEATS EVERYTHING. A body already off the mat cannot crouch, cannot
@@ -118,14 +127,14 @@ const R = (
 const AIRBORNE: Record<ReactionKind, ResolvedReaction> = {
   none:      R('hit',      0,    0,    0,  'back', true),
   // A light hit in the air barely moves them: that is what keeps a combo going.
-  hitstun:   R('hitAir',   0.55, 0.35, 8,  'back', true),
-  crumple:   R('hitAir',   0.80, 0.55, 14, 'back', true),
+  hitstun:   R('hitAir',   0.55, 0.35, 8,  'back', true, 14),
+  crumple:   R('hitAir',   0.80, 0.55, 14, 'back', true, 16),
   // Re-launching an airborne body lifts them a little rather than resetting the
   // arc, so a juggle cannot be held up forever.
   launch:    R('hitAir',   0.90, 0.40, 10, 'up',   true),
   // The slam that ENDS a juggle. This is the "little thing when they get
   // slammed" — the body is driven down and lands on the mat.
-  smackdown: R('hitGround', 1.0, 0.25, 0,  'down', false),
+  smackdown: R('hitGround', 1.0, 0.25, 0,  'down', false, 4),
 };
 
 const STANDING: Record<ReactionKind, ResolvedReaction> = {
@@ -153,8 +162,8 @@ const CROUCH: Record<ReactionKind, ResolvedReaction> = {
  */
 const BACK_TURNED: Record<ReactionKind, ResolvedReaction> = {
   none:      R('hit',       0,    0,     0,   'back'),
-  hitstun:   R('hitBack',   1.25, 1.35, 60,   'back'),
-  crumple:   R('hitBack',   1.35, 1.5,  90,   'back'),
+  hitstun:   R('hitBack',   1.25, 1.35, 60,   'back', false, 12),
+  crumple:   R('hitBack',   1.35, 1.5,  90,   'back', false, 14),
   launch:    R('hitAir',    1.3,  1.2,  75,   'up', true),
   smackdown: R('hitGround', 1.1,  0.7,  45,   'down'),
 };
@@ -179,8 +188,8 @@ const sideRow = (sign: 1 | -1): Record<ReactionKind, ResolvedReaction> => ({
  */
 const DOWNED: Record<ReactionKind, ResolvedReaction> = {
   none:      R('knockdown',  0,   0,    0, 'down'),
-  hitstun:   R('hitGround',  0.6, 0.15, 0, 'down'),
-  crumple:   R('hitGround',  0.8, 0.2,  0, 'down'),
+  hitstun:   R('hitGround',  0.6, 0.15, 0, 'down', false, 4),
+  crumple:   R('hitGround',  0.8, 0.2,  0, 'down', false, 4),
   // You cannot launch someone who is already on the floor.
   launch:    R('hitGround',  0.8, 0.2,  0, 'down'),
   smackdown: R('hitGround',  1.0, 0.1,  0, 'down'),
@@ -197,8 +206,8 @@ const WALL_SLUMP: Record<ReactionKind, ResolvedReaction> = {
 
 const BLOCK: Record<ReactionKind, ResolvedReaction> = {
   none:      R('guard',     0,    0,    0, 'back'),
-  hitstun:   R('guard',     0.45, 0.8,  0, 'back'),
-  crumple:   R('guard',     0.55, 1.0,  0, 'back'),
+  hitstun:   R('guard',     0.45, 0.8,  0, 'back', false, 5),
+  crumple:   R('guard',     0.55, 1.0,  0, 'back', false, 6),
   launch:    R('guard',     0.5,  0.9,  0, 'back'),
   smackdown: R('guard',     0.5,  0.7,  0, 'back'),
 };
@@ -267,7 +276,7 @@ export function distinctOutcomes(): number {
     for (const k of REACTION_KINDS) {
       for (const ch of [false, true]) {
         const r = resolveReaction({ kind: k, victim: v, counterHit: ch });
-        seen.add(`${r.motion}|${r.stunScale}|${r.pushbackScale}|${r.rotationDeg}|${r.direction}`);
+        seen.add(`${r.motion}|${r.stunScale}|${r.pushbackScale}|${r.rotationDeg}|${r.direction}|${r.pushbackFrames}`);
       }
     }
   }

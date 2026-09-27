@@ -310,6 +310,19 @@ describe('hit stop, from one table instead of three', () => {
 describe('pushback on block', () => {
   /** The constructor takes (x, z, facing); position is the public reader. */
   const at = (x: number, facing: 1 | -1) => new LocomotionSystem(x, 0, facing);
+  /**
+   * A PUSHBACK IS NOW A DISPLACEMENT OVER TIME, so it has to be ticked.
+   *
+   * Tekken stores `Pushback {duration, displacement, ...}` and spreads the
+   * distance across `duration` frames; ours used to move the root the whole way
+   * in one, which read as a teleport rather than as being knocked back. These
+   * tests assert the same three things they always did — direction, scaling and
+   * the wall — they just let the frames run first.
+   */
+  const settle = (loco: LocomotionSystem, frames = 20) => {
+    for (let f = 0; f < frames; f++) loco.update(0, 0, 1 / 60, false, false);
+    return loco;
+  };
 
   it('moves the defender away from the attacker, not toward', () => {
     // This is the half of "feel" that resets the spacing game, and the sign of
@@ -317,7 +330,7 @@ describe('pushback on block', () => {
     for (const facing of [1, -1] as const) {
       const loco = at(0, facing);
       loco.applyPushback(0.3);
-      const moved = loco.position.x;
+      const moved = settle(loco).position.x;
       assert.ok(Math.abs(moved) > 1e-6, `facing ${facing}: pushback did nothing`);
       assert.equal(Math.sign(moved), -facing,
         `facing ${facing}: pushed to ${moved.toFixed(3)}, which is toward the attacker`);
@@ -325,14 +338,15 @@ describe('pushback on block', () => {
   });
 
   it('scales with the amount asked for', () => {
-    const small = at(0, 1); small.applyPushback(0.1);
-    const big = at(0, 1); big.applyPushback(0.4);
+    const small = settle(at(0, 1), 0); small.applyPushback(0.1); settle(small);
+    const big = settle(at(0, 1), 0); big.applyPushback(0.4); settle(big);
     assert.ok(Math.abs(big.position.x) > Math.abs(small.position.x));
   });
 
   it('never pushes a fighter through a wall', () => {
     const loco = at(0, -1);   // facing -1, so pushback goes +X toward the right wall
-    for (let i = 0; i < 200; i++) loco.applyPushback(0.5);
+    for (let i = 0; i < 200; i++) { loco.applyPushback(0.5); settle(loco, 2); }
+    settle(loco, 30);
     const x = loco.position.x;
     assert.ok(Number.isFinite(x), 'pushback left the position non-finite');
     assert.ok(x <= WALL_RIGHT_X + 1e-6, `pushed to ${x.toFixed(2)} past the wall at ${WALL_RIGHT_X}`);

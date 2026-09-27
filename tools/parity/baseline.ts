@@ -479,6 +479,14 @@ add({
   note: 'both clips were already in the bank and nothing ever asked for them, because there was no second dimension to ask with',
 });
 add({
+  axis: 'REACTION', system: 'pushback is a displacement over time, not a teleport',
+  reference: 'Pushback {duration, displacement, num_of_loops, extradata} — a per-frame horizontal offset over a duration',
+  refSource: 'Tekken 7/8 Pushback struct, via TKMovesets',
+  ours: 'decaying slide over 4-16 frames, duration set per victim state; speed 2A/T falling linearly to zero, so the area is exactly the authored distance',
+  verdict: tested('reaction-matrix.test.ts') ? 'BEHAVING' : 'MISSING',
+  note: 'applyPushback moved the root the whole way in ONE frame, so the body arrived before the reaction animation had started and nothing on screen connected the two — being hit read as a snap. A second hit during a slide now ADDS to it rather than replacing it, so the second hit of a string does not cancel the first one\'s travel',
+});
+add({
   axis: 'REACTION', system: 'a hit from the flank or from behind reads differently',
   reference: 'Tekken keeps a rotation per side; a side hit turns you, and a back hit cannot be braced',
   refSource: 'Tekken 7/8 Reactions struct, via TKMovesets',

@@ -250,6 +250,15 @@ export function locomotionBoundsFromStage(
  * LocomotionSystem — manages a single fighter's position using the
  * Tekken dual-system architecture.
  */
+/**
+ * How long a hit carries the body backwards, in frames at 60fps.
+ *
+ * Tekken authors a `duration` per pushback per victim state; 8 frames is the
+ * middle of the range its light hits sit in and is short enough that the slide
+ * is over before the victim can act again.
+ */
+export const PUSHBACK_FRAMES = 8;
+
 export class LocomotionSystem {
   private state: LocomotionState;
   private bounds: LocomotionBounds = DEFAULT_LOCOMOTION_BOUNDS;
@@ -397,6 +406,10 @@ export class LocomotionSystem {
      */
     stickLive = true,
   ): void {
+    // A pushback in flight is something DONE TO this body, so it runs before and
+    // independently of whatever the stick is asking for.
+    this.tickPushback(dt);
+
     if (this.state.mode === 'rootMotion') {
       this.updateRootMotion(dt);
       return;
@@ -576,11 +589,63 @@ export class LocomotionSystem {
   }
 
   // ── Apply pushback from a hit ─────────────────────────────────────────────
-  applyPushback(amount: number) {
+  private push: { remaining: number; framesLeft: number; totalFrames: number; dir: number } | null = null;
+
+  applyPushback(amount: number, durationFrames = PUSHBACK_FRAMES) {
+    if (!(Math.abs(amount) > 0)) return;
     // Pushback is always away from the attacker (opposite to facing)
-    const pushX = -this.state.facing * amount;
-    this.state.rootX = this.clampToX(this.state.rootX + pushX);
+    const dir = -this.state.facing;
+    if (durationFrames <= 1) {
+      // The old behaviour, kept for callers that want an instant displacement.
+      this.state.rootX = this.clampToX(this.state.rootX + dir * amount);
+      return;
+    }
+    // A SECOND PUSH DURING ONE ALREADY RUNNING ADDS TO IT rather than replacing
+    // it, so the second hit of a string does not cancel the first one's slide.
+    const carry = this.push && Math.sign(this.push.dir) === Math.sign(dir) ? this.push.remaining : 0;
+    this.push = {
+      remaining: amount + carry,
+      framesLeft: durationFrames,
+      totalFrames: durationFrames,
+      dir,
+    };
   }
+
+  /**
+   * A PUSHBACK IS A DISPLACEMENT OVER TIME, NOT A TELEPORT.
+   *
+   * Tekken stores it as `Pushback {duration, displacement, num_of_loops,
+   * extradata}` — the extradata being a per-frame horizontal offset. The
+   * displacement is spread across `duration` frames. Ours moved the root the
+   * whole distance in ONE frame, which is why being hit read as a snap rather
+   * than as being knocked back: the body arrives before the reaction animation
+   * has started, so nothing on screen connects the two.
+   *
+   * The curve here decelerates: speed starts at 2A/T and falls linearly to zero,
+   * so the area under it is exactly the authored distance A and the body covers
+   * most of it early. That is what a shove looks like.
+   */
+  private tickPushback(dt: number) {
+    const p = this.push;
+    if (!p) return;
+    const frames = Math.max(0, Math.min(p.framesLeft, dt * 60));
+    if (frames <= 0) return;
+    const t0 = 1 - p.framesLeft / p.totalFrames;
+    p.framesLeft -= frames;
+    const t1 = 1 - p.framesLeft / p.totalFrames;
+    // Fraction of the total distance covered between t0 and t1 under a linearly
+    // decaying speed: the integral of 2(1-t) is 2t - t^2.
+    const covered = (2 * t1 - t1 * t1) - (2 * t0 - t0 * t0);
+    const step = p.remaining * covered;
+    this.state.rootX = this.clampToX(this.state.rootX + p.dir * step);
+    if (p.framesLeft <= 1e-4) this.push = null;
+  }
+
+  /** True while a hit is still carrying this body backwards. */
+  get isBeingPushed(): boolean { return this.push !== null; }
+
+  /** Cancel any pushback in flight — a throw or a round reset owns the position. */
+  clearPushback() { this.push = null; }
 
   // ── Clamp X position (used for fighter separation enforcement) ────────────
   /**

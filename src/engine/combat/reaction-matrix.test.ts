@@ -128,3 +128,75 @@ describe('the reaction matrix', () => {
     assert.equal(side.victimState('wallSlump'), 'wallSlump');
   });
 });
+
+/**
+ * THE PUSHBACK IS A DISPLACEMENT OVER TIME.
+ *
+ * Tekken stores `Pushback {duration, displacement, num_of_loops, extradata}` —
+ * the extradata being a per-frame horizontal offset — so the distance is spread
+ * across `duration` frames. Ours moved the root the whole way in ONE frame,
+ * which is why being hit read as a snap: the body arrived before the reaction
+ * animation had started, so nothing on screen connected the two.
+ */
+describe('pushback carries the body over time', () => {
+  const mk = async () => {
+    const { LocomotionSystem, PUSHBACK_FRAMES } = await import('../locomotion/LocomotionSystem.ts');
+    return { LocomotionSystem, PUSHBACK_FRAMES };
+  };
+
+  it('delivers exactly the authored distance, and not in one frame', async () => {
+    const { LocomotionSystem } = await mk();
+    const loco = new LocomotionSystem(0, 0, 1);
+    const start = loco.position.x;
+    loco.applyPushback(0.5, 8);
+    const afterOne = loco.position.x;
+    assert.ok(Math.abs(afterOne - start) < 1e-9, 'applyPushback moved the body before a single frame was ticked');
+
+    for (let f = 0; f < 8; f++) loco.update(0, 0, 1 / 60, false, false);
+    const total = Math.abs(loco.position.x - start);
+    assert.ok(Math.abs(total - 0.5) < 0.02, `covered ${total.toFixed(4)}m of an authored 0.5m`);
+    assert.equal(loco.isBeingPushed, false, 'the push did not finish inside its own duration');
+  });
+
+  it('front-loads the travel, the way a shove does', async () => {
+    const { LocomotionSystem } = await mk();
+    const loco = new LocomotionSystem(0, 0, 1);
+    const start = loco.position.x;
+    loco.applyPushback(0.5, 8);
+    for (let f = 0; f < 4; f++) loco.update(0, 0, 1 / 60, false, false);
+    const half = Math.abs(loco.position.x - start);
+    // Speed decays linearly, so the first half of the time covers 3/4 of it.
+    assert.ok(half > 0.5 * 0.6, `only ${half.toFixed(3)}m covered in the first half of the push`);
+    assert.ok(half < 0.5 * 0.95, `${half.toFixed(3)}m in the first half is effectively still a teleport`);
+  });
+
+  it('a second hit adds to the slide rather than cancelling it', async () => {
+    const { LocomotionSystem } = await mk();
+    const loco = new LocomotionSystem(0, 0, 1);
+    const start = loco.position.x;
+    loco.applyPushback(0.3, 8);
+    for (let f = 0; f < 3; f++) loco.update(0, 0, 1 / 60, false, false);
+    loco.applyPushback(0.3, 8);
+    for (let f = 0; f < 10; f++) loco.update(0, 0, 1 / 60, false, false);
+    const total = Math.abs(loco.position.x - start);
+    assert.ok(total > 0.4, `two 0.3m pushes carried only ${total.toFixed(3)}m — the second replaced the first`);
+  });
+
+  it('duration 1 keeps the old instant behaviour for callers that want it', async () => {
+    const { LocomotionSystem } = await mk();
+    const loco = new LocomotionSystem(0, 0, 1);
+    const start = loco.position.x;
+    loco.applyPushback(0.4, 1);
+    assert.ok(Math.abs(loco.position.x - start) > 0.3, 'an explicit one-frame push was deferred');
+  });
+
+  it('the matrix varies the duration by victim state, the way Tekken does', async () => {
+    const blocked = resolveReaction({ kind: 'hitstun', victim: 'block' });
+    const back = resolveReaction({ kind: 'hitstun', victim: 'backTurned' });
+    const air = resolveReaction({ kind: 'hitstun', victim: 'airborne' });
+    const downed = resolveReaction({ kind: 'hitstun', victim: 'downed' });
+    assert.ok(blocked.pushbackFrames < back.pushbackFrames, 'a blocked shove should be shorter than a back-turned one');
+    assert.ok(air.pushbackFrames > back.pushbackFrames, 'a floated body should drift longer than a standing one');
+    assert.ok(downed.pushbackFrames <= 4, 'a body on the mat should not slide for long');
+  });
+});

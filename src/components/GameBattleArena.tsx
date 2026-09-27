@@ -1923,8 +1923,8 @@ export default function GameBattleArena({
           // is the victim's business as much as the attacker's: a crouching body
           // absorbs it, a back-turned one cannot brace, a wall gives nothing.
           if (!p2SMRef.current.isAirborne) {
-            const scale = p2SMRef.current.lastReaction?.pushbackScale ?? 1;
-            p2LocoRef.current.applyPushback((p1Hit.pushback ?? 0.3) * scale);
+            const rx = p2SMRef.current.lastReaction;
+            p2LocoRef.current.applyPushback((p1Hit.pushback ?? 0.3) * (rx?.pushbackScale ?? 1), rx?.pushbackFrames);
           }
         }
         if (guardResult.guardBroken) {
@@ -2330,8 +2330,8 @@ export default function GameBattleArena({
           // state has to reach this side too — a hit taken while crouching, from
           // behind or against the wall must not move him like a clean front one.
           if (!p1SMRef.current.isAirborne) {
-            const scale = p1SMRef.current.lastReaction?.pushbackScale ?? 1;
-            p1LocoRef.current.applyPushback((p2Hit.pushback ?? 0.3) * scale);
+            const rx = p1SMRef.current.lastReaction;
+            p1LocoRef.current.applyPushback((p2Hit.pushback ?? 0.3) * (rx?.pushbackScale ?? 1), rx?.pushbackFrames);
           }
           // See the P1-attacking side: the extra frames are what make a counter a
           // combo opening rather than a louder normal hit.
