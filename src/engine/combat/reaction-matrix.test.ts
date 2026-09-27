@@ -200,3 +200,54 @@ describe('pushback carries the body over time', () => {
     assert.ok(downed.pushbackFrames <= 4, 'a body on the mat should not slide for long');
   });
 });
+
+/**
+ * THE SPIN HAS TO REACH THE BODY.
+ *
+ * The matrix resolved a rotationDeg from the first commit and NOTHING consumed
+ * it — a resolved number that no renderer reads is the same as no number at
+ * all, which is the "declared and dead" verdict this project's audit exists to
+ * catch. These assert the shape the arena feeds into the yaw.
+ */
+describe('the hit spin', () => {
+  /** What GameBattleArena stores on a hit, and eases to zero each frame. */
+  const spinFrom = (r: { rotationDeg: number; pushbackFrames: number }) => {
+    const frames = r.pushbackFrames || 8;
+    return { peak: (r.rotationDeg * Math.PI) / 180, framesLeft: frames, total: frames };
+  };
+  const easeTo = (h: { peak: number; framesLeft: number; total: number }, frames: number) => {
+    h.framesLeft = Math.max(0, h.framesLeft - frames);
+    return h.peak * (h.framesLeft / h.total);
+  };
+
+  it('a side hit produces a real spin that decays to nothing', () => {
+    const h = spinFrom(resolveReaction({ kind: 'hitstun', victim: 'sideRight' }));
+    assert.ok(Math.abs(h.peak) > 0.3, `peak spin ${h.peak.toFixed(3)} rad is not visible`);
+    const mid = easeTo({ ...h }, h.total / 2);
+    assert.ok(Math.abs(mid) > 0.1 && Math.abs(mid) < Math.abs(h.peak), 'the spin does not ease');
+    assert.equal(easeTo(h, h.total), 0, 'the spin never returns to the facing');
+  });
+
+  it('the two flanks spin opposite ways, and a front hit does not spin at all', () => {
+    const l = spinFrom(resolveReaction({ kind: 'hitstun', victim: 'sideLeft' }));
+    const r = spinFrom(resolveReaction({ kind: 'hitstun', victim: 'sideRight' }));
+    assert.equal(Math.sign(l.peak), -Math.sign(r.peak));
+    const front = resolveReaction({ kind: 'hitstun', victim: 'standing' });
+    assert.equal(front.rotationDeg, 0, 'a clean front hit should not turn the body');
+  });
+
+  it('a back-turned hit spins further than a flank hit — it turns you back round', () => {
+    const back = Math.abs(resolveReaction({ kind: 'crumple', victim: 'backTurned' }).rotationDeg);
+    const side = Math.abs(resolveReaction({ kind: 'crumple', victim: 'sideRight' }).rotationDeg);
+    assert.ok(back > side, `back ${back} deg should exceed flank ${side} deg`);
+    assert.ok(back >= 60, 'a back-turned hit should turn the body most of the way round');
+  });
+
+  it('the spin lasts exactly as long as the shove, so they read as one event', () => {
+    for (const victim of ['sideLeft', 'sideRight', 'backTurned'] as const) {
+      const r = resolveReaction({ kind: 'hitstun', victim });
+      assert.equal(spinFrom(r).total, r.pushbackFrames,
+        `${victim}: the spin and the pushback run on different clocks`);
+    }
+  });
+});

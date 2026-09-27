@@ -600,6 +600,16 @@ export interface CombatArena3DProps {
   p2Y?: number;
   /** Cross-up: mesh faces away until the fighter turns or attacks. */
   p1BackTurned?: boolean;
+  /**
+   * Transient spin from a hit, in RADIANS, added on top of the facing yaw.
+   *
+   * Tekken keeps a rotation per side in its Reactions struct — a hit landing on
+   * your flank turns you. Without it a side hit is a front hit played
+   * off-centre, which is the single biggest reason a sidestep does not read as
+   * having worked. Decays to zero, so it never fights the facing.
+   */
+  p1HitYaw?: number;
+  p2HitYaw?: number;
   p2BackTurned?: boolean;
   cinematicPhase?: CinematicPhase;
   winnerName?: string;
@@ -671,6 +681,8 @@ export default function CombatArena3D({
   p1Y: p1YProp = 0,
   p2Y: p2YProp = 0,
   p1BackTurned = false,
+  p1HitYaw = 0,
+  p2HitYaw = 0,
   p2BackTurned = false,
   cinematicPhase = 'fight',
   winnerName,
@@ -933,14 +945,16 @@ export default function CombatArena3D({
   // so a fighter orbiting his opponent slid sideways without ever looking at
   // him — see `faceOpponentYaw` for the measurement and why this reproduces
   // the image-tested table exactly when the two are level on Z.
+  // The hit spin rides ON TOP of the facing, never replaces it: the body is
+  // turned by the impact and the facing pulls it back as the spin decays.
   const p1RotationY = yawWithBackTurn(
     faceOpponentYaw({ x: p1FinalX, z: p1FinalZ }, { x: p2FinalX, z: p2FinalZ }, COMBAT_P1_YAW),
     p1BackTurned,
-  );
+  ) + p1HitYaw;
   const p2RotationY = yawWithBackTurn(
     faceOpponentYaw({ x: p2FinalX, z: p2FinalZ }, { x: p1FinalX, z: p1FinalZ }, COMBAT_P2_YAW),
     p2BackTurned,
-  );
+  ) + p2HitYaw;
 
   // ── Stage-specific fog / clear color (training + urban_night stay locked) ─
   const stageCfg = resolveStageConfig(stageId);

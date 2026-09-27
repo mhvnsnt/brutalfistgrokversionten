@@ -659,6 +659,8 @@ export default function GameBattleArena({
   const [p1X, setP1X] = useState(-1.8);
   const [p1Y, setP1Y] = useState(0);
   const [p1BackTurned, setP1BackTurned] = useState(false);
+  const [p1HitYaw, setP1HitYaw] = useState(0);
+  const [p2HitYaw, setP2HitYaw] = useState(0);
   const [p2BackTurned, setP2BackTurned] = useState(false);
   const [p2X, setP2X] = useState(1.8);
   const [p2Y, setP2Y] = useState(0);
@@ -674,6 +676,13 @@ export default function GameBattleArena({
   const p2BackTurnUntilRef = useRef(0);
   const p1BackTurnedRef = useRef(false);
   const p2BackTurnedRef = useRef(false);
+  // ── HIT SPIN ─────────────────────────────────────────────────────────────
+  // ReactionMatrix resolves a rotationDeg per victim state and nothing consumed
+  // it. A hit on the flank turns you; a back-turned hit spins you back round.
+  // Held as a peak that eases to zero over the same frames as the pushback, so
+  // the spin and the shove are one event.
+  const p1HitYawRef = useRef({ peak: 0, framesLeft: 0, total: 1 });
+  const p2HitYawRef = useRef({ peak: 0, framesLeft: 0, total: 1 });
   const p1ForwardPrevRef = useRef(0);
   const p2ForwardPrevRef = useRef(0);
   const p2XRef = useRef(1.8);
@@ -1922,9 +1931,13 @@ export default function GameBattleArena({
           // A body in the air is not pushed along the floor. On the mat, HOW FAR
           // is the victim's business as much as the attacker's: a crouching body
           // absorbs it, a back-turned one cannot brace, a wall gives nothing.
+          const p2rx = p2SMRef.current.lastReaction;
           if (!p2SMRef.current.isAirborne) {
-            const rx = p2SMRef.current.lastReaction;
-            p2LocoRef.current.applyPushback((p1Hit.pushback ?? 0.3) * (rx?.pushbackScale ?? 1), rx?.pushbackFrames);
+            p2LocoRef.current.applyPushback((p1Hit.pushback ?? 0.3) * (p2rx?.pushbackScale ?? 1), p2rx?.pushbackFrames);
+          }
+          if (p2rx?.rotationDeg) {
+            const frames = p2rx.pushbackFrames || 8;
+            p2HitYawRef.current = { peak: (p2rx.rotationDeg * Math.PI) / 180, framesLeft: frames, total: frames };
           }
         }
         if (guardResult.guardBroken) {
@@ -2329,9 +2342,13 @@ export default function GameBattleArena({
           // The player's own body is the half he actually feels, so the victim
           // state has to reach this side too — a hit taken while crouching, from
           // behind or against the wall must not move him like a clean front one.
+          const p1rx = p1SMRef.current.lastReaction;
           if (!p1SMRef.current.isAirborne) {
-            const rx = p1SMRef.current.lastReaction;
-            p1LocoRef.current.applyPushback((p2Hit.pushback ?? 0.3) * (rx?.pushbackScale ?? 1), rx?.pushbackFrames);
+            p1LocoRef.current.applyPushback((p2Hit.pushback ?? 0.3) * (p1rx?.pushbackScale ?? 1), p1rx?.pushbackFrames);
+          }
+          if (p1rx?.rotationDeg) {
+            const frames = p1rx.pushbackFrames || 8;
+            p1HitYawRef.current = { peak: (p1rx.rotationDeg * Math.PI) / 180, framesLeft: frames, total: frames };
           }
           // See the P1-attacking side: the extra frames are what make a counter a
           // combo opening rather than a louder normal hit.
@@ -2747,6 +2764,26 @@ export default function GameBattleArena({
           newP1X = p1LocoRef.current.position.x;
           newP2X = p2LocoRef.current.position.x;
         }
+
+        // The spin eases back to zero: the body is turned by the impact and the
+        // facing pulls it straight again. Linear, because the ease that matters
+        // is the animation playing on top of it.
+        const settleHitYaw = (
+          ref: { current: { peak: number; framesLeft: number; total: number } },
+          shown: number,
+          setShown: (v: number) => void,
+        ) => {
+          const h = ref.current;
+          if (h.framesLeft <= 0) {
+            if (shown !== 0) setShown(0);
+            return;
+          }
+          h.framesLeft = Math.max(0, h.framesLeft - dt * 60);
+          const next = h.peak * (h.framesLeft / h.total);
+          if (Math.abs(next - shown) > 0.004) setShown(next);
+        };
+        settleHitYaw(p1HitYawRef, p1HitYaw, setP1HitYaw);
+        settleHitYaw(p2HitYawRef, p2HitYaw, setP2HitYaw);
 
         // A crossing on X means they walked through each other, so each is now
         // looking at the other's back. Held for half a second: pressing toward
@@ -3175,6 +3212,8 @@ export default function GameBattleArena({
           p1X={p1X}
           p2X={p2X}
           p1BackTurned={p1BackTurned}
+          p1HitYaw={p1HitYaw}
+          p2HitYaw={p2HitYaw}
           p2BackTurned={p2BackTurned}
           p1Y={p1Y}
           p2Y={p2Y}

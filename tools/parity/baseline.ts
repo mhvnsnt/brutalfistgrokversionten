@@ -490,9 +490,12 @@ add({
   axis: 'REACTION', system: 'a hit from the flank or from behind reads differently',
   reference: 'Tekken keeps a rotation per side; a side hit turns you, and a back hit cannot be braced',
   refSource: 'Tekken 7/8 Reactions struct, via TKMovesets',
-  ours: 'sideLeft/sideRight spin +-35 to 50 deg and push diagonally; backTurned stuns x1.25 and spins 60-90 deg',
-  verdict: tested('reaction-matrix.test.ts') ? 'BEHAVING' : 'MISSING',
-  note: 'without a rotation a side hit is a front hit played off-centre, which is the biggest reason a sidestep does not read as having worked',
+  ours: (() => {
+    const wired = callSitesOutside('p1HitYaw', 'CombatArena3D.tsx') > 0;
+    return `sideLeft/sideRight spin +-35 to 50 deg and push diagonally; backTurned stuns x1.25 and spins 60-90 deg${wired ? ', applied to the rendered yaw and eased back over the pushback frames' : ' — RESOLVED BUT NOT APPLIED'}`;
+  })(),
+  verdict: callSitesOutside('p1HitYaw', 'CombatArena3D.tsx') > 0 && tested('reaction-matrix.test.ts') ? 'BEHAVING' : 'DECLARED',
+  note: 'without a rotation a side hit is a front hit played off-centre, which is the biggest reason a sidestep does not read as having worked. The spin rides ON TOP of the facing yaw and decays to zero over the same frames as the shove, so the two read as one event and a stale spin can never fight the facing',
 });
 add({
   axis: 'REACTION', system: 'counter hit is its own reaction, and only from the front',
