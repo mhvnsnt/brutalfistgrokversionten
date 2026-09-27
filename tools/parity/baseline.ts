@@ -436,6 +436,22 @@ add({
 
 // ── REPORT ──────────────────────────────────────────────────────────────────
 
+// ── MOVESET: what the clip bank can actually reach ──────────────────────────
+add({
+  axis: 'MOVESET', system: 'the clip bank is reachable by the moveset',
+  reference: 'the animations a game ships are the moves it has; a clip nothing can call is not content',
+  refSource: 'convention',
+  ours: (() => {
+    try {
+      const idx = JSON.parse(readFileSync('public/motion/baked/index.json', 'utf8')) as Record<string, unknown>;
+      const cc = JSON.parse(readFileSync('public/motion/command-clips.json', 'utf8')) as { _pool?: number };
+      return `${cc._pool ?? 0} of ${Object.keys(idx).length} baked clips pass the attack gates`;
+    } catch { return 'unknown'; }
+  })(),
+  verdict: 'WIRED',
+  note: 'MEASURED rejections, first gate to fire: reach too short 69 (mostly locomotion, correct) · fewer than 3 moving bones 69 · DURATION OVER 2.2s 61 (the biggest fixable bucket — a long capture usually holds one move plus setup, so it needs an active-span window, not a refusal) · being thrown 54 (correct) · inverted 54 · turns away 40 · starts on the mat 26 · hit/knockdown 18 · multi-body 12. Fixing the facing gate alone (facing AT IMPACT rather than facing at any point) took the pool 52 -> 59 and admitted the whole spinning-attack family including a launcher',
+});
+
 // ── INTEGRITY ───────────────────────────────────────────────────────────────
 // THE AXIS THAT WAS MISSING, AND THE REASON THE AUDIT READ 95% WHILE THE OWNER
 // WAS WATCHING BODIES FLOAT.

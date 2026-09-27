@@ -69,7 +69,21 @@ export function attackPool() {
     if ((m.movingBones ?? 0) < 3) continue;
     if ((m.spineUp ?? 1) < 0) continue;
     if ((s.startUp ?? 1) < 0.6) continue;
-    if ((s.faceMin ?? 1) < 0) continue;
+    // A SPIN IS NOT A TURN-AWAY.
+    //
+    // This used to reject any clip whose facing dipped below zero at ANY point
+    // (`faceMin`), which is every spinning attack there is — the back kick, the
+    // capoeira sweep, the wheel kick all point away from the opponent halfway
+    // through and come back round to land. Measured: 10 clips were rejected by
+    // this gate alone and NINE of them land facing forward, among them ARMADA,
+    // QUESHADA_2, TIGERCOMMANDOCOMBO1, TIGERKNEEBASHSLOW and
+    // JOHNSONWAVESWEEPERLAUNCHER — a launcher, which is what opens a juggle.
+    //
+    // What matters is where the body is pointing AT THE MOMENT THE STRIKE
+    // LANDS, and the bake already measures exactly that: `reachFace`, the
+    // facing at peak reach. A clip that connects while turned away is still
+    // refused; one that merely passes through is not.
+    if ((s.reachFace ?? s.faceMin ?? 1) < 0.15) continue;
     if ((m.dur ?? 9) > 2.2) continue;
     const hand = s.handReach ?? 0;
     const foot = s.footReach ?? 0;

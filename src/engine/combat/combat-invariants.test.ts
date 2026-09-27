@@ -246,13 +246,12 @@ describe('a synthesised clip poses every bone', () => {
       'mixamorigLeftUpLeg', 'mixamorigLeftLeg', 'mixamorigLeftFoot',
       'mixamorigRightUpLeg', 'mixamorigRightLeg', 'mixamorigRightFoot',
     ];
+    // Flat is fine: buildBindRelativeClips reads each bone's NAME and rest
+    // quaternion, never the hierarchy.
     const root = new THREE.Object3D();
-    let parent: THREE.Object3D = root;
     for (const n of names) {
       const b = new THREE.Bone();
       b.name = n;
-      parent.add(b);
-      parent = b === null ? parent : root; // flat is fine; only names and quaternions are read
       root.add(b);
     }
     const clips = buildBindRelativeClips(root);
