@@ -157,6 +157,7 @@ export function buildHitboxFromMove(move: MoveWindow): HitboxGeometry {
       ? Math.max(0.35, Math.min(0.75, reach * 0.48))
       : (special.depth ?? base.depth ?? 0.6),
     damage: move.damage ?? (base as { damage?: number }).damage ?? 80,
+    attackLevel: move.attackLevel ?? (base as { attackLevel?: HitboxGeometry['attackLevel'] }).attackLevel ?? 'mid',
   };
   return geometry as HitboxGeometry;
 }

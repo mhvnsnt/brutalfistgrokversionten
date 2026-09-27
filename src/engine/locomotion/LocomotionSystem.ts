@@ -376,13 +376,26 @@ export class LocomotionSystem {
     isDashing: boolean,
     isBackdashing: boolean,
     target?: { x: number; z: number },
+    /**
+     * Tekken (7, and the same in 3 and 8): the stick dies the frame a move
+     * starts. Only the move's own authored travel may continue, and that
+     * path is `rootMotion` above. Coasting the walk through startup is what
+     * makes back+attack leave range before the hit comes out. Brutal Fist's
+     * extra clips stay; they just are not allowed to keep the walk alive.
+     */
+    stickLive = true,
   ): void {
     if (this.state.mode === 'rootMotion') {
       this.updateRootMotion(dt);
       return;
     }
 
-    // Programmatic locomotion
+    if (!stickLive) {
+      this.state.velocityX = 0;
+      this.state.velocityZ = 0;
+      return;
+    }
+
     this.updateProgrammatic(forwardInput, strafeInput, dt, isDashing, isBackdashing, target);
   }
 

@@ -27,17 +27,19 @@ test('the plan puts the motion set before the models', () => {
   // presses START, so the thing every fighter needs has to land first.
   const urls = warmupUrls();
   assert.equal(urls[0], '/motion/baked/index.json');
-  assert.ok(urls.length > 50, `only ${urls.length} assets planned`);
-  assert.ok(urls.slice(1).every((u) => u.startsWith('/models/')), 'the rest should be models');
+  assert.ok(urls.includes('/motion/baked/index.json.zst'));
+  const models = urls.filter((u) => u.startsWith('/models/'));
+  assert.ok(models.length > 50, `only ${models.length} models planned`);
   assert.equal(new Set(urls).size, urls.length, 'the plan must not fetch anything twice');
 });
 
 test('a favourite is warmed before the rest of the roster', () => {
   const all = warmupUrls();
-  const last = all[all.length - 1];
+  const models = all.filter((u) => u.startsWith('/models/'));
+  const last = models[models.length - 1];
   const favourite = decodeURIComponent(last.replace('/models/', ''));
-  const planned = warmupUrls([favourite]);
-  assert.equal(planned[1], last, 'a named favourite should come first among the models');
+  const planned = warmupUrls([favourite]).filter((u) => u.startsWith('/models/'));
+  assert.equal(planned[0], last, 'a named favourite should come first among the models');
 });
 
 test('every asset is fetched, with the body drained', async () => {

@@ -156,7 +156,75 @@ function capped(q: THREE.Quaternion, maxDeg: number): THREE.Quaternion {
  *   - the median signed twist is > 120° from zero, and
  *   - 90% of frames stay within 25° of that baseline.
  * Dynamic kicks/spins therefore remain untouched.
+ *
+ * A frozen roll on a sharply bent shin is also what aims the foot. Stripping
+ * it from the thigh alone orbits that foot upward, and the leg-direction
+ * repair then clamps the thigh back onto the ±50° twist ceiling — the wound
+ * mesh this removal exists to undo. Measured on HURRICANE_KICK: taking off
+ * the constant 164° roll lifts the feet from -0.52 to +0.38, the flip pins
+ * both thighs at exactly 50°, and the feet are still high. Counter-rotating
+ * a shin bent at least 60° by that same frozen roll keeps the foot, so the
+ * flip never fires and the thigh stays near 0. A standing idle's shin is
+ * only bent about 35°; counter-rotating that one makes the hinge point the
+ * foot the wrong way, so those shins are left alone. BOX_IDLE still lands
+ * near 0° of twist with its feet at -0.89.
  */
+/** A roll this steady is a rest offset, not a kick. */
+const FROZEN_TWIST_P90 = 8;
+/** Below this the shin is nearly straight and the foot barely orbits. */
+const SHARP_SHIN_BEND = 60;
+const THIGH_CHILD: Readonly<Record<string, string>> = {
+  mixamorigLeftUpLeg: 'mixamorigLeftLeg',
+  mixamorigRightUpLeg: 'mixamorigRightLeg',
+};
+
+/**
+ * Give a sharply bent shin the axial roll just taken off its thigh.
+ *
+ * The roll is one quaternion for the whole clip, so every shin key gets the
+ * same counter-rotation whether or not its key times match the thigh.
+ */
+function compensateBentShin(
+  clip: THREE.AnimationClip,
+  thigh: string,
+  restMap: Map<string, THREE.Quaternion>,
+  baselineDeg: number,
+  p90: number,
+  axis: THREE.Vector3,
+): void {
+  if (p90 > FROZEN_TWIST_P90) return;
+  const child = THIGH_CHILD[thigh];
+  if (!child) return;
+  const track = clip.tracks.find((t) => t.name === `${child}.quaternion`);
+  const childBind = restMap.get(child);
+  if (!track || !childBind) return;
+
+  const childBindInv = childBind.clone().invert();
+  const bends: number[] = [];
+  for (let i = 0; i + 3 < track.values.length; i += 4) {
+    const q = new THREE.Quaternion(
+      track.values[i], track.values[i + 1], track.values[i + 2], track.values[i + 3],
+    );
+    bends.push(angleDeg(swingTwist(childBindInv.clone().multiply(q), axis).swing));
+  }
+  bends.sort((a, b) => a - b);
+  const median = bends[Math.floor(bends.length / 2)] ?? 0;
+  if (median < SHARP_SHIN_BEND) return;
+
+  const undo = new THREE.Quaternion().setFromAxisAngle(
+    axis, THREE.MathUtils.degToRad(baselineDeg),
+  );
+  const q = new THREE.Quaternion();
+  for (let i = 0; i + 3 < track.values.length; i += 4) {
+    q.set(track.values[i], track.values[i + 1], track.values[i + 2], track.values[i + 3]);
+    q.premultiply(undo);
+    track.values[i] = q.x;
+    track.values[i + 1] = q.y;
+    track.values[i + 2] = q.z;
+    track.values[i + 3] = q.w;
+  }
+}
+
 export function removeConstantConventionTwist(
   clip: THREE.AnimationClip,
   restMap: Map<string, THREE.Quaternion>,
@@ -218,6 +286,9 @@ export function removeConstantConventionTwist(
       track.values[i + 3] = fixed.w;
     }
     out.push({ bone, baselineDeg: +baseline.toFixed(1), keys: angles.length });
+    // Same constant roll, handed to a sharply bent shin so the foot does not
+    // orbit up and get the thigh clamped back to the twist ceiling.
+    compensateBentShin(clip, bone, restMap, baseline, p90, axis);
   }
 
   return out;

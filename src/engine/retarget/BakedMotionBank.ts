@@ -5,7 +5,7 @@ import { setCommandClipMap } from '../combat/SchwarzerblitzSpecials.ts';
 import { setGeneratedMovesets } from '../combat/GeneratedMovesets.ts';
 import type { RootTravelCurve } from '../motion/RootTravel.ts';
 
-import { assetUrl } from '../../lib/assetBase.ts';
+import { fetchZstdJson } from '../assets/zstdJson.ts';
 
 /**
  * CLIPS ALREADY RESOLVED ONTO THE ONE SKELETON.
@@ -849,9 +849,7 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
   attempted = true;
   const out = new Map<string, THREE.AnimationClip>();
   try {
-    const res = await fetch(assetUrl(INDEX_URL));
-    if (!res.ok) throw new Error(`index HTTP ${res.status}`);
-    const manifest = (await res.json()) as Record<string, BakedManifestEntry>;
+    const manifest = (await fetchZstdJson(INDEX_URL)) as Record<string, BakedManifestEntry>;
     applyStandability(manifest);
     // The opponent's half of every grapple, read off the same index rather
     // than a second fetch. See engine/combat/GrapplePairing.
@@ -861,12 +859,10 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
     // is silent on purpose and leaves every move on its authored clip.
     // The generated per-fighter movesets, same deal: silent on failure, and
     // absent it every fighter keeps exactly the imported commands he had.
-    void fetch(assetUrl('/motion/movesets.json'))
-      .then((r) => (r.ok ? r.json() : null))
+    void fetchZstdJson('/motion/movesets.json')
       .then((m) => { if (m) setGeneratedMovesets(m as never); })
       .catch(() => {});
-    void fetch(assetUrl('/motion/command-clips.json'))
-      .then((r) => (r.ok ? r.json() : null))
+    void fetchZstdJson('/motion/command-clips.json')
       .then((m) => { if (m) setCommandClipMap(m as never); })
       .catch(() => {});
     // A three-body capture is not a solo move. See markTeamCaptures.
@@ -879,18 +875,23 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
     );
     if (names.length === 0) throw new Error('empty index');
 
-    const loaded = await Promise.allSettled(
-      names.map(async (name) => {
-        const r = await fetch(assetUrl(BASE + encodeURIComponent(manifest[name].file)));
-        if (!r.ok) throw new Error(`${name} HTTP ${r.status}`);
-        return clipFromBaked((await r.json()) as BakedClipFile);
-      }),
-    );
+    const CHUNK = 16;
     let failed = 0;
-    loaded.forEach((s, i) => {
-      if (s.status === 'fulfilled' && s.value) out.set(names[i], s.value);
-      else failed++;
-    });
+    for (let i = 0; i < names.length; i += CHUNK) {
+      const slice = names.slice(i, i + CHUNK);
+      const loaded = await Promise.allSettled(
+        slice.map(async (name) => {
+          const data = await fetchZstdJson(BASE + encodeURIComponent(manifest[name].file));
+          return clipFromBaked(data as BakedClipFile);
+        }),
+      );
+      loaded.forEach((s, j) => {
+        if (s.status === 'fulfilled' && s.value) out.set(slice[j], s.value);
+        else failed++;
+      });
+      // Hand the frame back so a 366-clip bank cannot freeze the menu.
+      await new Promise((r) => setTimeout(r, 0));
+    }
     console.log(
       `[BakedMotionBank] ✅ ${out.size} clip(s) already on the skeleton` +
         (failed ? `, ${failed} failed` : ''),

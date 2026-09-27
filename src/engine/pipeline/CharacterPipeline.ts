@@ -78,6 +78,7 @@ import {
   clampToJointLimits,
   constrainHinges,
   redistributeChain,
+  removeConstantConventionTwist,
 } from '../retarget/SkeletalLimits';
 import { bindClipTracksToTargetBones } from '../retarget/AnimationRetargeter';
 import {
@@ -773,6 +774,11 @@ export async function extractAndRetargetAnimations(
     // of about 35 — the owl-neck the owner reported. Spread the chain, then
     // hold every limited joint inside a human range. See SkeletalLimits.
     redistributeChain(relative, SPINE_CHAIN, targetRest);
+    // The bake removes a frozen Mixamo thigh roll before the limits, and
+    // hands that roll to a sharply bent shin so the foot stays down. The
+    // live path has to do the same or a bank that missed the bake clamps
+    // the roll to ±50° and the thigh mesh stays wound. See SkeletalLimits.
+    removeConstantConventionTwist(relative, restMap);
     // Hinges first: an elbow folded the wrong way is not a magnitude problem,
     // and clamping magnitude cannot see it. MEASURED, the two banks disagree
     // about which way an elbow bends, which is what "folding backwards

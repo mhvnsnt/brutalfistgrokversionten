@@ -15,7 +15,12 @@ import { resolveGlbUrl } from '../../data/bannonGlbUrl.ts';
  *      used to start with an empty stage.
  */
 export function warmupUrls(favourites: readonly string[] = []): string[] {
-  const urls: string[] = ['/motion/baked/index.json'];
+  const urls: string[] = [
+    '/motion/baked/index.json',
+    '/motion/baked/index.json.zst',
+    '/motion/movesets.json.zst',
+    '/motion/command-clips.json.zst',
+  ];
 
   const models = [...new Set(BANNON_GLB_PLAYABLE_MODELS.map((m) => m.model))];
   // A fighter the player has already picked is worth having before the rest.

@@ -193,6 +193,7 @@ export const DEFAULT_MOVE_WINDOWS: Record<'lightAttack' | 'heavyAttack' | 'light
     hitboxEndFrame: 14,
     totalFrames: 26,
     damage: 80,
+    attackLevel: 'high',
   },
   heavyAttack: {
     startup: 0.20,
@@ -203,6 +204,7 @@ export const DEFAULT_MOVE_WINDOWS: Record<'lightAttack' | 'heavyAttack' | 'light
     hitboxEndFrame: 20,
     totalFrames: 43,
     damage: 150,
+    attackLevel: 'high',
   },
   lightKick: {
     startup: 0.14,
@@ -213,6 +215,7 @@ export const DEFAULT_MOVE_WINDOWS: Record<'lightAttack' | 'heavyAttack' | 'light
     hitboxEndFrame: 16,
     totalFrames: 32,
     damage: 90,
+    attackLevel: 'mid',
     specialName: 'Left Kick',
   },
   heavyKick: {
@@ -224,6 +227,7 @@ export const DEFAULT_MOVE_WINDOWS: Record<'lightAttack' | 'heavyAttack' | 'light
     hitboxEndFrame: 22,
     totalFrames: 48,
     damage: 170,
+    attackLevel: 'mid',
     specialName: 'Right Kick',
   },
 };
@@ -414,9 +418,68 @@ export interface HitboxWindow {
 // ── Guard result when receiving a hit ────────────────────────────────────────
 export interface GuardResult {
   blocked: boolean;
+  /** A high went over a crouch. Not a block and not a hit. */
+  whiffed: boolean;
   chipDamage: number;
   guardBroken: boolean;
   finalDamage: number;
+  /** How long a successful block locks the defender. 0 unless blocked. */
+  blockstun: number;
+}
+
+export type TekkenAttackLevel = 'high' | 'mid' | 'low';
+
+/**
+ * What the defender's body is doing for guard, separate from action state.
+ * Holding back must not be stored as Guard — that state freezes the walk.
+ */
+export interface TekkenGuardStance {
+  /** Back held, or the dedicated guard button, while standing and able to block. */
+  standingBlock: boolean;
+  /** Down-back. Neutral crouch does not block lows. */
+  crouchBlock: boolean;
+  /** Body is low, so a high has nothing to hit. */
+  crouching: boolean;
+}
+
+export type TekkenContact = 'block' | 'hit' | 'whiff';
+
+/**
+ * Tekken 7 guard. Tekken 3 and 8 use the same rule.
+ *
+ *   hold back        blocks high and mid, walks backward, eats lows
+ *   hold down        highs whiff, mids and lows hit
+ *   hold down-back   highs whiff, lows are blocked, mids hit
+ *   attacking / air  nothing is blocked (a counter hit, not a guard)
+ *
+ * This does not move the fighter. The stick keeps walking until a block
+ * actually connects and blockstun starts.
+ */
+export function resolveTekkenContact(level: TekkenAttackLevel, stance: TekkenGuardStance): TekkenContact {
+  if (stance.crouching) {
+    if (level === 'high') return 'whiff';
+    if (level === 'low' && stance.crouchBlock) return 'block';
+    return 'hit';
+  }
+  if (stance.standingBlock && level !== 'low') return 'block';
+  return 'hit';
+}
+
+const BLOCKSTUN_BY_ANIM: Record<string, number> = {
+  lightAttack: 0.15,
+  lightKick: 0.16,
+  heavyAttack: 0.25,
+  heavyKick: 0.28,
+  crouchLightAttack: 0.14,
+  crouchHeavyAttack: 0.20,
+};
+
+/** Blockstun is shorter than the hit. A normal Tekken block does not chip. */
+export function tekkenBlockstunSeconds(move: MoveWindow): number {
+  const named = BLOCKSTUN_BY_ANIM[move.animation];
+  if (named !== undefined) return named;
+  const scaled = (move.active ?? 0.12) + (move.recovery ?? 0.2) * 0.2;
+  return Math.max(0.12, Math.min(0.4, scaled));
 }
 
 // ── Grab range check result ───────────────────────────────────────────────────
@@ -533,6 +596,13 @@ export class FighterStateMachine {
   private hitStunTimer = 0;
   /** The attack move that caused this hitstun (for duration calculation) */
   private hitStunSourceMove: MoveWindow | null = null;
+  /**
+   * Blockstun. Separate from the guard button: holding back does not start
+   * this. It starts the frame a high or mid actually meets a standing block
+   * (or a low meets down-back), and it is the only time the walk is killed.
+   */
+  private blockStunTimer = 0;
+  private blockStunLow = false;
 
   // ── Stun/crumple timer ────────────────────────────────────────────────────
   private stunTimer = 0;
@@ -836,6 +906,7 @@ export class FighterStateMachine {
     this.actionState = 'HitStun';
     this.motionState = 'hit';
     this.hitStunTimer = duration;
+    this.blockStunTimer = 0;
     this.hitStunSourceMove = sourceMove;
     this.currentMove = null;
     this.moveTimer = 0;
@@ -850,6 +921,7 @@ export class FighterStateMachine {
   // ── Legacy applyStun (kept for compatibility, routes to HitStun or Crumple) ─
   applyStun(duration: number, isCrumple = false) {
     if (isCrumple) {
+      this.blockStunTimer = 0;
       this.actionState = 'Crumple';
       this.motionState = 'knockdown';
       this.stunTimer = duration;
@@ -875,6 +947,7 @@ export class FighterStateMachine {
    * because anyone listed it.
    */
   applyReaction(reactionName: string | undefined, sourceMove: MoveWindow | null = null): ReactionEffect {
+    this.blockStunTimer = 0;
     const effect = reactionFor(reactionName);
     switch (effect.kind) {
       case 'none':
@@ -940,6 +1013,7 @@ export class FighterStateMachine {
   applyKnockdown() {
     this.actionState = 'Knockdown';
     this.motionState = 'knockdown';
+    this.blockStunTimer = 0;
     this.knockdownTimer = KNOCKDOWN_DURATION;
     this.wakeupBuffered = null;
     this.wakeupActionTimer = 0;
@@ -957,26 +1031,97 @@ export class FighterStateMachine {
   }
 
   processIncomingHit(move: MoveWindow): GuardResult {
-    const isGuarding = this.actionState === 'Guard';
     const rawDamage = move.damage ?? 100;
+    const level: TekkenAttackLevel = move.attackLevel ?? 'mid';
+    const miss: GuardResult = {
+      blocked: false, whiffed: false, chipDamage: 0, guardBroken: false, finalDamage: rawDamage, blockstun: 0,
+    };
 
     if (move.isThrow || move.isCommandThrow) {
-      console.log('[FSM] 🤜 Throw — guard bypassed, full damage:', rawDamage);
-      return { blocked: false, chipDamage: 0, guardBroken: true, finalDamage: rawDamage };
+      return { ...miss, guardBroken: true };
     }
-
     if (move.isUnblockable) {
-      console.log('[FSM] 💥 Unblockable — guard bypassed, full damage:', rawDamage);
-      return { blocked: false, chipDamage: 0, guardBroken: true, finalDamage: rawDamage };
+      return { ...miss, guardBroken: true };
     }
 
-    if (isGuarding) {
-      const chipDamage = Math.max(1, Math.floor(rawDamage * 0.05));
-      console.log(`[FSM] 🛡️ Blocked — chip=${chipDamage} (5% of ${rawDamage})`);
-      return { blocked: true, chipDamage, guardBroken: false, finalDamage: chipDamage };
+    const contact = resolveTekkenContact(level, this.tekkenGuardStance());
+    if (contact === 'whiff') {
+      return { ...miss, finalDamage: 0, whiffed: true };
     }
+    if (contact === 'block') {
+      // Tekken 7 does not chip a normal block. The cost is stun and pushback,
+      // applied by the arena when it sees `blocked`.
+      const blockstun = tekkenBlockstunSeconds(move);
+      return {
+        blocked: true, whiffed: false, chipDamage: 0, guardBroken: false, finalDamage: 0, blockstun,
+      };
+    }
+    return miss;
+  }
 
-    return { blocked: false, chipDamage: 0, guardBroken: false, finalDamage: rawDamage };
+  /**
+   * Guard posture from the last resolved stick. Called when a hit connects,
+   * which is before this frame's update for the defender who has not moved
+   * yet — so this is the body they were already in.
+   */
+  private tekkenGuardStance(): TekkenGuardStance {
+    const input = this.prevInput;
+    const holdingBack = input.forward < -0.35;
+    const airborne = this.isAirborne || this.actionState === 'Jumping' || this.actionState === 'Juggled';
+    const vulnerable =
+      airborne
+      || this.actionState === 'Attacking'
+      || this.actionState === 'HitStun'
+      || this.actionState === 'Stunned'
+      || this.actionState === 'Crumple'
+      || this.actionState === 'Knockdown'
+      || this.actionState === 'WakeupTechRoll'
+      || this.actionState === 'WakeupBackrise'
+      || this.actionState === 'WakeupQuickStand'
+      || this.actionState === 'CommandThrow'
+      || this.actionState === 'ThrowWhiff'
+      || this.actionState === 'Backdashing';
+    if (vulnerable) return { standingBlock: false, crouchBlock: false, crouching: false };
+
+    // Down-forward is still a standing walk (see crouch-attacks). A high
+    // only whiffs when the body is actually down: neutral crouch, or down-back.
+    const bodyCrouched =
+      this.motionState === 'crouch'
+      || this.motionState === 'crouchWalk'
+      || this.motionState === 'guardLow'
+      || (input.crouch && input.forward <= 0.2);
+    if (bodyCrouched) {
+      return {
+        standingBlock: false,
+        crouchBlock: holdingBack || !!input.guard || this.motionState === 'guardLow',
+        crouching: true,
+      };
+    }
+    const guardButton = !!input.guard || this.actionState === 'Guard';
+    return {
+      standingBlock: holdingBack || guardButton,
+      crouchBlock: false,
+      crouching: false,
+    };
+  }
+
+  /**
+   * The frame a block connects. Holding back before this stays a walk.
+   * `low` plays the crouch-guard pose; a standing block plays the high guard.
+   */
+  applyBlockStun(seconds: number, low: boolean) {
+    const duration = Math.max(0.08, seconds);
+    this.actionState = 'Guard';
+    this.motionState = low ? 'guardLow' : 'guard';
+    this.blockStunTimer = duration;
+    this.blockStunLow = low;
+    this.currentMove = null;
+    this.moveTimer = 0;
+    this.moveElapsed = 0;
+    this.queuedAction = null;
+    this.walkVelocity = { forward: 0, strafe: 0 };
+    this.isBackdashing = false;
+    this.jumpAirTimer = 0;
   }
 
   checkGrabRange(
@@ -1303,6 +1448,18 @@ export class FighterStateMachine {
       return this.motionState;
     }
 
+    // Blockstun locks the body the way hitstun does. Holding back does not
+    // enter this — only applyBlockStun does, the frame a guard connects.
+    // When the timer expires on this step, fall through so a held back
+    // resumes the walk instead of planting them.
+    if (this.blockStunTimer > 0) {
+      this.blockStunTimer = Math.max(0, this.blockStunTimer - dt);
+      this.actionState = 'Guard';
+      this.motionState = this.blockStunLow ? 'guardLow' : 'guard';
+      this.walkVelocity = { forward: 0, strafe: 0 };
+      if (this.blockStunTimer > 0) return this.motionState;
+    }
+
     // ── Stun / Crumple tick ──────────────────────────────────────────────────
     if (this.actionState === 'Stunned' || this.actionState === 'Crumple') {
       this.stunTimer = Math.max(0, this.stunTimer - dt);
@@ -1500,6 +1657,8 @@ export class FighterStateMachine {
     }
 
     if (resolvedInput.guard) {
+      // Dedicated guard button plants and stand-blocks. Holding BACK does
+      // not come through here — that keeps walking and blocks on contact.
       this.actionState = 'Guard';
       this.motionState = 'guard';
       this.walkVelocity = { forward: 0, strafe: 0 };
@@ -1544,6 +1703,22 @@ export class FighterStateMachine {
       this.actionState = 'Walking';
       this.updateWalking(resolvedInput, dt);
       this.motionState = 'dash';
+      return this.motionState;
+    }
+
+    // Tekken 7: down-back is crouch guard, not a back walk. Neutral down
+    // already crouched above. Down-forward is left as a walk so df+button
+    // stays the standing attack the crouch-attack tests pin down.
+    if (
+      resolvedInput.crouch
+      && resolvedInput.forward < -0.35
+      && Math.abs(resolvedInput.strafe) < 0.55
+      && !resolvedInput.backdashing
+      && !resolvedInput.dashing
+    ) {
+      this.actionState = 'Idle';
+      this.motionState = 'guardLow';
+      this.walkVelocity = { forward: 0, strafe: 0 };
       return this.motionState;
     }
 
@@ -1641,6 +1816,7 @@ export class FighterStateMachine {
 
   // ── Begin command throw with a specific move ──────────────────────────────
   private beginCommandThrowWithMove(move: MoveWindow): FighterMotionState {
+    this.walkVelocity = { forward: 0, strafe: 0 };
     this.actionState = 'CommandThrow';
     this.motionState = 'heavyAttack';
     this.currentMove = move;
@@ -1658,6 +1834,7 @@ export class FighterStateMachine {
 
   // ── Begin command throw ────────────────────────────────────────────────────
   private beginCommandThrow(): FighterMotionState {
+    this.walkVelocity = { forward: 0, strafe: 0 };
     this.actionState = 'CommandThrow';
     this.motionState = 'heavyAttack';
     this.currentMove = COMMAND_THROW_MOVE;
@@ -1834,6 +2011,7 @@ export class FighterStateMachine {
     // attackStarts.
     this.attackStartCount++;
     const prevState = this.motionState;
+    this.walkVelocity = { forward: 0, strafe: 0 };
     this.beginCrossfade(this.motionState, motion, CROSSFADE_ATTACK_FRAMES / this.FPS);
     this.actionState = 'Attacking';
     this.motionState = motion;
