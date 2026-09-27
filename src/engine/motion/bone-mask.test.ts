@@ -15,6 +15,7 @@ import {
   LOWER_BODY_BONES, UPPER_BODY_STATES, STANCE_STATES,
   maskForState, normalizeBoneName, isLowerBodyTrack,
   upperBodyHalf, lowerBodyHalf, isSplittable,
+  maskForClip, setLowerBodyCredibility, credibilityCount, lowerBodyIsCredible,
 } from './BoneMask.ts';
 import { buildAnimationController, type FighterMotionState } from '../retarget/AnimationController.ts';
 
@@ -180,5 +181,49 @@ describe('a punch driving the pelvis 90 degrees', () => {
     const c = settle(rig, clips(), ['lightAttack', 'idle']);
     assert.equal(c.mask, 'FULL_BODY');
     assert.ok(degOf(rig.bones[HIPS]) < 10);
+  });
+});
+
+describe('a clip whose legs are impossible', () => {
+  const clips = () => new Map<FighterMotionState, THREE.AnimationClip>([
+    ['idle', holdClip('idle', { [HIPS]: 0, [THIGH]: 0, [SPINE]: 0, [ARM]: 0 })],
+    // A kick whose capture drives the legs somewhere no body goes.
+    ['lightKick', holdClip('APRONJAYKICK', { [HIPS]: 90, [THIGH]: 90, [SPINE]: 40, [ARM]: 70 })],
+    ['heavyKick', holdClip('HEAVYKICK', { [HIPS]: 90, [THIGH]: 90, [SPINE]: 40, [ARM]: 70 })],
+  ]);
+
+  it('trusts every clip when no verdicts are loaded', () => {
+    setLowerBodyCredibility([]);
+    assert.equal(credibilityCount(), 0);
+    assert.equal(maskForClip('lightKick', 'APRONJAYKICK'), 'FULL_BODY');
+    const rig = makeRig();
+    const c = settle(rig, clips(), ['lightKick']);
+    assert.equal(c.mask, 'FULL_BODY', 'with no manifest the behaviour must be exactly the state mask');
+  });
+
+  it('takes the legs off a kick the audit calls impossible', () => {
+    setLowerBodyCredibility([['APRONJAYKICK', false], ['HEAVYKICK', true]]);
+    assert.equal(maskForClip('lightKick', 'APRONJAYKICK'), 'UPPER_BODY');
+    const rig = makeRig();
+    const c = settle(rig, clips(), ['lightKick']);
+    assert.equal(c.mask, 'UPPER_BODY');
+    assert.ok(degOf(rig.bones[HIPS]) < 15, `pelvis followed an impossible clip, ${degOf(rig.bones[HIPS]).toFixed(1)} deg`);
+    assert.ok(degOf(rig.bones[ARM]) > 60, 'and the kick must still swing its upper body');
+  });
+
+  it('leaves a credible kick its own legs', () => {
+    setLowerBodyCredibility([['APRONJAYKICK', false], ['HEAVYKICK', true]]);
+    const rig = makeRig();
+    const c = settle(rig, clips(), ['heavyKick']);
+    assert.equal(c.mask, 'FULL_BODY');
+    assert.ok(degOf(rig.bones[HIPS]) > 60, 'a credible kick keeps its hips');
+  });
+
+  it('judges the source clip, not the masked half it produced', () => {
+    setLowerBodyCredibility([['APRONJAYKICK', false]]);
+    assert.equal(lowerBodyIsCredible('APRONJAYKICK__upper'), false);
+    assert.equal(lowerBodyIsCredible('APRONJAYKICK__lower'), false);
+    assert.equal(lowerBodyIsCredible(undefined), true);
+    setLowerBodyCredibility([]);
   });
 });

@@ -90,6 +90,59 @@ export function maskForState(state: FighterMotionState): BoneMask {
 }
 
 /**
+ * A CLIP WHOSE LEGS ARE IMPOSSIBLE DOES NOT GET TO KEEP THEM, WHATEVER IT IS.
+ *
+ * The state-based mask above covers hand strikes, which is where the reported
+ * defect was. It deliberately leaves kicks, throws, hits and knockdowns their
+ * own legs, because for those the legs ARE the move. But some of those clips'
+ * legs are not a move — they are corruption. Measured by
+ * tools/motion/bone_mask_audit.mjs against the bank's own fastest real kick
+ * (HURRICANE_KICK, 786 deg/s peak): APRONJAYKICK leaves the pelvis 92 degrees
+ * out, CORKSCREW_KIP_UP peaks at 1007 deg/s. 190 of 455 clips are past the bar.
+ *
+ * THIS WAS THE OTHER HALF OF THE "REST OFFSET" TASK, AND THE TASK WAS FRAMED
+ * WRONG. It aimed to get the median thigh 81 degrees from bind down under 40.
+ * Measured in WORLD space against the stance the fighter actually holds, that
+ * number turned out to be a poor proxy: the idles sit 0-17 degrees from the
+ * stance and are correct, standing strikes sit 34-54, and the clips that are
+ * genuinely wrong are ALTERNATINGFOREARMS at 90-129 and CHOKESLAM at 91-142 —
+ * the same ones this audit already names. There is no global retarget offset to
+ * remove. There are individual clips with impossible legs, and a stance leg
+ * beats an impossible one.
+ *
+ * The verdict is DATA, loaded from the shipped manifest, so nothing here
+ * hardcodes a clip name. With no manifest loaded every clip is trusted and the
+ * behaviour is exactly the state-based mask.
+ */
+let credibility: ReadonlyMap<string, boolean> = new Map();
+
+/** Called once with the shipped manifest's verdicts. */
+export function setLowerBodyCredibility(verdicts: Iterable<readonly [string, boolean]>): void {
+  credibility = new Map(verdicts);
+}
+
+/** How many verdicts are loaded — so a caller can tell "all trusted" from "none known". */
+export function credibilityCount(): number {
+  return credibility.size;
+}
+
+export function lowerBodyIsCredible(clipName: string | undefined | null): boolean {
+  if (!clipName) return true;
+  // A masked half carries a suffix; judge the source clip it came from.
+  const base = clipName.replace(/__(upper|lower)$/, '');
+  return credibility.get(base) ?? true;
+}
+
+/**
+ * The mask for a state playing a specific clip: the state's own verdict, or
+ * UPPER_BODY regardless when the clip's lower body is not credible.
+ */
+export function maskForClip(state: FighterMotionState, clipName?: string | null): BoneMask {
+  if (maskForState(state) === 'UPPER_BODY') return 'UPPER_BODY';
+  return lowerBodyIsCredible(clipName) ? 'FULL_BODY' : 'UPPER_BODY';
+}
+
+/**
  * `Armature|mixamorig:LeftUpLeg.quaternion` -> `mixamorigLeftUpLeg`.
  * Track names arrive in several shapes depending on how the clip was authored.
  */

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { retargetClipByRestPose, validateRetargetedClip } from './ClipRetarget';
-import { maskForState, upperBodyHalf, lowerBodyHalf, isSplittable, STANCE_STATES, type BoneMask } from '../motion/BoneMask';
+import { maskForClip, upperBodyHalf, lowerBodyHalf, isSplittable, STANCE_STATES, type BoneMask } from '../motion/BoneMask';
 
 export type FighterMotionState =
   | 'idle' | 'walkForward' | 'walkBackward' | 'strafeLeft' | 'strafeRight' |'crouch'| 'crouchWalk' | 'guard' | 'guardLow' |'lightAttack'| 'heavyAttack' | 'lightKick' | 'heavyKick' | 'crouchLightAttack' | 'crouchHeavyAttack' |'jumpAttack'| 'runAttack' |'hit' | 'hitLow' | 'hitHigh' | 'knockdown' | 'wake'
@@ -213,7 +213,9 @@ export function buildAnimationController(
     // The mask comes from WHAT WAS PRESSED, never from measuring the clip's own
     // leg tracks — measuring corrupt data to decide whether to trust it is
     // circular, and it puts ALTERNATINGFOREARMS in the safe pile.
-    const wantMask = maskForState(next) === 'UPPER_BODY' && isSplittable(validated);
+    // The clip matters as well as the button: a kick keeps its own legs, unless
+    // those legs are measurably impossible (see maskForClip).
+    const wantMask = maskForClip(next, validated.name) === 'UPPER_BODY' && isSplittable(validated);
     const fadeDuration = overrideFade ?? CROSSFADE_DURATIONS[next] ?? DEFAULT_FADE;
 
     // Raise the legs BEFORE choosing the clip: if the stance has no lower-body

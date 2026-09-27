@@ -6,6 +6,7 @@ import { setGeneratedMovesets } from '../combat/GeneratedMovesets.ts';
 import type { RootTravelCurve } from '../motion/RootTravel.ts';
 
 import { fetchZstdJson } from '../assets/zstdJson.ts';
+import { setLowerBodyCredibility } from '../motion/BoneMask.ts';
 
 /**
  * CLIPS ALREADY RESOLVED ONTO THE ONE SKELETON.
@@ -864,6 +865,19 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
       .catch(() => {});
     void fetchZstdJson('/motion/command-clips.json')
       .then((m) => { if (m) setCommandClipMap(m as never); })
+      .catch(() => {});
+    // WHICH CLIPS MAY OWN THE LEGS. Measured offline by
+    // tools/motion/bone_mask_audit.mjs: 190 of 455 clips drive the lower body
+    // faster than the bank's own fastest real kick, or never bring the pelvis
+    // back to a stance. Those borrow the stance's legs at runtime instead of
+    // playing their own. Silent on failure, and absent it every clip is trusted,
+    // which is exactly the behaviour before this existed.
+    void fetchZstdJson('/motion/lower_body_credibility.json')
+      .then((m) => {
+        const clips = (m as { clips?: Record<string, { credible?: boolean }> } | null)?.clips;
+        if (!clips) return;
+        setLowerBodyCredibility(Object.entries(clips).map(([name, row]) => [name, row.credible !== false] as const));
+      })
       .catch(() => {});
     // A three-body capture is not a solo move. See markTeamCaptures.
     markTeamCaptures(manifest);
