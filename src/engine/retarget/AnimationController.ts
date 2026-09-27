@@ -5,6 +5,10 @@ import { playbackRateFor, residualSlideMps } from '../motion/DistanceMatching';
 
 export type FighterMotionState =
   | 'idle' | 'walkForward' | 'walkBackward' | 'strafeLeft' | 'strafeRight' |'crouch'| 'crouchWalk' | 'guard' | 'guardLow' |'lightAttack'| 'heavyAttack' | 'lightKick' | 'heavyKick' | 'crouchLightAttack' | 'crouchHeavyAttack' |'jumpAttack'| 'runAttack' |'hit' | 'hitLow' | 'hitHigh' | 'knockdown' | 'wake'
+  // ── Reaction states the VICTIM plays, selected by ReactionMatrix ─────────
+  // Tekken keeps a separate victim animation per victim state; these are the
+  // three we own clips for and were never asking the bank for.
+  | 'hitAir' | 'hitBack' | 'hitGround'
   // ── Extended locomotion states ────────────────────────────────────────────
   | 'walk' | 'run' | 'dash' | 'dashForward' |'Walking' | 'Backdashing' | 'Guard' | 'Knockdown'
   | 'WakeupTechRoll'| 'WakeupBackrise' | 'WakeupQuickStand' |'HitStun' | 'Stunned' | 'Crumple' | 'CommandThrow' | 'ThrowWhiff'
@@ -217,6 +221,9 @@ export function buildAnimationController(
         superArmor:        ['heavyAttack'],
         hitLow:            ['hit'],
         hitHigh:           ['hit'],
+        hitAir:            ['hitHigh', 'hit'],
+        hitBack:           ['hit', 'hitHigh'],
+        hitGround:         ['knockdown', 'hit'],
         guardLow:          ['guard'],
         crouchWalk:        ['crouch', 'walkForward'],
         sidestepLeft:      ['strafeLeft', 'walkBackward'],

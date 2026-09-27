@@ -3,6 +3,28 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 import { BACK_TURN_HOLD_MS, crossedOnX } from '../engine/V7OrientationContract';
+import { WALL_LEFT_X, WALL_RIGHT_X } from '../engine/combat/WallSystem';
+import type { VictimState } from '../engine/combat/ReactionMatrix';
+
+// ── THE GEOMETRY HALF OF THE REACTION ────────────────────────────────────────
+// ReactionMatrix picks the victim's animation, push and spin from what they
+// were DOING; two of its states depend on where they are STANDING, which only
+// the arena knows. A hit taken on the flank spins you, and a body against the
+// wall has nowhere to be pushed.
+//
+// MODULE SCOPE ON PURPOSE. It is read from hit handling that runs EARLIER in
+// the frame than the block it was first written next to, and `const` is not
+// hoisted — a helper defined below its callers is a TDZ throw at runtime that
+// tsc does not always catch. That exact trap has already cost this project once.
+function victimHintFor(vx: number, vz: number, _ax: number, az: number): VictimState | null {
+  if (vx - WALL_LEFT_X < 0.55 || WALL_RIGHT_X - vx < 0.55) return 'wallSlump';
+  // Off-axis in Z past a torso width is a hit from the side. Which side is taken
+  // from the attacker's position, not from any stored facing.
+  const dz = az - vz;
+  if (Math.abs(dz) > 0.42) return dz > 0 ? 'sideRight' : 'sideLeft';
+  return null;
+}
+
 import { preFightSequence, type IntroBeat } from '../engine/combat/PreFightIntros';
 import { reactionFor, resolveHitReaction } from '../engine/combat/HitReactions';
 import { type BannonFighterProfile } from '../data/bannonRoster';
@@ -1860,7 +1882,10 @@ export default function GameBattleArena({
         const p2Effect = reactionFor(p2Reaction);
         const isCrumple = !guardResult.blocked && p2Effect.kind === 'smackdown' && !p2WasAirborne;
         if (!guardResult.blocked && p2Effect.kind === 'launch') {
-          p2SMRef.current.applyReaction(p2Reaction);
+          p2SMRef.current.applyReaction(p2Reaction, p1HbWindow.move ?? null, {
+            victimHint: victimHintFor(p2XRef.current, p2ZRef.current, p1XRef.current, p1ZRef.current),
+            counterHit: guardResult.counter !== 'none',
+          });
           p2LocoRef.current.halt();
         } else if (isCrumple) {
           p2SMRef.current.applyKnockdown();
@@ -1884,15 +1909,23 @@ export default function GameBattleArena({
             setFloorBreakPhase('floor_break_debris');
           }
         } else if (!guardResult.blocked) {
-          p2SMRef.current.applyReaction(p2Reaction, p1HbWindow.move ?? null);
+          p2SMRef.current.applyReaction(p2Reaction, p1HbWindow.move ?? null, {
+            victimHint: victimHintFor(p2XRef.current, p2ZRef.current, p1XRef.current, p1ZRef.current),
+            counterHit: guardResult.counter !== 'none',
+          });
           // AND THE REASON A COUNTER MATTERS: extra hitstun. A counter that only
           // did more damage would be a louder normal hit; the extra frames are
           // what turn an interrupted swing into a combo opening.
           if (guardResult.counterBonusHitstun > 0) {
             p2SMRef.current.applyBlockStun(guardResult.counterBonusHitstun, false);
           }
-          // A body in the air is not pushed along the floor.
-          if (!p2SMRef.current.isAirborne) p2LocoRef.current.applyPushback(p1Hit.pushback ?? 0.3);
+          // A body in the air is not pushed along the floor. On the mat, HOW FAR
+          // is the victim's business as much as the attacker's: a crouching body
+          // absorbs it, a back-turned one cannot brace, a wall gives nothing.
+          if (!p2SMRef.current.isAirborne) {
+            const scale = p2SMRef.current.lastReaction?.pushbackScale ?? 1;
+            p2LocoRef.current.applyPushback((p1Hit.pushback ?? 0.3) * scale);
+          }
         }
         if (guardResult.guardBroken) {
           p2SMRef.current.applyStun(p1Hit.hitstun || 0.3, false);
@@ -2288,8 +2321,18 @@ export default function GameBattleArena({
               p1SMRef.current.isAirborne,
             ),
             p2HbWindow.move ?? null,
+            {
+              victimHint: victimHintFor(p1XRef.current, p1ZRef.current, p2XRef.current, p2ZRef.current),
+              counterHit: p1GuardResult.counter !== 'none',
+            },
           );
-          p1LocoRef.current.applyPushback(p2Hit.pushback ?? 0.3);
+          // The player's own body is the half he actually feels, so the victim
+          // state has to reach this side too — a hit taken while crouching, from
+          // behind or against the wall must not move him like a clean front one.
+          if (!p1SMRef.current.isAirborne) {
+            const scale = p1SMRef.current.lastReaction?.pushbackScale ?? 1;
+            p1LocoRef.current.applyPushback((p2Hit.pushback ?? 0.3) * scale);
+          }
           // See the P1-attacking side: the extra frames are what make a counter a
           // combo opening rather than a louder normal hit.
           if (p1GuardResult.counterBonusHitstun > 0) {

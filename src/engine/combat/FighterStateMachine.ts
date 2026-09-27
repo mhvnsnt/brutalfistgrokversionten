@@ -5,6 +5,7 @@ import type { FighterMotionState } from '../retarget/AnimationController.ts';
 import { powerCrushWindow, resolveDefensiveWindows, type DefensiveWindow } from './DefensiveWindows.ts';
 import { counterWindowOf, counterScaledDamage, counterBonusHitstun, isCounterWindow, type CounterWindow } from './CounterHit.ts';
 import { attackLevelFor } from './DerivedAttackLevels.ts';
+import { resolveReaction, type VictimState, type ReactionKind } from './ReactionMatrix.ts';
 import {
   applyAirHit, applyLaunch, freshJuggle, juggleScale, reactionFor, tickJuggle,
   type JuggleState, type ReactionEffect,
@@ -1080,9 +1081,26 @@ export class FighterStateMachine {
    * hitbox data, so a launcher launches because the data says `Flight`, not
    * because anyone listed it.
    */
-  applyReaction(reactionName: string | undefined, sourceMove: MoveWindow | null = null): ReactionEffect {
+  applyReaction(
+    reactionName: string | undefined,
+    sourceMove: MoveWindow | null = null,
+    opts: { victimHint?: VictimState | null; counterHit?: boolean } = {},
+  ): ReactionEffect {
     this.blockStunTimer = 0;
     const effect = reactionFor(reactionName);
+    // ── THE SECOND DIMENSION ─────────────────────────────────────────────────
+    // The attack says how hard and what kind; the VICTIM'S STATE says which
+    // animation, how far they travel, which way, and how much they spin. Before
+    // this, a jab to a standing man, a crouching man, a man facing away and a
+    // man already in the air all played the same flinch and moved him the same
+    // distance — which is why it read as one thing on a loop instead of a fight.
+    const victim = this.victimState(opts.victimHint ?? null);
+    const resolved = resolveReaction({
+      kind: effect.kind as ReactionKind,
+      victim,
+      counterHit: opts.counterHit ?? false,
+    });
+    this.lastReaction = { victim, ...resolved };
     switch (effect.kind) {
       case 'none':
         return effect;
@@ -1115,12 +1133,21 @@ export class FighterStateMachine {
         if (this.juggle.airborne) { applyAirHit(this.juggle, effect); return effect; }
         this.applyStun(effect.stun, true);
         return effect;
-      default:
-        if (this.juggle.airborne) { applyAirHit(this.juggle, effect); return effect; }
+      default: {
+        if (this.juggle.airborne) {
+          applyAirHit(this.juggle, effect);
+          // THE AIR REACTION. A juggled body has its own animation in Tekken and
+          // we own the clip (REACTION_HEAVYHITAIRREVOLT); it was never asked for.
+          this.beginCrossfade(this.motionState, resolved.motion, CROSSFADE_HIT_FRAMES / this.FPS);
+          this.motionState = resolved.motion;
+          return effect;
+        }
         // Low reactions use the body flinch. Everything else is the short
         // standing flinch. The 2.4s Mixamo hit is not a poke reaction.
-        this.applyHitStun(sourceMove, effect.stun, /low/i.test(reactionName ?? '') ? 'hitLow' : 'hit');
+        const lowFlinch = /low/i.test(reactionName ?? '') ? 'hitLow' : resolved.motion;
+        this.applyHitStun(sourceMove, effect.stun * resolved.stunScale, lowFlinch);
         return effect;
+      }
     }
   }
 
@@ -1236,6 +1263,45 @@ export class FighterStateMachine {
     }
     return miss;
   }
+
+  /**
+   * WHAT WAS THIS BODY DOING WHEN THE HIT LANDED?
+   *
+   * The second half of the reaction. Tekken keeps 15 victim animations and 7
+   * pushbacks per hit condition and picks between them on exactly this — see
+   * ReactionMatrix for the structure it is modelled on.
+   *
+   * The states the FSM can see on its own are derived here. `sideLeft`,
+   * `sideRight` and `wallSlump` depend on where the two bodies are standing,
+   * which only the arena knows, so they arrive as a hint.
+   */
+  victimState(hint?: VictimState | null): VictimState {
+    // AIRBORNE FIRST, ALWAYS. A body off the mat cannot crouch, block or turn.
+    if (this.isAirborne || this.actionState === 'Juggled') return 'airborne';
+    if (this.actionState === 'Knockdown') return 'downed';
+    const stance = this.tekkenGuardStance();
+    // A hint only speaks for geometry; a real posture outranks it.
+    if (hint === 'wallSlump') return 'wallSlump';
+    if (stance.crouchBlock) return 'crouchBlock';
+    if (stance.standingBlock) return 'block';
+    if (this.backTurned) return stance.crouching ? 'crouchBackTurned' : 'backTurned';
+    if (hint === 'sideLeft' || hint === 'sideRight') return hint;
+    return stance.crouching ? 'crouch' : 'standing';
+  }
+
+  /**
+   * Set by the arena when this fighter has walked through the opponent and is
+   * facing away. There are no back-turned attack clips, so it only changes what
+   * a hit DOES to them, never what they can do.
+   */
+  backTurned = false;
+
+  /**
+   * The reaction the last hit resolved to — victim state, animation, and the
+   * pushback / direction / rotation scales the ARENA applies, since it owns
+   * positions. Null until something has been hit.
+   */
+  lastReaction: ({ victim: VictimState } & ReturnType<typeof resolveReaction>) | null = null;
 
   /**
    * Guard posture from the last resolved stick. Called when a hit connects,

@@ -20,11 +20,11 @@
  * so the order is left as it is and the gate reports the defect instead.
  */
 export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
-  idle:           ['idle', 'Idle', 'IDLE', 'BOX_IDLE', 'STANCE_BLADED', 'STANCE_WIDE', 'DRUNK_IDLE_VARIATION', 'ACTION_IDLE_TO_STANDING_IDLE', 'neutral', 'Neutral', 'standing', 'Standing', 'stance', 'Stance', 'combatIdle', 'CombatIdle', 'idle_procedural_placeholder', 'STANCE', 'LOWSTANCE', 'LOWSTANCENEW', 'TIGERSTANCE', 'GRAFSTANCE', 'SHAZSTANCE', 'JOHNSON_STANCE', 'KRAVESTANCE'],
-  walk_forward:   ['walk_forward', 'walk', 'Walk', 'DRUNK_WALK', 'GINGA_FORWARD', 'LOCO_STRUT', 'LOCO_LIGHT', 'DRUNK_RUN_FORWARD', 'walkForward', 'WalkForward', 'walking', 'Walking', 'walk_fwd', 'SBW_walk_fwd', 'walk_forward_procedural_placeholder', 'SHAZWALK'],
-  walk_back:      ['walk_back', 'walkBack', 'WalkBack', 'GINGA_BACKWARD', 'INJURED_RUN_BACKWARDS_RIGHT_TURN', 'walkBackward', 'WalkBackward', 'walk_bwd', 'SBW_walk_back', 'walk_back_procedural_placeholder', 'WALK'],
-  strafe_left:    ['strafe_left', 'strafeLeft', 'StrafeLeft', 'GINGA_SIDEWAYS_2', 'LOCO_PROWL', 'sidestepLeft', 'SidestepLeft', 'SBW_strafe_left', 'sidestepUp', 'SIDESTEP', 'SIDESTEPF', 'SIDESTEPMEDIUM', 'SIDESTEPFAST'],
-  strafe_right:   ['strafe_right', 'strafeRight', 'StrafeRight', 'CROUCH_TORCH_WALK_RIGHT', 'INJURED_TURN_RIGHT', 'sidestepRight', 'SidestepRight', 'SBW_strafe_right', 'sidestepDown', 'SIDESTEPF', 'SIDESTEP', 'SIDESTEPMEDIUM'],
+  idle:           ['IDLE', 'BOX_IDLE', 'STANCE_BLADED', 'STANCE_WIDE', 'DRUNK_IDLE_VARIATION', 'ACTION_IDLE_TO_STANDING_IDLE', 'STANCE', 'LOWSTANCE', 'LOWSTANCENEW', 'TIGERSTANCE', 'GRAFSTANCE', 'SHAZSTANCE', 'JOHNSON_STANCE', 'KRAVESTANCE', 'idle', 'Idle', 'neutral', 'Neutral', 'standing', 'Standing', 'stance', 'Stance', 'combatIdle', 'CombatIdle', 'idle_procedural_placeholder'],
+  walk_forward:   ['DRUNK_WALK', 'GINGA_FORWARD', 'LOCO_STRUT', 'LOCO_LIGHT', 'SHAZWALK', 'walk_forward', 'walk', 'Walk', 'DRUNK_RUN_FORWARD', 'walkForward', 'WalkForward', 'walking', 'Walking', 'walk_fwd', 'SBW_walk_fwd', 'walk_forward_procedural_placeholder'],
+  walk_back:      ['GINGA_BACKWARD', 'INJURED_RUN_BACKWARDS_RIGHT_TURN', 'walk_back', 'walkBack', 'WalkBack', 'walkBackward', 'WalkBackward', 'walk_bwd', 'SBW_walk_back', 'walk_back_procedural_placeholder', 'WALK'],
+  strafe_left:    ['GINGA_SIDEWAYS_2', 'LOCO_PROWL', 'strafe_left', 'strafeLeft', 'StrafeLeft', 'sidestepLeft', 'SidestepLeft', 'SBW_strafe_left', 'sidestepUp', 'SIDESTEP', 'SIDESTEPF', 'SIDESTEPMEDIUM', 'SIDESTEPFAST'],
+  strafe_right:   ['CROUCH_TORCH_WALK_RIGHT', 'INJURED_TURN_RIGHT', 'SIDESTEPF', 'SIDESTEP', 'SIDESTEPMEDIUM', 'strafe_right', 'strafeRight', 'StrafeRight', 'sidestepRight', 'SidestepRight', 'SBW_strafe_right', 'sidestepDown'],
   // EVERY BASIC ATTACK IN THE GAME WAS A MULTI-SECOND COMBINATION CLIP.
   //
   // Found by the posture gate below while fixing the crouching light kick, and
@@ -50,9 +50,9 @@ export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
   // the move-library checkboxes exist. So the choice is made WITHIN the curated
   // list, by measurement, and nothing is deleted: the displaced clips stay in
   // the list, in the bank and in the move library.
-  attack_1:       ['attack_1', 'lightAttack', 'LightAttack', 'GRAFQUICKJAB', 'GYAKUZUKI', 'HIGHPUNCH', 'punch', 'Punch', 'jab', 'Jab', 'attack', 'Attack', 'LP', 'T_1', 'bf_jab', 'attack_1_procedural_placeholder', 'BOXING', 'BODY_JAB_CROSS', 'BOXING__1_'],
+  attack_1:       ['GRAFQUICKJAB', 'HIGHPUNCH', 'attack_1', 'lightAttack', 'LightAttack', 'GYAKUZUKI', 'punch', 'Punch', 'jab', 'Jab', 'attack', 'Attack', 'LP', 'T_1', 'bf_jab', 'attack_1_procedural_placeholder', 'BOXING', 'BODY_JAB_CROSS', 'BOXING__1_'],
   attack_rp:      ['attack_rp', 'heavyAttack', 'HeavyAttack', 'UPPERCUT', 'cross', 'Cross', 'RP', 'T_2', 'bf_cross', 'GRAFPUNCHCOMBO', 'PUNCHKICKCOMBO', 'COMBO_PUNCH', 'BOXING__2_', 'BOXING__3_', 'ILLEGAL_ELBOW_PUNCH', 'ILLEGAL_ELBOW_PUNCH__1_', 'BASEBALL_HIT'],
-  attack_2:       ['attack_2', 'HURRICANE_KICK', 'DROP_KICK', 'ILLEGAL_KNEE', 'TIGER_FEINT_KICK', 'BASH', 'AU', 'CAPOEIRA', 'kick', 'Kick', 'bf_kick', 'QUICKKICK', 'AXEKICK', 'GRAFPUSHINGKICK'],
+  attack_2:       ['AXEKICK', 'GRAFPUSHINGKICK', 'attack_2', 'HURRICANE_KICK', 'DROP_KICK', 'ILLEGAL_KNEE', 'TIGER_FEINT_KICK', 'BASH', 'AU', 'CAPOEIRA', 'kick', 'Kick', 'bf_kick', 'QUICKKICK'],
   // THE LIGHT KICK WAS A CROUCHING 2.9-SECOND DROPKICK.
   //
   // Owner: "if I press forward and kick, that it's crouching and doing a kick
@@ -70,7 +70,7 @@ export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
   // which is exactly where he said it should be.
   // QUICKKICK leads now. DROP_KICK and CROUCHINGKICK are off this list; neither
   // is deleted, both are reachable (crouch_kick below, and the move library).
-  attack_lk:      ['attack_lk', 'lightKick', 'LightKick', 'QUICKKICK', 'ILLEGAL_KNEE', 'TIGER_FEINT_KICK', 'LK', 'T_3', 'bf_lk', 'AXEKICK'],
+  attack_lk:      ['QUICKKICK', 'attack_lk', 'lightKick', 'LightKick', 'ILLEGAL_KNEE', 'TIGER_FEINT_KICK', 'LK', 'T_3', 'bf_lk', 'AXEKICK'],
   // ── DOWN + BUTTON, which nothing in the engine could reach ────────────────
   // crouchLightAttack and crouchHeavyAttack have frame data, alias lists and a
   // semantic mapping, and no input path in FighterStateMachine ever entered
@@ -93,7 +93,7 @@ export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
   // posture gate now fails on it, which is the trigger. HEAVYKICK leads:
   // upright 0.990, 0.542 s, striking forward at 0.996. HURRICANE_KICK stays in
   // the list and in the bank.
-  attack_rk:      ['attack_rk', 'heavyKick', 'HeavyKick', 'HEAVYKICK', 'AXEKICK', 'TIGER_HEAVYKICK', 'ROUNDHOUSEKICK', 'RK', 'T_4', 'bf_rk', 'HURRICANE_KICK', 'AU', 'CAPOEIRA', 'BASH', 'CROSS_JUMPS'],
+  attack_rk:      ['HEAVYKICK', 'attack_rk', 'heavyKick', 'HeavyKick', 'AXEKICK', 'TIGER_HEAVYKICK', 'ROUNDHOUSEKICK', 'RK', 'T_4', 'bf_rk', 'HURRICANE_KICK', 'AU', 'CAPOEIRA', 'BASH', 'CROSS_JUMPS'],
   // THE FINISHER AND THE OVERDRIVE ARE THEIR OWN MOVES.
   //
   // Both used to map onto attack_rk, so spending a full meter played the
@@ -122,7 +122,7 @@ export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
   // hand and foot tucked by design so it cannot pass the reach gate.
   finisher:       ['finisher', 'Finisher', 'ORAORAORA', 'TIGER_HEAVYKICKCOMBO', 'GYAKUZUKI_COMBO', 'GRAFSURPRISEPUNCHLOW', 'attack_rk'],
   overdrive:      ['overdrive', 'Overdrive', 'GYAKUZUKI_COMBO', 'TIGER_HEAVYKICKCOMBO', 'GRAFJUMPKICK', 'ORAORAORA', 'attack_rp'],
-  block:          ['block', 'guard', 'Guard', 'CENTER_BLOCK', 'GUARD_HIGH', 'GUARD_LOW', 'DEFENDER', 'ESQUIVA_4', 'Block', 'defend', 'Defend', 'SBW_guard', 'T_guard', 'block_procedural_placeholder', 'GUARD', 'LOWSTANCEGUARD'],
+  block:          ['CENTER_BLOCK', 'GUARD_HIGH', 'GUARD_LOW', 'DEFENDER', 'ESQUIVA_4', 'GUARD', 'block', 'guard', 'Guard', 'Block', 'defend', 'Defend', 'SBW_guard', 'T_guard', 'block_procedural_placeholder', 'LOWSTANCEGUARD'],
   // A POKE IS A 10-FRAME FLINCH, NOT A 2.4-SECOND CINEMATIC.
   //
   // HIT_REACTION is 2.43s. Hitstun on a jab is about 0.28s, so the body
@@ -130,11 +130,17 @@ export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
   // broken" reaction. The Schwarzerblitz reactions already in the bank are
   // the Tekken lengths: weak 0.17s (10 frames), strong 0.54s. They lead.
   // The long captures stay as fallbacks.
-  hit_reaction:   ['REACTION_HITWEAKHIGH', 'REACTION_HITWEAKMEDIUM', 'hit_reaction', 'hit', 'Hit', 'HIT_TO_BODY', 'HIT_REACTION', 'HIT_TO_HEAD', 'BIG_RIB_HIT', 'HIT_ON_THE_BACK', 'HIT_ON_SIDE_OF_HEAD', 'BIG_BODY_BLOW', 'hurt', 'Hurt', 'flinch', 'Flinch', 'hitstun', 'Hitstun', 'SBW_hit', 'T_hit', 'hit_reaction_procedural_placeholder', 'REACTION_HITWEAKMEDIUMBACK', 'REACTION_HITSTRONGHIGH', 'REACTION_HITSTRONGMID'],
+  hit_reaction:   ['REACTION_HITWEAKHIGH', 'REACTION_HITWEAKMEDIUM', 'HIT_TO_BODY', 'HIT_REACTION', 'HIT_TO_HEAD', 'BIG_RIB_HIT', 'HIT_ON_THE_BACK', 'HIT_ON_SIDE_OF_HEAD', 'BIG_BODY_BLOW', 'REACTION_HITWEAKMEDIUMBACK', 'REACTION_HITSTRONGHIGH', 'REACTION_HITSTRONGMID', 'hit_reaction', 'hit', 'Hit', 'hurt', 'Hurt', 'flinch', 'Flinch', 'hitstun', 'Hitstun', 'SBW_hit', 'T_hit', 'hit_reaction_procedural_placeholder'],
+  // THE VICTIM-STATE REACTIONS. Every one of these clips was already in the
+  // bank and nothing ever asked for it, because the reaction system had no
+  // second dimension to ask with. See ReactionMatrix.
+  hit_air:        ['REACTION_HEAVYHITAIRREVOLT', 'REACTION_HEAVYHITAIRREVOLTBACK', 'REACTION_HITSTRONGHIGH', 'hitHigh', 'hit'],
+  hit_back:       ['REACTION_HITWEAKMEDIUMBACK', 'REACTION_HEAVYHITAIRREVOLTBACK', 'REACTION_HITWEAKMEDIUM', 'hit'],
+  hit_ground:     ['FALLING_FLAT_IMPACT', 'SUPINE', 'FALLING_FORWARD_DEATH', 'knockdown'],
   hit_strong:     ['REACTION_HITSTRONGHIGH', 'REACTION_HITSTRONGMID', 'HIT_TO_BODY', 'HIT_REACTION', 'hitHigh', 'hit'],
   hit_low:        ['REACTION_HITWEAKMEDIUM', 'REACTION_HITWEAKHIGH', 'HIT_TO_BODY', 'hitLow', 'hit'],
-  knockdown:      ['knockdown', 'Knockdown', 'FALLING_FLAT_IMPACT', 'FALLING_FORWARD_DEATH', 'DEFEAT', 'DYING_BACKWARDS', 'ko', 'KO', 'fall', 'Fall', 'SBW_knockdown', 'T_knockdown', 'knockdown_procedural_placeholder', 'REACTION_HEAVYHITAIRREVOLT', 'REACTION_HEAVYHITAIRREVOLTBACK', 'SUPINE'],
-  getup:          ['getup', 'getUp', 'GetUp', 'KIP_UP', 'CORKSCREW_KIP_UP', 'CORKSCREW_EVADE', 'quickStand', 'QuickStand', 'gettingUp', 'GettingUp', 'T_quickstand', 'getup_procedural_placeholder', 'WAKEUPANIMATION', 'ROLLOUT', 'ROLLOUTRIGHT', 'LAZORFORWARDROLL', 'LAZORBACKROLL'],
+  knockdown:      ['FALLING_FLAT_IMPACT', 'FALLING_FORWARD_DEATH', 'DEFEAT', 'DYING_BACKWARDS', 'knockdown', 'Knockdown', 'ko', 'KO', 'fall', 'Fall', 'SBW_knockdown', 'T_knockdown', 'knockdown_procedural_placeholder', 'REACTION_HEAVYHITAIRREVOLT', 'REACTION_HEAVYHITAIRREVOLTBACK', 'SUPINE'],
+  getup:          ['KIP_UP', 'CORKSCREW_KIP_UP', 'CORKSCREW_EVADE', 'getup', 'getUp', 'GetUp', 'quickStand', 'QuickStand', 'gettingUp', 'GettingUp', 'T_quickstand', 'getup_procedural_placeholder', 'WAKEUPANIMATION', 'ROLLOUT', 'ROLLOUTRIGHT', 'LAZORFORWARDROLL', 'LAZORBACKROLL'],
   // Wakeup used to be one list, so a tech roll, a back roll and a kip-up
   // all played whichever clip happened to be first. Each option now has
   // its own clip. KIP_UP is 2.03s and is fit to the stand window.
@@ -155,9 +161,9 @@ export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
   // 0.49 against a T-pose gate of 0.50, which is how they slipped through;
   // seventeen seconds should have been enough on its own. LOOK AT IT, every
   // time, even when the numbers are clean.
-  grapple:        ['grapple', 'grab', 'Grab', 'THROWSTART', 'THROWSTART_STEP', 'KNEETHROW', 'RENZOTHROW', 'GRAFTHROW', 'throw', 'Throw', 'SBW_throw', 'T_1_3', 'SUPLEX', 'GERMANSUPLEX', 'DDT', 'CHOKESLAM'],
-  crouch:         ['crouch', 'Crouch', 'STANCE_CROUCH', 'CROUCH_IDLE_02_LOOKING_AROUND', 'CROUCH_WALK_FORWARD', 'duck', 'Duck', 'SBW_crouch', 'T_crouch', 'CROUCHING'],
-  run:            ['run', 'Run', 'DRUNK_RUN_FORWARD', 'LOCO_LIGHT', 'running', 'Running', 'sprint', 'Sprint', 'RUNNING', 'RUNNINGLOW'],
+  grapple:        ['THROWSTART', 'KNEETHROW', 'SUPLEX', 'GERMANSUPLEX', 'DDT', 'CHOKESLAM', 'grapple', 'grab', 'Grab', 'THROWSTART_STEP', 'RENZOTHROW', 'GRAFTHROW', 'throw', 'Throw', 'SBW_throw', 'T_1_3'],
+  crouch:         ['STANCE_CROUCH', 'CROUCH_IDLE_02_LOOKING_AROUND', 'CROUCH_WALK_FORWARD', 'CROUCHING', 'crouch', 'Crouch', 'duck', 'Duck', 'SBW_crouch', 'T_crouch'],
+  run:            ['DRUNK_RUN_FORWARD', 'run', 'Run', 'LOCO_LIGHT', 'running', 'Running', 'sprint', 'Sprint', 'RUNNING', 'RUNNINGLOW'],
   dash_forward:   ['dash_forward', 'dashForward', 'DashForward', 'dash', 'Dash', 'DRUNK_RUN_FORWARD', 'SPINJUMPF', 'SPINJUMPFFAST', 'RUNNING'],
   backdash:       ['backdash', 'Backdash', 'backDash', 'BackDash', 'GINGA_BACKWARD', 'SBW_backdash', 'T_backdash', 'Backdashing', 'SPINJUMPB', 'SPINJUMPBFAST'],
   // REAL CAPTURES LEAD. 'jump' is the name of the SYNTHESISED gap filler
@@ -166,7 +172,7 @@ export const SEMANTIC_STATE_ALIASES: Record<string, string[]> = {
   jump:           ['JUMP', 'JUMP2', 'BIG_JUMP', 'SPINJUMPF', 'SPINJUMPB', 'jump', 'Jump', 'hop', 'Hop', 'jumpForward', 'jumpBack', 'JUMPAXEKICK', 'DEFAULTJUMPKICK', 'CROSS_JUMPS'],
   victory:        ['victory', 'Victory', 'win', 'Win', 'BREAKDANCE_READY', 'STANCE_WIDE', 'victoryPose', 'VictoryPose', 'TIGERWINPOSE', 'JOHNSONWINPOSE'],
   defeat:         ['defeat', 'Defeat', 'DEFEAT', 'lose', 'Lose', 'knockdown', 'Knockdown'],
-  taunt:          ['taunt', 'Taunt', 'TAUNT', 'TAUNT_CALLOUT', 'BREAKDANCE_READY', 'CAPOEIRA', 'idle', 'Idle', 'TIGERINTROPOSE', 'JOHNSONINTROPOSE', 'GRAFINTRO', 'SHAZENTRANCE'],
+  taunt:          ['BREAKDANCE_READY', 'taunt', 'Taunt', 'TAUNT', 'TAUNT_CALLOUT', 'CAPOEIRA', 'idle', 'Idle', 'TIGERINTROPOSE', 'JOHNSONINTROPOSE', 'GRAFINTRO', 'SHAZENTRANCE'],
 };
 
 export const COMBAT_STATE_TO_SEMANTIC: Record<string, string> = {
@@ -219,6 +225,9 @@ export const COMBAT_STATE_TO_SEMANTIC: Record<string, string> = {
   Stunned:           'hit_reaction',
   hitLow:            'hit_low',
   hitHigh:           'hit_strong',
+  hitAir:            'hit_air',
+  hitBack:           'hit_back',
+  hitGround:         'hit_ground',
   knockdown:         'knockdown',
   Knockdown:         'knockdown',
   ko:                'knockdown',

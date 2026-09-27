@@ -452,6 +452,57 @@ add({
   note: 'MEASURED rejections, first gate to fire: reach too short 69 (mostly locomotion, correct) · fewer than 3 moving bones 69 · duration over 2.2s 61, but MEASURED only 15 of those are blocked by duration ALONE with a usable burst inside 2.2s, and most of the 15 are intros, win poses and taunts rather than attacks (TIGER_FEINT_KICK and ORAORAORA are the real ones) — windowing is NOT the big lever it looked like · being thrown 54 (correct) · inverted 54 · turns away 40 · starts on the mat 26 · hit/knockdown 18 · multi-body 12. Fixing the facing gate alone (facing AT IMPACT rather than facing at any point) took the pool 52 -> 59 and admitted the whole spinning-attack family including a launcher',
 });
 
+// ── REACTION: what the body does when it is hit ─────────────────────────────
+// THE AXIS THE OWNER HAS BEEN DESCRIBING IN PARAGRAPHS.
+// Tekken's own layout (TKMovesets Structs_t7.h / Structs_t8.h) attaches a
+// `Reactions` struct to EVERY HitCondition of EVERY move: 15 victim animations,
+// 7 pushbacks, 6 directions, 6 rotations, chosen by what the VICTIM was doing.
+// A Pushback is itself {duration, displacement, num_of_loops, extradata} — a
+// displacement over time, not one shove.
+add({
+  axis: 'REACTION', system: 'the reaction depends on what the victim was doing',
+  reference: '15 victim animations and 7 pushbacks per hit condition, picked by victim state',
+  refSource: 'Tekken 7/8 Reactions struct, via TKMovesets',
+  ours: (() => {
+    const n = callSitesOutside('resolveReaction', 'ReactionMatrix.ts');
+    return n > 0 ? `11 victim states x 5 reaction kinds, ${n} call site${n > 1 ? 's' : ''}` : 'declared and never called';
+  })(),
+  verdict: callSitesOutside('resolveReaction', 'ReactionMatrix.ts') > 0 && tested('reaction-matrix.test.ts') ? 'BEHAVING' : 'DECLARED',
+  note: 'was ONE dimensional: reactionFor(attackName) returned one effect, 12 entries collapsing to 5 kinds, one scalar pushback, no direction, no rotation, and the victim consulted once (airborne). A jab to a standing man, a crouching man, a man facing away and a man already in the air all played the same flinch and moved him the same distance',
+});
+add({
+  axis: 'REACTION', system: 'an airborne body has its own hit reaction',
+  reference: 'a juggled body plays an air reaction and keeps its arc; the slam is what ends it',
+  refSource: 'convention',
+  ours: 'hitAir -> REACTION_HEAVYHITAIRREVOLT (0.83s), hitGround -> FALLING_FLAT_IMPACT (1.57s)',
+  verdict: tested('reaction-matrix.test.ts') ? 'BEHAVING' : 'MISSING',
+  note: 'both clips were already in the bank and nothing ever asked for them, because there was no second dimension to ask with',
+});
+add({
+  axis: 'REACTION', system: 'a hit from the flank or from behind reads differently',
+  reference: 'Tekken keeps a rotation per side; a side hit turns you, and a back hit cannot be braced',
+  refSource: 'Tekken 7/8 Reactions struct, via TKMovesets',
+  ours: 'sideLeft/sideRight spin +-35 to 50 deg and push diagonally; backTurned stuns x1.25 and spins 60-90 deg',
+  verdict: tested('reaction-matrix.test.ts') ? 'BEHAVING' : 'MISSING',
+  note: 'without a rotation a side hit is a front hit played off-centre, which is the biggest reason a sidestep does not read as having worked',
+});
+add({
+  axis: 'REACTION', system: 'counter hit is its own reaction, and only from the front',
+  reference: 'Tekken has counterhit_moveid and front_counterhit_pushback — and only a FRONT counterhit pushback',
+  refSource: 'Tekken 7/8 Reactions struct, via TKMovesets',
+  ours: 'counter applies to standing/crouch/backTurned only; a counter-hit crumple lifts into a juggle',
+  verdict: tested('reaction-matrix.test.ts') ? 'BEHAVING' : 'MISSING',
+  note: 'the Tekken source comment on front_counterhit_pushback says it outright: "If you ever wondered why your CH launcher did not launch after a sidestep, that is why"',
+});
+add({
+  axis: 'REACTION', system: 'a real capture outranks a synthesised stand-in',
+  reference: 'the animations a game ships are what it plays; a generated placeholder is a fallback',
+  refSource: 'convention',
+  ours: 'tools/moves/order_aliases.mjs --gate; promotion requires the BAKE to agree, and for attacks also the standing-attack rule',
+  verdict: 'BEHAVING',
+  note: 'MEASURED 15 of 22 semantics led with the 5-bone placeholder over a real capture, including idle, all five attacks, walk, run, crouch, knockdown and getup. attack_rp still leads with its placeholder ON PURPOSE: the only clip the bake files there is COMBO_PUNCH at 2.97s, a string rather than a button, and baked-motion.test.ts refuses it',
+});
+
 // ── INTEGRITY ───────────────────────────────────────────────────────────────
 // THE AXIS THAT WAS MISSING, AND THE REASON THE AUDIT READ 95% WHILE THE OWNER
 // WAS WATCHING BODIES FLOAT.
@@ -537,7 +588,7 @@ add({
   note: 'the webbing: a vertex weighted ONLY to a far bone is not a pair, so the pair-pruning repair never saw it',
 });
 
-const AXES = ['TIMEBASE', 'FRAME DATA', 'MECHANICS', 'MOVESET', 'MOVEMENT', 'INPUT', 'ANIMATION', 'INTEGRITY', 'FEEL'];
+const AXES = ['TIMEBASE', 'FRAME DATA', 'MECHANICS', 'REACTION', 'MOVESET', 'MOVEMENT', 'INPUT', 'ANIMATION', 'INTEGRITY', 'FEEL'];
 const ai = process.argv.indexOf('--axis');
 const only = ai > 0 ? process.argv[ai + 1].replace('_', ' ') : null;
 const gapsOnly = process.argv.includes('--gaps');

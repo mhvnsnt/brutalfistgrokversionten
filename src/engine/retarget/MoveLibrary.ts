@@ -319,6 +319,11 @@ const DEFAULT_FRAME_DATA: Record<FighterMotionState, Omit<MoveFrameData, 'motion
   hit:                { startupFrames: 0, activeFrames: 0, recoveryFrames: 15, totalFrames: 15, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.25 },
   hitLow:             { startupFrames: 0, activeFrames: 0, recoveryFrames: 12, totalFrames: 12, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.20 },
   hitHigh:            { startupFrames: 0, activeFrames: 0, recoveryFrames: 18, totalFrames: 18, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.30 },
+  // Victim-state reactions (ReactionMatrix). The air reaction is long because a
+  // juggled body is in the air for a while; the ground impact is the landing.
+  hitAir:             { startupFrames: 0, activeFrames: 0, recoveryFrames: 30, totalFrames: 30, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.50 },
+  hitBack:            { startupFrames: 0, activeFrames: 0, recoveryFrames: 16, totalFrames: 16, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.27 },
+  hitGround:          { startupFrames: 0, activeFrames: 0, recoveryFrames: 36, totalFrames: 36, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.60 },
   knockdown:          { startupFrames: 0, activeFrames: 0, recoveryFrames: 60, totalFrames: 60, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 1.0 },
   wake:               { startupFrames: 0, activeFrames: 0, recoveryFrames: 30, totalFrames: 30, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.5 },
   walk:               { startupFrames: 0, activeFrames: 0, recoveryFrames: 0, totalFrames: 30, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.5 },
