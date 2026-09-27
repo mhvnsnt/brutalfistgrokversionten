@@ -2,6 +2,7 @@
 // (`node --experimental-strip-types --test`) resolve these modules. tsconfig
 // sets allowImportingTsExtensions and Vite/esbuild resolve them unchanged.
 import type { FighterMotionState } from '../retarget/AnimationController.ts';
+import { powerCrushWindow, resolveDefensiveWindows, type DefensiveWindow } from './DefensiveWindows.ts';
 import {
   applyAirHit, applyLaunch, freshJuggle, juggleScale, reactionFor, tickJuggle,
   type JuggleState, type ReactionEffect,
@@ -90,6 +91,13 @@ export interface MoveWindow {
    * src/engine/motion/RootTravel.ts.
    */
   rootTravel?: { t: number[]; f: number[]; l: number[] };
+  /**
+   * DEFENSIVE WINDOWS this move carries — armour or invincibility over a frame
+   * range, covering specific attack heights. Ported from SchwarzerblitzEngine's
+   * `FK_Move::armorFrames` / `invincibilityFrames` plus its attack-type mask; see
+   * DefensiveWindows.ts. A power crush is a move with one of these, not a system.
+   */
+  defence?: readonly DefensiveWindow[];
   /**
    * FRAME ADVANTAGE ON BLOCK, in frames at 60fps. Positive means the attacker
    * recovers first and may press; negative means the defender does and the
@@ -239,6 +247,10 @@ export const DEFAULT_MOVE_WINDOWS: Record<'lightAttack' | 'heavyAttack' | 'light
     animation: 'heavyAttack',
     hitboxStartFrame: 15, hitboxEndFrame: 19, totalFrames: 39,
     damage: 150, attackLevel: 'high', onBlock: -9,
+    // THE POWER CRUSH, and it is one line because the mechanism is per-move.
+    // Armour across the startup covering high and mid, so it trades with a poke
+    // and loses to a low and to a throw. -9 on block is what it pays for that.
+    defence: [powerCrushWindow(15)],
   },
   lightKick: {
     startup: F(11), active: F(3), recovery: F(9),
@@ -434,6 +446,20 @@ export interface GuardResult {
   blocked: boolean;
   /** A high went over a crouch. Not a block and not a hit. */
   whiffed: boolean;
+  /**
+   * A LOW WAS PARRIED. Not a block: the attacker owes a hard punish, the
+   * defender takes nothing, and the arena must not run its block branch — no
+   * blockstun on the defender, no chip, and a stagger on the ATTACKER instead.
+   */
+  parried: boolean;
+  /** Seconds of stagger the parried attacker owes. 0 unless parried. */
+  attackerStagger: number;
+  /**
+   * What the defender's OWN move did with the hit: absorbed it behind armour,
+   * ignored it under invincibility, or nothing. A defender whose armour ate the
+   * hit keeps attacking — the arena must not apply a reaction to them.
+   */
+  armoured?: 'none' | 'armoured' | 'invincible';
   chipDamage: number;
   guardBroken: boolean;
   finalDamage: number;
@@ -454,9 +480,18 @@ export interface TekkenGuardStance {
   crouchBlock: boolean;
   /** Body is low, so a high has nothing to hit. */
   crouching: boolean;
+  /**
+   * DOWN-FORWARD held: the low parry input.
+   *
+   * It is deliberately the same direction that is otherwise a crouching walk, so
+   * no new button is added on a phone that has no room for one. The cost of being
+   * wrong is real — down-forward does NOT block, so a mid or high thrown at a
+   * fighter reaching for a parry lands clean.
+   */
+  lowParryIntent: boolean;
 }
 
-export type TekkenContact = 'block' | 'hit' | 'whiff';
+export type TekkenContact = 'block' | 'hit' | 'whiff' | 'parry';
 
 /**
  * Tekken 7 guard. Tekken 3 and 8 use the same rule.
@@ -470,6 +505,17 @@ export type TekkenContact = 'block' | 'hit' | 'whiff';
  * actually connects and blockstun starts.
  */
 export function resolveTekkenContact(level: TekkenAttackLevel, stance: TekkenGuardStance): TekkenContact {
+  // THE LOW PARRY, and it is checked first because it BEATS a block rather than
+  // being a fallback from one. Ported from SchwarzerblitzEngine's shape: a
+  // defensive window that covers exactly one attack type and nothing else (see
+  // DefensiveWindows.LOW_ATKS). Holding down-forward answers a low and answers
+  // nothing else — a mid or a high thrown into it lands clean, because
+  // down-forward does not block. That asymmetry is the whole mechanic: it is the
+  // punish for spamming lows and a liability against anything else.
+  if (stance.lowParryIntent) {
+    if (level === 'low') return 'parry';
+    return 'hit';
+  }
   if (stance.crouching) {
     if (level === 'high') return 'whiff';
     if (level === 'low' && stance.crouchBlock) return 'block';
@@ -478,6 +524,14 @@ export function resolveTekkenContact(level: TekkenAttackLevel, stance: TekkenGua
   if (stance.standingBlock && level !== 'low') return 'block';
   return 'hit';
 }
+
+/**
+ * What a parried attacker owes. A low parry in the lineage is a hard punish —
+ * the attacker is left open far longer than any blocked move leaves them, which
+ * is what makes reaching for the parry worth the risk of eating a mid.
+ */
+export const LOW_PARRY_ATTACKER_STAGGER_S = 0.6;
+export const LOW_PARRY_DEFENDER_ADVANTAGE_FRAMES = 20;
 
 /**
  * BLOCKSTUN IS DERIVED FROM THE ADVANTAGE, NOT AUTHORED BESIDE IT.
@@ -1078,7 +1132,8 @@ export class FighterStateMachine {
     const rawDamage = move.damage ?? 100;
     const level: TekkenAttackLevel = move.attackLevel ?? 'mid';
     const miss: GuardResult = {
-      blocked: false, whiffed: false, chipDamage: 0, guardBroken: false, finalDamage: rawDamage, blockstun: 0,
+      blocked: false, whiffed: false, parried: false, attackerStagger: 0,
+      chipDamage: 0, guardBroken: false, finalDamage: rawDamage, blockstun: 0,
     };
 
     if (move.isThrow || move.isCommandThrow) {
@@ -1088,16 +1143,45 @@ export class FighterStateMachine {
       return { ...miss, guardBroken: true };
     }
 
+    // MY OWN MOVE'S DEFENSIVE WINDOWS, before any guard is considered. A power
+    // crush does not block — it absorbs while continuing to attack, which is why
+    // this is checked ahead of the stance and not folded into it. Throws are
+    // already returned above, which is Schwarzerblitz's `isBeingThrown()` guard.
+    const own = this.ownMoveFrame();
+    if (own?.move.defence?.length) {
+      const absorbed = resolveDefensiveWindows(own.move.defence, own.frame, level, rawDamage);
+      if (absorbed.absorbed) {
+        return {
+          ...miss,
+          finalDamage: absorbed.damage,
+          chipDamage: absorbed.damage,
+          armoured: absorbed.outcome,
+        };
+      }
+    }
+
     const contact = resolveTekkenContact(level, this.tekkenGuardStance());
     if (contact === 'whiff') {
       return { ...miss, finalDamage: 0, whiffed: true };
+    }
+    if (contact === 'parry') {
+      // The defender takes nothing and the ATTACKER pays. A blocked low leaves
+      // the attacker a dozen frames open; a parried one leaves them wide open,
+      // which is the only reason reaching down-forward is worth eating a mid.
+      return {
+        ...miss,
+        finalDamage: 0,
+        parried: true,
+        attackerStagger: LOW_PARRY_ATTACKER_STAGGER_S,
+      };
     }
     if (contact === 'block') {
       // Tekken 7 does not chip a normal block. The cost is stun and pushback,
       // applied by the arena when it sees `blocked`.
       const blockstun = tekkenBlockstunSeconds(move);
       return {
-        blocked: true, whiffed: false, chipDamage: 0, guardBroken: false, finalDamage: 0, blockstun,
+        blocked: true, whiffed: false, parried: false, attackerStagger: 0,
+        chipDamage: 0, guardBroken: false, finalDamage: 0, blockstun,
       };
     }
     return miss;
@@ -1125,7 +1209,7 @@ export class FighterStateMachine {
       || this.actionState === 'CommandThrow'
       || this.actionState === 'ThrowWhiff'
       || this.actionState === 'Backdashing';
-    if (vulnerable) return { standingBlock: false, crouchBlock: false, crouching: false };
+    if (vulnerable) return { standingBlock: false, crouchBlock: false, crouching: false, lowParryIntent: false };
 
     // Down-forward is still a standing walk (see crouch-attacks). A high
     // only whiffs when the body is actually down: neutral crouch, or down-back.
@@ -1134,17 +1218,23 @@ export class FighterStateMachine {
       || this.motionState === 'crouchWalk'
       || this.motionState === 'guardLow'
       || (input.crouch && input.forward <= 0.2);
-    if (bodyCrouched) {
+    // DOWN-FORWARD is the low parry reach, and it is exclusive with crouch-block:
+    // holding down-BACK blocks the low, holding down-FORWARD parries it. You
+    // cannot do both, which is what makes the parry a choice.
+    const reachingForParry = !!input.crouch && input.forward > 0.35;
+    if (bodyCrouched || reachingForParry) {
       return {
         standingBlock: false,
-        crouchBlock: holdingBack || !!input.guard || this.motionState === 'guardLow',
-        crouching: true,
+        crouchBlock: !reachingForParry && (holdingBack || !!input.guard || this.motionState === 'guardLow'),
+        crouching: bodyCrouched,
+        lowParryIntent: reachingForParry,
       };
     }
     const guardButton = !!input.guard || this.actionState === 'Guard';
     return {
       standingBlock: holdingBack || guardButton,
       crouchBlock: false,
+      lowParryIntent: false,
       crouching: false,
     };
   }
@@ -1194,6 +1284,21 @@ export class FighterStateMachine {
     );
 
     return { inRange, distance, grabRange, throwSucceeded };
+  }
+
+  /**
+   * Which frame of MY OWN move I am on, or null when I am not mid-move. This is
+   * what a defensive window is indexed by — Schwarzerblitz asks
+   * `currentMove->hasArmor(floor(animatedMesh->getFrameNr()), type)`, so the frame
+   * number has to come off the same clock the hitbox uses, not off a timer of its
+   * own. Counting from the same `moveTimer` is what keeps armour and hitboxes
+   * from drifting apart.
+   */
+  ownMoveFrame(): { move: MoveWindow; frame: number } | null {
+    if (!this.currentMove) return null;
+    const move = this.currentMove;
+    const total = move.startup + move.active + move.recovery;
+    return { move, frame: Math.floor((total - this.moveTimer) * this.FPS) };
   }
 
   getHitboxWindow(): HitboxWindow {

@@ -25,10 +25,10 @@ function strike(level: 'high' | 'mid' | 'low', extra: Partial<MoveWindow> = {}):
 
 describe('Tekken 7 guard', () => {
   it('names the contact the same way Tekken does', () => {
-    const stand = { standingBlock: true, crouchBlock: false, crouching: false };
-    const duck = { standingBlock: false, crouchBlock: false, crouching: true };
-    const db = { standingBlock: false, crouchBlock: true, crouching: true };
-    const open = { standingBlock: false, crouchBlock: false, crouching: false };
+    const stand = { standingBlock: true, crouchBlock: false, crouching: false, lowParryIntent: false };
+    const duck = { standingBlock: false, crouchBlock: false, crouching: true, lowParryIntent: false };
+    const db = { standingBlock: false, crouchBlock: true, crouching: true, lowParryIntent: false };
+    const open = { standingBlock: false, crouchBlock: false, crouching: false, lowParryIntent: false };
     assert.equal(resolveTekkenContact('high', stand), 'block');
     assert.equal(resolveTekkenContact('mid', stand), 'block');
     assert.equal(resolveTekkenContact('low', stand), 'hit');

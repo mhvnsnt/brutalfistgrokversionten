@@ -81,6 +81,10 @@ import { selectAIDirectionalThrowId, type AIDirectionalThrowId } from '../engine
 import { getGlobalAudioManager } from '../engine/audio/GlobalAudioManager';
 // ── Hit Effect System ─────────────────────────────────────────────────────────
 import { type HitEffectPool } from '../engine/combat/HitEffectSystem';
+import {
+  createRageState, tickRage, rageScaledDamage, rageArtAvailable,
+  RAGE_THRESHOLD, RAGE_DAMAGE_MULTIPLIER, type RageState,
+} from '../engine/combat/RageSystem';
 
 // ── 3D combat arena — loaded client-side only ─────────────────────────────────
 const CombatArena3D = dynamic(() => import('./CombatArena3D'), {
@@ -146,6 +150,15 @@ export default function GameBattleArena({
   const inputRef = useRef<InputBitmask>({ ...EMPTY_INPUT });
   const rafRef = useRef<number>(0);
   const [frame, setFrame] = useState(0);
+  /**
+   * RAGE. The comeback state was half-built: `setP1FinisherAvailable(pct <= 0.25)`
+   * gated the HUD on a magic number while FINISHER_HP_THRESHOLD, FINISHER_DAMAGE
+   * and FINISHER_STARTUP_FRAMES had no readers at all, and BEING enraged did
+   * nothing — no damage bonus, no state. RageSystem owns it now and imports those
+   * constants rather than declaring new ones.
+   */
+  const p1RageRef = useRef<RageState>(createRageState());
+  const p2RageRef = useRef<RageState>(createRageState());
   const [p1Health, setP1Health] = useState(p1Fighter.hp);
   const [p2Health, setP2Health] = useState(p2Fighter.hp);
   const [p1State, setP1State] = useState<string>('Neutral');
@@ -1661,11 +1674,23 @@ export default function GameBattleArena({
         }
       }
 
-      // ── Update Finisher availability HUD ──────────────────────────────
-      const p1HpPctForRage = prevP1HealthRef.current / p1Fighter.hp;
-      const p2HpPctForRage = prevP2HealthRef.current / p2Fighter.hp;
-      setP1FinisherAvailable(p1HpPctForRage <= 0.25);
-      setP2FinisherAvailable(p2HpPctForRage <= 0.25);
+      // ── Rage: the state, then the HUD it drives ───────────────────────
+      // The threshold comes from RAGE_THRESHOLD (= FINISHER_HP_THRESHOLD), not a
+      // literal 0.25 in two places that can drift apart from the system that
+      // owns it. `artAvailable` is what stops a heal handing out a second Rage
+      // Art, so the HUD reads the STATE rather than re-deriving the fraction.
+      p1RageRef.current = tickRage(p1RageRef.current, prevP1HealthRef.current, p1Fighter.hp);
+      p2RageRef.current = tickRage(p2RageRef.current, prevP2HealthRef.current, p2Fighter.hp);
+      setP1FinisherAvailable(rageArtAvailable(p1RageRef.current));
+      setP2FinisherAvailable(rageArtAvailable(p2RageRef.current));
+      if (p1RageRef.current.justEntered) {
+        audioManagerRef.current.playSFX('overdrive_activate');
+        console.log(`[Rage] P1 enraged below ${Math.round(RAGE_THRESHOLD * 100)}% — outgoing damage x${RAGE_DAMAGE_MULTIPLIER}`);
+      }
+      if (p2RageRef.current.justEntered) {
+        audioManagerRef.current.playSFX('overdrive_activate');
+        console.log(`[Rage] P2 enraged below ${Math.round(RAGE_THRESHOLD * 100)}% — outgoing damage x${RAGE_DAMAGE_MULTIPLIER}`);
+      }
 
       // ── Check P1 hitbox vs P2 ──────────────────────────────────────────
       const p2SM = p2SMRef.current;
@@ -1687,11 +1712,23 @@ export default function GameBattleArena({
         const p1HitMove = p1HbWindow.move;
         const guardResult = p1HitMove
           ? p2SMRef.current.processIncomingHit(p1HitMove)
-          : { blocked: false, whiffed: false, chipDamage: 0, guardBroken: false, finalDamage: p1Hit.damage, blockstun: 0 };
+          : { blocked: false, whiffed: false, parried: false, attackerStagger: 0, chipDamage: 0, guardBroken: false, finalDamage: p1Hit.damage, blockstun: 0 };
 
         if (guardResult.whiffed) {
           // A high over a crouch is a miss. No damage, no stun, no push.
           audioManagerRef.current.playSFX('whiff');
+        } else if (guardResult.parried) {
+          // A LOW PARRY. The defender takes nothing and the ATTACKER pays — this
+          // is the punish for spamming lows, so it must not run the block branch
+          // below (no blockstun on the defender, no chip, no combo).
+          audioManagerRef.current.playSFX('whiff');
+          p1SMRef.current.applyBlockStun(guardResult.attackerStagger, false);
+          p1LocoRef.current.applyPushback(0.22);
+          hitStopTimerRef.current = Math.max(hitStopTimerRef.current, 0.06);
+          hitStopActiveRef.current = true;
+          setHitStopActive(true);
+          logHit('p1', 'p2', 0, true, 'block');
+          console.log(`[LowParry] P2 parried P1's low — P1 staggered ${guardResult.attackerStagger}s`);
         } else {
 
         // ── Momentum: apply counter-hit bonus and consume charge ─────────
@@ -1703,7 +1740,12 @@ export default function GameBattleArena({
           setP1MomentumCharge({ ...p1MomentumChargeRef.current });
         }
 
-        let effectiveDamage = guardResult.blocked ? guardResult.finalDamage : p1Hit.damage;
+        // RAGE SCALES WHAT THE ATTACKER DEALS, before momentum and before combo
+        // scaling — it is a property of the body throwing the punch, not of the
+        // combo it lands in. Not enraged is exactly the damage that came in.
+        let effectiveDamage = guardResult.blocked
+          ? guardResult.finalDamage
+          : rageScaledDamage(p1RageRef.current, p1Hit.damage);
         if (p1MomentumActive && !guardResult.blocked) {
           effectiveDamage = applyMomentumChargeCounterHit(effectiveDamage);
         }
@@ -1730,8 +1772,12 @@ export default function GameBattleArena({
           setHitStopActive(true);
           logHit('p1', 'p2', blockedDamage, true, 'block');
         } else {
+          // The DEFENDER's wall-splat window is what extends the ATTACKER's combo.
+          // WallSystem has always written `comboExtensionFrames` and nothing had
+          // ever read it, so a wall carry bought no frames at all.
           const { scaledDamage, newState: newP1Combo } = registerHit(
             p1ComboRef.current, effectiveDamage, now,
+            combatStateRef.current.p2.wallSplat.comboExtensionFrames,
           );
           p1ScaledDmg = scaledDamage;
           p1ComboRef.current = newP1Combo;
@@ -2085,13 +2131,25 @@ export default function GameBattleArena({
         const p2HitMove = p2HbWindow.move;
         const p1GuardResult = p2HitMove
           ? p1SMRef.current.processIncomingHit(p2HitMove)
-          : { blocked: false, whiffed: false, chipDamage: 0, guardBroken: false, finalDamage: p2Hit.damage, blockstun: 0 };
+          : { blocked: false, whiffed: false, parried: false, attackerStagger: 0, chipDamage: 0, guardBroken: false, finalDamage: p2Hit.damage, blockstun: 0 };
 
         if (p1GuardResult.whiffed) {
           audioManagerRef.current.playSFX('whiff');
+        } else if (p1GuardResult.parried) {
+          // See the P1 side: the parried ATTACKER is the one who pays.
+          audioManagerRef.current.playSFX('whiff');
+          p2SMRef.current.applyBlockStun(p1GuardResult.attackerStagger, false);
+          p2LocoRef.current.applyPushback(0.22);
+          hitStopTimerRef.current = Math.max(hitStopTimerRef.current, 0.06);
+          hitStopActiveRef.current = true;
+          setHitStopActive(true);
+          logHit('p2', 'p1', 0, true, 'block');
+          console.log(`[LowParry] P1 parried P2's low — P2 staggered ${p1GuardResult.attackerStagger}s`);
         } else {
 
-        const p1EffectiveDamage = p1GuardResult.blocked ? p1GuardResult.finalDamage : p2Hit.damage;
+        const p1EffectiveDamage = p1GuardResult.blocked
+          ? p1GuardResult.finalDamage
+          : rageScaledDamage(p2RageRef.current, p2Hit.damage);
 
         let p2ScaledDmg = 0;
         // MOMENTUM IS THIS GAME'S RAGE, AND RAGE DOES DAMAGE ON BLOCK.
@@ -2115,6 +2173,7 @@ export default function GameBattleArena({
         } else {
           const { scaledDamage, newState: newP2Combo } = registerHit(
             p2ComboRef.current, p1EffectiveDamage, now,
+            combatStateRef.current.p1.wallSplat.comboExtensionFrames,
           );
           p2ScaledDmg = scaledDamage;
           p2ComboRef.current = newP2Combo;

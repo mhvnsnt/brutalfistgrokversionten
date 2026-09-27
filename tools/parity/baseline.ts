@@ -163,6 +163,7 @@ add({
   refSource: 'convention',
   ours: `+${WALL_SPLAT_BONUS_FRAMES} for the attacker, ${WALL_RECOVERY_FRAMES} recovery for the defender`,
   verdict: callers('WALL_SPLAT_BONUS_FRAMES') > 1 ? 'BEHAVING' : 'DECLARED',
+  fillFrom: 'SchwarzerblitzEngine FK_Character wall handling — its splat leaves the attacker frames, ours declares the number and nothing reads it',
 });
 
 // ── SYSTEM MECHANICS ────────────────────────────────────────────────────────
@@ -177,9 +178,14 @@ const MECHANICS: Array<[string, string, string, string, string?]> = [
   ['wall combos', 'a carry into a wall extends the combo', 'WallSystem', undefined],
   ['juggles', 'a launcher opens an air combo', 'juggle|Juggled', undefined],
   ['wakeup options', 'tech roll, back rise, quick stand — the defender chooses', 'WakeupTechRoll|WakeupBackrise|WakeupQuickStand', undefined],
-  ['low parry', 'the punish for spamming lows', 'lowParry|parry', undefined],
-  ['power crush / armour', 'absorbs a mid or high during startup and keeps coming', 'superArmor|powerCrush', undefined],
-  ['rage — a comeback state at low health', 'damage bonus plus a Rage Art / Rage Drive off it', 'Rage|rage', undefined],
+  // PROBE THE SYSTEM, NOT THE WORD. The first version of this row searched for
+  // 'Rage|rage' and reported it MISSING while a complete health-gated super with
+  // armoured startup sat in OverdriveSystem under the name `Finisher`. Searching
+  // for a feature by its marketing name is the same mistake as classifying a
+  // move by its filename — the thing has to be identified by what it DOES.
+  ['low parry', 'the punish for spamming lows', 'lowParryIntent', 'defensive-systems.test.ts'],
+  ['power crush / armour', 'absorbs a mid or high during startup and keeps coming, and loses to a low and a throw', 'resolveDefensiveWindows', 'defensive-systems.test.ts'],
+  ['rage — a comeback state at low health', 'damage bonus while under the threshold, plus one Rage Art off it', 'rageScaledDamage', 'defensive-systems.test.ts'],
   ['counter hit', 'hitting a mid-startup opponent pays extra and changes the reaction', 'isCounter|counterHit', undefined],
   ['ring out / stage boundary', 'the stage is a win condition, not scenery', 'ringOut|stageBoundar', 'stage-boundaries.test.ts'],
   ['recoverable (white) damage', 'chip and blocked damage that comes back', 'recoverable|whiteDamage', undefined],

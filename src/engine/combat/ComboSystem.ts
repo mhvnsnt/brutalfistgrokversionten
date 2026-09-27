@@ -5,6 +5,7 @@
  * Damage scaling: 10–25% reduction per successive hit (capped at 75% total reduction).
  * Hit 1: 100%, Hit 2: 90%, Hit 3: 80%, Hit 4: 75%, Hit 5+: 75%
  */
+import { WALL_SPLAT_BONUS_FRAMES } from './WallSystem.ts';
 
 export interface ComboState {
   count: number;
@@ -25,7 +26,20 @@ export interface ComboSystemState {
   p2Combo: ComboState;
 }
 
-const COMBO_WINDOW_MS = 2000; // 2-second window
+export const COMBO_WINDOW_MS = 2000; // 2-second window
+/**
+ * EXTRA MILLISECONDS A WALL SPLAT BUYS THE ATTACKER.
+ *
+ * WallSystem declares `WALL_SPLAT_BONUS_FRAMES = 18` — "extra frames attacker
+ * gets to chain combo" — and builds it into `comboExtensionFrames` on every
+ * splat. Measured: NOTHING outside WallSystem ever read that field, so the splat
+ * staggered the defender and gave the attacker nothing. A wall carry that buys no
+ * frames is scenery; the free frames ARE the point of a wall.
+ *
+ * Derived from that constant rather than declared beside it, so the two cannot
+ * drift apart.
+ */
+export const WALL_SPLAT_COMBO_EXTENSION_MS = (WALL_SPLAT_BONUS_FRAMES / 60) * 1000;
 const BASE_SCALING_PER_HIT = 0.10; // 10% reduction per hit
 const MIN_MULTIPLIER = 0.75; // floor at 75% damage
 
@@ -48,9 +62,16 @@ export function registerHit(
   state: ComboState,
   rawDamage: number,
   now: number,
+  /**
+   * The attacker's wall-splat extension window, if one is open. Pass the
+   * defender's `wallSplat.comboExtensionFrames` — the field WallSystem has always
+   * written and nothing has ever read. Absent or 0 is exactly the old behaviour.
+   */
+  wallExtensionFrames = 0,
 ): { scaledDamage: number; newState: ComboState } {
   const timeSinceLast = now - state.lastHitTime;
-  const withinWindow = state.active && timeSinceLast <= COMBO_WINDOW_MS;
+  const window = COMBO_WINDOW_MS + (wallExtensionFrames > 0 ? WALL_SPLAT_COMBO_EXTENSION_MS : 0);
+  const withinWindow = state.active && timeSinceLast <= window;
 
   let newCount: number;
   let newMultiplier: number;

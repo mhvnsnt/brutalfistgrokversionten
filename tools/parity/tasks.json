@@ -60,11 +60,11 @@
       "id": "mechanics-declared-and-dead",
       "title": "Three systems exist and nothing calls them",
       "specialist": "combat",
-      "status": "open",
+      "status": "done",
       "needs": [],
       "measure": "tools/parity/baseline.ts \u2014 MECHANICS axis above 69%, 0 rows DECLARED",
-      "now": "low parry, rage, and wall-splat advantage are declared with no caller outside their own file",
-      "notes": "Rage is the biggest of the three: a comeback state at low health plus a Rage Art off it is a core lineage system and only PreFightIntros mentions it. Fill from Kiloutre/TKMovesets for the move structs and SchwarzerblitzEngine for the loop, rather than authoring another one by hand."
+      "now": "0 declared-and-dead rows; MECHANICS 69% -> 83%, overall 79% -> 89%",
+      "notes": "Rage was already there as `Finisher` with no readers \u2014 RageSystem imports its constants instead of declaring new ones. Low parry and power crush both ported from SchwarzerblitzEngine as ONE mechanism (per-frame windows covering specific attack heights), so a power crush is one line on a move. The wall-splat bonus frames now widen the combo window."
     },
     {
       "id": "feel-axis",
