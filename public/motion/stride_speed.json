@@ -1,0 +1,2052 @@
+{
+  "generatedBy": "tools/motion/stride_speed.mjs",
+  "model": "public/models/TITAN.glb",
+  "what": "speedMps is the m/s this clip was authored at, measured from the planted foot by FK. Playback rate = actual speed / speedMps kills foot sliding.",
+  "clips": {
+    "ACTION_IDLE_TO_STANDING_IDLE": {
+      "strideM": 1.174,
+      "speedMps": 1.257,
+      "durS": 0.9333
+    },
+    "ALTERNATINGFOREARMS": {
+      "strideM": 4.97,
+      "speedMps": 1.243,
+      "durS": 4
+    },
+    "AMYTHROW_REACTION": {
+      "strideM": 1.315,
+      "speedMps": 0.929,
+      "durS": 1.4167
+    },
+    "ANIMATIONMASTERFILE_BLEND": {
+      "strideM": 0.64,
+      "speedMps": 1.279,
+      "durS": 0.5
+    },
+    "APRONJAYKICK": {
+      "strideM": 4.395,
+      "speedMps": 0.388,
+      "durS": 11.3333
+    },
+    "ARMADA": {
+      "strideM": 5.36,
+      "speedMps": 3.281,
+      "durS": 1.6333
+    },
+    "ASSISTEDCUTTER": {
+      "strideM": 3.702,
+      "speedMps": 0.308,
+      "durS": 12
+    },
+    "ASSISTEDDIVSENTON": {
+      "strideM": 5.963,
+      "speedMps": 0.497,
+      "durS": 12
+    },
+    "ASSISTEDREVERSEGOOZLECHOP": {
+      "strideM": 5.367,
+      "speedMps": 0.579,
+      "durS": 9.2667
+    },
+    "AU": {
+      "strideM": 5.643,
+      "speedMps": 1.946,
+      "durS": 2.9
+    },
+    "AXEKICK": {
+      "strideM": 0.689,
+      "speedMps": 1.377,
+      "durS": 0.5
+    },
+    "BACKBREAKER_REACTION": {
+      "strideM": 2.816,
+      "speedMps": 1.379,
+      "durS": 2.0417
+    },
+    "BASEBALL_HIT": {
+      "strideM": 2.337,
+      "speedMps": 1.188,
+      "durS": 1.9667
+    },
+    "BASH": {
+      "strideM": 1.005,
+      "speedMps": 0.251,
+      "durS": 4
+    },
+    "BIG_BODY_BLOW": {
+      "strideM": 3.997,
+      "speedMps": 1.557,
+      "durS": 2.5667
+    },
+    "BIG_JUMP": {
+      "strideM": 5.273,
+      "speedMps": 2.228,
+      "durS": 2.3667
+    },
+    "BIG_RIB_HIT": {
+      "strideM": 0.91,
+      "speedMps": 0.569,
+      "durS": 1.6
+    },
+    "BLASTFLIGHT": {
+      "strideM": 1.468,
+      "speedMps": 5.032,
+      "durS": 0.2917
+    },
+    "BODY_JAB_CROSS": {
+      "strideM": 1.81,
+      "speedMps": 0.862,
+      "durS": 2.1
+    },
+    "BOXING": {
+      "strideM": 1.037,
+      "speedMps": 0.598,
+      "durS": 1.7333
+    },
+    "BOXING__1_": {
+      "strideM": 1.239,
+      "speedMps": 0.563,
+      "durS": 2.2
+    },
+    "BOXING__2_": {
+      "strideM": 2.635,
+      "speedMps": 0.623,
+      "durS": 4.2333
+    },
+    "BOXING__3_": {
+      "strideM": 1.464,
+      "speedMps": 0.666,
+      "durS": 2.2
+    },
+    "BOXING__4_": {
+      "strideM": 1.5,
+      "speedMps": 0.714,
+      "durS": 2.1
+    },
+    "BOXING__5_": {
+      "strideM": 1.156,
+      "speedMps": 0.534,
+      "durS": 2.1667
+    },
+    "BOX_IDLE": {
+      "strideM": 0.415,
+      "speedMps": 0.066,
+      "durS": 6.3
+    },
+    "BRACED_HANG_HOP_UP": {
+      "strideM": 1.728,
+      "speedMps": 1.037,
+      "durS": 1.6667
+    },
+    "BRAINBUSTER": {
+      "strideM": 4.056,
+      "speedMps": 0.543,
+      "durS": 7.4667
+    },
+    "BREAKDANCE_FOOTWORK_3": {
+      "strideM": 7.957,
+      "speedMps": 1.742,
+      "durS": 4.5667
+    },
+    "BREAKDANCE_FOOTWORK_3__1_": {
+      "strideM": 7.957,
+      "speedMps": 1.742,
+      "durS": 4.5667
+    },
+    "BREAKDANCE_FOOTWORK_TO_FREEZE": {
+      "strideM": 8.157,
+      "speedMps": 2.225,
+      "durS": 3.6667
+    },
+    "BREAKDANCE_FREEZES": {
+      "strideM": 1.667,
+      "speedMps": 0.249,
+      "durS": 6.7
+    },
+    "BREAKDANCE_READY": {
+      "strideM": 0.774,
+      "speedMps": 0.54,
+      "durS": 1.4333
+    },
+    "BREAKDANCE_UPROCK_TO_GROUND": {
+      "strideM": 8.141,
+      "speedMps": 1.796,
+      "durS": 4.5333
+    },
+    "BROOKLYN_UPROCK": {
+      "strideM": 5.35,
+      "speedMps": 1.099,
+      "durS": 4.8667
+    },
+    "BRUTAL_ASSASSINATION": {
+      "strideM": 2.208,
+      "speedMps": 0.448,
+      "durS": 4.9333
+    },
+    "BUCKLEBOMBENZUGIRI": {
+      "strideM": 5.037,
+      "speedMps": 0.53,
+      "durS": 9.5
+    },
+    "CAN_CAN": {
+      "strideM": 2.629,
+      "speedMps": 0.717,
+      "durS": 3.6667
+    },
+    "CAPITALPUNISHMENT": {
+      "strideM": 0.598,
+      "speedMps": 0.755,
+      "durS": 0.7917
+    },
+    "CAPOEIRA": {
+      "strideM": 6.068,
+      "speedMps": 1.767,
+      "durS": 3.4333
+    },
+    "CAPOEIRA__1_": {
+      "strideM": 8.067,
+      "speedMps": 1.681,
+      "durS": 4.8
+    },
+    "CARTWHEEL": {
+      "strideM": 5.725,
+      "speedMps": 1.184,
+      "durS": 4.8333
+    },
+    "CEMETERYDRIVE": {
+      "strideM": 2.592,
+      "speedMps": 0.444,
+      "durS": 5.8333
+    },
+    "CENTER_BLOCK": {
+      "strideM": 0.705,
+      "speedMps": 0.399,
+      "durS": 1.7667
+    },
+    "CH06_NONPBR": {
+      "strideM": 0,
+      "speedMps": 0,
+      "durS": 0.0333
+    },
+    "CH24_NONPBR": {
+      "strideM": 0,
+      "speedMps": 0,
+      "durS": 0.0333
+    },
+    "CH44_NONPBR": {
+      "strideM": 0,
+      "speedMps": 0,
+      "durS": 0.0333
+    },
+    "CHOKESLAM": {
+      "strideM": 8.75,
+      "speedMps": 1.544,
+      "durS": 5.6667
+    },
+    "CLIMBING_A_ROPE": {
+      "strideM": 2.494,
+      "speedMps": 0.972,
+      "durS": 2.5667
+    },
+    "CLIMBING_A_ROPE__1_": {
+      "strideM": 1.482,
+      "speedMps": 0.618,
+      "durS": 2.4
+    },
+    "CLIMBING_UP_WALL": {
+      "strideM": 2.608,
+      "speedMps": 1.304,
+      "durS": 2
+    },
+    "CODERED": {
+      "strideM": 3.092,
+      "speedMps": 0.309,
+      "durS": 10
+    },
+    "COMBO_PUNCH": {
+      "strideM": 0.824,
+      "speedMps": 0.278,
+      "durS": 2.9667
+    },
+    "CORKSCREW_EVADE": {
+      "strideM": 5.434,
+      "speedMps": 2.174,
+      "durS": 2.5
+    },
+    "CORKSCREW_KIP_UP": {
+      "strideM": 4.816,
+      "speedMps": 1.741,
+      "durS": 2.7667
+    },
+    "CROSS_JUMPS": {
+      "strideM": 1.949,
+      "speedMps": 0.959,
+      "durS": 2.0333
+    },
+    "CROTCHCHOP": {
+      "strideM": 4.052,
+      "speedMps": 0.81,
+      "durS": 5
+    },
+    "CROUCHING": {
+      "strideM": 0.069,
+      "speedMps": 0.333,
+      "durS": 0.2083
+    },
+    "CROUCHINGKICK": {
+      "strideM": 1.819,
+      "speedMps": 7.278,
+      "durS": 0.25
+    },
+    "CROUCH_IDLE_02_LOOKING_AROUND": {
+      "strideM": 1.109,
+      "speedMps": 0.19,
+      "durS": 5.8333
+    },
+    "CROUCH_TORCH_WALK_RIGHT": {
+      "strideM": 2.484,
+      "speedMps": 2.259,
+      "durS": 1.1
+    },
+    "CROUCH_WALK_FORWARD": {
+      "strideM": 1.808,
+      "speedMps": 1.595,
+      "durS": 1.1333
+    },
+    "CRUCIFIXPIN": {
+      "strideM": 5.169,
+      "speedMps": 0.646,
+      "durS": 8
+    },
+    "CYPHRTHROWREACTION": {
+      "strideM": 3.012,
+      "speedMps": 2.191,
+      "durS": 1.375
+    },
+    "CYPHRTHROWREACTION_FIX": {
+      "strideM": 2.06,
+      "speedMps": 1.498,
+      "durS": 1.375
+    },
+    "DANCING": {
+      "strideM": 6.843,
+      "speedMps": 0.845,
+      "durS": 8.1
+    },
+    "DANCING_RUNNING_MAN": {
+      "strideM": 3.686,
+      "speedMps": 0.34,
+      "durS": 10.8333
+    },
+    "DANCING_TWERK": {
+      "strideM": 2.155,
+      "speedMps": 0.142,
+      "durS": 15.2
+    },
+    "DANCING__1_": {
+      "strideM": 5.982,
+      "speedMps": 0.739,
+      "durS": 8.1
+    },
+    "DANCING__2_": {
+      "strideM": 3.675,
+      "speedMps": 0.297,
+      "durS": 12.3667
+    },
+    "DDT": {
+      "strideM": 5.73,
+      "speedMps": 0.999,
+      "durS": 5.7333
+    },
+    "DDT_REACTION": {
+      "strideM": 4.57,
+      "speedMps": 1.769,
+      "durS": 2.5833
+    },
+    "DEATH_FROM_BACK_HEADSHOT": {
+      "strideM": 3.125,
+      "speedMps": 0.845,
+      "durS": 3.7
+    },
+    "DEFAULTJUMPKICK": {
+      "strideM": 1.68,
+      "speedMps": 3.361,
+      "durS": 0.5
+    },
+    "DEFAULTJUMPPUNCH": {
+      "strideM": 0.124,
+      "speedMps": 0.497,
+      "durS": 0.25
+    },
+    "DEFAULTJUMPPUNCH2": {
+      "strideM": 0.074,
+      "speedMps": 0.254,
+      "durS": 0.2917
+    },
+    "DEFEAT": {
+      "strideM": 0.605,
+      "speedMps": 0.127,
+      "durS": 4.7667
+    },
+    "DEFENDER": {
+      "strideM": 5.723,
+      "speedMps": 1.59,
+      "durS": 3.6
+    },
+    "DOLL_PAPERREACTION": {
+      "strideM": 1.597,
+      "speedMps": 0.852,
+      "durS": 1.875
+    },
+    "DOUBLESUPLEX": {
+      "strideM": 4.175,
+      "speedMps": 0.38,
+      "durS": 11
+    },
+    "DOUBLE_LEG_TAKEDOWN___VICTIM": {
+      "strideM": 3.02,
+      "speedMps": 0.417,
+      "durS": 7.2333
+    },
+    "DOUBLE_LEG_TAKEDOWN___VICTIM__1_": {
+      "strideM": 2.048,
+      "speedMps": 0.585,
+      "durS": 3.5
+    },
+    "DRAGONSCREW": {
+      "strideM": 5.571,
+      "speedMps": 0.929,
+      "durS": 6
+    },
+    "DROP_KICK": {
+      "strideM": 4.384,
+      "speedMps": 1.512,
+      "durS": 2.9
+    },
+    "DROP_KICK__1_": {
+      "strideM": 4.938,
+      "speedMps": 1.703,
+      "durS": 2.9
+    },
+    "DRUNK_IDLE_VARIATION": {
+      "strideM": 0.518,
+      "speedMps": 0.131,
+      "durS": 3.9667
+    },
+    "DRUNK_RUN_FORWARD": {
+      "strideM": 6.007,
+      "speedMps": 3.277,
+      "durS": 1.8333
+    },
+    "DRUNK_WALK": {
+      "strideM": 2.275,
+      "speedMps": 0.758,
+      "durS": 3
+    },
+    "DUCKINGCOMET": {
+      "strideM": 1.362,
+      "speedMps": 2.515,
+      "durS": 0.5417
+    },
+    "DUCKINGCOMET_2": {
+      "strideM": 1.184,
+      "speedMps": 1.894,
+      "durS": 0.625
+    },
+    "DWARF_WALK": {
+      "strideM": 2.023,
+      "speedMps": 1.839,
+      "durS": 1.1
+    },
+    "DYING_BACKWARDS": {
+      "strideM": 1.066,
+      "speedMps": 0.232,
+      "durS": 4.6
+    },
+    "ELENATHROWREACTION": {
+      "strideM": 2.526,
+      "speedMps": 1.684,
+      "durS": 1.5
+    },
+    "ESQUIVA_3": {
+      "strideM": 3.546,
+      "speedMps": 1.637,
+      "durS": 2.1667
+    },
+    "ESQUIVA_4": {
+      "strideM": 4.294,
+      "speedMps": 1.534,
+      "durS": 2.8
+    },
+    "ESQUIVA_4__1_": {
+      "strideM": 4.992,
+      "speedMps": 1.783,
+      "durS": 2.8
+    },
+    "FACEGOUGE": {
+      "strideM": 3.655,
+      "speedMps": 0.731,
+      "durS": 5
+    },
+    "FALLING_FLAT_IMPACT": {
+      "strideM": 0.453,
+      "speedMps": 0.289,
+      "durS": 1.5667
+    },
+    "FALLING_FORWARD_DEATH": {
+      "strideM": 1.6,
+      "speedMps": 0.623,
+      "durS": 2.5667
+    },
+    "FALL_B_LOOP": {
+      "strideM": 0.11,
+      "speedMps": 0.103,
+      "durS": 1.0667
+    },
+    "FATALITY": {
+      "strideM": 6.497,
+      "speedMps": 0.541,
+      "durS": 12
+    },
+    "FENCEM_KICK": {
+      "strideM": 2.539,
+      "speedMps": 0.635,
+      "durS": 4
+    },
+    "FENCETHROW": {
+      "strideM": 7.016,
+      "speedMps": 1.169,
+      "durS": 6
+    },
+    "FENCETHROW_002": {
+      "strideM": 4.31,
+      "speedMps": 0.718,
+      "durS": 6
+    },
+    "FIN_F10": {
+      "strideM": 5.775,
+      "speedMps": 0.577,
+      "durS": 10
+    },
+    "GERMANSUPLEX": {
+      "strideM": 4.683,
+      "speedMps": 0.598,
+      "durS": 7.8333
+    },
+    "GIANTSWING": {
+      "strideM": 15.73,
+      "speedMps": 2.247,
+      "durS": 7
+    },
+    "GIANTSWINGREACTION": {
+      "strideM": 6.636,
+      "speedMps": 4.083,
+      "durS": 1.625
+    },
+    "GINGA_BACKWARD": {
+      "strideM": 2.824,
+      "speedMps": 2.492,
+      "durS": 1.1333
+    },
+    "GINGA_FORWARD": {
+      "strideM": 3.415,
+      "speedMps": 2.769,
+      "durS": 1.2333
+    },
+    "GINGA_SIDEWAYS_2": {
+      "strideM": 4.563,
+      "speedMps": 2.013,
+      "durS": 2.2667
+    },
+    "GRAFCROUCHEXTENDARM": {
+      "strideM": 0.7,
+      "speedMps": 1.292,
+      "durS": 0.5417
+    },
+    "GRAFCROUCHEXTENDARM_RISE": {
+      "strideM": 0.643,
+      "speedMps": 1.188,
+      "durS": 0.5417
+    },
+    "GRAFHAMMER": {
+      "strideM": 1.41,
+      "speedMps": 1.781,
+      "durS": 0.7917
+    },
+    "GRAFHAMMERCOMBO": {
+      "strideM": 1.637,
+      "speedMps": 1.511,
+      "durS": 1.0833
+    },
+    "GRAFHAMMERCOMBO2": {
+      "strideM": 2.857,
+      "speedMps": 2.638,
+      "durS": 1.0833
+    },
+    "GRAFINTRO": {
+      "strideM": 0.483,
+      "speedMps": 0.159,
+      "durS": 3.0417
+    },
+    "GRAFJUMPKICK": {
+      "strideM": 1.855,
+      "speedMps": 3.179,
+      "durS": 0.5833
+    },
+    "GRAFJUMPKICK2": {
+      "strideM": 1.401,
+      "speedMps": 2.402,
+      "durS": 0.5833
+    },
+    "GRAFJUMPPUNCH": {
+      "strideM": 1.498,
+      "speedMps": 2.568,
+      "durS": 0.5833
+    },
+    "GRAFKNEEASSAULT": {
+      "strideM": 0.986,
+      "speedMps": 2.151,
+      "durS": 0.4583
+    },
+    "GRAFPUNCHCOMBO": {
+      "strideM": 1.199,
+      "speedMps": 2.616,
+      "durS": 0.4583
+    },
+    "GRAFPUNCHCOMBO_SLOWER": {
+      "strideM": 1.212,
+      "speedMps": 2.646,
+      "durS": 0.4583
+    },
+    "GRAFPUSHINGKICK": {
+      "strideM": 1.617,
+      "speedMps": 2.773,
+      "durS": 0.5833
+    },
+    "GRAFQUICKJAB": {
+      "strideM": 0.607,
+      "speedMps": 1.325,
+      "durS": 0.4583
+    },
+    "GRAFQUICKSWEEP": {
+      "strideM": 0.317,
+      "speedMps": 0.845,
+      "durS": 0.375
+    },
+    "GRAFSHOULDERTHRUST": {
+      "strideM": 0.835,
+      "speedMps": 1.431,
+      "durS": 0.5833
+    },
+    "GRAFSTANCE": {
+      "strideM": 0.315,
+      "speedMps": 0.199,
+      "durS": 1.5833
+    },
+    "GRAFSTANCE2": {
+      "strideM": 0.095,
+      "speedMps": 0.059,
+      "durS": 1.625
+    },
+    "GRAFSTANCE3": {
+      "strideM": 0.031,
+      "speedMps": 0.018,
+      "durS": 1.7083
+    },
+    "GRAFSURPRISEPUNCH": {
+      "strideM": 0.108,
+      "speedMps": 0.13,
+      "durS": 0.8333
+    },
+    "GRAFSURPRISEPUNCHLONGER": {
+      "strideM": 0.108,
+      "speedMps": 0.13,
+      "durS": 0.8333
+    },
+    "GRAFSURPRISEPUNCHLOW": {
+      "strideM": 1.517,
+      "speedMps": 1.517,
+      "durS": 1
+    },
+    "GRAFSURPRISEPUNCHLOW2": {
+      "strideM": 1.517,
+      "speedMps": 1.517,
+      "durS": 1
+    },
+    "GRAFSURPRISEPUNCHSLOWER": {
+      "strideM": 0.108,
+      "speedMps": 0.113,
+      "durS": 0.9583
+    },
+    "GRAFTHROW": {
+      "strideM": 2.34,
+      "speedMps": 1.37,
+      "durS": 1.7083
+    },
+    "GRAFTHROWREACTION": {
+      "strideM": 2.377,
+      "speedMps": 1.729,
+      "durS": 1.375
+    },
+    "GRAFUPPERCUT": {
+      "strideM": 0.757,
+      "speedMps": 1.297,
+      "durS": 0.5833
+    },
+    "GUARD": {
+      "strideM": 0.016,
+      "speedMps": 0.097,
+      "durS": 0.1667
+    },
+    "GUARD_HIGH": {
+      "strideM": 0.555,
+      "speedMps": 0.252,
+      "durS": 2.2
+    },
+    "GUARD_LOW": {
+      "strideM": 1.778,
+      "speedMps": 0.635,
+      "durS": 2.8
+    },
+    "GYAKUZUKI": {
+      "strideM": 0.81,
+      "speedMps": 1.944,
+      "durS": 0.4167
+    },
+    "GYAKUZUKI_COMBO": {
+      "strideM": 2.046,
+      "speedMps": 1.818,
+      "durS": 1.125
+    },
+    "HAMMERLOCKDDT": {
+      "strideM": 2.624,
+      "speedMps": 0.328,
+      "durS": 8
+    },
+    "HAMMERTHROW": {
+      "strideM": 4.417,
+      "speedMps": 0.883,
+      "durS": 5
+    },
+    "HEAVYKICK": {
+      "strideM": 1.116,
+      "speedMps": 2.06,
+      "durS": 0.5417
+    },
+    "HEAVY_WEAPON_SWING": {
+      "strideM": 2.177,
+      "speedMps": 0.419,
+      "durS": 5.2
+    },
+    "HIGHPUNCH": {
+      "strideM": 0.022,
+      "speedMps": 0.106,
+      "durS": 0.2083
+    },
+    "HIT_ON_SIDE_OF_HEAD": {
+      "strideM": 3.753,
+      "speedMps": 1.137,
+      "durS": 3.3
+    },
+    "HIT_ON_THE_BACK": {
+      "strideM": 5.066,
+      "speedMps": 2.026,
+      "durS": 2.5
+    },
+    "HIT_REACTION": {
+      "strideM": 0.715,
+      "speedMps": 0.294,
+      "durS": 2.4333
+    },
+    "HIT_TO_BODY": {
+      "strideM": 0.53,
+      "speedMps": 0.441,
+      "durS": 1.2
+    },
+    "HIT_TO_HEAD": {
+      "strideM": 4.098,
+      "speedMps": 1.618,
+      "durS": 2.5333
+    },
+    "HOUSE_DANCING": {
+      "strideM": 3.616,
+      "speedMps": 0.169,
+      "durS": 21.3667
+    },
+    "HURRICANERANA": {
+      "strideM": 3.553,
+      "speedMps": 0.735,
+      "durS": 4.8333
+    },
+    "HURRICANE_KICK": {
+      "strideM": 25.064,
+      "speedMps": 13.672,
+      "durS": 1.8333
+    },
+    "IDLE": {
+      "strideM": 0.65,
+      "speedMps": 0.162,
+      "durS": 4
+    },
+    "ILLEGAL_ELBOW_PUNCH": {
+      "strideM": 1.22,
+      "speedMps": 0.538,
+      "durS": 2.2667
+    },
+    "ILLEGAL_ELBOW_PUNCH__1_": {
+      "strideM": 1.136,
+      "speedMps": 0.559,
+      "durS": 2.0333
+    },
+    "ILLEGAL_ELBOW_PUNCH__2_": {
+      "strideM": 1.136,
+      "speedMps": 0.559,
+      "durS": 2.0333
+    },
+    "ILLEGAL_KNEE": {
+      "strideM": 1.155,
+      "speedMps": 0.509,
+      "durS": 2.2667
+    },
+    "INJURED_HURTING_IDLE": {
+      "strideM": 1.451,
+      "speedMps": 0.241,
+      "durS": 6.0333
+    },
+    "INJURED_RUN_BACKWARDS_RIGHT_TURN": {
+      "strideM": 1.065,
+      "speedMps": 1.997,
+      "durS": 0.5333
+    },
+    "INJURED_TURN_RIGHT": {
+      "strideM": 0.697,
+      "speedMps": 0.996,
+      "durS": 0.7
+    },
+    "JAYKICK": {
+      "strideM": 2.519,
+      "speedMps": 0.336,
+      "durS": 7.5
+    },
+    "JENNCROSSKICKTHROWREACTION": {
+      "strideM": 1.995,
+      "speedMps": 0.977,
+      "durS": 2.0417
+    },
+    "JENNCROSSKICKTHROWREACTION2": {
+      "strideM": 1.942,
+      "speedMps": 1.084,
+      "durS": 1.7917
+    },
+    "JENNLEGLOCKREACTION": {
+      "strideM": 1.637,
+      "speedMps": 0.802,
+      "durS": 2.0417
+    },
+    "JENNLEGLOCKREACTION2": {
+      "strideM": 1.942,
+      "speedMps": 1.084,
+      "durS": 1.7917
+    },
+    "JOHNSONINTROPOSE": {
+      "strideM": 0.648,
+      "speedMps": 0.173,
+      "durS": 3.75
+    },
+    "JOHNSONINTROPOSE2": {
+      "strideM": 0.636,
+      "speedMps": 0.17,
+      "durS": 3.75
+    },
+    "JOHNSONINTROPOSE3": {
+      "strideM": 0.982,
+      "speedMps": 0.265,
+      "durS": 3.7083
+    },
+    "JOHNSONRUNNINGTACKLE": {
+      "strideM": 1.97,
+      "speedMps": 3.636,
+      "durS": 0.5417
+    },
+    "JOHNSONWAVESWEEPER": {
+      "strideM": 3.259,
+      "speedMps": 4.888,
+      "durS": 0.6667
+    },
+    "JOHNSONWAVESWEEPERLAUNCHER": {
+      "strideM": 3.026,
+      "speedMps": 4.035,
+      "durS": 0.75
+    },
+    "JOHNSONWAVESWEEPERLAUNCHER_VAR": {
+      "strideM": 3.337,
+      "speedMps": 4.45,
+      "durS": 0.75
+    },
+    "JOHNSONWINPOSE": {
+      "strideM": 0.258,
+      "speedMps": 0.097,
+      "durS": 2.6667
+    },
+    "JOHNSONWINPOSE_EDIT": {
+      "strideM": 0.245,
+      "speedMps": 0.092,
+      "durS": 2.6667
+    },
+    "JOHNSONWINPOSE_EDIT_PONCHOFIX": {
+      "strideM": 0.245,
+      "speedMps": 0.092,
+      "durS": 2.6667
+    },
+    "JOHNSON_CANNONBALL_REACTION": {
+      "strideM": 0.943,
+      "speedMps": 1.617,
+      "durS": 0.5833
+    },
+    "JOHNSON_CANNONBALL_REACTION2": {
+      "strideM": 0.865,
+      "speedMps": 1.092,
+      "durS": 0.7917
+    },
+    "JOHNSON_STANCE": {
+      "strideM": 0.043,
+      "speedMps": 0.045,
+      "durS": 0.9583
+    },
+    "JUMP": {
+      "strideM": 0.441,
+      "speedMps": 0.706,
+      "durS": 0.625
+    },
+    "JUMP2": {
+      "strideM": 0.103,
+      "speedMps": 0.176,
+      "durS": 0.5833
+    },
+    "JUMPAXEKICK": {
+      "strideM": 1.02,
+      "speedMps": 1.288,
+      "durS": 0.7917
+    },
+    "JUMPSPIN": {
+      "strideM": 1.463,
+      "speedMps": 1.133,
+      "durS": 1.2917
+    },
+    "JUNGLE_JUICE": {
+      "strideM": 6.994,
+      "speedMps": 3.253,
+      "durS": 2.1498
+    },
+    "JUNGLE_JUICE__RECV": {
+      "strideM": 3.485,
+      "speedMps": 3.634,
+      "durS": 0.9591
+    },
+    "KIP_UP": {
+      "strideM": 4.695,
+      "speedMps": 2.309,
+      "durS": 2.0333
+    },
+    "KIYOKOTHROWREACTION": {
+      "strideM": 1.825,
+      "speedMps": 0.826,
+      "durS": 2.2083
+    },
+    "KNEETHROW": {
+      "strideM": 0.645,
+      "speedMps": 1.191,
+      "durS": 0.5417
+    },
+    "KNEETHROWREACTION": {
+      "strideM": 0.494,
+      "speedMps": 0.912,
+      "durS": 0.5417
+    },
+    "KNEETHROWREACTION_NEW": {
+      "strideM": 0.703,
+      "speedMps": 1.406,
+      "durS": 0.5
+    },
+    "KNEETHROWREACTION_SLOW": {
+      "strideM": 0.765,
+      "speedMps": 0.834,
+      "durS": 0.9167
+    },
+    "KNEETHROW_SLOW": {
+      "strideM": 0.661,
+      "speedMps": 0.882,
+      "durS": 0.75
+    },
+    "KRAVESTANCE": {
+      "strideM": 0.034,
+      "speedMps": 0.018,
+      "durS": 1.8333
+    },
+    "LAZORBACKROLL": {
+      "strideM": 1.566,
+      "speedMps": 1.634,
+      "durS": 0.9583
+    },
+    "LAZORFORWARDROLL": {
+      "strideM": 1.457,
+      "speedMps": 2.185,
+      "durS": 0.6667
+    },
+    "LAZORTHROWREACTION": {
+      "strideM": 0.671,
+      "speedMps": 0.7,
+      "durS": 0.9583
+    },
+    "LOBSTER_ESS_REACTION": {
+      "strideM": 5.904,
+      "speedMps": 1.687,
+      "durS": 3.5
+    },
+    "LOBSTER_ESS_REACTION_FIX": {
+      "strideM": 5.895,
+      "speedMps": 1.684,
+      "durS": 3.5
+    },
+    "LOCO_LIGHT": {
+      "strideM": 2.82,
+      "speedMps": 1.282,
+      "durS": 2.2
+    },
+    "LOCO_LUMBER": {
+      "strideM": 3.398,
+      "speedMps": 1.259,
+      "durS": 2.7
+    },
+    "LOCO_PROWL": {
+      "strideM": 5.302,
+      "speedMps": 2.079,
+      "durS": 2.55
+    },
+    "LOCO_STALK": {
+      "strideM": 1.7,
+      "speedMps": 0.724,
+      "durS": 2.35
+    },
+    "LOCO_STRUT": {
+      "strideM": 2.24,
+      "speedMps": 0.773,
+      "durS": 2.9
+    },
+    "LOLA_B_STYPEREK": {
+      "strideM": 0,
+      "speedMps": 0,
+      "durS": 0.0333
+    },
+    "LOWSTANCE": {
+      "strideM": 0.075,
+      "speedMps": 0.081,
+      "durS": 0.9167
+    },
+    "LOWSTANCEGUARD": {
+      "strideM": 0.032,
+      "speedMps": 0.152,
+      "durS": 0.2083
+    },
+    "LOWSTANCENEW": {
+      "strideM": 0.051,
+      "speedMps": 0.054,
+      "durS": 0.9583
+    },
+    "MIRAAIRTHROWREACTION": {
+      "strideM": 2.286,
+      "speedMps": 2.888,
+      "durS": 0.7917
+    },
+    "MIRATHROWREACTION": {
+      "strideM": 5.727,
+      "speedMps": 3.524,
+      "durS": 1.625
+    },
+    "NECKBREAKER": {
+      "strideM": 3.131,
+      "speedMps": 0.712,
+      "durS": 4.4
+    },
+    "NIGHTTHROWREACTION": {
+      "strideM": 2.691,
+      "speedMps": 1.794,
+      "durS": 1.5
+    },
+    "NOFUTURE": {
+      "strideM": 5.213,
+      "speedMps": 0.521,
+      "durS": 10
+    },
+    "ORAORAORA": {
+      "strideM": 0.107,
+      "speedMps": 0.043,
+      "durS": 2.4583
+    },
+    "ORAORAORAREACTION": {
+      "strideM": 0.44,
+      "speedMps": 0.179,
+      "durS": 2.4583
+    },
+    "OVREHEADPRESS": {
+      "strideM": 1.39,
+      "speedMps": 0.232,
+      "durS": 6
+    },
+    "PALADIN_J_NORDSTROM": {
+      "strideM": 0,
+      "speedMps": 0,
+      "durS": 0.0333
+    },
+    "PASSIVE_MARKER_MAN": {
+      "strideM": 0,
+      "speedMps": 0,
+      "durS": 0.0333
+    },
+    "PIERCINGHANDREACTION": {
+      "strideM": 1.417,
+      "speedMps": 0.694,
+      "durS": 2.0417
+    },
+    "POPUPGERMANSUPLEX": {
+      "strideM": 3.759,
+      "speedMps": 0.537,
+      "durS": 7
+    },
+    "POWERBOMBREACTION": {
+      "strideM": 1.763,
+      "speedMps": 1.114,
+      "durS": 1.5833
+    },
+    "POWERBOMBWHIP": {
+      "strideM": 2.063,
+      "speedMps": 0.295,
+      "durS": 7
+    },
+    "PRONEROTATION": {
+      "strideM": 2.618,
+      "speedMps": 6.282,
+      "durS": 0.4167
+    },
+    "PUMPKINHULK_L_SHAW": {
+      "strideM": 0,
+      "speedMps": 0,
+      "durS": 0.0333
+    },
+    "PUNCHKICKCOMBO": {
+      "strideM": 2.447,
+      "speedMps": 1.894,
+      "durS": 1.2917
+    },
+    "QUESHADA_2": {
+      "strideM": 4.909,
+      "speedMps": 2.454,
+      "durS": 2
+    },
+    "QUICKKICK": {
+      "strideM": 0.174,
+      "speedMps": 0.695,
+      "durS": 0.25
+    },
+    "RAINTRIGGER": {
+      "strideM": 4.591,
+      "speedMps": 0.765,
+      "durS": 6
+    },
+    "RAPIDCHESTBEATING": {
+      "strideM": 9.126,
+      "speedMps": 3.042,
+      "durS": 3
+    },
+    "REACTION_HEAVYHITAIRREVOLT": {
+      "strideM": 2.138,
+      "speedMps": 2.566,
+      "durS": 0.8333
+    },
+    "REACTION_HEAVYHITAIRREVOLTBACK": {
+      "strideM": 2.141,
+      "speedMps": 6.424,
+      "durS": 0.3333
+    },
+    "REACTION_HITSTRONGHIGH": {
+      "strideM": 1.11,
+      "speedMps": 2.05,
+      "durS": 0.5417
+    },
+    "REACTION_HITSTRONGMID": {
+      "strideM": 1.056,
+      "speedMps": 1.95,
+      "durS": 0.5417
+    },
+    "REACTION_HITWEAKHIGH": {
+      "strideM": 0.019,
+      "speedMps": 0.116,
+      "durS": 0.1667
+    },
+    "REACTION_HITWEAKMEDIUM": {
+      "strideM": 0.023,
+      "speedMps": 0.141,
+      "durS": 0.1667
+    },
+    "REACTION_HITWEAKMEDIUMBACK": {
+      "strideM": 0.296,
+      "speedMps": 1.774,
+      "durS": 0.1667
+    },
+    "REACTION_LANDING": {
+      "strideM": 0.606,
+      "speedMps": 2.908,
+      "durS": 0.2083
+    },
+    "REACTION_MONOCROSS": {
+      "strideM": 1.149,
+      "speedMps": 2.121,
+      "durS": 0.5417
+    },
+    "RENZOTHROW": {
+      "strideM": 1.828,
+      "speedMps": 0.812,
+      "durS": 2.25
+    },
+    "RENZOTHROWREACTION": {
+      "strideM": 2.311,
+      "speedMps": 1.027,
+      "durS": 2.25
+    },
+    "REVERSEGOOZLEDIVFOOTSTOMP": {
+      "strideM": 3.819,
+      "speedMps": 0.318,
+      "durS": 12
+    },
+    "RISINGCOMET": {
+      "strideM": 1.027,
+      "speedMps": 1.54,
+      "durS": 0.6667
+    },
+    "ROADROLLERDAB": {
+      "strideM": 3.783,
+      "speedMps": 0.833,
+      "durS": 4.5417
+    },
+    "ROADROLLERDAB_REACTION": {
+      "strideM": 7.342,
+      "speedMps": 1.616,
+      "durS": 4.5417
+    },
+    "ROLLOUT": {
+      "strideM": 0.64,
+      "speedMps": 1.279,
+      "durS": 0.5
+    },
+    "ROLLOUTRIGHT": {
+      "strideM": 0.776,
+      "speedMps": 1.552,
+      "durS": 0.5
+    },
+    "ROUNDHOUSEKICK": {
+      "strideM": 2.321,
+      "speedMps": 2.422,
+      "durS": 0.9583
+    },
+    "ROUNDHOUSELOW": {
+      "strideM": 1.946,
+      "speedMps": 2.919,
+      "durS": 0.6667
+    },
+    "RUNNING": {
+      "strideM": 2.117,
+      "speedMps": 5.645,
+      "durS": 0.375
+    },
+    "RUNNINGLOW": {
+      "strideM": 1.904,
+      "speedMps": 5.077,
+      "durS": 0.375
+    },
+    "SCHOOLBOYSUPERKICK": {
+      "strideM": 4.056,
+      "speedMps": 0.579,
+      "durS": 7
+    },
+    "SHARKNADO": {
+      "strideM": 1.866,
+      "speedMps": 1.659,
+      "durS": 1.125
+    },
+    "SHARKNADO_REACTION": {
+      "strideM": 2.689,
+      "speedMps": 2.39,
+      "durS": 1.125
+    },
+    "SHARKNADO_REACTION_2": {
+      "strideM": 3.178,
+      "speedMps": 2.825,
+      "durS": 1.125
+    },
+    "SHARKNADO_REACTION_3": {
+      "strideM": 3.269,
+      "speedMps": 2.18,
+      "durS": 1.5
+    },
+    "SHARPSHOOTER": {
+      "strideM": 4.454,
+      "speedMps": 0.318,
+      "durS": 14
+    },
+    "SHAZENTRANCE": {
+      "strideM": 0.937,
+      "speedMps": 0.285,
+      "durS": 3.2917
+    },
+    "SHAZLOWRUSH": {
+      "strideM": 1.215,
+      "speedMps": 2.242,
+      "durS": 0.5417
+    },
+    "SHAZLOWRUSH_CROUCH": {
+      "strideM": 1.229,
+      "speedMps": 1.735,
+      "durS": 0.7083
+    },
+    "SHAZSTANCE": {
+      "strideM": 0.093,
+      "speedMps": 0.059,
+      "durS": 1.5833
+    },
+    "SHAZWALK": {
+      "strideM": 0.931,
+      "speedMps": 1.016,
+      "durS": 0.9167
+    },
+    "SHOULDERBAG": {
+      "strideM": 2.15,
+      "speedMps": 0.358,
+      "durS": 6
+    },
+    "SIDESTEP": {
+      "strideM": 0.402,
+      "speedMps": 0.438,
+      "durS": 0.9167
+    },
+    "SIDESTEPF": {
+      "strideM": 0.729,
+      "speedMps": 2.187,
+      "durS": 0.3333
+    },
+    "SIDESTEPFAST": {
+      "strideM": 0.374,
+      "speedMps": 0.898,
+      "durS": 0.4167
+    },
+    "SIDESTEPMEDIUM": {
+      "strideM": 0.407,
+      "speedMps": 0.698,
+      "durS": 0.5833
+    },
+    "SKELETONFACEPRESSREACTION": {
+      "strideM": 2.024,
+      "speedMps": 1.567,
+      "durS": 1.2917
+    },
+    "SNAPPILEDRIVERS": {
+      "strideM": 4.321,
+      "speedMps": 0.36,
+      "durS": 12
+    },
+    "SPINJUMPB": {
+      "strideM": 0.006,
+      "speedMps": 0.028,
+      "durS": 0.2083
+    },
+    "SPINJUMPBFAST": {
+      "strideM": 0,
+      "speedMps": 0,
+      "durS": 0.125
+    },
+    "SPINJUMPF": {
+      "strideM": 0.006,
+      "speedMps": 0.028,
+      "durS": 0.2083
+    },
+    "SPINJUMPFFAST": {
+      "strideM": 0,
+      "speedMps": 0,
+      "durS": 0.125
+    },
+    "SPINNINGARMSSPREAD": {
+      "strideM": 4.698,
+      "speedMps": 0.705,
+      "durS": 6.6667
+    },
+    "SPINTORTURERACKBOMB": {
+      "strideM": 3.026,
+      "speedMps": 0.475,
+      "durS": 6.3667
+    },
+    "STANCE": {
+      "strideM": 0.033,
+      "speedMps": 0.036,
+      "durS": 0.9167
+    },
+    "STANCE_BLADED": {
+      "strideM": 0.402,
+      "speedMps": 0.144,
+      "durS": 2.8
+    },
+    "STANCE_CROUCH": {
+      "strideM": 0.775,
+      "speedMps": 0.361,
+      "durS": 2.15
+    },
+    "STANCE_WIDE": {
+      "strideM": 0.079,
+      "speedMps": 0.028,
+      "durS": 2.8
+    },
+    "STEREOSUPERKICK": {
+      "strideM": 3.503,
+      "speedMps": 0.258,
+      "durS": 13.6
+    },
+    "STRONGZERO": {
+      "strideM": 5.078,
+      "speedMps": 0.423,
+      "durS": 12
+    },
+    "SUPINE": {
+      "strideM": 0,
+      "speedMps": 0,
+      "durS": 0.2083
+    },
+    "SUPLEX": {
+      "strideM": 2.963,
+      "speedMps": 0.494,
+      "durS": 6
+    },
+    "TABLEIMPACT": {
+      "strideM": 5.786,
+      "speedMps": 0.579,
+      "durS": 10
+    },
+    "TAGSUPERKICK": {
+      "strideM": 4.252,
+      "speedMps": 0.911,
+      "durS": 4.6667
+    },
+    "TAUNT": {
+      "strideM": 3.675,
+      "speedMps": 0.565,
+      "durS": 6.5
+    },
+    "TAUNT2": {
+      "strideM": 2.176,
+      "speedMps": 0.344,
+      "durS": 6.3333
+    },
+    "TAUNT_ARMS_WIDE": {
+      "strideM": 0.486,
+      "speedMps": 0.135,
+      "durS": 3.6
+    },
+    "TAUNT_CALLOUT": {
+      "strideM": 1.093,
+      "speedMps": 0.336,
+      "durS": 3.25
+    },
+    "TAUNT_FLEX": {
+      "strideM": 0.283,
+      "speedMps": 0.079,
+      "durS": 3.6
+    },
+    "TAUNT_KOFIKINGSTON": {
+      "strideM": 5.253,
+      "speedMps": 0.875,
+      "durS": 6
+    },
+    "TAUNT_POINT": {
+      "strideM": 0.953,
+      "speedMps": 0.307,
+      "durS": 3.1
+    },
+    "TAU_BUTTSLAP": {
+      "strideM": 4.03,
+      "speedMps": 1.343,
+      "durS": 3
+    },
+    "TAU_DIVA": {
+      "strideM": 6.106,
+      "speedMps": 1.221,
+      "durS": 5
+    },
+    "TAU_GAMEOVER": {
+      "strideM": 2.003,
+      "speedMps": 0.501,
+      "durS": 4
+    },
+    "TAU_GENERALFEMALE": {
+      "strideM": 2.687,
+      "speedMps": 0.537,
+      "durS": 5
+    },
+    "TAU_HEADCRACK": {
+      "strideM": 3.784,
+      "speedMps": 0.757,
+      "durS": 5
+    },
+    "TEMPMONOREACTION": {
+      "strideM": 2.046,
+      "speedMps": 1.327,
+      "durS": 1.5417
+    },
+    "THROWSTART": {
+      "strideM": 0.259,
+      "speedMps": 0.692,
+      "durS": 0.375
+    },
+    "THROWSTART_STEP": {
+      "strideM": 0.333,
+      "speedMps": 0.887,
+      "durS": 0.375
+    },
+    "THUNDERGODREACTION": {
+      "strideM": 1.966,
+      "speedMps": 1.747,
+      "durS": 1.125
+    },
+    "THUNDERGODREACTION2": {
+      "strideM": 1.392,
+      "speedMps": 1.237,
+      "durS": 1.125
+    },
+    "TIGERCOMMANDOCOMBO1": {
+      "strideM": 2.443,
+      "speedMps": 2.664,
+      "durS": 0.9167
+    },
+    "TIGERDOUBLEHAMMERCOMBO": {
+      "strideM": 0.395,
+      "speedMps": 0.729,
+      "durS": 0.5417
+    },
+    "TIGERDYNAMOPUNCH": {
+      "strideM": 0.34,
+      "speedMps": 0.628,
+      "durS": 0.5417
+    },
+    "TIGERDYNAMOPUNCH_FIX": {
+      "strideM": 0.349,
+      "speedMps": 0.599,
+      "durS": 0.5833
+    },
+    "TIGERINTROPOSE": {
+      "strideM": 0.403,
+      "speedMps": 0.107,
+      "durS": 3.75
+    },
+    "TIGERINTROPOSE2": {
+      "strideM": 0.411,
+      "speedMps": 0.11,
+      "durS": 3.75
+    },
+    "TIGERKNEEBASHSLOW": {
+      "strideM": 2.448,
+      "speedMps": 2.26,
+      "durS": 1.0833
+    },
+    "TIGERQUICKPUNCH": {
+      "strideM": 0.075,
+      "speedMps": 0.359,
+      "durS": 0.2083
+    },
+    "TIGERSCARLETSCREW": {
+      "strideM": 3.695,
+      "speedMps": 4.926,
+      "durS": 0.75
+    },
+    "TIGERSCARLETSCREW_FIX": {
+      "strideM": 4.156,
+      "speedMps": 5.25,
+      "durS": 0.7917
+    },
+    "TIGERSCARLETSCREW_LOWKICK": {
+      "strideM": 1.406,
+      "speedMps": 2.596,
+      "durS": 0.5417
+    },
+    "TIGERSCARLETSCREW_NOKICK": {
+      "strideM": 2.021,
+      "speedMps": 3.464,
+      "durS": 0.5833
+    },
+    "TIGERSCARLETSCREW_NOKICK_FIX": {
+      "strideM": 1.611,
+      "speedMps": 2.762,
+      "durS": 0.5833
+    },
+    "TIGERSTANCE": {
+      "strideM": 0.088,
+      "speedMps": 0.096,
+      "durS": 0.9167
+    },
+    "TIGERSTANCEUPDATED": {
+      "strideM": 0.044,
+      "speedMps": 0.028,
+      "durS": 1.5833
+    },
+    "TIGERWINPOSE": {
+      "strideM": 0.08,
+      "speedMps": 0.026,
+      "durS": 3.0833
+    },
+    "TIGER_FEINT_KICK": {
+      "strideM": 5.835,
+      "speedMps": 1.384,
+      "durS": 4.2167
+    },
+    "TIGER_FEINT_KICK__RECV": {
+      "strideM": 7.516,
+      "speedMps": 1.593,
+      "durS": 4.7186
+    },
+    "TIGER_HEAVYKICK": {
+      "strideM": 0.67,
+      "speedMps": 1.462,
+      "durS": 0.4583
+    },
+    "TIGER_HEAVYKICKCOMBO": {
+      "strideM": 3.361,
+      "speedMps": 1.92,
+      "durS": 1.75
+    },
+    "TOMBSTONE": {
+      "strideM": 2.867,
+      "speedMps": 0.358,
+      "durS": 8
+    },
+    "TPOSE": {
+      "strideM": 0,
+      "speedMps": 0,
+      "durS": 0.7917
+    },
+    "TZ_SCOOP_SLAM": {
+      "strideM": 3.418,
+      "speedMps": 0.196,
+      "durS": 17.4333
+    },
+    "TZ_SCOOP_SLAM__RECV": {
+      "strideM": 5.424,
+      "speedMps": 1.937,
+      "durS": 2.8
+    },
+    "TZ_TILT_WHIRL_SLAM": {
+      "strideM": 3.418,
+      "speedMps": 0.196,
+      "durS": 17.4333
+    },
+    "TZ_TILT_WHIRL_SLAM__RECV": {
+      "strideM": 3.66,
+      "speedMps": 2.033,
+      "durS": 1.8
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_A_TPose": {
+      "strideM": 0,
+      "speedMps": 0,
+      "durS": 2.5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Chest_Open": {
+      "strideM": 0.209,
+      "speedMps": 0.153,
+      "durS": 1.3667
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_ClimbUp_1m_RM": {
+      "strideM": 1.283,
+      "speedMps": 1.925,
+      "durS": 0.6667
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Consume": {
+      "strideM": 0.047,
+      "speedMps": 0.036,
+      "durS": 1.3333
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Farm_Harvest": {
+      "strideM": 1.356,
+      "speedMps": 0.542,
+      "durS": 2.5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Farm_PlantSeed": {
+      "strideM": 0.194,
+      "speedMps": 0.07,
+      "durS": 2.7667
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Farm_Watering": {
+      "strideM": 0.079,
+      "speedMps": 0.021,
+      "durS": 3.8
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Hit_Knockback": {
+      "strideM": 1.738,
+      "speedMps": 2.085,
+      "durS": 0.8333
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Hit_Knockback_RM": {
+      "strideM": 1.738,
+      "speedMps": 2.085,
+      "durS": 0.8333
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_FoldArms_Loop": {
+      "strideM": 0.032,
+      "speedMps": 0.013,
+      "durS": 2.5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Lantern_Loop": {
+      "strideM": 0.032,
+      "speedMps": 0.013,
+      "durS": 2.5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_No_Loop": {
+      "strideM": 0.032,
+      "speedMps": 0.013,
+      "durS": 2.5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Rail_Call": {
+      "strideM": 0.076,
+      "speedMps": 0.03,
+      "durS": 2.5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Rail_Loop": {
+      "strideM": 0.014,
+      "speedMps": 0.006,
+      "durS": 2.5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Shield_Break": {
+      "strideM": 0.279,
+      "speedMps": 0.261,
+      "durS": 1.0667
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_Shield_Loop": {
+      "strideM": 0.032,
+      "speedMps": 0.013,
+      "durS": 2.5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Idle_TalkingPhone_Loop": {
+      "strideM": 0.021,
+      "speedMps": 0.007,
+      "durS": 2.9333
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_LayToIdle": {
+      "strideM": 1.39,
+      "speedMps": 0.906,
+      "durS": 1.5333
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Melee_Hook": {
+      "strideM": 1.067,
+      "speedMps": 2.286,
+      "durS": 0.4667
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Melee_Hook_Rec": {
+      "strideM": 0.146,
+      "speedMps": 0.243,
+      "durS": 0.6
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_NinjaJump_Idle_Loop": {
+      "strideM": 0.244,
+      "speedMps": 0.122,
+      "durS": 2
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_NinjaJump_Land": {
+      "strideM": 0.484,
+      "speedMps": 0.382,
+      "durS": 1.2667
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_NinjaJump_Start": {
+      "strideM": 0.473,
+      "speedMps": 0.49,
+      "durS": 0.9667
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_OverhandThrow": {
+      "strideM": 1.104,
+      "speedMps": 0.828,
+      "durS": 1.3333
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Shield_Dash_RM": {
+      "strideM": 0.392,
+      "speedMps": 0.356,
+      "durS": 1.1
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Shield_OneShot": {
+      "strideM": 0.056,
+      "speedMps": 0.067,
+      "durS": 0.8333
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Slide_Exit": {
+      "strideM": 1.12,
+      "speedMps": 2.241,
+      "durS": 0.5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Slide_Loop": {
+      "strideM": 0.306,
+      "speedMps": 0.153,
+      "durS": 2
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Slide_Start": {
+      "strideM": 1.63,
+      "speedMps": 1.957,
+      "durS": 0.8333
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Block": {
+      "strideM": 0.015,
+      "speedMps": 0.012,
+      "durS": 1.2333
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Dash_RM": {
+      "strideM": 0.986,
+      "speedMps": 0.629,
+      "durS": 1.5667
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_A": {
+      "strideM": 0.48,
+      "speedMps": 1.109,
+      "durS": 0.4333
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_A_Rec": {
+      "strideM": 0.377,
+      "speedMps": 0.39,
+      "durS": 0.9667
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_B": {
+      "strideM": 0.657,
+      "speedMps": 1.232,
+      "durS": 0.5333
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_B_Rec": {
+      "strideM": 0.229,
+      "speedMps": 0.222,
+      "durS": 1.0333
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_C": {
+      "strideM": 2.035,
+      "speedMps": 1.018,
+      "durS": 2
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Sword_Regular_Combo": {
+      "strideM": 3.268,
+      "speedMps": 1.089,
+      "durS": 3
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_TreeChopping_Loop": {
+      "strideM": 0.082,
+      "speedMps": 0.085,
+      "durS": 0.9667
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Walk_Carry_Loop": {
+      "strideM": 0.101,
+      "speedMps": 0.051,
+      "durS": 2
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Yes": {
+      "strideM": 0.046,
+      "speedMps": 0.019,
+      "durS": 2.5
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Zombie_Idle_Loop": {
+      "strideM": 0.005,
+      "speedMps": 0.004,
+      "durS": 1.3333
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Zombie_Scratch": {
+      "strideM": 1.207,
+      "speedMps": 0.671,
+      "durS": 1.8
+    },
+    "UAL2_vendor_quaternius-ual-2_Unreal-Godot_UAL2_Standard_Zombie_Walk_Fwd_Loop": {
+      "strideM": 0.181,
+      "speedMps": 0.136,
+      "durS": 1.3333
+    },
+    "UPPERCUT": {
+      "strideM": 0.188,
+      "speedMps": 0.45,
+      "durS": 0.4167
+    },
+    "VERTICALBRAINBUSTER": {
+      "strideM": 3.836,
+      "speedMps": 0.426,
+      "durS": 9
+    },
+    "VIOLENCEPARTY": {
+      "strideM": 5.299,
+      "speedMps": 0.883,
+      "durS": 6
+    },
+    "WAKEUPANIMATION": {
+      "strideM": 1.856,
+      "speedMps": 5.57,
+      "durS": 0.3333
+    },
+    "WALK": {
+      "strideM": 0.933,
+      "speedMps": 1.018,
+      "durS": 0.9167
+    },
+    "WALKFAST": {
+      "strideM": 0.919,
+      "speedMps": 1.576,
+      "durS": 0.5833
+    },
+    "WALLYTHROWREACTION": {
+      "strideM": 1.996,
+      "speedMps": 0.63,
+      "durS": 3.1667
+    },
+    "WBTC": {
+      "strideM": 5.526,
+      "speedMps": 1.549,
+      "durS": 3.5667
+    },
+    "Y_BOT": {
+      "strideM": 0,
+      "speedMps": 0,
+      "durS": 0.0333
+    },
+    "ZOMBIE_DYING": {
+      "strideM": 3.767,
+      "speedMps": 1.13,
+      "durS": 3.3333
+    },
+    "ZONE_APRON_HOP": {
+      "strideM": 1.25,
+      "speedMps": 0.403,
+      "durS": 3.1
+    },
+    "ZONE_CLIMB_A": {
+      "strideM": 2.733,
+      "speedMps": 0.77,
+      "durS": 3.55
+    },
+    "ZONE_CLIMB_B": {
+      "strideM": 3.701,
+      "speedMps": 0.861,
+      "durS": 4.3
+    },
+    "ZONE_DROP_A": {
+      "strideM": 1.821,
+      "speedMps": 1.138,
+      "durS": 1.6
+    },
+    "ZONE_DROP_B": {
+      "strideM": 1.07,
+      "speedMps": 0.487,
+      "durS": 2.2
+    },
+    "ZONE_DROP_C": {
+      "strideM": 1.295,
+      "speedMps": 0.588,
+      "durS": 2.2
+    },
+    "ZONE_DUCK_A": {
+      "strideM": 2.562,
+      "speedMps": 1.22,
+      "durS": 2.1
+    },
+    "ZONE_DUCK_B": {
+      "strideM": 1.128,
+      "speedMps": 0.525,
+      "durS": 2.15
+    },
+    "ZONE_DUCK_C": {
+      "strideM": 2.148,
+      "speedMps": 0.826,
+      "durS": 2.6
+    },
+    "ZONE_MIDROPE_POSE": {
+      "strideM": 1.872,
+      "speedMps": 0.486,
+      "durS": 3.85
+    },
+    "ZONE_MIDROPE_STEP": {
+      "strideM": 3.495,
+      "speedMps": 1.344,
+      "durS": 2.6
+    },
+    "ZONE_OVER_TOP_IN": {
+      "strideM": 1.128,
+      "speedMps": 0.727,
+      "durS": 1.55
+    },
+    "ZONE_OVER_TOP_OUT": {
+      "strideM": 1.36,
+      "speedMps": 0.648,
+      "durS": 2.1
+    },
+    "ZONE_PERCH_POSE": {
+      "strideM": 1.392,
+      "speedMps": 0.403,
+      "durS": 3.45
+    },
+    "ZONE_PULLUP_A": {
+      "strideM": 2.481,
+      "speedMps": 0.813,
+      "durS": 3.05
+    },
+    "ZONE_PULLUP_B": {
+      "strideM": 1.701,
+      "speedMps": 0.54,
+      "durS": 3.15
+    },
+    "ZONE_PULLUP_C": {
+      "strideM": 0.891,
+      "speedMps": 0.336,
+      "durS": 2.65
+    },
+    "ZONE_ROLL_IN": {
+      "strideM": 1.116,
+      "speedMps": 0.406,
+      "durS": 2.75
+    },
+    "ZONE_ROLL_OUT_A": {
+      "strideM": 5.542,
+      "speedMps": 2.519,
+      "durS": 2.2
+    },
+    "ZONE_ROLL_OUT_B": {
+      "strideM": 1.205,
+      "speedMps": 0.574,
+      "durS": 2.1
+    },
+    "ZONE_RUN_SLIDE_IN": {
+      "strideM": 4.384,
+      "speedMps": 1.154,
+      "durS": 3.8
+    },
+    "ZONE_SLIDE_IN_A": {
+      "strideM": 1.698,
+      "speedMps": 0.708,
+      "durS": 2.4
+    },
+    "ZONE_SLIDE_IN_B": {
+      "strideM": 4.96,
+      "speedMps": 2.067,
+      "durS": 2.4
+    },
+    "ZONE_SLIDE_IN_C": {
+      "strideM": 3.091,
+      "speedMps": 0.951,
+      "durS": 3.25
+    },
+    "ZONE_SLIDE_OUT": {
+      "strideM": 9.405,
+      "speedMps": 3.135,
+      "durS": 3
+    },
+    "ZONE_VAULT_A": {
+      "strideM": 4.208,
+      "speedMps": 2.158,
+      "durS": 1.95
+    },
+    "ZONE_VAULT_IN": {
+      "strideM": 0.93,
+      "speedMps": 0.547,
+      "durS": 1.7
+    }
+  }
+}

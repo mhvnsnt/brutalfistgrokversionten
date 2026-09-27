@@ -7,6 +7,7 @@ import type { RootTravelCurve } from '../motion/RootTravel.ts';
 
 import { fetchZstdJson } from '../assets/zstdJson.ts';
 import { setLowerBodyCredibility } from '../motion/BoneMask.ts';
+import { setAuthoredStrideSpeeds } from '../motion/DistanceMatching.ts';
 
 /**
  * CLIPS ALREADY RESOLVED ONTO THE ONE SKELETON.
@@ -872,6 +873,20 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
     // back to a stance. Those borrow the stance's legs at runtime instead of
     // playing their own. Silent on failure, and absent it every clip is trusted,
     // which is exactly the behaviour before this existed.
+    // AUTHORED STRIDE SPEEDS. Measured by FK on the planted foot; the controller
+    // scales a looping clip's playback by actual/authored so the feet stop
+    // sliding. Silent on failure, and absent it every rate stays 1.
+    void fetchZstdJson('/motion/stride_speed.json')
+      .then((m) => {
+        const clips = (m as { clips?: Record<string, { speedMps?: number }> } | null)?.clips;
+        if (!clips) return;
+        setAuthoredStrideSpeeds(
+          Object.entries(clips)
+            .filter(([, row]) => typeof row.speedMps === 'number')
+            .map(([name, row]) => [name, row.speedMps as number] as const),
+        );
+      })
+      .catch(() => {});
     void fetchZstdJson('/motion/lower_body_credibility.json')
       .then((m) => {
         const clips = (m as { clips?: Record<string, { credible?: boolean }> } | null)?.clips;

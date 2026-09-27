@@ -104,6 +104,18 @@ export const WALK_SPEED = 1.72;  // metres/sec — 1.23 reaches/sec over a 1.40m
 export const DASH_SPEED = 4.3;   // metres/sec — Schwarzerblitz's walk x2.5
 const BACKDASH_SPEED = 3.63;     // metres/sec — keeps its 0.84 ratio to the dash
 const SIDESTEP_SPEED = 1.41;     // metres/sec — keeps its 0.82 ratio to the walk
+
+/**
+ * THE ONE PLACE THAT DECIDES HOW FAST THE BODY MOVES. Exported because the
+ * animation side needs the same number to scale playback against — the stride is
+ * the clip's and the speed is the engine's, so if these two disagree the feet
+ * slide by the difference (measured: 0.77 m/s on the back-walk, 1.02 on the dash).
+ * See src/engine/motion/DistanceMatching.ts.
+ */
+export function groundSpeedCap(isDashing: boolean, isBackdashing: boolean): number {
+  return isDashing ? DASH_SPEED : isBackdashing ? BACKDASH_SPEED : WALK_SPEED;
+}
+
 const WALK_ACCEL = 12.0;         // acceleration rate
 const WALK_DECEL = 18.0;         // deceleration rate
 const ROOT_MOTION_THRESHOLD = 0.005; // minimum displacement to count as root motion
@@ -407,7 +419,7 @@ export class LocomotionSystem {
     isBackdashing: boolean,
     target?: { x: number; z: number },
   ): void {
-    const maxSpeed = isDashing ? DASH_SPEED : isBackdashing ? BACKDASH_SPEED : WALK_SPEED;
+    const maxSpeed = groundSpeedCap(isDashing, isBackdashing);
     const strafeMax = SIDESTEP_SPEED;
 
     // Target velocities from input

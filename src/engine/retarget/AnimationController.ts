@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { retargetClipByRestPose, validateRetargetedClip } from './ClipRetarget';
 import { maskForClip, upperBodyHalf, lowerBodyHalf, isSplittable, STANCE_STATES, type BoneMask } from '../motion/BoneMask';
+import { playbackRateFor, residualSlideMps } from '../motion/DistanceMatching';
 
 export type FighterMotionState =
   | 'idle' | 'walkForward' | 'walkBackward' | 'strafeLeft' | 'strafeRight' |'crouch'| 'crouchWalk' | 'guard' | 'guardLow' |'lightAttack'| 'heavyAttack' | 'lightKick' | 'heavyKick' | 'crouchLightAttack' | 'crouchHeavyAttack' |'jumpAttack'| 'runAttack' |'hit' | 'hitLow' | 'hitHigh' | 'knockdown' | 'wake'
@@ -136,6 +137,21 @@ export function buildAnimationController(
   let stanceAction: THREE.AnimationAction | null = null;
   let stanceState: FighterMotionState = 'idle';
   let masked = false;
+  /**
+   * DISTANCE MATCHING. The clip name and the live ground speed, so playback can be
+   * scaled to the stride the clip was authored with — otherwise the feet slide by
+   * the difference, measured at 0.77 m/s on the back-walk and 1.02 on the dash.
+   * Both start neutral, so a caller that never reports a speed gets rate 1 and
+   * exactly the behaviour from before this existed.
+   */
+  let playingClipName: string | null = null;
+  let groundSpeedMps = 0;
+
+  const applyPlaybackRate = () => {
+    if (!currentAction) return;
+    const rate = LOOP_STATES.has(currentState) ? playbackRateFor(playingClipName, groundSpeedMps) : 1;
+    currentAction.setEffectiveTimeScale(rate);
+  };
 
   const resolveClip = (state: FighterMotionState): THREE.AnimationClip | undefined => {
     // Try exact state match first
@@ -223,7 +239,9 @@ export function buildAnimationController(
     const legsHeld = wantMask ? raiseStanceLayer(fadeDuration) : false;
     if (!legsHeld) lowerStanceLayer(fadeDuration);
 
-    const nextAction = mixer.clipAction(legsHeld ? upperBodyHalf(validated) : validated, root);
+    const playedClip = legsHeld ? upperBodyHalf(validated) : validated;
+    playingClipName = validated.name;
+    const nextAction = mixer.clipAction(playedClip, root);
 
     // Configure loop mode
     if (LOOP_STATES.has(next)) {
@@ -249,6 +267,9 @@ export function buildAnimationController(
 
     currentAction = nextAction;
     currentState = next;
+    // AFTER currentState is set, because the rate depends on whether this state
+    // loops — a one-shot attack is never rate-scaled.
+    applyPlaybackRate();
     // Remember the stance to hold the legs at next time a strike is masked. Only
     // an unmasked stance qualifies: a masked strike never owned the legs, so it
     // has nothing to hand on.
@@ -266,6 +287,20 @@ export function buildAnimationController(
 
   return {
     get state() { return currentState; },
+    /**
+     * Tell the controller how fast the body is actually moving over the ground, in
+     * m/s. Scales a looping locomotion clip's playback so its stride covers that
+     * ground. Never called = rate 1 everywhere, which is the old behaviour.
+     */
+    setGroundSpeed(mps: number) {
+      if (Math.abs(mps - groundSpeedMps) < 0.01) return;
+      groundSpeedMps = mps;
+      applyPlaybackRate();
+    },
+    /** The rate in force, for the audit and for tests. */
+    get playbackRate() { return LOOP_STATES.has(currentState) ? playbackRateFor(playingClipName, groundSpeedMps) : 1; },
+    /** How fast the feet still slide, m/s. Non-zero means the wrong clip for this speed. */
+    get footSlide() { return LOOP_STATES.has(currentState) ? residualSlideMps(playingClipName, groundSpeedMps) : 0; },
     /** Which half of the body the playing clip is allowed to drive. */
     get mask(): BoneMask { return masked ? 'UPPER_BODY' : 'FULL_BODY'; },
     /** The stance currently holding the pelvis and legs. */

@@ -6,7 +6,8 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { BoneHitboxSystem } from '../engine/locomotion/BoneHitboxSystem';
 import { AutoRigDetector, type RigDiagnosticReport } from '../engine/locomotion/AutoRigDetector';
-import { ATTACK_ROOT_MOTION_PROFILES } from '../engine/locomotion/LocomotionSystem';
+import { ATTACK_ROOT_MOTION_PROFILES, groundSpeedCap } from '../engine/locomotion/LocomotionSystem';
+import { playbackRateFor } from '../engine/motion/DistanceMatching';
 import { blendDurationFor } from '../engine/motion/BlendDuration';
 import {
   runDeformationIntegrityTest,
@@ -1021,8 +1022,31 @@ function FighterMeshInner({
       ? attackDurationSeconds
       : null;
     const jumpWindow = ['jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey) ? 0.55 : null;
+    // DISTANCE MATCHING for a locomotion clip. An attack or a jump is already
+    // rate-fitted to its own window above; everything else used to play at a flat
+    // 1 while the engine translated the root at its own speed, which slides the
+    // feet by the difference — measured 0.77 m/s on the back-walk and 1.02 on the
+    // dash. `groundSpeedCap` is the same function the locomotion side uses to pick
+    // that speed, so the two cannot disagree.
+    //
+    // NOTE THE LIVE PATH: this component does its own action management and does
+    // NOT use buildAnimationController, so wiring the rate there alone would have
+    // been dead code. Both now do it.
+    const isDashLike = inputKey === 'dash' || inputKey === 'dashForward' || inputKey === 'run';
+    const isBackdashLike = inputKey === 'Backdashing';
+    // `normalized` is already the normalized SCENE in this scope — tsc caught the
+    // shadow. The stick magnitude needs its own name.
+    const stickMagnitude = locomotionVelocity
+      ? Math.hypot(locomotionVelocity.forward, locomotionVelocity.strafe)
+      : 0;
+    const groundSpeed = stickMagnitude * groundSpeedCap(isDashLike, isBackdashLike);
+    const strideRate = attackWindow || jumpWindow
+      ? 1
+      : playbackRateFor(nextAction.getClip().name, groundSpeed);
     nextAction.setEffectiveTimeScale(
-      attackWindow ? clipDuration / attackWindow : jumpWindow ? clipDuration / jumpWindow : 1,
+      attackWindow ? clipDuration / attackWindow
+        : jumpWindow ? clipDuration / jumpWindow
+        : strideRate,
     );
     nextAction.setEffectiveWeight(1);
     if (isAttack && attackWindow) {

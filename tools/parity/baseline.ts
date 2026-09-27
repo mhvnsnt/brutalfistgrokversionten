@@ -59,6 +59,8 @@ import { UPPER_BODY_STATES, LOWER_BODY_BONES } from '../../src/engine/motion/Bon
 import { HIT_FX_MAX_DT } from '../../src/engine/combat/HitEffectSystem.ts';
 import { CANCEL_OPENS_AT } from '../../src/engine/combat/GeneratedMovesets.ts';
 import { hitStopFramesFor, blockHitStopFramesFor, parryHitStopFramesFor, hitStopIsWeighted } from '../../src/engine/combat/HitStop.ts';
+import { setAuthoredStrideSpeeds, residualSlideMps } from '../../src/engine/motion/DistanceMatching.ts';
+import { WALK_SPEED, DASH_SPEED } from '../../src/engine/locomotion/LocomotionSystem.ts';
 
 const FPS = 60;
 const f = (seconds: number) => Math.round(seconds * FPS * 10) / 10;
@@ -257,6 +259,44 @@ add({
     : 'no credibility manifest',
   verdict: cred ? 'BEHAVING' : 'MISSING',
   fillFrom: cred ? undefined : 'run tools/motion/bone_mask_audit.mjs --write',
+});
+// STRIDE / FOOT SLIDING — the animation gap the owner names as "ugly unblended".
+const stride = existsSync('public/motion/stride_speed.json')
+  ? JSON.parse(readFileSync('public/motion/stride_speed.json', 'utf8')).clips as Record<string, { speedMps: number }>
+  : null;
+add({
+  axis: 'ANIMATION', system: 'the feet do not slide — playback matches the ground covered',
+  reference: "animation time is driven by DISTANCE, not the clock; Unreal's locomotion and Lyra's do this as distance matching",
+  refSource: 'convention',
+  ours: stride
+    ? (() => {
+      setAuthoredStrideSpeeds(Object.entries(stride).map(([n, r]) => [n, r.speedMps] as const));
+      const cases: Array<[string, number]> = [['DWARF_WALK', WALK_SPEED], ['GINGA_BACKWARD', WALK_SPEED], ['DRUNK_RUN_FORWARD', DASH_SPEED]];
+      return cases.map(([c, v]) => {
+        const raw = Math.abs(v - (stride[c]?.speedMps ?? v));
+        return `${c.split('_')[0].toLowerCase()} slid ${raw.toFixed(2)} -> ${residualSlideMps(c, v).toFixed(2)} m/s`;
+      }).join(', ');
+    })()
+    : 'no stride manifest — every clip plays at a flat rate while the engine moves the root',
+  verdict: stride && tested('distance-matching.test.ts') ? 'BEHAVING' : 'MISSING',
+  note: stride ? 'measured by FK on the planted foot; the same groundSpeedCap the locomotion side uses picks the speed, so they cannot disagree' : undefined,
+  fillFrom: stride ? undefined : 'run tools/motion/stride_speed.mjs --write',
+});
+add({
+  axis: 'ANIMATION', system: 'foot IK / foot locking on uneven contact',
+  reference: 'a planted foot stays planted, and the leg solves to reach the ground it is standing on',
+  refSource: 'convention',
+  ours: (() => { const w = declaredIn('footIK|footLock|FootIK'); return w ? w : 'none — the feet take whatever the clip gives them'; })(),
+  verdict: declaredIn('footIK|footLock|FootIK') ? 'WIRED' : 'MISSING',
+  fillFrom: 'a two-bone IK solver is ~40 lines against THREE.Bone; the stage is flat here, so this only matters once there is uneven ground or a body to stand on',
+});
+add({
+  axis: 'ANIMATION', system: 'turn in place',
+  reference: 'turning while stationary plays a turn rather than sliding the facing round',
+  refSource: 'convention',
+  ours: (() => { const w = declaredIn('turnInPlace|turn_in_place'); return w ? w : 'none — facing changes without an animation'; })(),
+  verdict: declaredIn('turnInPlace|turn_in_place') ? 'WIRED' : 'MISSING',
+  fillFrom: 'the bank has no turn clips; generate from Mixamo or MoMask, or accept it — a fighting game holds facing to the opponent, so this is the least visible of the three',
 });
 const baked = existsSync('public/motion/baked') ? readdirSync('public/motion/baked').filter((x) => x.endsWith('.json') && x !== 'index.json').length : 0;
 add({
