@@ -228,6 +228,10 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   WakeupTechRoll:    ['techRoll', 'TechRoll', 'roll', 'Roll', 'rollForward', 'RollForward', 'forwardRoll', 'ForwardRoll', 'walkForward', 'WalkForward', 'walk', 'Walk', 'SBW_techroll', 'T_techroll'],
   WakeupBackrise:    ['backrise', 'Backrise', 'getUp', 'GetUp', 'rollBack', 'RollBack', 'walkBackward', 'WalkBackward', 'walk', 'Walk', 'T_backrise'],
   WakeupQuickStand:  ['quickStand', 'QuickStand', 'getUp', 'GetUp', 'gettingUp', 'GettingUp', 'idle', 'Idle', 'standing', 'Standing', 'T_quickstand'],
+  // `wake` is reachable: MoveLibrary files clips like 'Getting Up', 'bf_wakeup'
+  // and 'SBW_wakeup' under it. It had no list here, so one of those resolved
+  // through the default instead of to a get-up.
+  wake:              ['KIP_UP', 'CORKSCREW_KIP_UP', 'WAKEUPANIMATION', 'getUp', 'GetUp', 'gettingUp', 'GettingUp', 'quickStand', 'QuickStand'],
   // ── Post-match ──────────────────────────────────────────────────────────────
   victory:           ['victory', 'Victory', 'win', 'Win', 'celebrate', 'Celebrate', 'taunt_win', 'TauntWin', 'victoryPose', 'VictoryPose', 'winPose', 'WinPose'],
   defeat:            ['defeat', 'Defeat', 'lose', 'Lose', 'knockdown', 'Knockdown', 'ko', 'KO', 'fall', 'Fall'],
@@ -287,6 +291,7 @@ const FADE_DURATIONS: Record<string, number> = {
   WakeupTechRoll:    0.083,
   WakeupBackrise:    0.083,
   WakeupQuickStand:  0.067,
+  wake:              0.067,
   // Attacks — fast snaps
   light:             0.050,
   lightAttack:       0.050,

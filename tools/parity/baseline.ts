@@ -514,6 +514,17 @@ add({
   note: 'MEASURED 15 of 22 semantics led with the 5-bone placeholder over a real capture, including idle, all five attacks, walk, run, crouch, knockdown and getup. attack_rp still leads with its placeholder ON PURPOSE: the only clip the bake files there is COMBO_PUNCH at 2.97s, a string rather than a button, and baked-motion.test.ts refuses it',
 });
 
+add({
+  axis: 'INTEGRITY', system: 'the two animation systems agree on every motion state',
+  reference: 'a state the engine can enter has an animation on the path that actually plays',
+  refSource: 'convention',
+  ours: tested('animation-system-parity.test.ts')
+    ? '57 of 57 FighterMotionState values known to both AnimationController and FighterMesh'
+    : 'not checked',
+  verdict: tested('animation-system-parity.test.ts') ? 'BEHAVING' : 'MISSING',
+  note: 'THIS SPLIT IS WHERE NEARLY EVERY ANIMATION DEFECT IN THIS PROJECT HAS HIDDEN. FighterMesh is the live playback path and keeps its OWN clip aliases, fade table and urgency lists, so a state added only to AnimationController resolves, type-checks, passes its own unit tests and cannot play. It happened to hitAir/hitBack/hitGround on the day they shipped, and to `wake`, which MoveLibrary files real clips under. The gate reads the union and asks both systems about every member, so a state added in future is covered the day it is added',
+});
+
 // ── INTEGRITY ───────────────────────────────────────────────────────────────
 // THE AXIS THAT WAS MISSING, AND THE REASON THE AUDIT READ 95% WHILE THE OWNER
 // WAS WATCHING BODIES FLOAT.
