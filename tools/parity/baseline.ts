@@ -449,7 +449,7 @@ add({
     } catch { return 'unknown'; }
   })(),
   verdict: 'WIRED',
-  note: 'MEASURED rejections, first gate to fire: reach too short 69 (mostly locomotion, correct) · fewer than 3 moving bones 69 · DURATION OVER 2.2s 61 (the biggest fixable bucket — a long capture usually holds one move plus setup, so it needs an active-span window, not a refusal) · being thrown 54 (correct) · inverted 54 · turns away 40 · starts on the mat 26 · hit/knockdown 18 · multi-body 12. Fixing the facing gate alone (facing AT IMPACT rather than facing at any point) took the pool 52 -> 59 and admitted the whole spinning-attack family including a launcher',
+  note: 'MEASURED rejections, first gate to fire: reach too short 69 (mostly locomotion, correct) · fewer than 3 moving bones 69 · duration over 2.2s 61, but MEASURED only 15 of those are blocked by duration ALONE with a usable burst inside 2.2s, and most of the 15 are intros, win poses and taunts rather than attacks (TIGER_FEINT_KICK and ORAORAORA are the real ones) — windowing is NOT the big lever it looked like · being thrown 54 (correct) · inverted 54 · turns away 40 · starts on the mat 26 · hit/knockdown 18 · multi-body 12. Fixing the facing gate alone (facing AT IMPACT rather than facing at any point) took the pool 52 -> 59 and admitted the whole spinning-attack family including a launcher',
 });
 
 // ── INTEGRITY ───────────────────────────────────────────────────────────────
