@@ -201,6 +201,7 @@ import {
 } from './ThrowChains.ts';
 import { THROW_CATALOG, type ThrowDirection } from './DirectionalThrowSystem.ts';
 import { getMoveById } from '../BrutalFistMoveCatalog.ts';
+import { resolveAirborneDive } from './AirborneDiveSystem.ts';
 
 export interface SpecialMoveDefinition {
   id: string;
@@ -2253,26 +2254,37 @@ export class FighterStateMachine {
       }
     }
 
-    const special = this.detectSpecialMove(now);
-    if (special) {
-      this.walkVelocity = { forward: 0, strafe: 0 };
-      // clipForSpecial returns a fighter-owned clip name (or the special's own
-      // animation); it has always been used as the motion state here, so the
-      // cast only records existing runtime behavior.
-      return this.beginAttack(this.clipForSpecial(special) as FighterMotionState, special.move);
-    }
-
     // ── AIR ATTACKS: jump + limb is an aerial move, not a grounded strike.
     // The locomotion arc is already armed from the same jump input above. Keep
     // the combat state as jumpAttack so FighterMesh uses the real aerial slot,
     // while the fighter-owned light/heavy clip still gives each roster member
     // distinct visual ownership. A rising limb press must win over the grounded
     // attack checks below.
-    if (resolvedInput.jump && (risingLp || risingLk || risingLight || risingRk || risingRp || risingHeavy)) {
+    if (this.jumpAirTimer > 0 && (risingLp || risingLk || risingLight || risingRk || risingRp || risingHeavy)) {
       this.walkVelocity.forward = 0;
-      const airMove = (risingLk || risingRk) ? AIR_HEAVY_MOVE : AIR_LIGHT_MOVE;
-      const airSlot: CharacterMoveClipSlot = (risingLk || risingRk) ? 'highKick' : 'lightAttack';
-      return this.beginAttack('jumpAttack', this.withCharacterClip(airMove, airSlot));
+      const dive = resolveAirborneDive({
+        airborne: true,
+        source: 'JUMP',
+        forward: resolvedInput.forward,
+        falling: this.jumpAirTimer < 0.22,
+        attackPressed: true,
+        kickPressed: risingLk || risingRk,
+      });
+      if (dive) {
+        const airMove = (risingLk || risingRk) ? AIR_HEAVY_MOVE : AIR_LIGHT_MOVE;
+        const airSlot: CharacterMoveClipSlot = (risingLk || risingRk) ? 'highKick' : 'lightAttack';
+        return this.beginAttack('jumpAttack', this.withCharacterClip(airMove, airSlot));
+      }
+    }
+
+    const special = this.detectSpecialMove(now);
+    if (special) {
+      this.walkVelocity = { forward: 0, strafe: 0 };
+      // Preserve the fighter-owned presentation on the move itself. The
+      // renderer reads activeClip(), not only the semantic motion state.
+      const ownedClip = this.clipForSpecial(special);
+      const ownedMove = { ...special.move, clip: ownedClip };
+      return this.beginAttack(ownedClip as FighterMotionState, ownedMove);
     }
 
     // ── DIRECTIONAL CHARACTER MOVES ────────────────────────────────────────
@@ -2829,12 +2841,21 @@ export class FighterStateMachine {
     // again", and the caller was deriving one by comparing motion-state
     // STRINGS — which cannot tell two identical jabs apart. See
     // attackStarts.
+    //
+    // Fighter-owned clips are also valid attack triggers. This is what keeps a
+    // directional roster move from being reported as the generic lightAttack
+    // state even though its actual authored clip is different. Aerial attacks
+    // deliberately retain jumpAttack as their semantic state because FighterMesh
+    // uses that state to hold the airborne presentation window.
+    const resolvedMotion = motion === 'jumpAttack'
+      ? motion
+      : ((move.clip ?? motion) as FighterMotionState);
     this.attackStartCount++;
     const prevState = this.motionState;
     this.walkVelocity = { forward: 0, strafe: 0 };
-    this.beginCrossfade(this.motionState, motion, CROSSFADE_ATTACK_FRAMES / this.FPS);
+    this.beginCrossfade(this.motionState, resolvedMotion, CROSSFADE_ATTACK_FRAMES / this.FPS);
     this.actionState = 'Attacking';
-    this.motionState = motion;
+    this.motionState = resolvedMotion;
     this.currentMove = move;
     this.moveTimer = move.startup + move.active + move.recovery;
     this.moveElapsed = 0;
