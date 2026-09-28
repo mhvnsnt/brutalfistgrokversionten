@@ -498,6 +498,23 @@ export default function GameBattleArena({
     applyStageBounds(stageId as StageId);
     p1SMRef.current = new FighterStateMachine();
     p2SMRef.current = new FighterStateMachine();
+
+    // The roster's CharacterMoveSet is authoritative for each fighter's owned
+    // animations. The generic semantic bank remains only the fallback when an
+    // authored slot is unavailable on that rig.
+    const buildCharacterClipMap = (fighterId: string) => {
+      const set = getCharacterMoveSet(fighterId);
+      if (!set) return {};
+      const slots = ['idle','walkForward','walkBackward','crouch','guard','lightAttack','heavyAttack','lowKick','highKick','primaryCombo','counter','grappleInitiate','primaryThrow','knockdown','wakeup','hitReaction','ko','signature'] as const;
+      const out: Record<string,string> = {};
+      for (const slot of slots) {
+        const move = getMoveById(set[slot]);
+        if (move?.animation) out[slot] = move.animation;
+      }
+      return out;
+    };
+    p1SMRef.current.setCharacterMoveClips(buildCharacterClipMap(p1Fighter.id));
+    p2SMRef.current.setCharacterMoveClips(buildCharacterClipMap(p2Fighter.id));
     p1SMRef.current.registerSpecialMoves([...schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id), p1Fighter.id), ...generatedMoveset(p1Fighter.id)]);
     p2SMRef.current.registerSpecialMoves([...schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id), p2Fighter.id), ...generatedMoveset(p2Fighter.id)]);
     p1SMRef.current.attachCommandBuffer(p1CommandRef.current);
@@ -2637,8 +2654,8 @@ export default function GameBattleArena({
       // move's identity alone.
       setP1Animation(p1NextMotion);
       setP2Animation(p2NextMotion);
-      setP1AttackClip(p1SMRef.current.activeClip());
-      setP2AttackClip(p2SMRef.current.activeClip());
+      setP1AttackClip(p1SMRef.current.activeClip() ?? p1SMRef.current.motionClip());
+      setP2AttackClip(p2SMRef.current.activeClip() ?? p2SMRef.current.motionClip());
       setHitStopActive(engine.hitStopFrames > 0);
 
       // ── Record frame to match recorder ────────────────────────────────────
