@@ -211,7 +211,7 @@ Important: these are implementation corrections, not a claim that all animation 
 - Commit: `6b4589b705da76bb7ce9235febbac789232d1c05`.
 - The workflow still builds the Vite bundle with the repository base path, stamps the service-worker cache generation, creates `404.html`, runs `verify-pwa-build.mjs`, uploads `dist`, and deploys through the `github-pages` environment.
 - IMPORTANT: GitHub connector access available in this session does not expose the push-triggered Pages run/deployment result, and web access could not open the private/live deployment endpoint. Therefore runtime/PWA visual status remains UNKNOWN rather than being called PASS.
-- Next runtime gate: obtain the actual Pages deployment URL/run result, then browser-test Bannon vs Kobra on the newly deployed generation before calling the PWA verified.
+- Next runtime gate: obtain the actual Pages deployment URL/run result, then browser-test the Brutal Fist match flow (including the current canon Bannon/Kobra roster pairing) on the newly deployed generation before calling the PWA verified.
 
 
 ## Locomotion + knockdown correction pass — 2026-09-28
@@ -223,3 +223,11 @@ Important: these are implementation corrections, not a claim that all animation 
 - Added an authored `Smackdown` reaction to the canonical heavy-kick move so an ordinary playable attack now has an explicit grounded knockdown path instead of relying only on imported moves that may not be selected by the basic controls.
 - Updated the locomotion pace regression to enforce the new deliberate-walk contract and a clearly distinct dash tier.
 - IMPORTANT: these are source-level fixes; PWA/browser visual status remains UNKNOWN until the deployed generation is actually played. Do not call the walk, knockdown, or animation PASS from tests alone.
+
+
+### Project identity correction — 2026-09-28
+
+- **Brutal Fist is the active game in this repository (mhvnsnt/brutalfistgrokversionten).** Bannon is a separate game/project. The two share canon, characters, assets, footage, and other production resources where appropriate, but they are not the same game and must not be described as interchangeable.
+- “Make Bannon playable” is therefore not the project objective for this repo. The objective here is to make **Brutal Fist** playable and complete its own PWA/game flow. Bannon-derived material is treated as shared source/canon/asset input, not as a rename of the game.
+- Future production logs, PWA checks, animation work, combat work, stages, roster work, and open-source intake for this repository will be labeled **Brutal Fist** unless a Bannon asset/source is specifically being referenced.
+- Current deployment evidence: GitHub Pages run 36489445419 built and deployed main commit 7c70faba6b27aeb2946bc860437beda3a796ec47 successfully. This proves the new bundle reached the Pages deployment pipeline; it does **not** by itself prove that an already-installed phone PWA has refreshed to that generation. The service worker uses commit-stamped cache generations and controller-change/update checks, so the remaining gate is actual device/browser observation of the deployed Brutal Fist build.
