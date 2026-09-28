@@ -167,6 +167,25 @@ const basePath = process.env.PUBLIC_BASE_PATH ?? "/";
 // AGENTS.md § "First scaffold".
 export default defineConfig(({ command, isPreview }) => ({
   base: basePath,
+  /**
+   * THE STATIC BUILD HAS NO SERVER, AND A SERVER MODULE IN IT IS A CRASH.
+   *
+   * Owner, from the deployed PWA: "ee.AsyncLocalStorage is not a constructor."
+   * REPRODUCED against the shipped bundle: opening PHOTO BOOTH kills the whole
+   * app. src/lib/photobooth.ts builds a TanStack `createServerFn`, which pulls
+   * Nitro's Node internals -- AsyncLocalStorage among them -- into the
+   * PhotoBoothScreen chunk. There is no AsyncLocalStorage in a browser, so the
+   * module throws while being evaluated and the error boundary replaces the
+   * entire game. Reloading does not help, because it happens again the moment
+   * that screen is opened.
+   *
+   * Published as a compile-time constant so the guarded import is DEAD CODE in
+   * the static build and the server module is never bundled at all, rather than
+   * bundled and avoided at runtime.
+   */
+  define: {
+    __BF_STATIC_BUILD__: JSON.stringify(rocketPreview),
+  },
   // SET EXPLICITLY BECAUSE DEV AND THE BUILD DISAGREED WITHOUT IT.
   // MEASURED against the running dev server: `/motion/baked/index.json`
   // 404'd while `/public/motion/baked/index.json` returned 200, so the

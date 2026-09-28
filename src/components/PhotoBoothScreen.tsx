@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { generateBoothArt } from "@/lib/photobooth";
+import { generateBoothArt } from "@/lib/photoboothClient";
 import { loadBoothGallery, pixelateDataUrl, saveBoothShot, downscaleDataUrl, setSelectMugOverride, type BoothShot } from "@/lib/pixelate";
 import { getAllBannonFighters } from "@/data/bannonRoster";
 
