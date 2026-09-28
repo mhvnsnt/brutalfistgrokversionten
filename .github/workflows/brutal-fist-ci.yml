@@ -16,7 +16,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,6 +50,53 @@ jobs:
 
       - name: Rocket production build
         run: npm run rocket:build
+
+
+      # Play the actual PWA in Chromium. This is deliberately separate from the
+      # fixed-60Hz simulation: it exercises the real menu flow, real DOM clicks,
+      # real KeyboardEvents, the real Three.js scene, and captures what the
+      # portrait player actually sees.
+      - name: Install Chromium for real PWA playtest
+        run: npx playwright install --with-deps chromium
+
+      - name: Start PWA for real playtest
+        run: |
+          npm run dev > /tmp/brutal-fist-playtest-server.log 2>&1 &
+          echo $! > /tmp/brutal-fist-playtest-server.pid
+          for i in $(seq 1 60); do
+            if curl --fail --silent --show-error --max-time 2 http://127.0.0.1:8080/ -o /tmp/brutal-fist-playtest-shell.html; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/brutal-fist-playtest-server.log
+          exit 1
+
+      - name: Play a real portrait combat round
+        env:
+          PLAYTEST_URL: http://127.0.0.1:8080/
+          PLAYTEST_OUT: /tmp/brutal-fist-playtest-shots
+        run: |
+          BROWSER_PATH="$(find "$HOME/.cache/ms-playwright" -type f -path '*/chrome-linux/chrome' | head -n 1)"
+          test -n "$BROWSER_PATH"
+          PLAYTEST_BROWSER="$BROWSER_PATH" PLAYTEST_URL="$PLAYTEST_URL" PLAYTEST_OUT="$PLAYTEST_OUT" node tools/harness/playtest.mjs --shots --seconds=25
+
+      - name: Upload real-playtest evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: brutal-fist-real-playtest-${{ github.sha }}
+          path: |
+            /tmp/brutal-fist-playtest-shots
+            /tmp/brutal-fist-playtest-server.log
+          if-no-files-found: warn
+
+      - name: Stop real playtest server
+        if: always()
+        run: |
+          if [ -f /tmp/brutal-fist-playtest-server.pid ]; then
+            kill "$(cat /tmp/brutal-fist-playtest-server.pid)" 2>/dev/null || true
+          fi
 
       - name: Rocket preview smoke test
         run: |
