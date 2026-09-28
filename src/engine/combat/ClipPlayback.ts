@@ -14,7 +14,7 @@
 import { playbackRateFor, authoredStrideSpeed } from '../motion/DistanceMatching.ts';
 
 /** Fallback pace for any clip whose authored stride has not been measured. */
-export const WALK_PLAYBACK_MPS = 1.15;
+export const WALK_PLAYBACK_MPS = 0.95;
 
 /**
  * A NUDGE IS 12%, NOT 45%.
