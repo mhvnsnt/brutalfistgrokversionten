@@ -73,3 +73,12 @@ A public GitHub project demonstrates a no-Blender Quaternius UAL1+UAL2 GLB-combi
 - The runtime keeps semantic combat state separate from the selected authored clip; this preserves hitbox/root-motion classification while allowing fighter-specific moves.
 - A fighter's authored extraMove1/extraMove2, counter, combo and core kicks are now eligible to populate directional branches instead of every directional input falling through to the same generic jab/cross/kick.
 - This is a first expansion layer, not the final Tekken-scale moveset. The next intake target is a larger per-character move graph with validated standing, directional, crouching, launcher, airborne, sidestep, and grapple branches.
+
+## 2026-09-28: unarmed CC0 + CMU intake through #17
+
+See `docs/OSS_UNARMED_INTAKE.md`.
+- 269 candidates: 141 PASS, 128 REJECT. 113 strike clips baked as `OSS_*`; the
+  strike pool grew from 35 to 135.
+- Licence class is recorded per clip: `CC0-1.0` or `CMU-free-use (not CC0)`.
+- Fixed a #17 bug: sourceRest was ignored for non-canonical bones, and
+  LeftShoulder/LeftArm collided.

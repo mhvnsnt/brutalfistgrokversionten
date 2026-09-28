@@ -113,3 +113,12 @@ node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs tools
 - **Shared (not per-fighter):** throws (`LEFT/RIGHT_THROW_MOVE`), overdrive, finisher, `AIR_LIGHT/HEAVY_MOVE`, DEFAULT_SPECIAL_MOVES button specials, knockdown/wakeup/hit reactions, sidestep. `command-clips.json` (imported Schwarzerblitz commands) is still the old seeded mapping (tests lock its placements).
 - **Pool size is the ceiling:** 35 measured strike clips, 13 airborne; no measured knee/elbow family beyond `TIGERKNEEBASHSLOW`/`KNEETHROW_SLOW`. More clips need a real bake through the #17 intake.
 - **Runtime PWA:** untested in a browser for this change.
+
+## Update: after the OSS intake (pool 35 -> 135)
+
+| Scope | Distinct clips | Overlap coeff avg (max) | Same-slot same-clip | Identical sets |
+|---|---|---|---|---|
+| 27 fighters | 135 | 0.21 (0.765) | 212/702 (was 635) | 0 |
+| Same 11 fighters | 99 | 0.204 (0.625) (was 0.53 / 0.88) | 31/286 (was 80) | 0 |
+
+Per-fighter families: `tools/moves/roster-clip-families.json`.

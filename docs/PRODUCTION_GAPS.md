@@ -54,3 +54,13 @@ This is the persistent backlog for the fighting-game production pass. New animat
 ## Current status law
 
 Static routing/tests prove code paths. They do not prove that a clip visually reads correctly on the actual GLB in the PWA. Runtime certification remains UNKNOWN until observed and measured.
+
+## OSS unarmed intake (2026-09-28, PR #20)
+
+- These passed the intake but are **not wired**: 3 hit reactions, 5 knockdowns,
+  3 wakeups, 8 sidesteps, 8 dashes, 1 block. See `tools/anim-intake/cc0-unarmed-intake.json`.
+- Spin kicks: 5 pass the intake, but the pool refuses most of them (turned-away),
+  so only 2 are in movesets.
+- KayKit has no fingers, so its hands stay at rest (open).
+- Root travel from OSS clips is dropped and the engine owns it.
+- Runtime look and feel in the PWA: UNKNOWN.

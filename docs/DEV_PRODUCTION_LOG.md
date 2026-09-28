@@ -140,3 +140,23 @@ Important: these are implementation corrections, not a claim that all animation 
 - Expanded docs/OPEN_SOURCE_ANIMATION_INTAKE.md with KayKit Character Animations as a CC0 candidate source and with the larger per-character move-graph target.
 - Main implementation sequence: 6241232f (directional slots), 1075d7d9 (slot library), 1644acfe (catalog frame-data resolution), 1092e552 (directional kick slots), 85ff8149 (directional input routing), cbd013ff (fighter-specific synthesized defaults), fd216f68 (separate move IDs from clips), e7dc4f36 (initial-match binding cleanup), 42054a30 (reset binding), c68b7584 + 17667bac (tests), 389cf2c1 (open-source intake update), a0192d18 (persistent gaps).
 - CI/browser runtime certification is still UNKNOWN; no GitHub Actions workflow run was attached to the latest test commits when checked.
+
+## 2026-09-28: OSS unarmed intake (branch grok/per-fighter-movesets, PR #20)
+
+- Ran UAL1/2, KayKit, Mesh2Motion and 208 CMU segments through the #17 intake:
+  269 candidates, 141 PASS, 128 REJECT.
+- The as-shipped #17 alias path was faithful for 0 clips. Rig-profile maps plus
+  a reflection alignment were needed, because the Bannon bind is mirrored.
+- Fixed the #17 sourceRest bug (UAL jab error went from 41 deg to 3.6 deg). A
+  regression test is added.
+- Baked 113 `OSS_*` strike clips. The pool admits 100 of them, so the pool went
+  from 35 to 135. `npm run bake` now preserves OSS entries.
+- Style families (boxing/karate/spin/knee/brawl) were added to style affinity.
+- 27-fighter metrics: 135 distinct clips; overlap average 0.21, max 0.765;
+  same-slot same-clip 635 -> 212 of 702. Same 11 fighters: overlap average
+  0.53 -> 0.204, max 0.88 -> 0.625.
+- Tests: script 242/242; TS 823/825. The 2 failures are pre-existing (directional
+  throws real clips; fighter-owned special primary-combo). Typecheck shows the
+  5 pre-existing errors only (DirectionalThrowSystem 1, FighterStateMachine 4).
+  Build exit 0.
+- PWA runtime: UNKNOWN (not browser-run).
