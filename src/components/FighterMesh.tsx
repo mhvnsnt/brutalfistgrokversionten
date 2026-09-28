@@ -234,6 +234,14 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   WakeupTechRoll:    ['techRoll', 'TechRoll', 'roll', 'Roll', 'rollForward', 'RollForward', 'forwardRoll', 'ForwardRoll', 'walkForward', 'WalkForward', 'walk', 'Walk', 'SBW_techroll', 'T_techroll'],
   WakeupBackrise:    ['backrise', 'Backrise', 'getUp', 'GetUp', 'rollBack', 'RollBack', 'walkBackward', 'WalkBackward', 'walk', 'Walk', 'T_backrise'],
   WakeupQuickStand:  ['quickStand', 'QuickStand', 'getUp', 'GetUp', 'gettingUp', 'GettingUp', 'idle', 'Idle', 'standing', 'Standing', 'T_quickstand'],
+  WakeupRollForward: ['rollForward', 'RollForward', 'forwardRoll', 'ForwardRoll', 'techRoll', 'TechRoll', 'ROLL_FORWARD', 'SBW_techroll'],
+  WakeupRollBack:    ['rollBack', 'RollBack', 'backRoll', 'BackRoll', 'backrise', 'Backrise', 'BACKROLL', 'T_backrise'],
+  WakeupRollSide:    ['rollSide', 'RollSide', 'sideRoll', 'SideRoll', 'sideTechRoll', 'SIDE_ROLL', 'techRoll', 'TechRoll'],
+  WakeupKipUp:       ['KIP_UP', 'CORKSCREW_KIP_UP', 'kipUp', 'KipUp', 'Kip-up', 'WAKEUPANIMATION', 'getUp', 'GettingUp'],
+  WakeupAttack:      ['wakeAttack', 'WakeAttack', 'getUpAttack', 'GetUpAttack', 'risingAttack', 'RisingAttack', 'wakeStrike', 'WakeStrike', 'lightAttack', 'heavyAttack'],
+  GroundedFaceUp:    ['SUPINE', 'supine', 'groundedFaceUp', 'GroundedFaceUp', 'proneFaceUp', 'ProneFaceUp', 'FALLING_FLAT_IMPACT', 'knockdown', 'Knockdown'],
+  GroundedFaceDown:  ['PRONE', 'prone', 'groundedFaceDown', 'GroundedFaceDown', 'proneFaceDown', 'ProneFaceDown', 'FALLING_FORWARD_DEATH', 'knockdown', 'Knockdown'],
+  GroundedRoll:      ['roll', 'Roll', 'groundRoll', 'GroundRoll', 'techRoll', 'TechRoll'],
   // `wake` is reachable: MoveLibrary files clips like 'Getting Up', 'bf_wakeup'
   // and 'SBW_wakeup' under it. It had no list here, so one of those resolved
   // through the default instead of to a get-up.

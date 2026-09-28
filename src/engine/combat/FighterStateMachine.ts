@@ -20,7 +20,8 @@ export type ActionState =
   | 'Juggled';
 
 // ── Wakeup option buffered during knockdown recovery ─────────────────────────
-export type WakeupOption = 'techRoll' | 'backrise' | 'quickStand' | null;
+export type GroundedPosture = 'faceUp' | 'faceDown';
+export type WakeupOption = 'techRoll' | 'backrise' | 'quickStand' | 'rollForward' | 'rollBack' | 'rollSide' | 'kipUp' | 'wakeAttack' | 'stayDown' | null;
 
 export type CharacterMoveClipSlot =
   | 'crouchLight' | 'crouchKick'
@@ -750,6 +751,10 @@ const WAKEUP_BUFFER_WINDOW = 0.8;
 const TECH_ROLL_DURATION = 0.45;
 const BACKRISE_DURATION = 0.55;
 const QUICKSTAND_DURATION = 0.30;
+const ROLL_WAKE_DURATION = 0.48;
+const SIDE_ROLL_WAKE_DURATION = 0.42;
+const KIP_UP_DURATION = 0.52;
+const WAKE_ATTACK_DURATION = 0.42;
 
 // ── HitStun constants ─────────────────────────────────────────────────────────
 /** HitStun duration = active frames of the attack that landed (in seconds) */
@@ -921,6 +926,10 @@ export class FighterStateMachine {
   private wakeupBuffered: WakeupOption = null;
   private wakeupActionTimer = 0;
   private wakeupActionState: WakeupOption = null;
+  /** The body stays on the mat after the forced fall; no automatic stand-up. */
+  private groundedPosture: GroundedPosture = 'faceUp';
+  private groundedRollDirection: 'forward' | 'back' | 'side' | null = null;
+  private wakeAttackKind: 'light' | 'heavy' | null = null;
 
   // ── Walking velocity ──────────────────────────────────────────────────────
   private walkVelocity: WalkVelocity = { forward: 0, strafe: 0 };
@@ -1166,6 +1175,8 @@ export class FighterStateMachine {
   }
 
   getBufferedWakeup(): WakeupOption { return this.wakeupBuffered; }
+  getGroundedPosture(): GroundedPosture { return this.groundedPosture; }
+  isGrounded(): boolean { return this.actionState === 'Knockdown' && this.knockdownTimer <= 0; }
   getWalkVelocity(): WalkVelocity { return { ...this.walkVelocity }; }
 
   /** Returns throw combo progress info for HUD */
@@ -1253,6 +1264,12 @@ export class FighterStateMachine {
   /** Human-readable move identity for deterministic combat probes and HUD diagnostics. */
   activeMoveName(): string | null {
     return this.currentMove?.specialName ?? (this.currentMove ? this.currentMove.animation : null);
+  }
+
+  /** Remaining authored time on the current move; throws use this to delay the
+   * receiver commit until the attacker's actual grapple animation has finished. */
+  currentMoveRemainingSeconds(): number {
+    return Math.max(0, this.moveTimer);
   }
 
   registerSpecialMoves(moves: SpecialMoveDefinition[]) {
@@ -1499,9 +1516,12 @@ export class FighterStateMachine {
     return landed;
   }
 
-  applyKnockdown() {
+  applyKnockdown(posture: GroundedPosture = this.motionState === 'hitBack' ? 'faceDown' : 'faceUp') {
     this.actionState = 'Knockdown';
-    this.motionState = 'knockdown';
+    this.motionState = posture === 'faceDown' ? 'GroundedFaceDown' : 'GroundedFaceUp';
+    this.groundedPosture = posture;
+    this.groundedRollDirection = null;
+    this.wakeAttackKind = null;
     this.blockStunTimer = 0;
     this.knockdownTimer = KNOCKDOWN_DURATION;
     this.wakeupBuffered = null;
@@ -1865,6 +1885,7 @@ export class FighterStateMachine {
     const risingForwardPos = resolvedInput.forward > 0.5 && this.prevInput.forward <= 0.5;
     const risingForwardNeg = resolvedInput.forward < -0.5 && this.prevInput.forward >= -0.5;
     const risingStrafe = Math.abs(resolvedInput.strafe) > 0.5 && Math.abs(this.prevInput.strafe) <= 0.5;
+    const risingJump = !!resolvedInput.jump && !this.prevInput.jump;
 
     // Track forward press time for command throw detection
     if (risingForwardPos) {
@@ -2013,21 +2034,36 @@ export class FighterStateMachine {
       this.knockdownTimer = Math.max(0, this.knockdownTimer - dt);
       const inBufferWindow = this.knockdownTimer <= WAKEUP_BUFFER_WINDOW;
 
-      if (inBufferWindow && this.wakeupBuffered === null) {
-        if (risingForwardPos) {
-          this.wakeupBuffered = 'quickStand';
-          console.log('[FSM] ⬆️ Wakeup buffered: quickStand');
-        } else if (risingForwardNeg || risingStrafe) {
-          this.wakeupBuffered = 'techRoll';
-          console.log('[FSM] 🔄 Wakeup buffered: techRoll');
+      if (this.wakeupBuffered === null) {
+        if (risingLight || risingHeavy) {
+          this.wakeupBuffered = 'wakeAttack';
+          this.wakeAttackKind = risingHeavy ? 'heavy' : 'light';
+          console.log('[FSM] ⚔️ Wake attack buffered:', this.wakeAttackKind);
+        } else if (risingForwardPos) {
+          this.wakeupBuffered = 'rollForward';
+          console.log('[FSM] 🔄 Wakeup buffered: rollForward');
+        } else if (risingForwardNeg) {
+          this.wakeupBuffered = 'rollBack';
+          console.log('[FSM] 🔄 Wakeup buffered: rollBack');
+        } else if (risingStrafe) {
+          this.wakeupBuffered = 'rollSide';
+          console.log('[FSM] 🔄 Wakeup buffered: rollSide');
         } else if (risingGuard) {
           this.wakeupBuffered = 'backrise';
           console.log('[FSM] ↩️ Wakeup buffered: backrise');
+        } else if (risingJump) {
+          this.wakeupBuffered = 'kipUp';
+          console.log('[FSM] 🥋 Wakeup buffered: kipUp');
         }
       }
 
+      // Once the minimum fall duration has elapsed, a fighter may remain prone
+      // indefinitely. No input means STAY DOWN; there is no forced quick-stand.
+      if (this.knockdownTimer <= 0 && this.wakeupBuffered && this.wakeupBuffered !== 'stayDown') {
+        return this.executeWakeup(this.wakeupBuffered);
+      }
       if (this.knockdownTimer <= 0) {
-        return this.executeWakeup(this.wakeupBuffered ?? 'quickStand');
+        this.motionState = this.groundedPosture === 'faceDown' ? 'GroundedFaceDown' : 'GroundedFaceUp';
       }
       return this.motionState;
     }
@@ -2039,6 +2075,8 @@ export class FighterStateMachine {
         this.wakeupActionState = null;
         this.actionState = 'Idle';
         this.motionState = 'idle';
+        this.groundedRollDirection = null;
+        this.wakeAttackKind = null;
         console.log('[FSM] ✅ Wakeup action complete → Idle');
       }
       return this.motionState;
@@ -2815,20 +2853,55 @@ export class FighterStateMachine {
     switch (option) {
       case 'techRoll':
         this.actionState = 'WakeupTechRoll';
-        this.motionState = 'walkForward';
+        this.motionState = 'WakeupRollForward';
+        this.groundedRollDirection = 'forward';
         this.wakeupActionTimer = TECH_ROLL_DURATION;
         console.log('[FSM] 🔄 Wakeup: techRoll');
         break;
       case 'backrise':
         this.actionState = 'WakeupBackrise';
-        this.motionState = 'walkBackward';
+        this.motionState = 'WakeupBackrise';
+        this.groundedRollDirection = null;
         this.wakeupActionTimer = BACKRISE_DURATION;
         console.log('[FSM] ↩️ Wakeup: backrise');
+        break;
+      case 'rollForward':
+        this.actionState = 'WakeupTechRoll';
+        this.motionState = 'WakeupRollForward';
+        this.groundedRollDirection = 'forward';
+        this.wakeupActionTimer = ROLL_WAKE_DURATION;
+        console.log('[FSM] 🔄 Wakeup: forward roll');
+        break;
+      case 'rollBack':
+        this.actionState = 'WakeupBackrise';
+        this.motionState = 'WakeupRollBack';
+        this.groundedRollDirection = 'back';
+        this.wakeupActionTimer = ROLL_WAKE_DURATION;
+        console.log('[FSM] 🔄 Wakeup: backward roll');
+        break;
+      case 'rollSide':
+        this.actionState = 'WakeupTechRoll';
+        this.motionState = 'WakeupRollSide';
+        this.groundedRollDirection = 'side';
+        this.wakeupActionTimer = SIDE_ROLL_WAKE_DURATION;
+        console.log('[FSM] 🔄 Wakeup: side roll');
+        break;
+      case 'kipUp':
+        this.actionState = 'WakeupQuickStand';
+        this.motionState = 'WakeupKipUp';
+        this.wakeupActionTimer = KIP_UP_DURATION;
+        console.log('[FSM] 🥋 Wakeup: kip-up');
+        break;
+      case 'wakeAttack':
+        this.actionState = 'WakeupQuickStand';
+        this.motionState = 'WakeupAttack';
+        this.wakeupActionTimer = WAKE_ATTACK_DURATION;
+        console.log('[FSM] ⚔️ Wakeup: attack');
         break;
       case 'quickStand':
       default:
         this.actionState = 'WakeupQuickStand';
-        this.motionState = 'idle';
+        this.motionState = 'WakeupQuickStand';
         this.wakeupActionTimer = QUICKSTAND_DURATION;
         console.log('[FSM] ⬆️ Wakeup: quickStand');
         break;

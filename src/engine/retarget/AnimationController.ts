@@ -11,7 +11,7 @@ export type FighterMotionState =
   | 'hitAir' | 'hitBack' | 'hitGround'
   // ── Extended locomotion states ────────────────────────────────────────────
   | 'walk' | 'run' | 'dash' | 'dashForward' |'Walking' | 'Backdashing' | 'Guard' | 'Knockdown'
-  | 'WakeupTechRoll'| 'WakeupBackrise' | 'WakeupQuickStand' |'HitStun' | 'Stunned' | 'Crumple' | 'CommandThrow' | 'ThrowWhiff'
+  | 'WakeupTechRoll'| 'WakeupBackrise' | 'WakeupQuickStand' | 'WakeupRollForward' | 'WakeupRollBack' | 'WakeupRollSide' | 'WakeupKipUp' | 'WakeupAttack' | 'GroundedFaceUp' | 'GroundedFaceDown' | 'GroundedRoll' |'HitStun' | 'Stunned' | 'Crumple' | 'CommandThrow' | 'ThrowWhiff'
   // ── Extended combat states ────────────────────────────────────────────────
   | 'Startup' | 'Active' | 'Blockstun' | 'Hitstun'
   // A GRAB IS ITS OWN MOTION, NOT A PUNCH. Without this state the command
@@ -52,6 +52,14 @@ const CROSSFADE_DURATIONS: Partial<Record<FighterMotionState, number>> = {
   WakeupTechRoll:    0.083,
   WakeupBackrise:    0.083,
   WakeupQuickStand:  0.067,
+  WakeupRollForward: 0.083,
+  WakeupRollBack:    0.083,
+  WakeupRollSide:    0.083,
+  WakeupKipUp:       0.067,
+  WakeupAttack:      0.050,
+  GroundedFaceUp:    0.100,
+  GroundedFaceDown:  0.100,
+  GroundedRoll:      0.067,
   // Attacks — fast snaps
   lightAttack:       0.050,  // 3 frames — fast snap into attack
   heavyAttack:       0.067,

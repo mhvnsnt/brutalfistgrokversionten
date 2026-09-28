@@ -11,6 +11,7 @@
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import type { MoveWindow } from './FighterStateMachine.ts';
 import { readFileSync } from 'node:fs';
 import {
   resolveReaction, distinctOutcomes, VICTIM_STATES, REACTION_KINDS,
@@ -106,7 +107,7 @@ describe('the reaction matrix', () => {
 
   it('Smackdown is a real grounded knockdown, not a standing flinch', () => {
     const victim = new FighterStateMachine();
-    const move = {
+    const move: MoveWindow = {
       startup: 0.1,
       active: 0.1,
       recovery: 0.2,
@@ -119,7 +120,7 @@ describe('the reaction matrix', () => {
     };
     victim.applyReaction('Smackdown', move);
     assert.equal(victim.isKnockedDown, true);
-    assert.equal(victim.current, 'knockdown');
+    assert.equal(victim.current, 'GroundedFaceUp');
     assert.equal(victim.activeClip(), null, 'Smackdown must hand presentation to the grounded knockdown state');
   });
 
