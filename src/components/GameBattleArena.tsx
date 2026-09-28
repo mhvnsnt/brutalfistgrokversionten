@@ -3339,6 +3339,8 @@ export default function GameBattleArena({
             : introBeat?.player === 'p1' ? introBeat.clip : p1Animation}
           p2Animation={grappleBeat?.victim === 'p2' ? grappleBeat.clip
             : introBeat?.player === 'p2' ? introBeat.clip : p2Animation}
+          p1GrappleDurationSeconds={grappleBeat?.victim === 'p1' ? grappleBeat.durationSeconds : undefined}
+          p2GrappleDurationSeconds={grappleBeat?.victim === 'p2' ? grappleBeat.durationSeconds : undefined}
           onClipResolved={(who, clip) => { liveClipRef.current[who] = clip; }}
           p1Color={p1Color}
           p2Color={p2Color}
