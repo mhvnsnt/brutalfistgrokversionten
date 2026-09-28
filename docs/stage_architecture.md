@@ -196,3 +196,25 @@ race).
    to be bounded by.
 5. **Stage art pipeline.** Nothing loads from disk today; a CC0 prop drop needs
    a `public/stages` directory and a loader before it can land.
+
+---
+
+## 9. Canon stage blockouts (23 stages)
+
+`STAGE_CONFIGS` now holds **23** stages. `ALL_STAGE_IDS` lists them in catalogue order.
+
+- **15 procedural stages** (`buildStatus: 'PROCEDURAL'`). These are unchanged: urban_night, training, dojo, wrestling_ring, mma_octagon, steel_cage, industrial, ghetto_streets, junkyard, sky_crane, spike_pit, acid_pit, grinder_pit, gang_brawl, subway.
+- **8 canon blockouts** (`buildStatus: 'BLOCKOUT'`, each with a `canon: { location, source }`): black_swamp, jpcw_arena, club_onyx, kennedy_debate, void_ring, aztec_temple, parking_lot, banyan_tree.
+
+The blockouts are **graybox geometry, not final art**. Each is pure data, produced by `src/engine/stages/StageBlockouts.ts` (`buildStageBlockout(id)`). `stageBlockoutThree.ts` turns that data into three.js objects, and `ProceduralStage.tsx` renders them through `BlockoutStage`. The contract is covered by `src/engine/stages/stage-catalog.test.ts`:
+
+- floor top at `levels[0].floorY` (0)
+- spawns at `STAGE_SPAWN_X` = ±1.8 (`stageSpawnPoints`), inside the boundaries
+- a clear fight lane: |x| < boundaryX, |z| < 0.6, height 2.2 above the floor, with no prop or boundary prim in it
+- walls sit on `boundaryX` for walled stages; ring-out stages have no wall inside the ring
+- hit-FX height comes from `V7OrientationContract.HIT_FX_WORLD_Y` (1.05), the same constant CombatArena3D uses
+- at most 4 lights per blockout
+
+**Stage selection is derived.** `src/data/stageCatalog.ts` is built from `STAGE_CONFIGS`, replacing its old 2-entry hand list. `StageSelectScreen.tsx` renders `BRUTAL_FIST_STAGES` (random plus all 23), with a BLOCKOUT badge on the new stages. A stage added to `STAGE_CONFIGS` is selectable automatically.
+
+Next steps: real art passes (GLB/CC0 props under a future `public/stages`), and per-stage fog/lighting tuning in CombatArena3D.

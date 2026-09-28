@@ -10,7 +10,7 @@ interface StageSelectProps {
 }
 
 function StageGeometry({ stageId }: { stageId: Exclude<BrutalFistStageId, 'random'> }) {
-  const urban = stageId === 'urban-night';
+  const urban = stageId === 'urban_night';
   return (
     <group>
       <mesh rotation-x={-Math.PI / 2} receiveShadow>
@@ -58,10 +58,10 @@ function CinematicPreview() {
 }
 
 export default function StageSelect({ onConfirm }: StageSelectProps) {
-  const [selected, setSelected] = useState<BrutalFistStageId>('urban-night');
+  const [selected, setSelected] = useState<BrutalFistStageId>('urban_night');
   const [resolvedRandom, setResolvedRandom] = useState<Exclude<BrutalFistStageId, 'random'> | null>(null);
-  const previewStageId = selected === 'random' ? (resolvedRandom ?? 'urban-night') : selected;
-  const stage = BRUTAL_FIST_STAGES.find(item => item.id === selected) ?? BRUTAL_FIST_STAGES[2];
+  const previewStageId = selected === 'random' ? (resolvedRandom ?? 'urban_night') : selected;
+  const stage = BRUTAL_FIST_STAGES.find(item => item.id === selected) ?? BRUTAL_FIST_STAGES[1];
 
   const handleSelect = (stageId: BrutalFistStageId) => {
     setSelected(stageId);
@@ -81,7 +81,7 @@ export default function StageSelect({ onConfirm }: StageSelectProps) {
           <fog attach="fog" args={['#08090d', 7, 18]} />
           <ambientLight intensity={0.38} />
           <directionalLight position={[4, 6, 5]} intensity={1.25} />
-          <pointLight position={[-4, 3, 2]} intensity={previewStageId === 'urban-night' ? 16 : 5} distance={12} color={previewStageId === 'urban-night' ? '#7138d6' : '#ffffff'} />
+          <pointLight position={[-4, 3, 2]} intensity={previewStageId === 'urban_night' ? 16 : 5} distance={12} color={previewStageId === 'urban_night' ? '#7138d6' : '#ffffff'} />
           <StageGeometry stageId={previewStageId} />
           <CinematicPreview />
         </Canvas>
@@ -103,7 +103,7 @@ export default function StageSelect({ onConfirm }: StageSelectProps) {
         <div className="flex gap-2 overflow-x-auto pb-2 snap-x">
           {BRUTAL_FIST_STAGES.map(item => (
             <button key={item.id} onClick={() => handleSelect(item.id)} className="relative h-20 w-32 shrink-0 snap-start overflow-hidden border text-left transition-transform active:scale-95" style={{ borderColor: selected === item.id ? item.accent : '#3b3f46', background: selected === item.id ? '#20232a' : '#111318' }}>
-              <div className="absolute inset-0 opacity-20" style={{ background: item.id === 'urban-night' ? 'radial-gradient(circle at 70% 30%, #7c3aed, transparent 55%)' : item.id === 'training-grid' ? 'linear-gradient(135deg, #777, #171717)' : 'radial-gradient(circle, #aaa, #111)' }} />
+              <div className="absolute inset-0 opacity-20" style={{ background: item.id === 'urban_night' ? 'radial-gradient(circle at 70% 30%, #7c3aed, transparent 55%)' : item.id === 'training' ? 'linear-gradient(135deg, #777, #171717)' : 'radial-gradient(circle, #aaa, #111)' }} />
               <div className="absolute bottom-1 left-2 right-2 text-[9px] font-black tracking-wider">{item.name}</div>
             </button>
           ))}

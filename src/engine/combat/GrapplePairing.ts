@@ -35,6 +35,17 @@ import { loadMoveLabels, type MoveLabelMap } from '../assets/moveLabels.ts';
  *     to right than a stock knockdown. It is marked as a stand-in wherever it
  *     is reported so it is never mistaken for a real pair.
  *
+ * BANNON TWO-BODY CAPTURES (intake: scripts/intake-bannon-grapple-pairs.mjs).
+ * Eight more real pairs came in from mhvnsnt/Bannon, each written as <NAME>
+ * and <NAME>__RECV from ONE owner video by video_to_clip.py --two:
+ * FLYING_HEADBUTT, PUMPHANDLE_GERMAN_DOUBLE, BACKDROP_360_FACE,
+ * FALCON_ARROW_STANDING, FALCON_ARROW_GROUNDED, SOMERSAULT_TORNADO_DDT,
+ * STALLING_SUPLEX_STEPS, TAG_POWERBOMB_GERMAN. The bake pairs them on the
+ * suffix like every other pair. The capture trims each body to where it was
+ * tracked, so the halves differ slightly in length; `pairPlaybackRate` puts
+ * the victim on the deliverer's clock. Named moves (Getbackk, Chainsnatcher,
+ * Titan Fall, ...) are bound in NamedGrappleBindings.ts.
+ *
  * WHAT THIS DELIBERATELY DOES NOT DO: invent a pairing from a name. That is
  * the failure this project keeps repeating and the owner has made law —
  * `DOUBLE_LEG_TAKEDOWN` sounds like two men and is one, `HAMMERLOCKDDT` has
@@ -141,6 +152,16 @@ export function receiverClipFor(
   }
   if (!best || Math.abs(best.dur - want) > STANDIN_MAX_DURATION_GAP_S) return null;
   return { receiver: best.name, source: 'standin', dur: best.dur };
+}
+
+/**
+ * Rate to play the receiver's half at so it ends on the deliverer's last
+ * frame (receiver dur / deliverer dur). 1 when either length is unknown.
+ */
+export function pairPlaybackRate(deliverer: string, receiver: string): number {
+  const d = durOf.get(deliverer) ?? 0;
+  const r = durOf.get(receiver) ?? 0;
+  return d > 0 && r > 0 ? r / d : 1;
 }
 
 /** For the probes: what every grapple in the bank resolves to right now. */
