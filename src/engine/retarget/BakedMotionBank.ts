@@ -9,6 +9,7 @@ import { fetchZstdJson } from '../assets/zstdJson.ts';
 import { setLowerBodyCredibility } from '../motion/BoneMask.ts';
 import { setAuthoredStrideSpeeds } from '../motion/DistanceMatching.ts';
 import { setDerivedAttackLevels } from '../combat/DerivedAttackLevels.ts';
+import { recoverBannonEulerClip } from './UniversalAnimationRecovery.ts';
 
 /**
  * CLIPS ALREADY RESOLVED ONTO THE ONE SKELETON.
@@ -925,7 +926,23 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
       const loaded = await Promise.allSettled(
         slice.map(async (name) => {
           const data = await fetchZstdJson(BASE + encodeURIComponent(manifest[name].file));
-          return clipFromBaked(data as BakedClipFile);
+          const baked = clipFromBaked(data as BakedClipFile);
+          const row = manifest[name];
+          // SOURCE RECOVERY: a stale/bad bake must not permanently hide a
+          // perfectly good authored source. The manifest already tells us
+          // when a multi-bone Bannon clip collapsed to <=2 moving bones.
+          // Rebuild it through the same universal intake contract. This is
+          // deliberately a fallback, not a second animation system.
+          if (baked && row.bank === 'bannon' && (row.movingBones ?? 99) <= 2 && (row.boneCount ?? 0) >= 8) {
+            try {
+              const recovered = await recoverBannonEulerClip(name, new THREE.Object3D());
+              if (recovered) return recovered;
+            } catch {
+              // The raw source is optional at runtime; keep the baked result
+              // so a missing source never removes the rest of the bank.
+            }
+          }
+          return baked;
         }),
       );
       loaded.forEach((s, j) => {
