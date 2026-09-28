@@ -48,7 +48,7 @@ export const WALK_PLAYBACK_MPS = 1.15;
  * not move -- only how long the body is given to show the motion.
  */
 /** The most a strike may be sped up before it reads as a twitch, not a punch. */
-export const ATTACK_MAX_SPEEDUP = 1.12;
+export const ATTACK_MAX_SPEEDUP = 1.0;
 /**
  * Past this, the clip is simply the wrong length for the slot — a long demo
  * resolved onto a jab — and that is a data problem, not a playback one. It
