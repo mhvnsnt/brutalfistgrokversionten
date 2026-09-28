@@ -60,3 +60,5 @@ test('directional throws use real grab/commit/receiver clips and bounded damage'
   assert.ok(THROW_CATALOG.forward_throw.damage < 150);
   assert.ok(THROW_CATALOG.backward_throw.damage < 150);
 });
+
+// Runtime gate: directional throw test suite remains the pre-PWA regression anchor.
