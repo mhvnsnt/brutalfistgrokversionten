@@ -515,3 +515,54 @@ It is a rule now. Before reporting a combat, animation or UI change as done:
 WHAT THE HARNESS IS NOT ALLOWED TO DO: report a pass it did not observe. If it cannot reach the
 arena, it says so and the run is void — `rigs: 0` is never "no defects found". A broken
 instrument is not a finding, and this file already carries three separate cases of one.
+
+## RULE: DO NOT DESCRIBE THE WALL. GO THROUGH IT. (2026-09-28, owner-set, standing)
+
+Owner: "make it a rule to stop describing the walls and roadblocks. Wasting the turns. And if
+you're going to describe walls and roadblocks, then to actually go around them or find a way
+through them, instead of just stopping at the explanation. Because I don't want to hear the
+fucking excuses."
+
+He is right, and the record backs him. In one session I told him, at length and with evidence:
+Schwarzerblitz cannot run here; no open-source 3D fighting game exists to fork; the container
+renders at 1fps so a one-frame glitch cannot be measured. Every one of those was TRUE, and every
+one of them was also a place I stopped instead of turning.
+
+The last one is the lesson. "The harness only renders 1fps" was correct and useless. The way
+through was sitting in plain sight: **combat does not need pixels.** The state machines, hitboxes,
+reactions and timers are plain TypeScript, and stepping them at a fixed 1/60s runs a 60-second
+match in under a second at the frame rate his phone actually uses. `tools/harness/match_sim.mjs`.
+It found a real defect on its first run — below ~8 frames between hits, every hit restarted the
+flinch so the reaction never rendered and the body could not move — after four browser probes had
+reported clean for the wrong reason.
+
+THE RULE:
+
+1. **A constraint is the start of the work, not the end of it.** Naming one without immediately
+   naming and attempting a way around it is an excuse, however well measured.
+2. **Say the constraint in ONE line, then spend the turn on the route around it.** Not three
+   paragraphs of why it is hard.
+3. **Ask what the constraint actually forbids.** "The renderer is slow" forbids RENDERING, not
+   simulation. "That engine has no WebGL driver" forbids running its binary, not reading its data.
+   "That repo has no licence" forbids shipping its code, not learning its design.
+4. **When genuinely blocked, deliver the largest adjacent thing and say what is left.** Never end
+   a turn having only explained.
+5. **Build the tool once and COMMIT IT.** Owner: "keep and save all that stuff in the repo so you
+   don't have to keep rebuilding tools." Every harness, probe and simulator lives in `tools/`, is
+   committed, and is reused — rebuilding an instrument each session is itself a wall of our own
+   making.
+
+THE INSTRUMENTS THAT EXIST — use these before writing a new one:
+
+| tool | what it answers |
+|---|---|
+| `tools/harness/match_sim.mjs` | a real match at a TRUE 60fps, headless, no browser |
+| `tools/harness/multihit_probe.mjs` | how many hits one press registers, at any frame rate |
+| `tools/harness/hit_rate_probe.mjs` | hits and their spacing in a live match |
+| `tools/harness/playtest.mjs` | the real PWA, real menus, real keys, portrait |
+| `tools/harness/record.mjs` + `contact_sheet.mjs` | video of a round, and frames to look at |
+| `tools/harness/rig_probe.mjs` | which bodies are on screen and whether they animate |
+| `tools/harness/portrait_audit.mjs` | controls a thumb cannot reach in portrait |
+| `tools/model_diag/transfer_weights_multi.cjs` | re-weight a multi-material body from a whole donor |
+| `tools/model_diag/seam_check.cjs` | whether a multi-piece body's seams move together |
+| `tools/motion/strike_frames.mjs` | a move's real contact frame, from the clip's own geometry |

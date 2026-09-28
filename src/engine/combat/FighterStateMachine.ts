@@ -674,6 +674,15 @@ const HITSTUN_ACTIVE_FRAME_MULTIPLIER = 1.0;
  */
 const INPUT_BUFFER_S = 20 / 60;
 
+/**
+ * The fewest frames a hit reaction is allowed before another hit may replace it.
+ * The shortest authored reaction clip (REACTION_HITWEAKHIGH) is 0.167s = 10
+ * frames, and the measured collapse begins at 8, so a reaction gets 8 frames to
+ * be seen. Damage and stun from a faster hit still land; only the ANIMATION is
+ * protected.
+ */
+export const MIN_REACTION_FRAMES = 8;
+
 const HITSTUN_MIN = 0.18;
 /** Maximum hitstun cap */
 const HITSTUN_MAX = 0.65;
@@ -757,6 +766,14 @@ export class FighterStateMachine {
 
   // ── HitStun state ─────────────────────────────────────────────────────────
   private hitStunTimer = 0;
+  /** Counts down the window in which a reaction may not be restarted. */
+  private reactionHoldFrames = 0;
+  /**
+   * How many times a reaction ANIMATION has actually been started. Hits that
+   * arrive inside the protected window extend the stun without incrementing
+   * this — which is the whole point, and the only way to tell the two apart.
+   */
+  reactionStarts = 0;
   /** The attack move that caused this hitstun (for duration calculation) */
   private hitStunSourceMove: MoveWindow | null = null;
   /**
@@ -1070,6 +1087,49 @@ export class FighterStateMachine {
     const duration = sourceMove
       ? this.computeHitStunDuration(sourceMove)
       : Math.max(HITSTUN_MIN, Math.min(HITSTUN_MAX, fallbackDuration));
+
+    /**
+     * A REACTION MUST BE ALLOWED TO PLAY BEFORE THE NEXT ONE REPLACES IT.
+     *
+     * Owner: "they are visible doing 1 punch, but somehow hitting me like 7
+     * times really fast and making my character float in place doing the hit
+     * reaction rapid fire ... movement turning into floating, gliding."
+     *
+     * MEASURED at a true 60fps (tools/harness/match_sim.mjs), hitting a fighter
+     * who is trying to WALK, over 600 frames:
+     *
+     *    hit every   hits  reactions cut off  walking frames  hitstun frames
+     *      20f          29          0              222             319
+     *      12f          49          0               11             539
+     *       8f          74         73                7             592
+     *       5f         119        118                4             595
+     *
+     * At eight frames apart the engine falls off a cliff: 73 of 74 reactions
+     * never get to play, the body manages SEVEN frames of walking out of six
+     * hundred, and 99% of the match is hitstun. Every hit restarted the flinch
+     * from frame zero, so the animation never rendered -- a body frozen mid-
+     * twitch that cannot move. That is exactly the rapid-fire flinch and the
+     * gliding he is describing.
+     *
+     * So a landed hit still does its damage and still extends the stun -- combos
+     * must keep working -- but it does NOT restart the animation while the
+     * current reaction is inside its minimum window. The body finishes showing
+     * one flinch before it is asked to show the next.
+     */
+    const restarts = this.reactionHoldFrames <= 0;
+    if (!restarts) {
+      // Extend the stun, keep the reaction that is already playing.
+      this.hitStunTimer = Math.max(this.hitStunTimer, duration);
+      this.hitStunSourceMove = sourceMove ?? this.hitStunSourceMove;
+      this.blockStunTimer = 0;
+      this.currentMove = null;
+      this.moveTimer = 0;
+      this.moveElapsed = 0;
+      this.queuedAction = null;
+      return;
+    }
+    this.reactionHoldFrames = MIN_REACTION_FRAMES;
+    this.reactionStarts++;
 
     this.beginCrossfade(this.motionState, motion, CROSSFADE_HIT_FRAMES / this.FPS);
     this.actionState = 'HitStun';
@@ -1562,6 +1622,9 @@ export class FighterStateMachine {
 
   private updateStep(input: FighterInput, dt: number): FighterMotionState {
     const now = performance.now();
+    // The reaction's protected window burns down in FRAMES, so it means the
+    // same thing whatever the frame rate (see applyHitStun / MIN_REACTION_FRAMES).
+    if (this.reactionHoldFrames > 0) this.reactionHoldFrames = Math.max(0, this.reactionHoldFrames - dt * this.FPS);
 
     // ── Resolve Tekken 4-limb inputs into light/heavy/throw ──────────────
     const resolvedInput = this.resolveTekkenInputs(input, now);
