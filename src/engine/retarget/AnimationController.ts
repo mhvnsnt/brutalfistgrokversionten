@@ -118,8 +118,9 @@ const ONESHOT_STATES = new Set<FighterMotionState>([
  * buildAnimationController — wraps THREE.AnimationMixer with crossfading.
  *
  * Key behaviours:
- * - play(next) crossfades from the current action to the next using
- *   .crossFadeTo(nextAction, duration, true) so transitions are smooth.
+ * - play(next) crossfades from the current action to the next without Three.js
+ *   time-warping. The combat clock owns startup/active/recovery; the clip's
+ *   authored timing must not be silently retimed by a visual crossfade.
  * - The fade duration is tuned per state (attacks snap in fast, locomotion
  *   blends gently).
  * - update(delta) must be called every frame (inside useFrame).
@@ -317,7 +318,7 @@ export function buildAnimationController(
       nextAction.reset();
       nextAction.setEffectiveTimeScale(1);
       nextAction.setEffectiveWeight(1);
-      currentAction.crossFadeTo(nextAction, fadeDuration, true);
+      currentAction.crossFadeTo(nextAction, fadeDuration, false);
       nextAction.play();
     } else {
       // No current action — just start
