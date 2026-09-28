@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 
 import { FrameDataHitboxSystem } from '../combat/FrameDataHitbox.ts';
 import { FighterStateMachine } from '../combat/FighterStateMachine.ts';
-import { DASH_SPEED, WALK_SPEED } from './LocomotionSystem.ts';
+import { DASH_SPEED, WALK_SPEED, LocomotionSystem } from './LocomotionSystem.ts';
 
 /**
  * Schwarzerblitz walks at 80 units/s and its modal authored strike range is 65
@@ -75,6 +75,15 @@ describe('the fight is paced like the genre it is built on', () => {
    * cannot reach his opponent is a different complaint from a fighter who
    * reaches him too easily.
    */
+  it('lifts a fighter into a real airborne arc and returns to the floor', () => {
+    const loco = new LocomotionSystem(0, 0, 1);
+    loco.beginJump();
+    loco.update(0, 0, 0.1, false, false);
+    assert.ok(loco.airborneY > 0.2, `jump height ${loco.airborneY.toFixed(3)}m is not visible`);
+    for (let i = 0; i < 120; i++) loco.update(0, 0, 1 / 60, false, false);
+    assert.equal(loco.airborneY, 0);
+  });
+
   it('still closes the round-start gap in a couple of seconds', () => {
     const closeSeconds = (3.6 - reach) / (WALK_SPEED * 2);
     assert.ok(closeSeconds < 2.5, `it would take ${closeSeconds.toFixed(1)}s to get in range`);
