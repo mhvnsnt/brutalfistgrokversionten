@@ -150,3 +150,12 @@ Important: these are implementation corrections, not a claim that all animation 
 - Merged PR #22 (grok/fix-main-typecheck) into main as 6fd4c07d32348c7427b380771bea8ebc6040dd0d; this removes the pre-existing TypeScript errors in CharacterMoveSetSystem, DirectionalThrowSystem, and FighterStateMachine without changing intended runtime behavior.
 - PR #20 (grok/per-fighter-movesets) contains the larger style-driven 27-fighter moveset/OSS intake pass: measured style profiles, generated move windows/strings, 113 baked OSS strike candidates, and 141/269 intake passes. It remains a draft and is based on the earlier main, so it must be reconciled with current main before promotion.
 - Runtime rule remains unchanged: static tests/builds and intake measurements do not equal PWA visual certification. Intro playback, audio unlock, skip/handoff, stage rendering, grapples, and per-fighter move individuality remain UNKNOWN until observed in the browser/PWA.
+
+
+### PWA intro gate wired on main — 2026-09-28
+
+- Added `src/components/IntroVideoGate.tsx` and wired it into `src/App.tsx` before `TitleScreen`.
+- The gate uses `/intro/brutal-fist-intro.mp4` as the production media path, waits for a user gesture before calling `video.play()` with sound enabled, supports TAP TO START, Enter/Space/S, Escape, gamepad Start (button 9), an on-screen SKIP button after playback begins, and `ended` handoff to the existing title/start screen.
+- Missing or unloadable intro media calls the same completion path, so the PWA falls through directly to the existing start screen instead of trapping the player on a blank/video error state.
+- This is the shell for Repo Co Dev's separate rough-cut renderer; the actual 60-second media file is intentionally not fabricated or committed here.
+- Runtime status: UNKNOWN until the PWA is opened with the real media file and the browser observes audio unlock, playback, skip, natural completion, and missing-file fallback.
