@@ -1,6 +1,7 @@
 import './engine/assets/installAssetStream';
 import { TitleScreen } from './components/TitleScreen';
 import { useState } from 'react';
+import IntroVideoGate from './components/IntroVideoGate';
 import { useTapThroughGuard } from './pwa/useTapThroughGuard';
 import { AppScreen } from './types';
 import { BANNON_GLB_PLAYABLE_MODELS } from './data/bannonGlbRoster';
@@ -40,6 +41,7 @@ const PreCombatValidationScreen = dynamic(() => import('./components/PreCombatVa
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
   const [screen, setScreen] = useState<AppScreen>(AppScreen.Title);
+  const [introComplete, setIntroComplete] = useState(false);
   // A tap must not press the screen it opens — see useTapThroughGuard. Without
   // this, PRESS START's own synthesised click landed on whichever mode button
   // the menu drew at that pixel.
@@ -51,6 +53,14 @@ export default function App() {
   const [tournamentEndData, setTournamentEndData] = useState<TournamentEndData | null>(null);
   const [tournamentSettings, setTournamentSettings] = useState<TournamentSettings>(DEFAULT_TOURNAMENT_SETTINGS);
   const [selectedStageId, setSelectedStageId] = useState<StageId>('urban_night');
+
+  // The cinematic intro is deliberately before TitleScreen. The media component
+  // owns autoplay permission, skip, completion, and missing-file fallback; when
+  // the rough cut is absent it calls onComplete from the media error handler and
+  // the existing start screen appears normally.
+  if (!introComplete) {
+    return <IntroVideoGate onComplete={() => setIntroComplete(true)} />;
+  }
 
   if (!BANNON_GLB_PLAYABLE_MODELS?.length) {
     return (
