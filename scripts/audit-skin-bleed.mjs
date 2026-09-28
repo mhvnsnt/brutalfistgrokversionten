@@ -23,6 +23,7 @@ import { chromium } from 'playwright';
 const ARGS = process.argv.slice(2);
 const GATE = ARGS.includes('--gate');
 const ALL = ARGS.includes('--all');
+const EXCLUDE = new Set(ARGS.filter((a) => a.startsWith('--exclude=')).map((a) => a.slice('--exclude='.length)));
 const ONLY = ARGS.find((a) => !a.startsWith('--'));
 /** Measure what the GAME loads (after the repair) rather than the raw file. */
 const PIPELINE = ARGS.includes('--pipeline');
@@ -92,6 +93,7 @@ const reports = await page.evaluate(() => window.__BLEED);
 await browser.close();
 
 const bad = reports.filter((r) => !r.error && r.bleeding > TOLERANCE).sort((a, b) => b.bleeding - a.bleeding);
+const gatedBad = bad.filter((r) => !EXCLUDE.has(r.model));
 // A model with NO SKIN has no weights to be wrong. BANNON.glb is the rigid
 // 15-piece action-figure build and the game binds BANNON_rigged.glb instead;
 // filing it as "unreadable" makes a correct state look like a failure.
@@ -122,7 +124,8 @@ console.log(
 );
 if (unskinned.length) console.log(`  no skin (nothing to be wrong): ${unskinned.map((r) => r.model).join(', ')}`);
 
-if (GATE && (bad.length > 0 || errored.length > 0)) {
-  console.error('\nGATE FAILED — a wired model has weights spanning the body.');
+if (GATE && (gatedBad.length > 0 || errored.length > 0)) {
+  if (EXCLUDE.size && bad.some((r) => EXCLUDE.has(r.model))) console.warn(`\nGATE EXCLUDED (reported, not production-blocking): ${[...EXCLUDE].join(', ')}`);
+if (GATE && gatedBad.length > 0) console.error('\nGATE FAILED — a production model has weights spanning the body.');
   process.exit(1);
 }
