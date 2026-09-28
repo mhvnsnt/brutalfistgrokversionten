@@ -75,3 +75,12 @@ Important: these are implementation corrections, not a claim that all animation 
 - Found that `CharacterMoveSetSystem` and roster `defaultMoveSet` data existed, but normal base attacks and stance playback did not consume those per-fighter slots. The FSM now accepts canonical per-fighter animation choices, uses them for light/heavy/kick/crouch attacks, and exposes fighter-specific motion clips for idle/walk/crouch/guard fallback. Arena binds each fighter's roster move-set slots at match initialization.
 - The generic semantic resolver remains the fallback when an owned animation is unavailable or rejected by measured clip gates; this avoids silently playing an unverified clip just because a fighter owns a move ID.
 - Runtime certification remains UNKNOWN until the real PWA playtest verifies held crouch, jump arc + jump clip, directional attacks, and distinct fighter animation ownership together.
+
+
+### Per-fighter special-animation ownership pass — 2026-09-28
+
+- Continued the animation identity repair instead of treating different move IDs as sufficient. The roster has character-specific move IDs and signatures, but ordinary special playback was still sending `special.move.animation` directly to the mesh, bypassing the fighter's owned signature animation slot.
+- Special playback now preserves the combat definition (input, frame data, hitbox, damage, cancel behavior) while allowing a fighter-owned signature animation to supply the visual clip for signature/finisher-style specials.
+- Normal attack slots already added in the previous pass remain separate from generic semantic state: the FSM selects the fighter's move-set clip while `FighterMesh` continues to use the semantic state for combat timing/root-motion. This prevents changing a clip from changing what the move mechanically is.
+- The remaining animation work is intentionally not being declared solved: several roster slots still point at shared generic IDs such as `bf_idle`, `bf_walk_fwd`, `bf_crouch`, and `bf_jab`. Those are legitimate fallback definitions, but they are not evidence of unique authored animations. The production law remains source → retarget → bake → measure → runtime test → promote.
+- Runtime status remains UNKNOWN until PWA playtesting verifies held crouch, jump, movement, distinct fighter attacks/signatures, and full animation completion on actual rigs.
