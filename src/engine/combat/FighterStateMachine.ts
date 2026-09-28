@@ -2318,7 +2318,7 @@ export class FighterStateMachine {
     this.throwComboQueue = [...(move.throwComboRoute ?? [])];
     this.throwComboIndex = 0;
     this.throwComboTimer = 0;
-    this.directionalThrowId = throwId;
+    this.directionalThrowId = null;
     this.grabRangeActive = true;
     this.grabRangeTimer = move.startup + move.active;
     return this.motionState;
@@ -2378,7 +2378,7 @@ export class FighterStateMachine {
     this.throwComboQueue = [];
     this.throwComboIndex = 0;
     this.throwComboTimer = 0;
-    this.directionalThrowId = null;
+    this.directionalThrowId = throwId;
     this.grabRangeActive = true;
     this.grabRangeTimer = move.startup + move.active;
     console.log('[FSM] 🤲 Directional throw started —', def.name, direction, def.attackerAnimation);
