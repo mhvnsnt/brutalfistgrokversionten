@@ -815,6 +815,8 @@ export const MAX_SUBSTEPS = 16;
 export class FighterStateMachine {
   private actionState: ActionState = 'Idle';
   private motionState: FighterMotionState = 'idle';
+  /** Character-specific authored animation slots. Generic semantic aliases are only fallback. */
+  private characterMoveClips: Partial<Record<'idle' | 'walkForward' | 'walkBackward' | 'crouch' | 'guard' | 'lightAttack' | 'heavyAttack' | 'lowKick' | 'highKick' | 'primaryCombo' | 'counter' | 'grappleInitiate' | 'primaryThrow' | 'knockdown' | 'wakeup' | 'hitReaction' | 'ko' | 'signature', string>> = {};
 
   private currentMove: MoveWindow | null = null;
   private moveTimer = 0;
@@ -972,6 +974,33 @@ export class FighterStateMachine {
 
   // ── Public getters ──────────────────────────────────────────────────────────
   get current(): FighterMotionState { return this.motionState; }
+
+  /** Install the fighter's canonical moveset animation choices. */
+  setCharacterMoveClips(clips: Partial<Record<string, string>>): void {
+    this.characterMoveClips = { ...clips };
+  }
+
+  /** Clip override for the current non-attack motion, if this fighter owns one. */
+  motionClip(): string | null {
+    switch (this.motionState) {
+      case 'walkForward': return this.characterMoveClips.walkForward ?? null;
+      case 'walkBackward': return this.characterMoveClips.walkBackward ?? null;
+      case 'crouch':
+      case 'crouchWalk': return this.characterMoveClips.crouch ?? null;
+      case 'guard':
+      case 'guardLow': return this.characterMoveClips.guard ?? null;
+      case 'jump':
+      case 'jumpForward':
+      case 'jumpBack': return this.characterMoveClips.primaryCombo ?? null;
+      case 'idle': return this.characterMoveClips.idle ?? null;
+      default: return null;
+    }
+  }
+
+  private withCharacterClip(move: MoveWindow, slot: keyof typeof this.characterMoveClips): MoveWindow {
+    const clip = this.characterMoveClips[slot];
+    return clip ? { ...move, clip } : move;
+  }
   get action(): ActionState { return this.actionState; }
   get isRecovering(): boolean {
     if (!this.currentMove) return false;
@@ -2121,28 +2150,28 @@ export class FighterStateMachine {
       && Math.abs(resolvedInput.strafe) < 0.2;
     if (crouchingNow && (risingLk || risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('crouchHeavyAttack', CROUCH_MOVE_WINDOWS.crouchHeavyAttack);
+      return this.beginAttack('crouchHeavyAttack', this.withCharacterClip(CROUCH_MOVE_WINDOWS.crouchHeavyAttack, 'lowKick'));
     }
     if (crouchingNow && (risingLp || risingRp || risingLight || risingHeavy)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('crouchLightAttack', CROUCH_MOVE_WINDOWS.crouchLightAttack);
+      return this.beginAttack('crouchLightAttack', this.withCharacterClip(CROUCH_MOVE_WINDOWS.crouchLightAttack, 'lightAttack'));
     }
 
     if (risingLk && !risingLp) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('lightKick', DEFAULT_MOVE_WINDOWS.lightKick);
+      return this.beginAttack('lightKick', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.lightKick, 'lowKick'));
     }
     if (risingRk && !risingRp) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('heavyKick', DEFAULT_MOVE_WINDOWS.heavyKick);
+      return this.beginAttack('heavyKick', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.heavyKick, 'highKick'));
     }
     if (risingLp || (risingLight && !risingLk && !risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('lightAttack', DEFAULT_MOVE_WINDOWS.lightAttack);
+      return this.beginAttack('lightAttack', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.lightAttack, 'lightAttack'));
     }
     if (risingRp || (risingHeavy && !risingLk && !risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('heavyAttack', DEFAULT_MOVE_WINDOWS.heavyAttack);
+      return this.beginAttack('heavyAttack', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.heavyAttack, 'heavyAttack'));
     }
 
     if (resolvedInput.guard) {
