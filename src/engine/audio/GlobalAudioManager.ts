@@ -225,6 +225,15 @@ class GlobalAudioManagerClass {
     try {
       const { Howl, Howler } = await import('howler');
       Howler.volume(this.config.masterVolume);
+      // This repository currently ships no public/audio/ pack. Creating Howl
+      // instances for those paths causes a real 404 request for every sound and
+      // turns a deliberate procedural fallback into a noisy browser error.
+      // Keep the file-backed lane opt-in until an actual audio pack is present.
+      const fileAudioEnabled = import.meta.env.VITE_ENABLE_HOWLER_AUDIO === '1';
+      if (!fileAudioEnabled) {
+        console.log('[AudioManager] no packaged audio pack; using procedural audio');
+        return;
+      }
       this.howlerLoaded = true;
       this._preloadSFX(Howl);
       this._preloadUI(Howl);
