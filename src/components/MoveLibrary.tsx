@@ -67,6 +67,7 @@ function ClipPlayer({
   onClips,
   onProgress,
   offsetX = 0,
+  rotationY = 0,
 }: {
   modelUrl: string;
   clip: string | null;
@@ -76,6 +77,7 @@ function ClipPlayer({
   onProgress?: (p: { t: number; dur: number }) => void;
   /** World-space presentation offset for paired attacker/receiver preview. */
   offsetX?: number;
+  rotationY?: number;
 }) {
   const group = useRef<THREE.Group>(null);
   const [rig, setRig] = useState<{
@@ -212,7 +214,8 @@ function ClipPlayer({
     const box = new THREE.Box3().setFromObject(rig.scene);
     const centre = box.getCenter(new THREE.Vector3());
     group.current.position.set(-centre.x + offsetX, -centre.y, -centre.z);
-  }, [rig, offsetX]);
+    group.current.rotation.y = rotationY;
+  }, [rig, offsetX, rotationY]);
 
   return <group ref={group} />;
 }
@@ -855,6 +858,7 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
                     clip={receiverPreview.clip}
                     speed={speed}
                     offsetX={0.9}
+                    rotationY={Math.PI}
                   />
                 )}
               </Suspense>
