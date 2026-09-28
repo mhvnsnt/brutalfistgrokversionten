@@ -395,18 +395,15 @@ export function fullMoveset(fighterId) {
 }
 
 if (process.argv.includes('--full')) {
-  const sets = {};
-  for (const f of ROSTER) sets[f] = fullMoveset(f);
-  const OUT2 = 'public/motion/movesets.json';
-  if (process.argv.includes('--write')) {
-    writeFileSync(OUT2, JSON.stringify(sets, null, 0));
-    console.log(`\nwrote ${OUT2}`);
-  }
-  console.log(`\nFULL MOVESETS — ${MATRIX.length * 2} slots per fighter\n`);
-  const a = sets[ROSTER[0]], b = sets[ROSTER[3]];
-  console.log(`  ${ROSTER[0]}:`);
-  for (const m of a.slice(0, 10)) console.log(`     ${m.command[0].dirs[0]}${m.command[0].buttons[0]} ${String(m.stance).padEnd(7)} ${m.name.padEnd(18)} -> ${m.clip}`);
-  const shared = a.filter((m, i) => b[i] && b[i].clip === m.clip).length;
-  console.log(`\n  ${ROSTER[0]} and ${ROSTER[3]} share ${shared}/${a.length} clips (${Math.round((shared / a.length) * 100)}%)`);
-  console.log(`  distinct clips in ${ROSTER[0]}'s set: ${new Set(a.map((m) => m.clip)).size}`);
+  // SUPERSEDED. `fullMoveset` above is the old seeded draw (FNV hash of the
+  // fighter id as score jitter) and is kept only for reference/diffing. The
+  // table the runtime loads is now built from canon style profiles — see
+  // tools/moves/build_style_movesets.mjs. Delegating here keeps the predev
+  // sync chain (scripts/predev-gate.mjs) from silently regenerating the
+  // seeded table over the style-driven one.
+  const { spawnSync } = await import('node:child_process');
+  const args = ['--experimental-strip-types', '--import', './scripts/register-ts-resolve.mjs', 'tools/moves/build_style_movesets.mjs'];
+  if (process.argv.includes('--write')) args.push('--write');
+  const r = spawnSync(process.execPath, args, { stdio: 'inherit' });
+  if (r.status) process.exit(r.status);
 }
