@@ -56,3 +56,13 @@ Important: these are implementation corrections, not a claim that all animation 
 - Directional throw commits now carry measured attacker durations as well as receiver durations.
 - The FSM keeps the attacker in the directional throw commit for the full authored clip when that exceeds the ordinary recovery window. This specifically prevents long backward/side grapple clips from being cut at ~0.5–0.7s.
 - This follows the production law: do not speed a long authored grapple into a twitch and do not let the combat clock pull the animation off-screen before the paired performance finishes.
+
+
+### Follow-up body-contact + side-throw contract — 2026-09-28
+
+- Found another concrete grapple seam: `defenderPositionOffset` existed in the directional throw catalog but had no runtime reader. Correct attacker/receiver clips could therefore play while the two roots remained at ordinary combat spacing, making a throw read as two unrelated performances or visibly pass through the opponent.
+- Directional throw commit now applies the catalog's measured receiver offset in world space, using the attacker's current facing, and writes the resulting position back through `LocomotionSystem.setPosition()` plus the arena refs/state. This is a contact/alignment correction, not a visual fake: the receiver is placed at the declared throw relationship before the paired reaction begins.
+- `side_throw_right` was missing its required measured `commitDuration` and `receiverDuration` fields. Those are now explicitly `1.7083s` and `1.375s`, matching the paired `GRAFTHROW/GRAFTHROWREACTION` family and preventing the right-side path from depending on an incomplete timing contract.
+- Added regression assertions for side-throw timing and forward/back receiver offsets.
+- Current commits on main for this pass: `0ecff3b` (side-throw timing), `3caae34` (runtime body alignment), `71693b7` (regression coverage).
+- Runtime certification is still UNKNOWN until the real PWA/Chromium playtest observes the attacker clip, receiver clip, contact spacing, full-duration playback, and damage outcome together.
