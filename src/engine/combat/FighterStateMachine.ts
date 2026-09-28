@@ -751,6 +751,10 @@ const WAKEUP_BUFFER_WINDOW = 0.8;
 const TECH_ROLL_DURATION = 0.45;
 const BACKRISE_DURATION = 0.55;
 const QUICKSTAND_DURATION = 0.30;
+const ROLL_WAKE_DURATION = 0.48;
+const SIDE_ROLL_WAKE_DURATION = 0.42;
+const KIP_UP_DURATION = 0.52;
+const WAKE_ATTACK_DURATION = 0.42;
 
 // ── HitStun constants ─────────────────────────────────────────────────────────
 /** HitStun duration = active frames of the attack that landed (in seconds) */
@@ -2842,20 +2846,55 @@ export class FighterStateMachine {
     switch (option) {
       case 'techRoll':
         this.actionState = 'WakeupTechRoll';
-        this.motionState = 'walkForward';
+        this.motionState = 'WakeupRollForward';
+        this.groundedRollDirection = 'forward';
         this.wakeupActionTimer = TECH_ROLL_DURATION;
         console.log('[FSM] 🔄 Wakeup: techRoll');
         break;
       case 'backrise':
         this.actionState = 'WakeupBackrise';
-        this.motionState = 'walkBackward';
+        this.motionState = 'WakeupBackrise';
+        this.groundedRollDirection = null;
         this.wakeupActionTimer = BACKRISE_DURATION;
         console.log('[FSM] ↩️ Wakeup: backrise');
+        break;
+      case 'rollForward':
+        this.actionState = 'WakeupTechRoll';
+        this.motionState = 'WakeupRollForward';
+        this.groundedRollDirection = 'forward';
+        this.wakeupActionTimer = ROLL_WAKE_DURATION;
+        console.log('[FSM] 🔄 Wakeup: forward roll');
+        break;
+      case 'rollBack':
+        this.actionState = 'WakeupBackrise';
+        this.motionState = 'WakeupRollBack';
+        this.groundedRollDirection = 'back';
+        this.wakeupActionTimer = ROLL_WAKE_DURATION;
+        console.log('[FSM] 🔄 Wakeup: backward roll');
+        break;
+      case 'rollSide':
+        this.actionState = 'WakeupTechRoll';
+        this.motionState = 'WakeupRollSide';
+        this.groundedRollDirection = 'side';
+        this.wakeupActionTimer = SIDE_ROLL_WAKE_DURATION;
+        console.log('[FSM] 🔄 Wakeup: side roll');
+        break;
+      case 'kipUp':
+        this.actionState = 'WakeupQuickStand';
+        this.motionState = 'WakeupKipUp';
+        this.wakeupActionTimer = KIP_UP_DURATION;
+        console.log('[FSM] 🥋 Wakeup: kip-up');
+        break;
+      case 'wakeAttack':
+        this.actionState = 'WakeupQuickStand';
+        this.motionState = 'WakeupAttack';
+        this.wakeupActionTimer = WAKE_ATTACK_DURATION;
+        console.log('[FSM] ⚔️ Wakeup: attack');
         break;
       case 'quickStand':
       default:
         this.actionState = 'WakeupQuickStand';
-        this.motionState = 'idle';
+        this.motionState = 'WakeupQuickStand';
         this.wakeupActionTimer = QUICKSTAND_DURATION;
         console.log('[FSM] ⬆️ Wakeup: quickStand');
         break;
