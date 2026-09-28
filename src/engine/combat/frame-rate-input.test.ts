@@ -153,3 +153,36 @@ describe('Tekken directional input', () => {
     assert.equal(second.strafe, -1);
   });
 });
+
+
+describe('fighter-owned animation slots', () => {
+  it('uses the fighter-owned attack clip instead of the shared semantic clip', () => {
+    withClock((advance) => {
+      const fsm = new FighterStateMachine();
+      fsm.setCharacterMoveClips({ lightAttack: 'FIGHTER_UNIQUE_JAB' });
+      for (let i = 0; i < 30; i++) {
+        advance(1 / 60);
+        fsm.update(BASE, 1 / 60);
+      }
+      advance(1 / 60);
+      fsm.update({ ...BASE, lp: true }, 1 / 60);
+      assert.equal(fsm.activeClip(), 'FIGHTER_UNIQUE_JAB');
+    });
+  });
+
+  it('keeps the fighter-owned crouch clip while Down is held', () => {
+    withClock((advance) => {
+      const fsm = new FighterStateMachine();
+      fsm.setCharacterMoveClips({ crouch: 'FIGHTER_UNIQUE_CROUCH' });
+      advance(1 / 60);
+      fsm.update({ ...BASE, crouch: true }, 1 / 60);
+      assert.equal(fsm.motionClip(), 'FIGHTER_UNIQUE_CROUCH');
+      advance(1 / 60);
+      fsm.update({ ...BASE, crouch: true }, 1 / 60);
+      assert.equal(fsm.motionClip(), 'FIGHTER_UNIQUE_CROUCH');
+      advance(1 / 60);
+      fsm.update(BASE, 1 / 60);
+      assert.equal(fsm.motionClip(), null);
+    });
+  });
+});
