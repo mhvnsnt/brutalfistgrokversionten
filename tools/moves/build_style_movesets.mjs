@@ -71,5 +71,18 @@ const rej = {};
 for (const r of Object.values(rejected)) rej[r] = (rej[r] ?? 0) + 1;
 console.log(`strike pool: ${pool.length} clips (${pool.filter((c) => c.admittedBy !== 'attack').length} admitted by widening: ${pool.filter((c) => c.admittedBy !== 'attack').map((c) => `${c.name}[${c.admittedBy}]`).join(', ')})`);
 console.log('pool rejections:', JSON.stringify(rej));
+const famOf = new Map(pool.map((c) => [c.name, c.family ?? 'bank']));
+const famCount = {};
+for (const c of pool) famCount[c.family ?? 'bank'] = (famCount[c.family ?? 'bank'] ?? 0) + 1;
+console.log('pool families:', JSON.stringify(famCount));
+const perFighterFamilies = {};
+for (const [id, moves] of Object.entries(sets)) {
+  const f = {};
+  for (const m of moves) { const k = famOf.get(m.clip) ?? 'bank'; f[k] = (f[k] ?? 0) + 1; }
+  for (const c of Object.values(neutral[id] ?? {})) if (c) { const k = famOf.get(c) ?? 'bank'; f[k] = (f[k] ?? 0) + 1; }
+  perFighterFamilies[id] = f;
+}
+if (process.argv.includes('--families')) for (const [id, f] of Object.entries(perFighterFamilies)) console.log(id.padEnd(16), JSON.stringify(f));
+if (process.argv.includes('--write')) writeFileSync('tools/moves/roster-clip-families.json', JSON.stringify(perFighterFamilies, null, 1) + '\n');
 console.log('fighters:', Object.keys(sets).length, 'unprofiled table entries:', unprofiled);
 console.log('signature clips missing from pool (MISSING_CLIP):', JSON.stringify(Object.fromEntries(Object.entries(missingSignature).filter(([, v]) => v.length))));

@@ -130,7 +130,32 @@ export interface FighterStyleProfile {
   canonBasis: string;
   /** Authored signature clips — must exist in the strike pool or they are reported MISSING_CLIP. */
   signatureClips: string[];
+  /** Per-fighter pull toward a clip family, on top of the archetype blend (canon-quoted where set). */
+  familyBias?: Partial<Record<ClipFamily, number>>;
 }
+
+/**
+ * CLIP FAMILIES. The open-source intake (tools/anim-intake) stamps every
+ * clip it bakes with the family of motion it came from. Styles pull from
+ * DIFFERENT families, so heavy, fast and technical fighters stop sharing
+ * one pool of look-alike strikes:
+ *   bank    the original baked bank (Bannon / Schwarzerblitz / Mixamo-era)
+ *   boxing  CMU subject 14 boxing, UAL Jab/Cross, Mesh2Motion jabs
+ *   karate  CMU 135 Mawashigeri / Yokogeri
+ *   spin    CMU 87/88/90 spinning kicks
+ *   knee    CMU 86_06 knee strikes
+ *   brawl   KayKit unarmed punch/kick, Mesh2Motion door-breach kick
+ */
+export type ClipFamily = 'bank' | 'boxing' | 'karate' | 'spin' | 'knee' | 'brawl';
+export const FAMILY_AFFINITY: Record<StyleArchetype, Partial<Record<ClipFamily, number>>> = {
+  grappler:   { bank: 0.5, knee: 2.5, brawl: 1.5, boxing: 0, karate: -1, spin: -2 },
+  powerhouse: { bank: 1, knee: 2, brawl: 2.5, boxing: -0.5, karate: -1, spin: -1.5 },
+  brawler:    { bank: 0.5, brawl: 2, boxing: 1, knee: 1, karate: -0.5, spin: -1 },
+  striker:    { bank: 0.5, boxing: 2, karate: 1, spin: 0, knee: 0, brawl: -0.5 },
+  speed:      { bank: 0, boxing: 2.5, spin: 1.5, karate: 0.5, knee: -1, brawl: -1.5 },
+  aerial:     { bank: 1, spin: 2, karate: 1, boxing: 0, knee: -1, brawl: -1 },
+  martial:    { bank: 0.5, karate: 3, spin: 1.5, boxing: 0.5, knee: 0, brawl: -1.5 },
+};
 
 /**
  * Canon-derived style table. `canonBasis` quotes src/data/bannonRoster.ts —
@@ -146,8 +171,8 @@ export const FIGHTER_STYLE_TABLE: Record<string, Omit<FighterStyleProfile, 'id'>
   echo:            { primary: 'aerial',     secondary: 'speed',      canonBasis: 'Psychological / Aerial. Misdirection, rapid dodges, and unexpected aerial attacks.', signatureClips: ['GRAFJUMPKICK2', 'DEFAULTJUMPPUNCH'] },
   cody:            { primary: 'brawler',    secondary: 'powerhouse', canonBasis: 'Brawler / Interference. Dirty tactics ... explosive power moves.', signatureClips: ['BASEBALL_HIT', 'GRAFSURPRISEPUNCH'] },
   hall_nighter:    { primary: 'brawler',    secondary: 'grappler',   canonBasis: 'Power Brawler / Endurance. Absorbs damage and delivers crushing impact.', signatureClips: ['TIGERDOUBLEHAMMERCOMBO', 'BOXING__5_'] },
-  static:          { primary: 'speed',      secondary: 'brawler',    canonBasis: 'Electric Striker / Speed Brawler. Rapid-fire strikes, spinning attacks, and chaotic combos.', signatureClips: ['ARMADA', 'GYAKUZUKI_COMBO'] },
-  viper:           { primary: 'striker',    secondary: 'speed',      canonBasis: 'Assassin / Precision Striker. Lightning-fast strikes, evasive movement, and lethal counters.', signatureClips: ['HIGHPUNCH', 'TIGER_HEAVYKICK'] },
+  static:          { primary: 'speed',      secondary: 'brawler',    canonBasis: 'Electric Striker / Speed Brawler. Rapid-fire strikes, spinning attacks, and chaotic combos.', signatureClips: ['ARMADA', 'GYAKUZUKI_COMBO'], familyBias: { karate: 3, spin: 1 } },
+  viper:           { primary: 'striker',    secondary: 'speed',      canonBasis: 'Assassin / Precision Striker. Lightning-fast strikes, evasive movement, and lethal counters.', signatureClips: ['HIGHPUNCH', 'TIGER_HEAVYKICK'], familyBias: { spin: 1.5 } },
   kobra:           { primary: 'brawler',    secondary: 'speed',      canonBasis: 'Street Fighter / Chaos. Dirty tactics, unpredictable combos, and raw aggression.', signatureClips: ['SHAZLOWRUSH', 'PUNCHKICKCOMBO'] },
   aaron_ruben:     { primary: 'grappler',   secondary: 'martial',    canonBasis: 'Technical Grappler / Ring General. Submission holds, precise strikes, and ring control.', signatureClips: ['GRAFSURPRISEPUNCHLOW', 'GYAKUZUKI'] },
   hollow:          { primary: 'speed',      secondary: 'powerhouse', canonBasis: 'Phantom / Psychological. Unpredictable movement, mind games, and sudden explosive attacks.', signatureClips: ['GRAFSURPRISEPUNCH', 'QUESHADA_2'] },
@@ -171,6 +196,8 @@ export interface FighterStats { speed: number; strength: number }
 export interface ResolvedStyle extends FighterStyleProfile {
   stats: FighterStats;
   tuning: ArchetypeTuning;
+  /** Blended archetype family pull plus the fighter's own bias. */
+  familyAffinity: Partial<Record<ClipFamily, number>>;
 }
 
 /** Blend primary (weight 1) and secondary (weight 0.5) into one tuning, then fold in stats. */
@@ -209,7 +236,11 @@ export function resolveStyle(id: string, stats: FighterStats): ResolvedStyle | n
   tuning.recoveryFrames += speedFrames;
   tuning.damage *= stats.strength / 86;
   tuning.pushback *= 0.85 + (stats.strength - 78) / 120;
-  return { id, ...entry, stats, tuning };
+  const familyAffinity: Partial<Record<ClipFamily, number>> = {};
+  for (const f of ['bank', 'boxing', 'karate', 'spin', 'knee', 'brawl'] as ClipFamily[]) {
+    familyAffinity[f] = mix(FAMILY_AFFINITY[entry.primary][f] ?? 0, FAMILY_AFFINITY[entry.secondary][f] ?? 0) + (entry.familyBias?.[f] ?? 0);
+  }
+  return { id, ...entry, stats, tuning, familyAffinity };
 }
 
 // ── Style-driven clip selection ────────────────────────────────────────────
@@ -246,6 +277,7 @@ export function styleAffinity(style: ResolvedStyle, clip: StrikeClip): number {
     + a.travel * Math.min(1, clip.travels * 2);
   v += ((style.stats.speed - 85) / 8) * Math.max(0, 1 - clip.dur);
   v += ((style.stats.strength - 85) / 8) * (clip.hand + clip.foot) * 0.5;
+  v += style.familyAffinity?.[(clip.family ?? 'bank') as ClipFamily] ?? 0;
   return v;
 }
 

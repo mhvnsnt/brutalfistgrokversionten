@@ -47,6 +47,8 @@ export interface BakedIndexStrike {
   handReach?: number;
   footReach?: number;
   startUp?: number;
+  /** Knee strikes (open-source intake): knee forward of its hip socket, metres. */
+  kneeReach?: number;
 }
 
 export interface BakedIndexEntry {
@@ -59,6 +61,9 @@ export interface BakedIndexEntry {
   spineUp?: number;
   travels?: number;
   armForward?: number;
+  /** Clip family stamped by the open-source intake (boxing, karate, spin, knee, brawl). */
+  family?: string;
+  intake?: string;
   strike?: BakedIndexStrike;
 }
 
@@ -77,7 +82,9 @@ export interface StrikeClip {
   notAnAttack: boolean;
   owns: boolean;
   /** How this clip entered the pool — `attack` (bake semantic) or a widening rule. */
-  admittedBy: 'attack' | 'forward-hand' | 'hammer' | 'spin-kick';
+  admittedBy: 'attack' | 'forward-hand' | 'hammer' | 'spin-kick' | 'knee';
+  /** Motion family: `bank` for the original baked bank, else the intake family. */
+  family?: string;
 }
 
 export type PoolRejection =
@@ -132,8 +139,11 @@ export function buildStrikeClipPool(
 
     let admittedBy: StrikeClip['admittedBy'] | null = null;
     if (isAttack) {
-      if (hand < 0.35 && foot < 0.60) { rejected[name] = 'no-reach'; continue; }
-      admittedBy = 'attack';
+      // A knee is a close-range strike: it can never reach 0.60 m, so it is
+      // admitted on its own measured reach (knee >= 0.20 m ahead of the hip).
+      if (hand < 0.35 && foot < 0.60 && (s.kneeReach ?? 0) >= 0.2) admittedBy = 'knee';
+      else if (hand < 0.35 && foot < 0.60) { rejected[name] = 'no-reach'; continue; }
+      else admittedBy = 'attack';
     } else {
       if (OWNED_SEMANTIC.test(semantic)) { rejected[name] = 'owned-semantic'; continue; }
       if (grappleTwins.has(twinKey(m))) { rejected[name] = 'grapple-twin'; continue; }
@@ -147,7 +157,7 @@ export function buildStrikeClipPool(
     }
 
     const reachLimb = String(s.reachLimb ?? s.limb ?? '').toLowerCase();
-    const kick = admittedBy === 'spin-kick'
+    const kick = admittedBy === 'spin-kick' || admittedBy === 'knee'
       ? true
       : admittedBy === 'forward-hand' || admittedBy === 'hammer'
         ? false
@@ -167,6 +177,7 @@ export function buildStrikeClipPool(
       notAnAttack: false,
       owns: Boolean(m.owns),
       admittedBy,
+      family: m.family ?? 'bank',
     });
   }
   pool.sort((a, b) => a.name.localeCompare(b.name));
