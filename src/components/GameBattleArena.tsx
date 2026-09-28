@@ -2249,6 +2249,7 @@ export default function GameBattleArena({
           p1XRef.current, p1ZRef.current,
         );
         if (inRange && THROW_CATALOG[aiDirectionalThrowId]) {
+          p2SMRef.current.beginDirectionalThrow(aiDirectionalThrowId);
           p1SMRef.current.beginIncomingThrowBreak(0, THROW_CATALOG[aiDirectionalThrowId].breakButton);
           directionalThrowPendingRef.current = {
             attacker: 'p2',
