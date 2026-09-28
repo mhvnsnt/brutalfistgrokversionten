@@ -1,8 +1,10 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { createNoise2D } from "simplex-noise";
 import { resolveStageConfig, type StageId } from "../engine/combat/StageConfig";
+import { buildStageBlockout, isBlockoutStage, type BlockoutStageId } from "../engine/stages/StageBlockouts";
+import { blockoutToObject3D, disposeBlockoutObject3D } from "../engine/stages/stageBlockoutThree";
 
 function xmur3(str: string) {
   let h = 1779033703 ^ str.length;
@@ -46,9 +48,15 @@ export function ProceduralStage({ stageId, p1Color, p2Color, seed }: ProceduralS
   const halfD = Number.isFinite(cfg.boundaryZ) ? cfg.boundaryZ : 6;
   const floorW = Math.min(28, Math.max(10, halfW * 2.4));
   const floorD = Math.min(18, Math.max(8, halfD * 2.2));
-  const indoor = INDOOR.has(resolvedId);
+  // Canon BLOCKOUT stages bring their own floor, ground and sky extent.
+  const blockout = isBlockoutStage(resolvedId);
+  const indoor = INDOOR.has(resolvedId) || blockout;
   const uniqueOutdoor = UNIQUE_OUTDOOR.has(resolvedId);
   const hideGeneric = indoor || uniqueOutdoor;
+  const skyRadius = useMemo(
+    () => (blockout ? Math.max(42, buildStageBlockout(resolvedId as BlockoutStageId).skyRadius) : 42),
+    [blockout, resolvedId],
+  );
   const accent = cfg.accentColor;
 
   const ground = useMemo(() => {
@@ -102,7 +110,7 @@ export function ProceduralStage({ stageId, p1Color, p2Color, seed }: ProceduralS
       )}
 
       <mesh position={[0, 18, 0]}>
-        <sphereGeometry args={[42, 16, 12]} />
+        <sphereGeometry args={[skyRadius, 16, 12]} />
         <meshBasicMaterial color={cfg.ambientColor} side={THREE.BackSide} />
       </mesh>
 
@@ -127,6 +135,7 @@ export function ProceduralStage({ stageId, p1Color, p2Color, seed }: ProceduralS
       {resolvedId === "acid_pit" && <AcidPit accent={accent} />}
       {resolvedId === "grinder_pit" && <GrinderPit accent={accent} />}
       {resolvedId === "gang_brawl" && <GangBrawl accent={accent} />}
+      {blockout && <BlockoutStage id={resolvedId as BlockoutStageId} />}
 
       {buildings.map((p, i) => (
         <group key={`b${i}`} position={p.pos} rotation={[0, p.rot, 0]}>
@@ -144,6 +153,16 @@ export function ProceduralStage({ stageId, p1Color, p2Color, seed }: ProceduralS
       ))}
     </group>
   );
+}
+
+/**
+ * A canon stage BLOCKOUT (not final art). The group is built by the same
+ * function the tests run, so what is tested is what is drawn.
+ */
+function BlockoutStage({ id }: { id: BlockoutStageId }) {
+  const group = useMemo(() => blockoutToObject3D(buildStageBlockout(id)), [id]);
+  useEffect(() => () => disposeBlockoutObject3D(group), [group]);
+  return <primitive object={group} />;
 }
 
 function Box({
