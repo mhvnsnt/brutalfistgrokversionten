@@ -69,8 +69,12 @@ export interface CharacterMoveSet {
   // retreating, or entering from down-forward.
   forwardLight?: string;
   forwardHeavy?: string;
+  forwardLowKick?: string;
+  forwardHighKick?: string;
   backLight?: string;
   backHeavy?: string;
+  backLowKick?: string;
+  backHighKick?: string;
   downForwardLight?: string;
   downForwardHeavy?: string;
   // Kick
