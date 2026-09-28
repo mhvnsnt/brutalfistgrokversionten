@@ -499,6 +499,26 @@ export default function GameBattleArena({
     p1SMRef.current = new FighterStateMachine();
     p2SMRef.current = new FighterStateMachine();
 
+    // Bind each fighter's authored animation ownership on the FIRST match too.
+    // resetForRound already did this for later rounds, but the initial match
+    // path recreated the state machines without installing the roster move-set
+    // clips, so both fighters fell back to the shared semantic bank until the
+    // first round reset. That made per-fighter ownership appear to work only
+    // after a round transition.
+    const buildCharacterClipMap = (fighterId: string) => {
+      const set = getCharacterMoveSet(fighterId);
+      if (!set) return {};
+      const slots = ['idle','walkForward','walkBackward','crouch','guard','lightAttack','heavyAttack','lowKick','highKick','primaryCombo','counter','grappleInitiate','primaryThrow','knockdown','wakeup','hitReaction','ko','signature'] as const;
+      const out: Record<string, string> = {};
+      for (const slot of slots) {
+        const move = getMoveById(set[slot]);
+        if (move?.animation) out[slot] = move.animation;
+      }
+      return out;
+    };
+    p1SMRef.current.setCharacterMoveClips(buildCharacterClipMap(p1Fighter.id));
+    p2SMRef.current.setCharacterMoveClips(buildCharacterClipMap(p2Fighter.id));
+
     // The roster's CharacterMoveSet is authoritative for each fighter's owned
     // animations. The generic semantic bank remains only the fallback when an
     // authored slot is unavailable on that rig.
