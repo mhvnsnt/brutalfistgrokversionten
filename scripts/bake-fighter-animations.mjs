@@ -27,7 +27,7 @@
  *   node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs \
  *        scripts/bake-fighter-animations.mjs [--gate] [--out public/motion/baked]
  */
-import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -1186,7 +1186,11 @@ const report = {
  * Unlinking the files leaves the directory in place and the watcher intact.
  */
 mkdirSync(OUT, { recursive: true });
-for (const f of readdirSync(OUT)) rmSync(join(OUT, f), { recursive: true, force: true });
+// Open-source intake clips (OSS_*) are written by tools/anim-intake, not by
+// this bake, so they survive the sweep. Their index entries are carried forward below.
+let ossPriorIndex = {};
+try { ossPriorIndex = JSON.parse(readFileSync(join(OUT, 'index.json'), 'utf8')); } catch { /* first bake */ }
+for (const f of readdirSync(OUT)) { if (/^OSS_/.test(f)) continue; rmSync(join(OUT, f), { recursive: true, force: true }); }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // THE OPPONENT SIDE OF A GRAPPLE
@@ -1759,6 +1763,14 @@ for (const [deliverer, list] of grapplePairs.byDeliverer) {
 report.grapplePairs = grapplePairs.byDeliverer.size;
 report.grappleOrphanReceivers = grapplePairs.orphans;
 
+// OPEN-SOURCE INTAKE CLIPS are not baked here. tools/anim-intake/cc0_unarmed_intake.ts
+// writes them, measured and licence-stamped, straight onto the canonical
+// skeleton. A full re-bake must not silently drop them, so every prior entry
+// stamped `intake: 'oss-universal-intake'` whose file is still on disk is
+// carried forward unchanged.
+for (const [name, entry] of Object.entries(ossPriorIndex)) {
+  if (entry?.intake === 'oss-universal-intake' && !manifest[name] && existsSync(join(OUT, entry.file))) manifest[name] = entry;
+}
 writeFileSync(join(OUT, 'index.json'), JSON.stringify(manifest, null, 0));
 
 const bytes = readdirSync(OUT).reduce(
