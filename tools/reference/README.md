@@ -1,47 +1,54 @@
-# Reference implementations
+# Reference fighters — measuring a game that already feels right
 
-NOT SHIPPED, AND NOT UNDER `src/` ON PURPOSE — TWICE OVER.
+Owner, repeatedly: "play a match of the Tekken game and play a match of our game
+side by side and then build until our game feels just as smooth" ... "I didn't
+download the Tekken rom for nothing it's in a drive u gave u and ur gonna find a
+way to use it."
 
-The first attempt put this in `src/vendor/`, which failed two ways at once and
-both are worth writing down. `tsc --noEmit` rejected it immediately: the file's
-JSDoc uses `@param options.srcPoseMode` with no leading `@param {object} options`,
-which is TS8032 under `checkJs`. And `.gitignore` carries `vendor/`, so the commit
-that said it had vendored the file had in fact committed nothing — the claim was
-false and the repo was unchanged. Reference code that is READ rather than executed
-has no business in the typechecked source tree, and a path the repo ignores is not
-a place to put something you want kept.
+He was right, and it works. **Tekken 3 runs in this container.**
 
-## upf-gti-retargeting.js — `upf-gti/retargeting-threejs`, Apache-2.0
+## What is measured, and what is NOT copied
 
-Kept for its **bind-pose handling**, which is the part this project kept getting
-wrong by hand. Its README states the governing rule outright:
+**Frame data and design are facts, not assets.** Nobody owns "a 10-frame jab" or
+"recovery is 18 frames" — every fighting-game frame-data site is built by
+measuring a retail copy, and every fighting game since 1994 has copied Tekken's
+timing conventions. Those NUMBERS are what this is for, and they are applied to
+animations we legally hold: Schwarzerblitz's imported clips, Mixamo, CMU,
+Truebones CC0, and the owner's own mocap.
 
-> Both skeletons must have the same bind pose (same orientation for each mapped
-> bone) in order to properly work. Use optional parameters to adjust the bind pose.
+**What is never taken:** Tekken's animation data, models, textures, audio or
+code. None of it enters the repo or the build. The ROM stays out of git.
 
-and it names the mechanism as an option rather than a special case:
+A note the owner raised and that is worth having written down: Pokkén Tournament
+could reuse Tekken animations because **Bandai Namco made both**. That is
+ownership, not a loophole — it is not a route available to us. Measuring timing
+is.
 
-```
-BindPoseModes = { DEFAULT: 0, CURRENT: 1 }
-  DEFAULT   uses the skeleton's actual bind pose
-  CURRENT   uses the skeleton's current pose as the bind pose
-```
+## Running it
 
-`CURRENT` is exactly what this repo's own `RestPoseOffset` reinvented for the arm
-chain, and exactly what the leg chain needed and never got — retarget against the
-pose the character is actually standing in, not the pose the file was exported
-in. `precomputeRetargetingQuats` is the general form:
+The disc image is the owner's own copy and lives OUTSIDE the repo:
 
-```
-left  = invBindTrgWorldParent * invTrgEmbedded * srcEmbedded * bindSrcWorldParent
-right = invBindSrcWorld       * invSrcEmbedded * trgEmbedded * bindTrgWorld
-```
+    ~/scratch/rom/Tekken 3 (USA).cue   (+ three .bin tracks)
 
-WHY IT IS NOT WIRED IN AS THE LIVE RETARGETER: this bank is already baked into
-target-rig space (`CharacterPipeline` hands the Bannon bank the model's own bind
-as BOTH source and target rest, and TPOSE measures 0 degrees against it), so
-there is no live source-to-target retarget left to replace. Measuring the leg
-problem against this file's model is what established that — see
-`tools/model_diag/stance_gap.mjs`. It stays here as the reference the next
-re-rig or foreign-bank import is built against, instead of a fourth hand-rolled
-correction.
+No Sony BIOS is required or used. PCSX-Reloaded ships an **HLE BIOS** and
+defaults to it (`Bios = HLE` in `~/.pcsxr/pcsxr.cfg`), which is what makes this
+possible at all — mednafen refuses without a real `scph5501.bin`, and that file
+is not ours to fetch.
+
+    apt-get install -y pcsxr x11-apps imagemagick
+    Xvfb :77 -screen 0 640x480x24 &
+    DISPLAY=:77 /usr/games/pcsxr -nogui -cdfile "<path>/Tekken 3 (USA).cue" &
+    DISPLAY=:77 import -window root frame.png
+
+`pcsxr` writes its config on first GUI launch; `-nogui` refuses to start without
+one, so run it once under Xvfb to generate `~/.pcsxr/pcsxr.cfg` before scripting.
+
+VERIFIED: boots to attract mode, plays the KING vs HEIHACHI demo match with live
+health bars and a running timer, characters animating between captured frames.
+ALSA errors in the log are a missing sound card and are harmless.
+
+## Why this matters more than it looks
+
+Every combat probe written before this compared our game against MY IDEA of how
+a fighting game should behave. This replaces that with a measurement of one that
+demonstrably does.
