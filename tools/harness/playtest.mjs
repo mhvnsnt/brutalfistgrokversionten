@@ -64,7 +64,13 @@ const pageErrors = [];
 page.on('pageerror', (e) => pageErrors.push(String(e.message || e)));
 page.on('console', (m) => { if (m.type() === 'error') pageErrors.push('console: ' + m.text()); });
 const failed = [];
-page.on('requestfailed', (r) => failed.push(`${r.failure()?.errorText || 'failed'}  ${r.url()}`));
+page.on('requestfailed', (r) => {
+  const reason = r.failure()?.errorText || 'failed';
+  // Chromium reports ERR_ABORTED when navigation tears down an in-flight
+  // media request. That is not a missing asset or runtime failure.
+  if (reason === 'net::ERR_ABORTED') return;
+  failed.push(`${reason}  ${r.url()}`);
+});
 page.on('response', (r) => { if (r.status() >= 400) failed.push(`HTTP ${r.status()}  ${r.url()}`); });
 
 console.log(`PLAYTEST -> ${URL}  (412x915 portrait, ${SECONDS}s of play)\n`);
