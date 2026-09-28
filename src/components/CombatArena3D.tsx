@@ -36,6 +36,7 @@ function locomotionAnimationFor(
   state: string,
   velocity: { forward: number; strafe: number } | undefined,
   requested: string,
+  airborneY = 0,
 ): string {
   if (!velocity) return state === 'Walking' ? (requested || 'idle') : state;
   const f = velocity.forward ?? 0;
@@ -43,6 +44,15 @@ function locomotionAnimationFor(
   const af = Math.abs(f);
   const as = Math.abs(s);
   const moving = Math.hypot(f, s) > 0.12;
+
+  // Jump input may be released before the 0.55s FSM presentation window ends.
+  // The locomotion arc is the authoritative world-space Y, so keep the jump
+  // clip alive for the whole airborne interval instead of snapping to idle in
+  // mid-flight. This is also what makes the visual lift/fall match the actual
+  // capsule height.
+  if (airborneY > 0.02 && state !== 'Knockdown' && state !== 'Juggled') {
+    return f < -0.12 ? 'jumpBack' : f > 0.12 ? 'jumpForward' : 'jump';
+  }
 
   if (state === 'Backdashing') return 'Backdashing';
   // Explicit combat/throw/wakeup clips come from the caller and must survive
