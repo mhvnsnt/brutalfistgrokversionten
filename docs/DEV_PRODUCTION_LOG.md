@@ -245,3 +245,5 @@ Important: these are implementation corrections, not a claim that all animation 
 - CI follow-up: grounded wakeup frame-data defaults and explicit regression typing were added after the first PR verification run exposed stale merge-ref typecheck failures.
 
 - Grounded wakeup CI trigger follows the corrected MoveLibrary state table and regression typing.
+
+- CI follow-up: removed the duplicate MoveWindow type import exposed by the next verification pass.
