@@ -488,3 +488,30 @@ time on the language.
 > mechanism and the math, but express it against `THREE.AnimationMixer`, `THREE.Quaternion` and
 > `THREE.ShaderMaterial`. Three.js has no per-bone pose-evaluation loop, so a bone mask is a track
 > split plus a second action, not a `continue`. Assume ES modules and strict TypeScript.
+
+## RULE: PLAY THE GAME BEFORE YOU CLAIM ANYTHING ABOUT IT (2026-09-28, owner-set, standing)
+
+Owner: "u play and pull in full repos and stop Jerry rig patching and u test and play it I'm
+tired of ur monkey loops of playing a broken game when u can hand me a complete production" ...
+"play an actual round all the way through from selecting a character to the end and see how it
+goes and then play mine and see the exact problems of why it's not going smooth" ... "which
+should probably be a rule".
+
+It is a rule now. Before reporting a combat, animation or UI change as done:
+
+1. **RUN `node tools/harness/playtest.mjs`.** It boots the real PWA in Chromium at
+   **412x915 portrait — the owner plays vertical, always test vertical** — walks the real menus
+   with real clicks, and plays with the REAL KeyboardEvents the game listens for:
+   `U=LP  I=RP  J=LK  K=RK  C=guard  V=grapple  WASD/arrows=move`.
+2. **`window.__controlsTest.setKeys` IS NOT PLAYING THE GAME.** It sets six movement fields and
+   nothing else — no attack ever reaches the engine through it. Every "I pressed the buttons"
+   probe written before this rule was two men walking, and they all reported clean.
+3. **LOOK AT THE SCREENSHOTS.** `--shots` writes them. A number can pass while the screen is
+   wrong; that is how a severed rig scored a perfect deformation result for months.
+4. **`node tools/harness/portrait_audit.mjs --gate`** for anything that touches layout. A control
+   whose box leaves a 360/390/412-wide viewport with no scroll on that axis is unreachable, not
+   merely ugly — FIGHT! sat 61px off the right edge and the match could not be started at all.
+
+WHAT THE HARNESS IS NOT ALLOWED TO DO: report a pass it did not observe. If it cannot reach the
+arena, it says so and the run is void — `rigs: 0` is never "no defects found". A broken
+instrument is not a finding, and this file already carries three separate cases of one.

@@ -46,6 +46,9 @@ const page = await browser.newPage({
 const pageErrors = [];
 page.on('pageerror', (e) => pageErrors.push(String(e.message || e)));
 page.on('console', (m) => { if (m.type() === 'error') pageErrors.push('console: ' + m.text()); });
+const failed = [];
+page.on('requestfailed', (r) => failed.push(`${r.failure()?.errorText || 'failed'}  ${r.url()}`));
+page.on('response', (r) => { if (r.status() >= 400) failed.push(`HTTP ${r.status()}  ${r.url()}`); });
 
 console.log(`PLAYTEST -> ${URL}  (412x915 portrait, ${SECONDS}s of play)\n`);
 await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 120000 });
@@ -95,73 +98,115 @@ async function tap(re, label) {
 
 // ── Get into a match the way a player does ────────────────────────────────
 console.log('GETTING INTO A MATCH');
-for (const [re, label] of [
-  [/PLAY|START|FIGHT|BATTLE|ARCADE|VERSUS|QUICK/i, 'main menu'],
-  [/FIGHT|START|CONFIRM|READY|VS|BEGIN/i, 'character select'],
-  [/FIGHT|START|CONFIRM|READY|BEGIN|OK/i, 'stage / confirm'],
-]) {
-  await tap(re, label);
-  await shot(page, `01-${label.replace(/\W+/g, '-')}`);
+const byText = (t) => `(()=>{
+  const want = ${JSON.stringify(t)};
+  const exact = [...document.querySelectorAll('button,[role=button]')].filter(e=>(e.textContent||'').trim()===want);
+  const leaf  = [...document.querySelectorAll('*')].filter(e=>e.children.length===0 && (e.textContent||'').trim()===want);
+  const el = exact[0] || leaf[0];
+  if(!el) return false;
+  let n = el;                       // the control may be an ancestor of the label
+  for(let i=0;i<4&&n;i++){ n.click?.(); n = n.parentElement; }
+  return true;
+})()`;
+const go = async (label, t, ms = 2200) => {
+  const ok = await page.evaluate(byText(t));
+  await page.waitForTimeout(ms);
+  console.log(`   ${ok ? '[tap] ' : '[miss]'} ${label}: ${t}`);
+  return ok;
+};
+await page.mouse.click(206, 458); await page.waitForTimeout(2500);   // PRESS START
+await go('mode', 'VERSUS');
+await go('P1', 'BANNON', 1400);
+await go('P2', 'VIPER', 1600);
+await go('start', 'FIGHT!', 3000);
+await go('stage', 'CONFIRM STAGE', 3000) || await go('stage', '\u25b6 CONFIRM STAGE', 3000);
+// Wait for the arena to actually be live: a scene with skinned rigs in it.
+// swiftshader runs this at a few fps, so a fixed sleep is a coin flip.
+let ready = null;
+for (let i = 0; i < 60; i++) {
+  ready = await page.evaluate(() => {
+    for (const c of document.querySelectorAll('canvas')) {
+      const r3f = c.__r3f;
+      const st = r3f && (r3f.root?.getState?.() ?? r3f.store?.getState?.() ?? r3f.getState?.());
+      if (st && st.scene) {
+        let n = 0; st.scene.traverse((o) => { if (o.isSkinnedMesh) n++; });
+        if (n > 0) return { rigs: n };
+      }
+    }
+    return null;
+  });
+  if (ready) break;
+  await page.waitForTimeout(2000);
 }
-
-// Did we reach a live match? The engine exposes the fighters' state machines.
-const live = await page.evaluate(() => {
-  const w = window;
-  return {
-    hasArena: !!document.querySelector('canvas'),
-    dbg: Object.keys(w).filter((k) => k.startsWith('__')).slice(0, 30),
-  };
-});
-console.log(`   canvas: ${live.hasArena}   debug hooks: ${live.dbg.join(', ') || '(none)'}`);
-await shot(page, '02-in-match');
+const where = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 100));
+console.log(`   arena ready: ${ready ? ready.rigs + ' skinned rigs' : 'NO -- never got rigs'}   screen: ${where}`);
 
 // ── INSTRUMENT: what the owner reports, measured per frame ────────────────
 await page.evaluate(() => {
   const w = window;
   const S = {
-    frames: 0, longFrames: [], tpose: 0, floating: 0, samples: 0,
-    motions: {}, actions: {}, moves: {}, hitsSeen: 0, lastT: performance.now(),
+    frames: 0, longFrames: [], tpose: 0, samples: 0, rigs: 0,
+    snaps: [], maxStep: 0, stepHist: [], airFall: 0, airSamples: 0, instrErr: null,
   };
   w.__PT = S;
-  const NEAR_BIND_DEG = 6;      // a bone within 6 deg of bind is un-animated
-  const TPOSE_SHARE = 0.75;     // most of the body un-animated = a T-pose
+  const NEAR_BIND_DEG = 6;     // a bone within 6deg of bind is un-animated
+  const TPOSE_SHARE = 0.75;    // most of the body un-animated = a T-pose
+  const SNAP_M = 0.18;         // a joint moving >18cm in ONE frame is a snap, not motion
+
+  const prev = new Map();      // rig uuid -> Float32Array of last world positions
+  // matrixWorld elements 12,13,14 ARE the world translation -- no THREE global needed.
 
   const tick = () => {
     const now = performance.now();
-    const dt = now - S.lastT;
+    const dt = now - (S.lastT || now);
     S.lastT = now;
     S.frames++;
     if (dt > 120) S.longFrames.push(Math.round(dt));
 
-    // Walk every SkinnedMesh in the scene: bind-pose share + root height.
     try {
-      const sc = w.__scene || (w.__three && w.__three.scene);
+      if (!S.scene) {
+        for (const c of document.querySelectorAll('canvas')) {
+          const r3f = c.__r3f;
+          const st = r3f && (r3f.root?.getState?.() ?? r3f.store?.getState?.() ?? r3f.getState?.());
+          if (st && st.scene) { S.scene = st.scene; S.foundVia = 'r3f'; break; }
+        }
+        if (!S.scene && w.__scene) { S.scene = w.__scene; S.foundVia = '__scene'; }
+      }
+      const sc = S.scene;
       if (sc) {
         let rigs = 0;
         sc.traverse((o) => {
-          if (!o.isSkinnedMesh || !o.skeleton) return;
+          if (!o.isSkinnedMesh || !o.skeleton || !o.visible) return;
           rigs++;
           const bones = o.skeleton.bones;
           let nearBind = 0, counted = 0;
+          const cur = new Float32Array(bones.length * 3);
+          let frameMax = 0;
           for (let i = 0; i < bones.length; i++) {
             const b = bones[i];
-            const bind = o.skeleton.boneInverses && o.skeleton.boneInverses[i];
-            if (!bind) continue;
-            counted++;
-            // quaternion length from identity is a cheap "is it posed at all"
             const q = b.quaternion;
             const ang = 2 * Math.acos(Math.min(1, Math.abs(q.w))) * 180 / Math.PI;
-            if (ang < NEAR_BIND_DEG) nearBind++;
+            counted++; if (ang < NEAR_BIND_DEG) nearBind++;
+            const m = b.matrixWorld.elements;
+            cur[i * 3] = m[12]; cur[i * 3 + 1] = m[13]; cur[i * 3 + 2] = m[14];
           }
-          if (counted > 0) {
-            S.samples++;
-            if (nearBind / counted > TPOSE_SHARE) S.tpose++;
+          const last = prev.get(o.uuid);
+          if (last && last.length === cur.length) {
+            for (let i = 0; i < bones.length; i++) {
+              const dx = cur[i*3] - last[i*3], dy = cur[i*3+1] - last[i*3+1], dz = cur[i*3+2] - last[i*3+2];
+              const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
+              if (d > frameMax) frameMax = d;
+            }
+            if (frameMax > SNAP_M) S.snaps.push({ f: S.frames, d: +frameMax.toFixed(3), rig: o.name || 'rig' });
+            if (frameMax > S.maxStep) S.maxStep = frameMax;
+            S.stepHist.push(frameMax);
           }
+          prev.set(o.uuid, cur);
+          if (counted) { S.samples++; if (nearBind / counted > TPOSE_SHARE) S.tpose++; }
         });
         S.rigs = rigs;
       }
-    } catch (e) { S.instrErr = String(e).slice(0, 120); }
-
+    } catch (e) { S.instrErr = String(e).slice(0, 160); }
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
@@ -202,23 +247,31 @@ await shot(page, '03-after-play');
 
 const S = await page.evaluate(() => {
   const s = window.__PT || {};
+  const h = (s.stepHist || []).slice().sort((a, b) => a - b);
+  const pct = (p) => (h.length ? +h[Math.floor((h.length - 1) * p)].toFixed(4) : 0);
   return {
-    frames: s.frames, rigs: s.rigs, samples: s.samples, tpose: s.tpose,
-    longFrames: (s.longFrames || []).slice(0, 12), longCount: (s.longFrames || []).length,
-    instrErr: s.instrErr,
+    frames: s.frames, rigs: s.rigs, samples: s.samples, tpose: s.tpose, foundVia: s.foundVia || 'NONE',
+    longFrames: (s.longFrames || []).slice(0, 10), longCount: (s.longFrames || []).length,
+    snapCount: (s.snaps || []).length, snaps: (s.snaps || []).slice(0, 8),
+    maxStep: +(s.maxStep || 0).toFixed(3), p50: pct(0.5), p95: pct(0.95), p99: pct(0.99),
+    steps: h.length, instrErr: s.instrErr,
   };
 });
 
 console.log('\n================ WHAT I SAW ================');
-const secs = SECONDS;
-console.log(`frames rendered   : ${S.frames}  (~${(S.frames / secs).toFixed(1)} fps)`);
-console.log(`skinned rigs      : ${S.rigs ?? 'n/a'}`);
-console.log(`rig samples       : ${S.samples}`);
-console.log(`near-BIND (T-pose): ${S.tpose}  (${S.samples ? ((100 * S.tpose) / S.samples).toFixed(1) : '0'}% of samples)`);
-console.log(`frames >120ms     : ${S.longCount}  ${S.longFrames.join(' ') || ''}`);
+console.log(`frames rendered   : ${S.frames}  (~${(S.frames / SECONDS).toFixed(1)} fps)`);
+console.log(`skinned rigs      : ${S.rigs}   (scene via ${S.foundVia})`);
+console.log(`near-BIND (T-pose): ${S.tpose} / ${S.samples} samples  (${S.samples ? ((100*S.tpose)/S.samples).toFixed(1) : '0'}%)`);
+console.log(`per-frame joint travel (m):  p50 ${S.p50}   p95 ${S.p95}   p99 ${S.p99}   max ${S.maxStep}   over ${S.steps} steps`);
+console.log(`POSE SNAPS >18cm  : ${S.snapCount}   <-- this is what "glitchy" looks like`);
+for (const s2 of S.snaps) console.log(`      ! f${s2.f}  ${s2.d}m  ${s2.rig}`);
+console.log(`frames >120ms     : ${S.longCount}  ${S.longFrames.join(' ')}`);
 if (S.instrErr) console.log(`instrument error  : ${S.instrErr}`);
+const uniq = [...new Set(failed)];
+console.log(`failed requests   : ${uniq.length}`);
+for (const f of uniq.slice(0, 14)) console.log('   x ' + f);
 console.log(`page errors       : ${pageErrors.length}`);
-for (const e of pageErrors.slice(0, 10)) console.log('   ! ' + e);
+for (const e of pageErrors.slice(0, 8)) console.log('   ! ' + e);
 console.log('============================================');
 
 await browser.close();
