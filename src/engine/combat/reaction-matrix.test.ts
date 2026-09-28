@@ -119,7 +119,7 @@ describe('the reaction matrix', () => {
     };
     victim.applyReaction('Smackdown', move);
     assert.equal(victim.isKnockedDown, true);
-    assert.equal(victim.current, 'knockdown');
+    assert.equal(victim.current, 'GroundedFaceUp');
     assert.equal(victim.activeClip(), null, 'Smackdown must hand presentation to the grounded knockdown state');
   });
 
