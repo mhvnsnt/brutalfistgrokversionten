@@ -13,6 +13,7 @@ import { type StageId, resolveStageConfig } from '../engine/combat/StageConfig';
 import { CHARACTER_BLOOM } from './PostMatchScreen';
 import { createHitEffectPool, spawnHitEffect, tickHitEffectPool, getHitEffectRenderData, getActivePointLights, sparkReachCss, type HitEffectPool, type HitEffectType, type PointLightFlash,  } from '../engine/combat/HitEffectSystem';
 import { COMBAT_P1_YAW, COMBAT_P2_YAW, COMBAT_FIGHTER_Y, HIT_FX_WORLD_Y, HIT_FX_SCREEN_Y, faceOpponentYaw, yawWithBackTurn } from '../engine/V7OrientationContract';
+import { stepFacing } from '../engine/motion/FacingRate';
 
 // Stage IDs come from StageConfig — every catalog arena is legal here.
 
@@ -755,6 +756,11 @@ export default function CombatArena3D({
   const [particles, setParticles] = useState<Particle[]>([]);
   const [screenFlash, setScreenFlash] = useState(0);
   const [hitEffectPool, setHitEffectPool] = useState<HitEffectPool>(() => createHitEffectPool());
+  // Rate-limited facing, so a cross-up cannot snap the body round in one frame.
+  const p1YawRef = useRef(NaN);
+  const p2YawRef = useRef(NaN);
+  const facingClockRef = useRef(typeof performance !== 'undefined' ? performance.now() : Date.now());
+
   const particleIdRef = useRef(0);
   const flashRafRef = useRef<number>(0);
   const hitEffectRafRef = useRef<number>(0);
@@ -990,14 +996,31 @@ export default function CombatArena3D({
   // the image-tested table exactly when the two are level on Z.
   // The hit spin rides ON TOP of the facing, never replaces it: the body is
   // turned by the impact and the facing pulls it back as the spin decays.
-  const p1RotationY = yawWithBackTurn(
+  // ── A BODY CANNOT TURN INSTANTLY, AND OURS COULD ────────────────────────
+  // faceOpponentYaw is an atan2 of the two positions, written straight to the
+  // mesh every frame, so when the pair crossed over or sidestepped past each
+  // other a fighter SNAPPED through up to 180 degrees in ONE frame. Tekken 3
+  // caps the turn at 10 degrees per frame over an eight-frame blend, always the
+  // short way round (tekken3_jun_combat.c). See FacingRate.
+  const p1TargetYaw = yawWithBackTurn(
     faceOpponentYaw({ x: p1FinalX, z: p1FinalZ }, { x: p2FinalX, z: p2FinalZ }, COMBAT_P1_YAW),
     p1BackTurned,
-  ) + p1HitYaw;
-  const p2RotationY = yawWithBackTurn(
+  );
+  const p2TargetYaw = yawWithBackTurn(
     faceOpponentYaw({ x: p2FinalX, z: p2FinalZ }, { x: p1FinalX, z: p1FinalZ }, COMBAT_P2_YAW),
     p2BackTurned,
-  ) + p2HitYaw;
+  );
+  const facingNow = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  // Clamped to 8 frames so a tab-out or a stall does not hand the next frame a
+  // huge elapsed time and let the body teleport round anyway.
+  const facingFrames = Math.max(0.5, Math.min(8, (facingNow - facingClockRef.current) / (1000 / 60)));
+  facingClockRef.current = facingNow;
+  p1YawRef.current = stepFacing(p1YawRef.current, p1TargetYaw, facingFrames);
+  p2YawRef.current = stepFacing(p2YawRef.current, p2TargetYaw, facingFrames);
+  // The hit spin rides on top and is already transient, so it is not rate
+  // limited — being knocked round is supposed to be sudden.
+  const p1RotationY = p1YawRef.current + p1HitYaw;
+  const p2RotationY = p2YawRef.current + p2HitYaw;
 
   // ── Stage-specific fog / clear color (training + urban_night stay locked) ─
   const stageCfg = resolveStageConfig(stageId);

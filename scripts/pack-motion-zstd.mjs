@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { zstdCompressSync } from 'node:zlib';
 
 const roots = ['public/motion/baked'];
-const extras = ['public/motion/movesets.json', 'public/motion/command-clips.json', 'public/motion/lower_body_credibility.json', 'public/motion/stride_speed.json', 'public/motion/attack_levels.json'];
+const extras = ['public/motion/movesets.json', 'public/motion/command-clips.json', 'public/motion/lower_body_credibility.json', 'public/motion/stride_speed.json', 'public/motion/attack_levels.json', 'public/motion/schwarzerblitz_moves.json'];
 let files = 0;
 let before = 0;
 let after = 0;
