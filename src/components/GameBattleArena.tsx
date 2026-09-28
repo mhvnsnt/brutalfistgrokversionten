@@ -2834,6 +2834,13 @@ export default function GameBattleArena({
           { x: p2XRef.current, z: p2ZRef.current },
           p1Stick,
         );
+        // Knockdown owns the floor. Do not let a previous jump/juggle Y value
+        // survive into the fall/get-up animation; the renderer then has a real
+        // floor contact instead of a character animating several centimetres
+        // above or below the stage.
+        if (p1SMRef.current.action === 'Knockdown' || p1SMRef.current.action === 'WakeupTechRoll' || p1SMRef.current.action === 'WakeupBackrise' || p1SMRef.current.action === 'WakeupQuickStand') {
+          p1LocoRef.current.land();
+        }
         if (p2AIInput.jump) p2LocoRef.current.beginJump();
         else p2LocoRef.current.armJump();
         p2LocoRef.current.update(
@@ -2842,6 +2849,9 @@ export default function GameBattleArena({
           { x: p1XRef.current, z: p1ZRef.current },
           p2Stick,
         );
+        if (p2SMRef.current.action === 'Knockdown' || p2SMRef.current.action === 'WakeupTechRoll' || p2SMRef.current.action === 'WakeupBackrise' || p2SMRef.current.action === 'WakeupQuickStand') {
+          p2LocoRef.current.land();
+        }
 
         // ── Feed locomotion positions back to visual state ────────────────
         // Enforce minimum separation so fighters can't overlap
