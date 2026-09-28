@@ -45,7 +45,10 @@ function locomotionAnimationFor(
   const moving = Math.hypot(f, s) > 0.12;
 
   if (state === 'Backdashing') return 'Backdashing';
-  if (state !== 'Walking') return state;
+  // Explicit combat/throw/wakeup clips come from the caller and must survive
+  // this locomotion selector. Grapple receiver clips are deliberately not FSM
+  // state names, so returning `state` here would silently replace them.
+  if (state !== 'Walking') return requested || state;
   if (!moving) return 'idle';
 
   // The FSM already distinguishes run/dash from walk. Preserve that request,
