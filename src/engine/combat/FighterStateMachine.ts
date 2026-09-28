@@ -2841,12 +2841,21 @@ export class FighterStateMachine {
     // again", and the caller was deriving one by comparing motion-state
     // STRINGS — which cannot tell two identical jabs apart. See
     // attackStarts.
+    //
+    // Fighter-owned clips are also valid attack triggers. This is what keeps a
+    // directional roster move from being reported as the generic lightAttack
+    // state even though its actual authored clip is different. Aerial attacks
+    // deliberately retain jumpAttack as their semantic state because FighterMesh
+    // uses that state to hold the airborne presentation window.
+    const resolvedMotion = motion === 'jumpAttack'
+      ? motion
+      : ((move.clip ?? motion) as FighterMotionState);
     this.attackStartCount++;
     const prevState = this.motionState;
     this.walkVelocity = { forward: 0, strafe: 0 };
-    this.beginCrossfade(this.motionState, motion, CROSSFADE_ATTACK_FRAMES / this.FPS);
+    this.beginCrossfade(this.motionState, resolvedMotion, CROSSFADE_ATTACK_FRAMES / this.FPS);
     this.actionState = 'Attacking';
-    this.motionState = motion;
+    this.motionState = resolvedMotion;
     this.currentMove = move;
     this.moveTimer = move.startup + move.active + move.recovery;
     this.moveElapsed = 0;
