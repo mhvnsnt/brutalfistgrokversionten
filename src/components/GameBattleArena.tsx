@@ -2029,8 +2029,17 @@ export default function GameBattleArena({
         // the mat, so a juggle was impossible. resolveHitReaction splits it
         // and prefers the move's own authored reaction when it has one.
         const p2WasAirborne = p2SMRef.current.isAirborne;
+        const p1MoveReaction = (p1HbWindow.move as { reaction?: string } | undefined)?.reaction;
+        // Keep the canonical heavy kick's grounded knockdown contract at the
+        // hitbox boundary too. DEFAULT_MOVE_WINDOWS declares Smackdown, but
+        // older/generated move-window paths can omit that optional field while
+        // still selecting the heavyKick animation. Without this fail-safe the
+        // same playable heavy kick silently degrades to a standing hit reaction.
         const p2Reaction = resolveHitReaction(
-          { launch: p1Hit.launch, reaction: (p1HbWindow.move as { reaction?: string } | undefined)?.reaction },
+          {
+            launch: p1Hit.launch,
+            reaction: p1MoveReaction ?? (p1HbWindow.move?.animation === 'heavyKick' ? 'Smackdown' : undefined),
+          },
           p2WasAirborne,
         );
         const p2Effect = reactionFor(p2Reaction);
