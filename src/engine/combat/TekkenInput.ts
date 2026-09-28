@@ -2,8 +2,8 @@
  * Tekken-style directional commands.
  * Camera at +Z: toward cam = down/+Z; away = up/-Z.
  *
- *  tap up           jump (after the double-tap window, so tap-tap can sidestep)
- *  up+forward/back  jump immediately; forward/back still read while airborne
+ *  tap up           jump immediately
+ *  up+forward/back  jump immediately; a second up tap becomes a sidestep
  *  double-tap up    sidestep away from camera (-Z)
  *  double-tap down  sidestep toward camera (+Z)
  *  hold down        crouch
@@ -38,9 +38,7 @@ export function createTekkenStick() {
   const b = tap();
   const u = tap();
   const d = tap();
-  let pendingJump = false;
-  let jumpPressAt = 0;
-  let jumpUntil = 0;
+let jumpUntil = 0;
   let sidestepUpUntil = 0;
   let sidestepDownUntil = 0;
   let dashUntil = 0;
@@ -71,23 +69,12 @@ export function createTekkenStick() {
       const D = rise(d, held.down, now);
 
       if (U.dbl) {
-        // Double-tap up wins over a pending single-tap jump.
+        // The first tap already jumped. A second tap upgrades the command to
+        // the classic up sidestep instead of creating a delayed jump.
         sidestepUpUntil = now + 280;
-        pendingJump = false;
         jumpUntil = 0;
-      } else if (U.rose && (f.down || b.down)) {
-        jumpUntil = now + 480;
-        pendingJump = false;
       } else if (U.rose) {
-        pendingJump = true;
-        jumpPressAt = now;
-      } else if (pendingJump && (f.down || b.down)) {
-        // Jump then press forward/back — air control; simultaneous input is not required.
         jumpUntil = now + 480;
-        pendingJump = false;
-      } else if (pendingJump && now - jumpPressAt >= DOUBLE_MS) {
-        jumpUntil = now + 480;
-        pendingJump = false;
       }
 
       if (D.dbl) sidestepDownUntil = now + 280;
