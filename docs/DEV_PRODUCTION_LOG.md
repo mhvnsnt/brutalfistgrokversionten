@@ -241,3 +241,5 @@ Important: these are implementation corrections, not a claim that all animation 
 - Changed successful grapple resolution so the throw break window can expire without immediately applying damage. The receiver is grounded and damaged only after the attacker's authored grapple move reaches its end, keeping attacker/receiver timing coupled.
 - Added an explicit AI throw cooldown and shortened approach pulses with a larger neutral band. The opponent should make discrete decisions instead of continuously translating with a retreating player or repeatedly holding a throw input.
 - Remaining grounded parity: four canonical face/feet orientations, grounded attacks, OTG rules, measured invulnerability/guard windows, and runtime PWA certification.
+
+- CI follow-up: grounded wakeup frame-data defaults and explicit regression typing were added after the first PR verification run exposed stale merge-ref typecheck failures.
