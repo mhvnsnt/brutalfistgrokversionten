@@ -58,6 +58,8 @@ export interface ThrowDefinition {
   defenderAnimation: string;
   /** Commit animation after the grab catches. */
   commitAnimation: string;
+  /** Measured receiver clip duration in seconds. */
+  receiverDuration: number;
   /** Whether this throw carries the opponent to the wall */
   wallCarry: boolean;
   /** Positional offset applied to defender after throw */
@@ -77,6 +79,7 @@ export const THROW_CATALOG: Record<string, ThrowDefinition> = {
     breakButton: '1',
     attackerAnimation: 'THROWSTART',
     commitAnimation: 'KNEETHROW',
+    receiverDuration: 0.5417,
     defenderAnimation: 'KNEETHROWREACTION',
     wallCarry: false,
     defenderPositionOffset: { x: 1.5, y: 0, z: 0 },
@@ -93,6 +96,7 @@ export const THROW_CATALOG: Record<string, ThrowDefinition> = {
     breakButton: '2',
     attackerAnimation: 'RENZOTHROW',
     commitAnimation: 'RENZOTHROW',
+    receiverDuration: 2.25,
     defenderAnimation: 'RENZOTHROWREACTION',
     wallCarry: false,
     defenderPositionOffset: { x: -1.8, y: 0, z: 0 },
@@ -109,6 +113,7 @@ export const THROW_CATALOG: Record<string, ThrowDefinition> = {
     breakButton: 'either',
     attackerAnimation: 'GRAFTHROW',
     commitAnimation: 'GRAFTHROW',
+    receiverDuration: 1.375,
     defenderAnimation: 'GRAFTHROWREACTION',
     wallCarry: true,
     defenderPositionOffset: { x: 0, y: 0, z: 1.5 },
