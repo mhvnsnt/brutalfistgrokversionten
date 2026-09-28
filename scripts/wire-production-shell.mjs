@@ -9,6 +9,29 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const root = join(import.meta.dirname, "..");
+
+/**
+ * THE STATIC BUILD HAS NO SERVER TO WIRE, AND THIS SCRIPT WAS FAILING IT.
+ *
+ * Owner: "I need the pwa link I don't think the old one is updating." It was
+ * not. EVERY GitHub Pages deploy had failed -- runs 201 through 208 and beyond,
+ * all `conclusion: failure`, every one at the "Build static bundle" step -- so
+ * nothing had reached the phone in at least eight commits.
+ *
+ * This script patches the NITRO/Vercel server renderer so the production
+ * document loads the built client instead of /src/rocket-main.tsx. The Pages
+ * workflow sets PUBLIC_BASE_PATH and ROCKET_PREVIEW=1 and builds a STATIC SPA
+ * into dist/ -- no server function, and no Vercel client shell, so
+ * findCreateRootEntry() hunts for a "Preview runtime error" string that the
+ * static build never emits, returns null, and exits 1. A server-wiring step
+ * failing a build that deliberately has no server.
+ *
+ * There is nothing to wire in that mode, so say so and succeed.
+ */
+if (process.env.PUBLIC_BASE_PATH || process.env.ROCKET_PREVIEW === "1") {
+  console.log("[wire-production-shell] static build (no server renderer) — nothing to wire");
+  process.exit(0);
+}
 const staticDir = join(root, ".vercel/output/static");
 const renderer = join(
   root,
