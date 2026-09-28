@@ -247,3 +247,5 @@ Important: these are implementation corrections, not a claim that all animation 
 - Grounded wakeup CI trigger follows the corrected MoveLibrary state table and regression typing.
 
 - CI follow-up: removed the duplicate MoveWindow type import exposed by the next verification pass.
+
+- CI follow-up: semantic aliases now cover every grounded/wakeup motion state, and the invariant suite treats deliberate stay-down as a valid settled state rather than a stuck state.
