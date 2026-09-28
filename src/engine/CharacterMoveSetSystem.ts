@@ -99,10 +99,12 @@ export function getCharacterMoveSet(characterId: string): CustomizedMoveSet | nu
   // authored extra before falling back to the core slot.
   const distinct = (candidate: string | undefined, core: string | undefined, fallback?: string) =>
     candidate && candidate !== core ? candidate : fallback && fallback !== core ? fallback : undefined;
-  const forwardLight = distinct(base.forwardLight, base.lightAttack, strikeOrKick(authoredExtra1));
-  const forwardHeavy = distinct(base.forwardHeavy, base.heavyAttack, strikeOrKick(authoredExtra2));
-  const downForwardLight = distinct(base.downForwardLight, base.lightAttack, strikeOrKick(authoredExtra1));
-  const downForwardHeavy = distinct(base.downForwardHeavy, base.heavyAttack, strikeOrKick(authoredExtra2));
+  const authoredStrike1 = strikeOrKick(authoredExtra1);
+  const authoredStrike2 = strikeOrKick(authoredExtra2);
+  const forwardLight = distinct(base.forwardLight, base.lightAttack, authoredStrike1);
+  const forwardHeavy = distinct(base.forwardHeavy, base.heavyAttack, authoredStrike2);
+  const downForwardLight = distinct(base.downForwardLight, base.lightAttack, authoredStrike1);
+  const downForwardHeavy = distinct(base.downForwardHeavy, base.heavyAttack, authoredStrike2);
 
   return {
     ...base,
