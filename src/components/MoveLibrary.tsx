@@ -505,6 +505,9 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
   const fighterName = BANNON_ROSTER.find((f) => f.id === fighter)?.name ?? fighter;
   const receiverPreview = receiverForPreview(selected, manifest, labels);
   const receiverModel = preferredModel;
+  const attackerDur = selected ? (manifest[selected]?.dur ?? 0) : 0;
+  const receiverDur = receiverPreview.clip ? (manifest[receiverPreview.clip]?.dur ?? 0) : 0;
+  const receiverSpeed = attackerDur > 0 && receiverDur > 0 ? speed * (receiverDur / attackerDur) : speed;
 
   return (
     <div className="fixed inset-0 bg-[#0d1016] text-white font-mono flex flex-col p-safe">
@@ -856,7 +859,7 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
                   <ClipPlayer
                     modelUrl={resolveGlbUrl(receiverModel)}
                     clip={receiverPreview.clip}
-                    speed={speed}
+                    speed={receiverSpeed}
                     offsetX={0.9}
                     rotationY={Math.PI}
                   />
