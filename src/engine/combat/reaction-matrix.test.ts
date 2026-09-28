@@ -104,6 +104,25 @@ describe('the reaction matrix', () => {
     assert.equal(REACTION_KINDS.length, 5);
   });
 
+  it('Smackdown is a real grounded knockdown, not a standing flinch', () => {
+    const victim = new FighterStateMachine();
+    const move = {
+      startup: 0.1,
+      active: 0.1,
+      recovery: 0.2,
+      animation: 'heavyKick',
+      totalFrames: 24,
+      hitboxStartFrame: 7,
+      hitboxEndFrame: 12,
+      damage: 300,
+      reaction: 'Smackdown',
+    };
+    victim.applyReaction('Smackdown', move);
+    assert.equal(victim.isKnockedDown, true);
+    assert.equal(victim.current, 'knockdown');
+    assert.equal(victim.activeClip(), null, 'Smackdown must hand presentation to the grounded knockdown state');
+  });
+
   it('the state machine derives the victim state and routes the hit through it', () => {
     const fsm = new FighterStateMachine();
     assert.equal(fsm.victimState(), 'standing');
