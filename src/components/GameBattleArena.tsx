@@ -4056,7 +4056,13 @@ function buildP2AIInput(
   const preferredGap = speedStyle ? 1.7 : powerStyle ? 1.9 : 1.6;
   // LOCAL forward: LocomotionSystem multiplies by facing. +1 therefore means
   // toward the opponent for both P1 and P2; the old P2 AI incorrectly used -1.
-  if (distance > preferredGap)
+  // Do not glue the AI to the player's retreat. A continuous pursuit input made
+  // the two fighters translate together across the whole arena, which reads as
+  // skating instead of footwork. Approach in short pulses and leave a larger
+  // neutral band once the preferred range is reached.
+  const approachPulse = Math.floor(now / 260) % 2 === 0;
+  const approachGap = preferredGap + 0.45;
+  if (distance > approachGap && approachPulse)
     return {forward:1,strafe:orbit,light:false,heavy:false,guard:false,crouch:false,jump:false};
   if ((aerialStyle || speedStyle) && cycle === 6)
     return {forward:1,strafe:orbit,light:false,heavy:false,guard:false,crouch:false,jump:true};
