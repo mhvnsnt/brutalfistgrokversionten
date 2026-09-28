@@ -206,20 +206,37 @@ describe('fighter-owned special presentation', () => {
     withClock((advance) => {
       const fsm = new FighterStateMachine();
       fsm.setCharacterMoveClips({ primaryCombo: 'FIGHTER_UNIQUE_COMBO' });
+      fsm.registerSpecialMoves([{
+        id: 'fighter_combo_test',
+        name: 'Fighter Combo Test',
+        sequence: ['light', 'heavy', 'light'],
+        move: {
+          startup: 0.05,
+          active: 0.05,
+          recovery: 0.05,
+          animation: 'heavyAttack',
+          totalFrames: 9,
+          hitboxStartFrame: 3,
+          hitboxEndFrame: 6,
+          damage: 1,
+          isSpecial: true,
+          specialName: 'Fighter Combo Test',
+        },
+      }]);
       for (let i = 0; i < 30; i++) {
         advance(1 / 60);
         fsm.update(BASE, 1 / 60);
       }
-      advance(1 / 60);
-      fsm.update({ ...BASE, light: true }, 1 / 60);
-      advance(1 / 60);
-      fsm.update({ ...BASE, light: false }, 1 / 60);
-      advance(1 / 60);
-      fsm.update({ ...BASE, heavy: true }, 1 / 60);
-      advance(1 / 60);
-      fsm.update({ ...BASE, heavy: false }, 1 / 60);
-      advance(1 / 60);
-      fsm.update({ ...BASE, light: true }, 1 / 60);
+      for (const input of [
+        { ...BASE, light: true },
+        BASE,
+        { ...BASE, heavy: true },
+        BASE,
+        { ...BASE, light: true },
+      ]) {
+        advance(1 / 60);
+        fsm.update(input, 1 / 60);
+      }
       assert.equal(fsm.activeClip(), 'FIGHTER_UNIQUE_COMBO');
     });
   });
