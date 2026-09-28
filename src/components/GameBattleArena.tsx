@@ -508,7 +508,16 @@ export default function GameBattleArena({
     const buildCharacterClipMap = (fighterId: string) => {
       const set = getCharacterMoveSet(fighterId);
       if (!set) return {};
-      const slots = ['idle','walkForward','walkBackward','crouch','guard','lightAttack','heavyAttack','lowKick','highKick','primaryCombo','counter','grappleInitiate','primaryThrow','knockdown','wakeup','hitReaction','ko','signature'] as const;
+      const slots = [
+        'idle','walkForward','walkBackward','crouch','guard',
+        'lightAttack','heavyAttack',
+        'forwardLight','forwardHeavy','forwardLowKick','forwardHighKick',
+        'backLight','backHeavy','backLowKick','backHighKick',
+        'downForwardLight','downForwardHeavy',
+        'lowKick','highKick','primaryCombo','counter',
+        'grappleInitiate','primaryThrow','knockdown','wakeup',
+        'hitReaction','ko','signature',
+      ] as const;
       const out: Record<string, string> = {};
       for (const slot of slots) {
         const move = getMoveById(set[slot]);
@@ -525,7 +534,16 @@ export default function GameBattleArena({
     const buildCharacterClipMap = (fighterId: string) => {
       const set = getCharacterMoveSet(fighterId);
       if (!set) return {};
-      const slots = ['idle','walkForward','walkBackward','crouch','guard','lightAttack','heavyAttack','lowKick','highKick','primaryCombo','counter','grappleInitiate','primaryThrow','knockdown','wakeup','hitReaction','ko','signature'] as const;
+      const slots = [
+        'idle','walkForward','walkBackward','crouch','guard',
+        'lightAttack','heavyAttack',
+        'forwardLight','forwardHeavy','forwardLowKick','forwardHighKick',
+        'backLight','backHeavy','backLowKick','backHighKick',
+        'downForwardLight','downForwardHeavy',
+        'lowKick','highKick','primaryCombo','counter',
+        'grappleInitiate','primaryThrow','knockdown','wakeup',
+        'hitReaction','ko','signature',
+      ] as const;
       const out: Record<string,string> = {};
       for (const slot of slots) {
         const move = getMoveById(set[slot]);
