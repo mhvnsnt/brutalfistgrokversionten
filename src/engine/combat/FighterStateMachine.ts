@@ -901,6 +901,8 @@ export class FighterStateMachine {
   private throwComboIndex = 0;
   /** Time the attacker has to earn the next authored throw link. */
   private throwComboTimer = 0;
+  /** Directional throw currently in progress, so grab and commit clips stay distinct. */
+  private directionalThrowId: string | null = null;
   private readonly THROW_COMBO_INPUT_WINDOW = 0.35;
 
   // ── Grab range visualization ──────────────────────────────────────────────
@@ -2316,6 +2318,7 @@ export class FighterStateMachine {
     this.throwComboQueue = [...(move.throwComboRoute ?? [])];
     this.throwComboIndex = 0;
     this.throwComboTimer = 0;
+    this.directionalThrowId = throwId;
     this.grabRangeActive = true;
     this.grabRangeTimer = move.startup + move.active;
     return this.motionState;
@@ -2333,6 +2336,7 @@ export class FighterStateMachine {
     this.moveElapsed = 0;
     this.queuedAction = null;
     this.commandThrowSucceeded = false;
+    this.directionalThrowId = null;
     // Pre-load the throw combo route
     this.throwComboQueue = [...(COMMAND_THROW_MOVE.throwComboRoute ?? [])];
     this.throwComboIndex = 0;
@@ -2374,6 +2378,7 @@ export class FighterStateMachine {
     this.throwComboQueue = [];
     this.throwComboIndex = 0;
     this.throwComboTimer = 0;
+    this.directionalThrowId = null;
     this.grabRangeActive = true;
     this.grabRangeTimer = move.startup + move.active;
     console.log('[FSM] 🤲 Directional throw started —', def.name, direction, def.attackerAnimation);
@@ -2403,9 +2408,20 @@ export class FighterStateMachine {
        * The clip is a PAIRED deliverer, which is what makes the victim's half
        * resolvable every single time instead of 13-in-455 of the time.
        */
-      this.currentMove = THROW_COMMIT_MOVE;
+      const directional = this.directionalThrowId ? THROW_CATALOG[this.directionalThrowId] : null;
+      this.currentMove = directional
+        ? {
+            ...this.currentMove,
+            clip: directional.commitAnimation,
+            animation: 'grapple',
+            damage: directional.damage,
+            specialName: directional.name,
+          }
+        : THROW_COMMIT_MOVE;
       this.motionState = 'grapple';
-      this.moveTimer = THROW_COMMIT_MOVE.active + THROW_COMMIT_MOVE.recovery;
+      this.moveTimer = directional
+        ? this.currentMove.active + this.currentMove.recovery
+        : THROW_COMMIT_MOVE.active + THROW_COMMIT_MOVE.recovery;
       this.moveElapsed = 0;
       console.log('[FSM] ✅ CommandThrow connected —', THROW_COMMIT_CLIP,
         '| combo chain queued:', this.throwComboQueue);
