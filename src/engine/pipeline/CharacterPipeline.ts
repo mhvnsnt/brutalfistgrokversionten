@@ -832,11 +832,11 @@ export async function extractAndRetargetAnimations(
     for (const [name, clip] of baked) {
       if (processedClips.some((c) => c.name === name)) continue;
       let copy = clip.clone();
-      // UNIVERSAL SOURCE RECOVERY. The bake is canonical, but a collapsed
-      // multi-bone source can survive as a technically valid file. Once the
-      // actual fighter rig exists, rebuild that source through the universal
-      // intake path so the repair is made against THIS model's bind pose.
-      if (isCollapsedAnimationClip(copy) && !String(copy.name).match(/REACTION|RECV|VICTIM/i)) {
+      const bakedBank = String((copy as THREE.AnimationClip & { userData?: { bank?: string } }).userData?.bank ?? '');
+      // UNIVERSAL SOURCE RECOVERY. Only Bannon-owned baked clips have a
+      // guaranteed raw /motion/<name>.json source. CC0/other banks are never
+      // guessed into that URL, so a new pack cannot create a storm of 404s.
+      if (bakedBank === 'bannon' && isCollapsedAnimationClip(copy) && !String(copy.name).match(/REACTION|RECV|VICTIM/i)) {
         try {
           const recovered = await recoverBannonEulerClip(name, targetScene);
           if (recovered) copy = recovered;
