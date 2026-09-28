@@ -215,11 +215,26 @@ class GlobalAudioManagerClass {
   private howlerUI: Map<string, any> = new Map();
   private howlerAnnouncer: Map<string, any> = new Map();
   private howlerLoaded = false;
+  private audioAssets = new Set<string>();
 
   /** Initialize Howler — called once on client */
   async init(config?: Partial<AudioManagerConfig>) {
     if (config) this.config = { ...this.config, ...config };
     if (typeof window === 'undefined') return;
+
+    // Optional file audio is opt-in through the repo-owned manifest. Missing
+    // files must never become browser 404s: the procedural fallback is the
+    // authoritative path until an asset is actually registered.
+    try {
+      const response = await fetch('/audio/manifest.json', { cache: 'no-store' });
+      if (response.ok) {
+        const manifest = await response.json() as { assets?: unknown };
+        if (Array.isArray(manifest.assets)) {
+          this.audioAssets = new Set(manifest.assets.filter((v): v is string => typeof v === 'string'));
+        }
+      }
+    } catch {}
+    if (this.audioAssets.size === 0) return;
 
     // Try to load Howler dynamically
     try {
@@ -243,6 +258,8 @@ class GlobalAudioManagerClass {
     }
   }
 
+  private hasAudioAsset(path: string) { return this.audioAssets.has(path.replace(/^\//, '')); }
+
   private _preloadSFX(Howl: any) {
     const sfxMap: Record<string, string> = {
       whiff: '/audio/sfx/whiff.mp3',
@@ -259,6 +276,7 @@ class GlobalAudioManagerClass {
       finisher_move_activate: '/audio/sfx/finisher_move_activate.mp3',
     };
     for (const [id, src] of Object.entries(sfxMap)) {
+      if (!this.hasAudioAsset(src)) continue;
       try {
         this.howlerSFX.set(id, new Howl({ src: [src], volume: this.config.sfxVolume, preload: false }));
       } catch {}
@@ -273,6 +291,7 @@ class GlobalAudioManagerClass {
       menu_confirm: '/audio/ui/menu_confirm.mp3',
     };
     for (const [id, src] of Object.entries(uiMap)) {
+      if (!this.hasAudioAsset(src)) continue;
       try {
         this.howlerUI.set(id, new Howl({ src: [src], volume: this.config.uiVolume, preload: false }));
       } catch {}
@@ -292,6 +311,7 @@ class GlobalAudioManagerClass {
         finisher_move_yell: '/audio/vox/finisher_move_yell.mp3',
       };
       for (const [id, src] of Object.entries(voxMap)) {
+        if (!this.hasAudioAsset(src)) continue;
         if (!this.howlerVOX.has(id)) {
           try {
             const h = new Howl({ src: [src], volume: this.config.voxVolume, preload: true });
@@ -305,10 +325,12 @@ class GlobalAudioManagerClass {
         'p1_wins', 'p2_wins', 'ki_charge', 'chicken',
       ];
       for (const line of announcerLines) {
+        const src = `/audio/announcer/${line}.mp3`;
+        if (!this.hasAudioAsset(src)) continue;
         if (!this.howlerAnnouncer.has(line)) {
           try {
             const h = new Howl({
-              src: [`/audio/announcer/${line}.mp3`],
+              src: [src],
               volume: this.config.announcerVolume,
               preload: true,
             });
@@ -318,6 +340,7 @@ class GlobalAudioManagerClass {
       }
       // Preload stage BGM
       const stageBGMSrc = `/audio/bgm/stage_${stageId}.mp3`;
+      if (!this.hasAudioAsset(stageBGMSrc)) return;
       try {
         const h = new Howl({ src: [stageBGMSrc], volume: this.config.bgmVolume, loop: true, preload: true });
         this.howlerSFX.set(`bgm_${stageId}`, h);
@@ -344,6 +367,10 @@ class GlobalAudioManagerClass {
       try {
         const { Howl } = await import('howler');
         const src = `/audio/bgm/${track}.mp3`;
+        if (!this.hasAudioAsset(src)) {
+          this.procedural.roundStart();
+          return;
+        }
         this.howlerBGM = new Howl({
           src: [src],
           volume: 0,
