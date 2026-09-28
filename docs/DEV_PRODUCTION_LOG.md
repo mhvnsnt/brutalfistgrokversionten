@@ -243,3 +243,5 @@ Important: these are implementation corrections, not a claim that all animation 
 - Remaining grounded parity: four canonical face/feet orientations, grounded attacks, OTG rules, measured invulnerability/guard windows, and runtime PWA certification.
 
 - CI follow-up: grounded wakeup frame-data defaults and explicit regression typing were added after the first PR verification run exposed stale merge-ref typecheck failures.
+
+- Grounded wakeup CI trigger follows the corrected MoveLibrary state table and regression typing.
