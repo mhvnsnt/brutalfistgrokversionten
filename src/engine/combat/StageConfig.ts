@@ -52,6 +52,16 @@ export interface LevelZone {
   label: string;
 }
 
+export interface DiveLaunchPoint {
+  id: string;
+  /** World-space height relative to the stage level the point belongs to. */
+  yOffset: number;
+  /** Whether the point can be reached by the climb/traversal layer. */
+  climbable: boolean;
+  /** Human-readable source, e.g. ring ropes, catwalk, crane edge. */
+  label: string;
+}
+ 
 export interface StageConfig {
   id: StageId;
   /** Display name */
@@ -74,6 +84,9 @@ export interface StageConfig {
   // ── Multi-level / breakable floor ─────────────────────────────────────────
   /** Ordered array of floor levels (index 0 = top/main, last = lowest pit) */
   levels: LevelZone[];
+  /** Optional high/climbable positions that can originate stage dives. */
+  diveLaunchPoints?: DiveLaunchPoint[];
+
   /**
    * If true, a hard slam / ground-pound sends the opponent crashing through
    * the current floor to the next level down (Tekken-style stage transition).
