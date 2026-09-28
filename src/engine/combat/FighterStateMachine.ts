@@ -1181,6 +1181,18 @@ export class FighterStateMachine {
     this.specialMoves = [...moves, ...DEFAULT_SPECIAL_MOVES];
   }
 
+  /**
+   * Replace the animation on a special without changing its combat semantics.
+   * CharacterMoveSet owns the visual identity; the special definition continues
+   * to own input, frame data, hitboxes and damage.
+   */
+  private clipForSpecial(move: SpecialMoveDefinition): string {
+    if (this.characterMoveClips.signature && (move.id.includes('finisher') || move.id.includes('signature') || move.id.includes('beast') || move.id.includes('verdict'))) {
+      return this.characterMoveClips.signature;
+    }
+    return move.move.animation;
+  }
+
   // ── Apply HitStun (duration = active frames of the attacking move) ─────────
   /**
    * Apply HitStun state. Duration is derived from the active frames of the
@@ -2139,7 +2151,7 @@ export class FighterStateMachine {
     const special = this.detectSpecialMove(now);
     if (special) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack(special.move.animation, special.move);
+      return this.beginAttack(this.clipForSpecial(special), special.move);
     }
 
     // ── DOWN + BUTTON, ahead of the standing attacks ──────────────────────
