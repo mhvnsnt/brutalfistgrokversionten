@@ -283,6 +283,28 @@ export default function GameBattleArena({
     );
   }, []);
 
+  /** Keep the two authored halves physically connected at throw commit. */
+  const alignDirectionalThrowBodies = useCallback((attacker: 'p1' | 'p2', def: { defenderPositionOffset: { x: number; y: number; z: number } }) => {
+    const attackerX = attacker === 'p1' ? p1XRef.current : p2XRef.current;
+    const attackerZ = attacker === 'p1' ? p1ZRef.current : p2ZRef.current;
+    const facing = attacker === 'p1'
+      ? (p1XRef.current <= p2XRef.current ? 1 : -1)
+      : (p2XRef.current <= p1XRef.current ? 1 : -1);
+    const loco = attacker === 'p1' ? p2LocoRef.current : p1LocoRef.current;
+    loco.setPosition(attackerX + def.defenderPositionOffset.x * facing, attackerZ + def.defenderPositionOffset.z);
+    if (attacker === 'p1') {
+      p2XRef.current = loco.position.x;
+      p2ZRef.current = loco.position.z;
+      setP2X(loco.position.x);
+      setP2Z(loco.position.z);
+    } else {
+      p1XRef.current = loco.position.x;
+      p1ZRef.current = loco.position.z;
+      setP1X(loco.position.x);
+      setP1Z(loco.position.z);
+    }
+  }, []);
+
   useEffect(() => () => {
     if (grappleBeatTimer.current !== null) window.clearTimeout(grappleBeatTimer.current);
   }, []);
@@ -2094,7 +2116,9 @@ export default function GameBattleArena({
         directionalThrowPendingRef.current = null;
         const throwDmg = getThrowDamage(directionalP2Throw.throwId, false);
         p2SMRef.current.applyKnockdown();
-        playOpponentHalf('p2', p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1, THROW_CATALOG[directionalP2Throw.throwId]?.defenderAnimation, THROW_CATALOG[directionalP2Throw.throwId]?.receiverDuration);
+        const p2ThrowDef = THROW_CATALOG[directionalP2Throw.throwId];
+        if (p2ThrowDef) alignDirectionalThrowBodies('p1', p2ThrowDef);
+        playOpponentHalf('p2', p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1, p2ThrowDef?.defenderAnimation, p2ThrowDef?.receiverDuration);
         p2LocoRef.current.halt();
         p2HitboxRef.current.reset();
         engineRef.current?.applyIncomingHit('p2', throwDmg, false, 0.3);
@@ -2170,7 +2194,9 @@ export default function GameBattleArena({
         p1SMRef.current.applyKnockdown();
         p1LocoRef.current.halt();
         p1HitboxRef.current.reset();
-        playOpponentHalf('p1', p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2, THROW_CATALOG[directionalP1Throw.throwId]?.defenderAnimation, THROW_CATALOG[directionalP1Throw.throwId]?.receiverDuration);
+        const p1ThrowDef = THROW_CATALOG[directionalP1Throw.throwId];
+        if (p1ThrowDef) alignDirectionalThrowBodies('p2', p1ThrowDef);
+        playOpponentHalf('p1', p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2, p1ThrowDef?.defenderAnimation, p1ThrowDef?.receiverDuration);
         engineRef.current?.applyIncomingHit('p1', throwDmg, false, 0.3);
         if (settings.soundEnabled) sfx.playHeavyHit();
         audioManagerRef.current.playSFX('throw_connect');
