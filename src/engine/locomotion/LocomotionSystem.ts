@@ -100,7 +100,7 @@ export const ATTACK_ROOT_MOTION_PROFILES: Record<string, { forwardDisplacement: 
 // * 2.5f, read from FK_Character), and the backdash and sidestep keep their
 // existing proportions, so only the PACE changes and none of the relationships
 // between the moves do.
-export const WALK_SPEED = 0.78;  // metres/sec — deliberately slow combat walk tier; prevents screen-skating
+export const WALK_SPEED = 0.95;  // metres/sec — deliberately slow combat walk tier; prevents screen-skating
 export const DASH_SPEED = 3.00;    // metres/sec — distinct fast dash/run tier
 const BACKDASH_SPEED = 1.45;       // metres/sec — controlled retreat tier
 const SIDESTEP_SPEED = 1.0;       // metres/sec — controlled lateral step
