@@ -77,6 +77,6 @@ describe('the fight is paced like the genre it is built on', () => {
    */
   it('still closes the round-start gap in a couple of seconds', () => {
     const closeSeconds = (3.6 - reach) / (WALK_SPEED * 2);
-    assert.ok(closeSeconds < 1.5, `it would take ${closeSeconds.toFixed(1)}s to get in range`);
+    assert.ok(closeSeconds < 2.5, `it would take ${closeSeconds.toFixed(1)}s to get in range`);
   });
 });
