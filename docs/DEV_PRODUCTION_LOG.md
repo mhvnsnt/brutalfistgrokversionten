@@ -125,3 +125,18 @@ Important: these are implementation corrections, not a claim that all animation 
 - Added a deterministic regression test proving a shared combo definition can resolve to a fighter-owned primary-combo clip.
 - Main commits: `a997500e` (implementation), `d8823489` (regression test).
 - CI/runtime PWA visual certification is still UNKNOWN until the browser playtest observes the resulting clips on real Bannon/Kobra rigs.
+
+
+### Full roster individuality expansion — 2026-09-28
+
+- User clarified the real problem: the sameness is not limited to specials; the entire combat/roster layer needs Tekken-style character-specific attacks and gameplay, and more open-source animation must be pulled in when the existing bank is insufficient.
+- Confirmed the existing roster already contains many different move IDs, but the runtime only exposed a small generic semantic attack surface. This meant distinct roster data could collapse back to generic LP/RP/LK/RK behavior.
+- Added directional move slots to CharacterMoveSet: forward LP/RP/LK/RK, back LP/RP/LK/RK, and down-forward light/heavy branches.
+- Added separate fighter move-ID storage in FighterStateMachine so gameplay data cannot be confused with animation clip names.
+- Directional branches now resolve the selected catalog move's startup, active/recovery, damage, hitstun, pushback and hitbox data while retaining a stable semantic combat state for renderer/collision handling.
+- Bound those move IDs and clips during both initial match creation and round/match resets.
+- Added regression coverage for a fighter-owned directional catalog move and for distinct directional identities between roster members.
+- Added persistent backlog at docs/PRODUCTION_GAPS.md so future animation, roster, input, grapple, open-source and PWA-certification gaps remain tracked.
+- Expanded docs/OPEN_SOURCE_ANIMATION_INTAKE.md with KayKit Character Animations as a CC0 candidate source and with the larger per-character move-graph target.
+- Main implementation sequence: 6241232f (directional slots), 1075d7d9 (slot library), 1644acfe (catalog frame-data resolution), 1092e552 (directional kick slots), 85ff8149 (directional input routing), cbd013ff (fighter-specific synthesized defaults), fd216f68 (separate move IDs from clips), e7dc4f36 (initial-match binding cleanup), 42054a30 (reset binding), c68b7584 + 17667bac (tests), 389cf2c1 (open-source intake update), a0192d18 (persistent gaps).
+- CI/browser runtime certification is still UNKNOWN; no GitHub Actions workflow run was attached to the latest test commits when checked.
