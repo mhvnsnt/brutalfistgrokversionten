@@ -66,6 +66,8 @@ function ClipPlayer({
   speed,
   onClips,
   onProgress,
+  offsetX = 0,
+  rotationY = 0,
 }: {
   modelUrl: string;
   clip: string | null;
@@ -73,6 +75,9 @@ function ClipPlayer({
   onClips: (names: string[]) => void;
   /** 0..1 through the clip, so the list can show it is really running. */
   onProgress?: (p: { t: number; dur: number }) => void;
+  /** World-space presentation offset for paired attacker/receiver preview. */
+  offsetX?: number;
+  rotationY?: number;
 }) {
   const group = useRef<THREE.Group>(null);
   const [rig, setRig] = useState<{
@@ -208,10 +213,36 @@ function ClipPlayer({
     if (rig.scene.parent !== group.current) group.current.add(rig.scene);
     const box = new THREE.Box3().setFromObject(rig.scene);
     const centre = box.getCenter(new THREE.Vector3());
-    group.current.position.set(-centre.x, -centre.y, -centre.z);
-  }, [rig]);
+    group.current.position.set(-centre.x + offsetX, -centre.y, -centre.z);
+    group.current.rotation.y = rotationY;
+  }, [rig, offsetX, rotationY]);
 
   return <group ref={group} />;
+}
+
+function receiverForPreview(
+  selected: string | null,
+  manifest: Record<string, ManifestEntry>,
+  labels: MoveLabelMap,
+): { clip: string | null; kind: 'grapple' | 'reaction' | 'none' } {
+  if (!selected) return { clip: null, kind: 'none' };
+  const paired = labels[selected]?.pairedWith
+    ?? manifest[selected]?.pairedWith?.[0]
+    ?? receiverClipFor(selected, { labels })?.receiver;
+  if (paired && manifest[paired]?.receives) return { clip: paired, kind: 'grapple' };
+
+  const entry = manifest[selected];
+  const semantic = String(entry?.semantic ?? '').toLowerCase();
+  const name = selected.toLowerCase();
+  const candidates = entry?.airborne || /jump|air|launcher/.test(name)
+    ? ['REACTION_HEAVYHITAIRREVOLT', 'REACTION_HEAVYHITAIRREVOLTBACK']
+    : /low|crouch|duck/.test(name) || semantic === 'crouch'
+      ? ['REACTION_HITWEAKMEDIUM', 'REACTION_HITWEAKHIGH']
+      : /heavy|strong|launcher|smash/.test(name)
+        ? ['REACTION_HITSTRONGMID', 'REACTION_HITSTRONGHIGH', 'REACTION_HITWEAKMEDIUM']
+        : ['REACTION_HITWEAKMEDIUM', 'REACTION_HITWEAKHIGH', 'HIT_REACTION'];
+  const clip = candidates.find((n) => Boolean(manifest[n]));
+  return { clip: clip ?? null, kind: clip ? 'reaction' : 'none' };
 }
 
 export default function MoveLibrary({ onBack }: { onBack: () => void }) {
@@ -472,6 +503,11 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
   }
 
   const fighterName = BANNON_ROSTER.find((f) => f.id === fighter)?.name ?? fighter;
+  const receiverPreview = receiverForPreview(selected, manifest, labels);
+  const receiverModel = preferredModel;
+  const attackerDur = selected ? (manifest[selected]?.dur ?? 0) : 0;
+  const receiverDur = receiverPreview.clip ? (manifest[receiverPreview.clip]?.dur ?? 0) : 0;
+  const receiverSpeed = attackerDur > 0 && receiverDur > 0 ? speed * (receiverDur / attackerDur) : speed;
 
   return (
     <div className="fixed inset-0 bg-[#0d1016] text-white font-mono flex flex-col p-safe">
@@ -817,7 +853,17 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
                   speed={speed}
                   onClips={setAvailable}
                   onProgress={setPlayhead}
+                  offsetX={-0.9}
                 />
+                {receiverPreview.clip && (
+                  <ClipPlayer
+                    modelUrl={resolveGlbUrl(receiverModel)}
+                    clip={receiverPreview.clip}
+                    speed={receiverSpeed}
+                    offsetX={0.9}
+                    rotationY={Math.PI}
+                  />
+                )}
               </Suspense>
               <OrbitControls target={[0, 0, 0]} enablePan={false} />
             </Canvas>
@@ -843,6 +889,11 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
               <span className="ml-auto text-[9px] text-zinc-500">
                 {playhead.dur > 0 ? `${playhead.t.toFixed(2)} / ${playhead.dur.toFixed(2)}s` : ''}
               </span>
+              {receiverPreview.clip && (
+                <span className="text-[9px] text-sky-300">
+                  RECEIVER · {receiverPreview.clip} · {receiverPreview.kind}
+                </span>
+              )}
             </div>
             {playhead.dur > 0 && (
               <div className="absolute inset-x-2 top-5 h-[2px] bg-white/10">
