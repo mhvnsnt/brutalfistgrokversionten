@@ -22,7 +22,8 @@ export type ActionState =
 // ── Wakeup option buffered during knockdown recovery ─────────────────────────
 export type WakeupOption = 'techRoll' | 'backrise' | 'quickStand' | null;
 
-type CharacterMoveClipSlot =
+export type CharacterMoveClipSlot =
+  | 'crouchLight' | 'crouchKick'
   | 'idle' | 'walkForward' | 'walkBackward' | 'crouch' | 'guard'
   | 'lightAttack' | 'heavyAttack'
   | 'forwardLight' | 'forwardHeavy' | 'forwardLowKick' | 'forwardHighKick'
@@ -81,6 +82,13 @@ export interface MoveLink {
   /** Seconds from the start of THIS move during which the link is open. */
   from: number;
   to: number;
+}
+
+export interface StringFollowup {
+  button: 'lp' | 'rp' | 'lk' | 'rk';
+  from: number;
+  to: number;
+  next: MoveWindow;
 }
 
 export interface MoveWindow {
@@ -167,6 +175,23 @@ export interface MoveWindow {
   damage?: number;
   /** Measured strike-limb reach in metres; drives the move-specific contact envelope. */
   contactReach?: number;
+  /**
+   * PER-MOVE HIT PROPERTIES from a fighter's style profile. Absent, the hitbox
+   * and hitstun keep the semantic-slot defaults exactly as before, so every
+   * existing move is unaffected. Present, two fighters throwing the "same"
+   * input genuinely differ in how long the victim is stunned, how far he is
+   * pushed and whether he leaves the floor.
+   */
+  hitstun?: number;
+  pushback?: number;
+  launch?: number;
+  /**
+   * A NEUTRAL STRING: pressing `button` while this move is between `from` and
+   * `to` seconds continues into `next`. Button-driven, so it needs no motion
+   * command buffer; the next step carries its own followups, so a string ends
+   * where the style profile says it ends.
+   */
+  stringFollowups?: StringFollowup[];
   isSpecial?: boolean;
   specialName?: string;
   /** If true, this move is a throw — cannot be blocked by guard */
@@ -844,6 +869,12 @@ export class FighterStateMachine {
   private motionState: FighterMotionState = 'idle';
   /** Character-specific authored animation slots. Generic semantic aliases are only fallback. */
   private characterMoveClips: Partial<Record<CharacterMoveClipSlot, string>> = {};
+  /**
+   * Fully resolved per-fighter move windows (RosterMoveWindows): frame data,
+   * damage, reach, hit properties and strings from the fighter's style profile.
+   * Wins over the move-ID path; absent, nothing changes.
+   */
+  private characterMoveWindows: Partial<Record<CharacterMoveClipSlot, MoveWindow>> = {};
   private characterMoveIds: Partial<Record<CharacterMoveClipSlot, string>> = {};
 
   private currentMove: MoveWindow | null = null;
@@ -1008,6 +1039,23 @@ export class FighterStateMachine {
     this.characterMoveClips = { ...clips };
   }
 
+  /** Install the fighter's fully resolved style-profile move windows. */
+  setCharacterMoveWindows(windows: Partial<Record<string, MoveWindow>>): void {
+    this.characterMoveWindows = { ...windows } as Partial<Record<CharacterMoveClipSlot, MoveWindow>>;
+  }
+
+  /** The resolved window this fighter would use for a slot (tests / move viewer). */
+  characterWindowFor(slot: CharacterMoveClipSlot): MoveWindow | null {
+    return this.characterMoveWindows[slot] ?? null;
+  }
+
+  /** Standing/crouch slot: the fighter's resolved window, else the shared default + clip. */
+  private slotWindow(slot: CharacterMoveClipSlot, fallback: MoveWindow, clipSlot: CharacterMoveClipSlot = slot): MoveWindow {
+    const own = this.characterMoveWindows[slot];
+    if (own) return own.clip || !this.characterMoveClips[clipSlot] ? own : { ...own, clip: this.characterMoveClips[clipSlot] };
+    return this.withCharacterClip(fallback, clipSlot);
+  }
+
   /** Install the fighter's canonical catalog move IDs separately from clip names. */
   setCharacterMoveIds(moveIds: Partial<Record<string, string>>): void {
     this.characterMoveIds = { ...moveIds };
@@ -1046,14 +1094,32 @@ export class FighterStateMachine {
     slot: CharacterMoveClipSlot,
     semanticAnimation: FighterMotionState,
   ): MoveWindow {
+    const own = this.characterMoveWindows[slot];
+    if (own) return own.clip || !this.characterMoveClips[slot] ? own : { ...own, clip: this.characterMoveClips[slot] };
     if (!moveId) return this.withCharacterClip(fallback, slot);
     const catalog = getMoveById(moveId);
     if (!catalog) return this.withCharacterClip(fallback, slot);
 
+    // The catalog is authored in FRAMES with damage on a small scale (jab 8); MoveWindow
+    // is SECONDS with engine damage. Spreading the catalog object straight in
+    // (as this did) would have made a jab take 3 seconds to come out and deal
+    // 8 damage — it never showed because getMoveById could not find `bf_*`
+    // ids at all. Convert on the documented scale instead.
+    const startupF = Math.max(6, catalog.startup + 7);
+    const activeF = Math.max(2, catalog.active + 1);
+    const recoveryF = Math.max(6, catalog.recovery);
     return {
-      ...(catalog as unknown as MoveWindow),
+      ...fallback,
+      startup: startupF / 60,
+      active: activeF / 60,
+      recovery: recoveryF / 60,
+      hitboxStartFrame: startupF,
+      hitboxEndFrame: startupF + activeF,
+      totalFrames: startupF + activeF + recoveryF,
+      damage: Math.round(catalog.damage * 6 + 30),
+      onBlock: catalog.blockAdvantage,
       animation: semanticAnimation,
-      clip: this.characterMoveClips[slot] ?? catalog.animation,
+      clip: this.characterMoveClips[slot],
       isSpecial: fallback.isSpecial,
       specialName: catalog.displayName,
     };
@@ -2117,6 +2183,21 @@ export class FighterStateMachine {
         return this.beginAttack(cancel.move.animation, cancel.move);
       }
 
+      // ── NEUTRAL STRINGS (fighter style profile) ─────────────────────────
+      // A press of the string's next button inside its window continues the
+      // string instead of being buffered as a fresh attack. Each step carries
+      // only its own followups, so the ender cannot loop.
+      const followups = this.currentMove.stringFollowups;
+      if (followups?.length) {
+        const pressed = { lp: risingLp, rp: risingRp, lk: risingLk, rk: risingRk } as const;
+        const link = followups.find((f) => pressed[f.button] && this.moveElapsed >= f.from && this.moveElapsed <= f.to);
+        if (link) {
+          this.walkVelocity = { forward: 0, strafe: 0 };
+          this.queuedAction = null;
+          return this.beginAttack(link.next.animation, link.next);
+        }
+      }
+
       // ── THE INPUT BUFFER IS OPEN FOR THE WHOLE MOVE ─────────────────────
       // It used to open only at `isRecovering`, so a press during startup or
       // active frames was read and thrown away — 13 dead frames on a light, 19
@@ -2349,28 +2430,28 @@ export class FighterStateMachine {
       && Math.abs(resolvedInput.strafe) < 0.2;
     if (crouchingNow && (risingLk || risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('crouchHeavyAttack', this.withCharacterClip(CROUCH_MOVE_WINDOWS.crouchHeavyAttack, 'lowKick'));
+      return this.beginAttack('crouchHeavyAttack', this.slotWindow('crouchKick', CROUCH_MOVE_WINDOWS.crouchHeavyAttack, 'lowKick'));
     }
     if (crouchingNow && (risingLp || risingRp || risingLight || risingHeavy)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('crouchLightAttack', this.withCharacterClip(CROUCH_MOVE_WINDOWS.crouchLightAttack, 'lightAttack'));
+      return this.beginAttack('crouchLightAttack', this.slotWindow('crouchLight', CROUCH_MOVE_WINDOWS.crouchLightAttack, 'lightAttack'));
     }
 
     if (risingLk && !risingLp) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('lightKick', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.lightKick, 'lowKick'));
+      return this.beginAttack('lightKick', this.slotWindow('lowKick', DEFAULT_MOVE_WINDOWS.lightKick));
     }
     if (risingRk && !risingRp) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('heavyKick', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.heavyKick, 'highKick'));
+      return this.beginAttack('heavyKick', this.slotWindow('highKick', DEFAULT_MOVE_WINDOWS.heavyKick));
     }
     if (risingLp || (risingLight && !risingLk && !risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('lightAttack', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.lightAttack, 'lightAttack'));
+      return this.beginAttack('lightAttack', this.slotWindow('lightAttack', DEFAULT_MOVE_WINDOWS.lightAttack));
     }
     if (risingRp || (risingHeavy && !risingLk && !risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('heavyAttack', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.heavyAttack, 'heavyAttack'));
+      return this.beginAttack('heavyAttack', this.slotWindow('heavyAttack', DEFAULT_MOVE_WINDOWS.heavyAttack));
     }
 
     if (resolvedInput.guard) {
@@ -2517,6 +2598,7 @@ export class FighterStateMachine {
 
   // ── Compute HitStun duration from active frames of the source move ─────────
   private computeHitStunDuration(move: MoveWindow): number {
+    if (move.hitstun !== undefined) return Math.max(HITSTUN_MIN, Math.min(HITSTUN_MAX, move.hitstun));
     const activeSeconds = move.active * HITSTUN_ACTIVE_FRAME_MULTIPLIER;
     return Math.max(HITSTUN_MIN, Math.min(HITSTUN_MAX, activeSeconds));
   }

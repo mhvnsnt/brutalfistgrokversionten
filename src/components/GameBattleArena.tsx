@@ -98,6 +98,42 @@ import {
 } from '../engine/combat/RoundSystem';
 import { commandButtonsFor, moveSetForFighter, schwarzerblitzSpecials } from '../engine/combat/SchwarzerblitzSpecials';
 import { generatedMoveset } from '../engine/combat/GeneratedMovesets';
+import { resolveRosterMoveWindows } from '../engine/combat/RosterMoveWindows';
+
+const ROSTER_CLIP_SLOTS = [
+  'idle','walkForward','walkBackward','crouch','guard',
+  'lightAttack','heavyAttack',
+  'forwardLight','forwardHeavy','forwardLowKick','forwardHighKick',
+  'backLight','backHeavy','backLowKick','backHighKick',
+  'downForwardLight','downForwardHeavy',
+  'lowKick','highKick','primaryCombo','counter',
+  'grappleInitiate','primaryThrow','knockdown','wakeup',
+  'hitReaction','ko','signature',
+] as const;
+
+/**
+ * Install a fighter's moveset on a state machine: catalog move IDs, the clips
+ * those moves name, and the fully resolved style-profile windows. Called at
+ * match creation and at every round reset so the two paths cannot drift.
+ */
+function bindFighterMoveset(fighterId: string, sm: FighterStateMachine): void {
+  const set = getCharacterMoveSet(fighterId);
+  const clips: Record<string, string> = {};
+  const ids: Record<string, string> = {};
+  if (set) {
+    for (const slot of ROSTER_CLIP_SLOTS) {
+      const moveId = set[slot];
+      if (!moveId) continue;
+      ids[slot] = moveId;
+      const move = getMoveById(moveId);
+      if (move?.animation) clips[slot] = move.animation;
+    }
+  }
+  const resolved = resolveRosterMoveWindows(fighterId);
+  sm.setCharacterMoveClips(clips);
+  sm.setCharacterMoveIds({ ...ids, ...(resolved?.ids ?? {}) });
+  sm.setCharacterMoveWindows(resolved?.windows ?? {});
+}
 // ── Overdrive / super armor / Finisher ──────────────────────────────────────
 import { type OverdriveState, type SuperArmorState, type FinisherState,  } from '../engine/combat/OverdriveSystem';
 // ── Directional throw system ──────────────────────────────────────────────────
@@ -499,39 +535,11 @@ export default function GameBattleArena({
     p1SMRef.current = new FighterStateMachine();
     p2SMRef.current = new FighterStateMachine();
 
-    // Bind both the visual clip and the actual catalog move ID for every
-    // fighter-owned directional slot. The ID is what changes gameplay frame data;
-    // the clip is what changes the animation.
-    const buildCharacterMoveData = (fighterId: string) => {
-      const set = getCharacterMoveSet(fighterId);
-      if (!set) return { clips: {}, ids: {} };
-      const slots = [
-        'idle','walkForward','walkBackward','crouch','guard',
-        'lightAttack','heavyAttack',
-        'forwardLight','forwardHeavy','forwardLowKick','forwardHighKick',
-        'backLight','backHeavy','backLowKick','backHighKick',
-        'downForwardLight','downForwardHeavy',
-        'lowKick','highKick','primaryCombo','counter',
-        'grappleInitiate','primaryThrow','knockdown','wakeup',
-        'hitReaction','ko','signature',
-      ] as const;
-      const clips: Record<string, string> = {};
-      const ids: Record<string, string> = {};
-      for (const slot of slots) {
-        const moveId = set[slot];
-        if (!moveId) continue;
-        ids[slot] = moveId;
-        const move = getMoveById(moveId);
-        if (move?.animation) clips[slot] = move.animation;
-      }
-      return { clips, ids };
-    };
-    const p1MoveData = buildCharacterMoveData(p1Fighter.id);
-    const p2MoveData = buildCharacterMoveData(p2Fighter.id);
-    p1SMRef.current.setCharacterMoveClips(p1MoveData.clips);
-    p2SMRef.current.setCharacterMoveClips(p2MoveData.clips);
-    p1SMRef.current.setCharacterMoveIds(p1MoveData.ids);
-    p2SMRef.current.setCharacterMoveIds(p2MoveData.ids);
+    // One binding path for match start AND round reset: roster move IDs,
+    // fighter-owned clips, and the style-profile move windows (frame data,
+    // damage, reach, hit properties, neutral string). See RosterMoveWindows.
+    bindFighterMoveset(p1Fighter.id, p1SMRef.current);
+    bindFighterMoveset(p2Fighter.id, p2SMRef.current);
 
     // The roster's CharacterMoveSet is authoritative for each fighter's
     // presentation AND directional combat data. The generic semantic bank is
@@ -898,33 +906,8 @@ export default function GameBattleArena({
     p1SMRef.current = new FighterStateMachine();
     p2SMRef.current = new FighterStateMachine();
 
-    const bindRoundMoveData = (fighterId: string, sm: FighterStateMachine) => {
-      const set = getCharacterMoveSet(fighterId);
-      if (!set) return;
-      const slots = [
-        'idle','walkForward','walkBackward','crouch','guard',
-        'lightAttack','heavyAttack',
-        'forwardLight','forwardHeavy','forwardLowKick','forwardHighKick',
-        'backLight','backHeavy','backLowKick','backHighKick',
-        'downForwardLight','downForwardHeavy',
-        'lowKick','highKick','primaryCombo','counter',
-        'grappleInitiate','primaryThrow','knockdown','wakeup',
-        'hitReaction','ko','signature',
-      ] as const;
-      const clips: Record<string,string> = {};
-      const ids: Record<string,string> = {};
-      for (const slot of slots) {
-        const moveId = set[slot];
-        if (!moveId) continue;
-        ids[slot] = moveId;
-        const move = getMoveById(moveId);
-        if (move?.animation) clips[slot] = move.animation;
-      }
-      sm.setCharacterMoveClips(clips);
-      sm.setCharacterMoveIds(ids);
-    };
-    bindRoundMoveData(p1Fighter.id, p1SMRef.current);
-    bindRoundMoveData(p2Fighter.id, p2SMRef.current);
+    bindFighterMoveset(p1Fighter.id, p1SMRef.current);
+    bindFighterMoveset(p2Fighter.id, p2SMRef.current);
 
     // The imported command list, plus the engine's own button specials
     // (registerSpecialMoves appends DEFAULT_SPECIAL_MOVES itself, so the

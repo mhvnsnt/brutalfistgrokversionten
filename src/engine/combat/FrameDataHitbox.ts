@@ -157,6 +157,11 @@ export function buildHitboxFromMove(move: MoveWindow): HitboxGeometry {
       ? Math.max(0.35, Math.min(0.75, reach * 0.48))
       : (special.depth ?? base.depth ?? 0.6),
     damage: move.damage ?? (base as { damage?: number }).damage ?? 80,
+    // Style-profile hit properties, applied last so a fighter's move is not
+    // silently overwritten by the semantic slot's defaults.
+    ...(move.hitstun !== undefined ? { hitstun: move.hitstun } : {}),
+    ...(move.pushback !== undefined ? { pushback: move.pushback } : {}),
+    ...(move.launch !== undefined ? { launch: move.launch } : {}),
     attackLevel: move.attackLevel ?? (base as { attackLevel?: HitboxGeometry['attackLevel'] }).attackLevel ?? 'mid',
   };
   return geometry as HitboxGeometry;
