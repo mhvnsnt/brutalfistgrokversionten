@@ -263,10 +263,10 @@ export default function GameBattleArena({
   } | null>(null);
   const lastDirectionalThrowIdRef = useRef<string | null>(null);
 
-  const playOpponentHalf = useCallback((victim: 'p1' | 'p2', deliverer: string | null, receiverOverride?: string | null) => {
+  const playOpponentHalf = useCallback((victim: 'p1' | 'p2', deliverer: string | null, receiverOverride?: string | null, receiverDuration?: number) => {
     if (!deliverer) return;
     const pick = receiverOverride
-      ? { receiver: receiverOverride, source: 'owner' as const, dur: 0 }
+      ? { receiver: receiverOverride, source: 'owner' as const, dur: receiverDuration ?? 0 }
       : receiverClipFor(deliverer, { available: (c) => bakedClipNames().has(c) });
     if (!pick) return;
     if (grappleBeatTimer.current !== null) window.clearTimeout(grappleBeatTimer.current);
@@ -2094,7 +2094,7 @@ export default function GameBattleArena({
         directionalThrowPendingRef.current = null;
         const throwDmg = getThrowDamage(directionalP2Throw.throwId, false);
         p2SMRef.current.applyKnockdown();
-        playOpponentHalf('p2', p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1, THROW_CATALOG[directionalP2Throw.throwId]?.defenderAnimation);
+        playOpponentHalf('p2', p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1, THROW_CATALOG[directionalP2Throw.throwId]?.defenderAnimation, THROW_CATALOG[directionalP2Throw.throwId]?.receiverDuration);
         p2LocoRef.current.halt();
         p2HitboxRef.current.reset();
         engineRef.current?.applyIncomingHit('p2', throwDmg, false, 0.3);
@@ -2170,7 +2170,7 @@ export default function GameBattleArena({
         p1SMRef.current.applyKnockdown();
         p1LocoRef.current.halt();
         p1HitboxRef.current.reset();
-        playOpponentHalf('p1', p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2, THROW_CATALOG[directionalP1Throw.throwId]?.defenderAnimation);
+        playOpponentHalf('p1', p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2, THROW_CATALOG[directionalP1Throw.throwId]?.defenderAnimation, THROW_CATALOG[directionalP1Throw.throwId]?.receiverDuration);
         engineRef.current?.applyIncomingHit('p1', throwDmg, false, 0.3);
         if (settings.soundEnabled) sfx.playHeavyHit();
         audioManagerRef.current.playSFX('throw_connect');
