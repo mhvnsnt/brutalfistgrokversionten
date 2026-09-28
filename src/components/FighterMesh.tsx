@@ -357,7 +357,7 @@ const LOCO_RATE_STATES = new Set([
 ]);
 
 const ATTACK_STATES = new Set([
-  'lightAttack', 'heavyAttack', 'lightKick', 'heavyKick',
+  'lightAttack', 'heavyAttack', 'lightKick', 'heavyKick', 'jumpAttack',
   'light', 'heavy', 'Startup', 'Active', 'CommandThrow',
 ]);
 
@@ -1103,7 +1103,9 @@ function FighterMeshInner({
     const attackWindow = isAttack && attackDurationSeconds && attackDurationSeconds > 0
       ? attackDurationSeconds
       : null;
-    const jumpWindow = ['jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey) ? 0.55 : null;
+    const jumpWindow = ['jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey) ? 0.55
+      : inputKey === 'jumpAttack' ? 0.65
+      : null;
     const downWindow = ['knockdown', 'Knockdown', 'ko', 'KO'].includes(inputKey) ? 1.7 : null;
     const wakeWindow = inputKey === 'WakeupQuickStand' || inputKey === 'wake' ? 1.15
       : inputKey === 'WakeupTechRoll' || inputKey === 'WakeupBackrise' ? 0.55
