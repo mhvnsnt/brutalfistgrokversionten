@@ -838,7 +838,7 @@ export async function extractAndRetargetAnimations(
       // intake path so the repair is made against THIS model's bind pose.
       if (isCollapsedAnimationClip(copy) && !String(copy.name).match(/REACTION|RECV|VICTIM/i)) {
         try {
-          const recovered = await recoverBannonEulerClip(name, cloned);
+          const recovered = await recoverBannonEulerClip(name, targetScene);
           if (recovered) copy = recovered;
         } catch {
           // Raw source recovery is optional; the baked clip remains available.
