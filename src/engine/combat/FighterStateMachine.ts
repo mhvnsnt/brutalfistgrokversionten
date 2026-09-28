@@ -25,7 +25,8 @@ export type WakeupOption = 'techRoll' | 'backrise' | 'quickStand' | null;
 type CharacterMoveClipSlot =
   | 'idle' | 'walkForward' | 'walkBackward' | 'crouch' | 'guard'
   | 'lightAttack' | 'heavyAttack'
-  | 'forwardLight' | 'forwardHeavy' | 'backLight' | 'backHeavy'
+  | 'forwardLight' | 'forwardHeavy' | 'forwardLowKick' | 'forwardHighKick'
+  | 'backLight' | 'backHeavy' | 'backLowKick' | 'backHighKick'
   | 'downForwardLight' | 'downForwardHeavy'
   | 'lowKick' | 'highKick'
   | 'primaryCombo' | 'counter' | 'grappleInitiate' | 'primaryThrow'
@@ -2242,6 +2243,94 @@ export class FighterStateMachine {
       const airMove = (risingLk || risingRk) ? AIR_HEAVY_MOVE : AIR_LIGHT_MOVE;
       const airSlot: CharacterMoveClipSlot = (risingLk || risingRk) ? 'highKick' : 'lightAttack';
       return this.beginAttack('jumpAttack', this.withCharacterClip(airMove, airSlot));
+    }
+
+    // ── DIRECTIONAL CHARACTER MOVES ────────────────────────────────────────
+    // Direction + button is a real moveset branch. It resolves the selected
+    // roster move through catalog frame data, so characters differ in both
+    // animation AND gameplay properties (startup, damage, reach, hitstun, etc.).
+    const forward = resolvedInput.forward > 0.45;
+    const back = resolvedInput.forward < -0.45;
+    const downForward = resolvedInput.crouch && forward;
+    if (downForward && (risingLp || risingLight)) {
+      const moveId = this.characterMoveClips.downForwardLight;
+      if (moveId) {
+        this.walkVelocity = { forward: 0, strafe: 0 };
+        return this.beginAttack(
+          'crouchLightAttack',
+          this.characterMoveWindow(moveId, CROUCH_MOVE_WINDOWS.crouchLightAttack, 'downForwardLight', 'crouchLightAttack'),
+        );
+      }
+    }
+    if (downForward && (risingRp || risingHeavy || risingLk || risingRk)) {
+      const moveId = this.characterMoveClips.downForwardHeavy;
+      if (moveId) {
+        this.walkVelocity = { forward: 0, strafe: 0 };
+        return this.beginAttack(
+          'crouchHeavyAttack',
+          this.characterMoveWindow(moveId, CROUCH_MOVE_WINDOWS.crouchHeavyAttack, 'downForwardHeavy', 'crouchHeavyAttack'),
+        );
+      }
+    }
+    if (forward) {
+      if (risingLp || (risingLight && !risingLk && !risingRk)) {
+        const moveId = this.characterMoveClips.forwardLight;
+        if (moveId) {
+          this.walkVelocity = { forward: 0, strafe: 0 };
+          return this.beginAttack('lightAttack', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightAttack, 'forwardLight', 'lightAttack'));
+        }
+      }
+      if (risingRp || (risingHeavy && !risingLk && !risingRk)) {
+        const moveId = this.characterMoveClips.forwardHeavy;
+        if (moveId) {
+          this.walkVelocity = { forward: 0, strafe: 0 };
+          return this.beginAttack('heavyAttack', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyAttack, 'forwardHeavy', 'heavyAttack'));
+        }
+      }
+      if (risingLk) {
+        const moveId = this.characterMoveClips.forwardLowKick;
+        if (moveId) {
+          this.walkVelocity = { forward: 0, strafe: 0 };
+          return this.beginAttack('lightKick', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightKick, 'forwardLowKick', 'lightKick'));
+        }
+      }
+      if (risingRk) {
+        const moveId = this.characterMoveClips.forwardHighKick;
+        if (moveId) {
+          this.walkVelocity = { forward: 0, strafe: 0 };
+          return this.beginAttack('heavyKick', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyKick, 'forwardHighKick', 'heavyKick'));
+        }
+      }
+    }
+    if (back) {
+      if (risingLp || (risingLight && !risingLk && !risingRk)) {
+        const moveId = this.characterMoveClips.backLight;
+        if (moveId) {
+          this.walkVelocity = { forward: 0, strafe: 0 };
+          return this.beginAttack('lightAttack', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightAttack, 'backLight', 'lightAttack'));
+        }
+      }
+      if (risingRp || (risingHeavy && !risingLk && !risingRk)) {
+        const moveId = this.characterMoveClips.backHeavy;
+        if (moveId) {
+          this.walkVelocity = { forward: 0, strafe: 0 };
+          return this.beginAttack('heavyAttack', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyAttack, 'backHeavy', 'heavyAttack'));
+        }
+      }
+      if (risingLk) {
+        const moveId = this.characterMoveClips.backLowKick;
+        if (moveId) {
+          this.walkVelocity = { forward: 0, strafe: 0 };
+          return this.beginAttack('lightKick', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightKick, 'backLowKick', 'lightKick'));
+        }
+      }
+      if (risingRk) {
+        const moveId = this.characterMoveClips.backHighKick;
+        if (moveId) {
+          this.walkVelocity = { forward: 0, strafe: 0 };
+          return this.beginAttack('heavyKick', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyKick, 'backHighKick', 'heavyKick'));
+        }
+      }
     }
 
     // ── DOWN + BUTTON, ahead of the standing attacks ──────────────────────
