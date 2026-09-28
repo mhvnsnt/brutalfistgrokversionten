@@ -445,4 +445,12 @@ console.log(`page errors       : ${pageErrors.length}`);
 for (const e of pageErrors.slice(0, 8)) console.log('   ! ' + e);
 console.log('============================================');
 
+const fatal = !ready || pageErrors.length > 0 || (INP && INP.attackStarts === 0);
+if (fatal) {
+  console.error(`PLAYTEST FAIL: arena=${ready ? 'ready' : 'missing'}, pageErrors=${pageErrors.length}, attacks=${INP ? INP.attackStarts : 'unavailable'}`);
+  process.exitCode = 1;
+} else {
+  console.log('PLAYTEST PASS: real arena reached, real attack input observed, no page errors.');
+}
+
 await browser.close();
