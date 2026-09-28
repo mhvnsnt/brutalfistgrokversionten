@@ -1,6 +1,14 @@
 import * as THREE from 'three';
 import { normalizeUniversalAnimation } from './UniversalAnimationPipeline.ts';
 
+let sourceIndexPromise:Promise<Record<string,{file:string}>>|null=null;
+async function sourceFileFor(name:string):Promise<string|null>{
+  sourceIndexPromise ??= fetch('/motion/index.json',{cache:'force-cache'}).then(r=>r.ok?r.json():{}).catch(()=>({}));
+  const index=await sourceIndexPromise;
+  const file=index?.[name]?.file;
+  return typeof file==='string'?file:null;
+}
+
 interface EulerFile { dur:number; keys:Array<{t:number;bones:Record<string,{rx:number;ry:number;rz:number}>}>; }
 
 export function isCollapsedAnimationClip(clip:THREE.AnimationClip,minMovingBones=3):boolean{
@@ -15,7 +23,7 @@ export function isCollapsedAnimationClip(clip:THREE.AnimationClip,minMovingBones
 }
 
 export async function recoverBannonEulerClip(name:string,targetRoot:THREE.Object3D):Promise<THREE.AnimationClip|null>{
-  const response=await fetch('/motion/'+encodeURIComponent(name)+'.json',{cache:'no-cache'});
+  const file=await sourceFileFor(name);\n  if(!file) return null;\n  const response=await fetch('/motion/'+encodeURIComponent(file),{cache:'no-cache'});
   if(!response.ok) return null;
   const data=await response.json() as EulerFile;
   if(!Array.isArray(data.keys)||!data.keys.length) return null;
