@@ -121,5 +121,5 @@ export function locomotionPlaybackRate(speedMps: number, clipName?: string | nul
   const measured = authoredStrideSpeed(clipName);
   if (measured !== null) return playbackRateFor(clipName, speedMps);
   const rate = speedMps / WALK_PLAYBACK_MPS;
-  return Math.min(2.6, Math.max(0.75, rate));
+  return Math.min(3.0, Math.max(0.75, rate));
 }
