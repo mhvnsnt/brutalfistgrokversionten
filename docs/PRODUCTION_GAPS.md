@@ -54,3 +54,6 @@ This is the persistent backlog for the fighting-game production pass. New animat
 ## Current status law
 
 Static routing/tests prove code paths. They do not prove that a clip visually reads correctly on the actual GLB in the PWA. Runtime certification remains UNKNOWN until observed and measured.
+
+- P0 locomotion feel/runtime: deliberate walk must be materially slower than run/backdash; eliminate arena-wide skating, distinguish player movement from AI pursuit, and prevent the AI from continuously translating with a retreating player.
+- P0 knockdown/reaction: at least one ordinary canonical heavy attack must demonstrably produce a grounded knockdown, with a real fall clip and wakeup path; distinguish hitstun, crumple, launch/juggle, smackdown, knockdown and wakeup rather than collapsing them into one flinch.
