@@ -1266,6 +1266,12 @@ export class FighterStateMachine {
     return this.currentMove?.specialName ?? (this.currentMove ? this.currentMove.animation : null);
   }
 
+  /** Remaining authored time on the current move; throws use this to delay the
+   * receiver commit until the attacker's actual grapple animation has finished. */
+  currentMoveRemainingSeconds(): number {
+    return Math.max(0, this.moveTimer);
+  }
+
   registerSpecialMoves(moves: SpecialMoveDefinition[]) {
     this.specialMoves = [...moves, ...DEFAULT_SPECIAL_MOVES];
   }
