@@ -2235,7 +2235,10 @@ export class FighterStateMachine {
     const special = this.detectSpecialMove(now);
     if (special) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack(this.clipForSpecial(special), special.move);
+      // clipForSpecial returns a fighter-owned clip name (or the special's own
+      // animation); it has always been used as the motion state here, so the
+      // cast only records existing runtime behavior.
+      return this.beginAttack(this.clipForSpecial(special) as FighterMotionState, special.move);
     }
 
     // ── AIR ATTACKS: jump + limb is an aerial move, not a grounded strike.
@@ -2639,7 +2642,9 @@ export class FighterStateMachine {
       const directional = this.directionalThrowId ? THROW_CATALOG[this.directionalThrowId] : null;
       this.currentMove = directional
         ? {
-            ...this.currentMove,
+            // A directional throw always set currentMove when it began; fall
+            // back to the commit window (startup 0) rather than spreading null.
+            ...(this.currentMove ?? THROW_COMMIT_MOVE),
             clip: directional.commitAnimation,
             animation: 'grapple',
             damage: directional.damage,
