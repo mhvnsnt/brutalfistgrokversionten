@@ -125,32 +125,45 @@ const heightOf = (dirs) => {
 };
 
 const EXACT_ANIMATION_ALIASES = new Map([
-  ['dynamonova0', 'TIGERDYNAMOPUNCH_FIX'],
-  ['dynamitepunch', 'GRAFSURPRISEPUNCH'],
   ['defaultjumppunch', 'DEFAULTJUMPPUNCH'],
   ['defaultjumppunch2', 'DEFAULTJUMPPUNCH2'],
   ['defaultjumpkick', 'DEFAULTJUMPKICK'],
-  ['tiger_heavykickcombo', 'TIGER_HEAVYKICKCOMBO'],
-  ['tigercommandocomboex', 'TIGERCOMMANDOCOMBO1'],
-  ['tigerdynamopunch_fix', 'TIGERDYNAMOPUNCH_FIX'],
-  ['tigerscarletscrew_nokick_fix', 'TIGERSCARLETSCREW_NOKICK_FIX'],
-  ['tigerscarletscrew_lowkick', 'TIGERSCARLETSCREW_LOWKICK'],
+  ['tiger_heavykickcombo', 'ROUNDHOUSEKICK'],
+  ['tigercommandocomboex', 'JUMPAXEKICK'],
+  ['tigerdynamopunch_fix', 'TIGERDYNAMOPUNCH'],
+  ['tigerscarletscrew_nokick_fix', 'JUMPAXEKICK'],
+  ['tigerscarletscrew_lowkick', 'ROUNDHOUSELOW'],
   ['tigerkneebashslow', 'TIGERKNEEBASHSLOW'],
   ['crouchingkick', 'CROUCHINGKICK'],
   ['crouchingkickrenzo', 'CROUCHINGKICK'],
   ['quickkick', 'QUICKKICK'],
-  ['axeKick', 'AXEKICK'],
+  ['axekick', 'JUMPAXEKICK'],
   ['jumpaxekick', 'JUMPAXEKICK'],
   ['gyakuzuki', 'GYAKUZUKI'],
   ['gyakuzuki_combo', 'GYAKUZUKI_COMBO'],
   ['tigerquickpunch', 'TIGERQUICKPUNCH'],
   ['doublehammer', 'TIGERDOUBLEHAMMERCOMBO'],
+  ['dynamonova0', 'TIGERDYNAMOPUNCH'],
   ['grafquickjab', 'GRAFQUICKJAB'],
   ['quickroundhouse', 'ROUNDHOUSEKICK'],
   ['flyingkick', 'DROP_KICK'],
   ['lowkick2', 'CROUCHINGKICK'],
-  ['paperShredder2', 'JUMPAXEKICK'],
+  ['papershredder2', 'JUMPAXEKICK'],
 ]);
+
+const COMMAND_CLIP_PLACEMENT = {
+  Ducking_Comet: 'ROUNDHOUSELOW',
+  Double_Hammer: 'TIGERDOUBLEHAMMERCOMBO',
+  Dynamo_Punch: 'TIGERDYNAMOPUNCH',
+  CrouchUppercut: 'UPPERCUT',
+  Heavy_Kick_Eins: 'ROUNDHOUSEKICK',
+  AirScarletScrew: 'JUMPAXEKICK',
+  CrouchingScarletScrew: 'ROUNDHOUSELOW',
+  GroundScarletScrew: 'ROUNDHOUSELOW',
+  Knee_Commando: 'TIGERKNEEBASHSLOW',
+  Rising_Blade: 'JUMPAXEKICK',
+  Crouching_Kick: 'CROUCHINGKICK',
+};
 
 function normalizedClipName(value) {
   return String(value ?? '').replace(/[^a-z0-9]/gi, '').toLowerCase();
@@ -191,7 +204,8 @@ export function mapCommands(commands, seed = '') {
   const out = {};
   for (const c of commands) {
     const want = { kick: c.kick, height: heightOf(c.dirs) };
-    const exact = exactClipForAnimation(c.animation, pool);
+    const explicit = COMMAND_CLIP_PLACEMENT[c.name.replace(/^!\s*/, '')];
+    const exact = explicit ? pool.find((clip) => normalizedClipName(clip.name) === normalizedClipName(explicit)) : exactClipForAnimation(c.animation, pool);
     let best = exact;
     let bestScore = exact ? Number.POSITIVE_INFINITY : -Infinity;
     for (const clip of pool) {
