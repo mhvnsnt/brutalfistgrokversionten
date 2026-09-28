@@ -2254,15 +2254,6 @@ export class FighterStateMachine {
       }
     }
 
-    const special = this.detectSpecialMove(now);
-    if (special) {
-      this.walkVelocity = { forward: 0, strafe: 0 };
-      // clipForSpecial returns a fighter-owned clip name (or the special's own
-      // animation); it has always been used as the motion state here, so the
-      // cast only records existing runtime behavior.
-      return this.beginAttack(this.clipForSpecial(special) as FighterMotionState, special.move);
-    }
-
     // ── AIR ATTACKS: jump + limb is an aerial move, not a grounded strike.
     // The locomotion arc is already armed from the same jump input above. Keep
     // the combat state as jumpAttack so FighterMesh uses the real aerial slot,
@@ -2284,6 +2275,16 @@ export class FighterStateMachine {
         const airSlot: CharacterMoveClipSlot = (risingLk || risingRk) ? 'highKick' : 'lightAttack';
         return this.beginAttack('jumpAttack', this.withCharacterClip(airMove, airSlot));
       }
+    }
+
+    const special = this.detectSpecialMove(now);
+    if (special) {
+      this.walkVelocity = { forward: 0, strafe: 0 };
+      // Preserve the fighter-owned presentation on the move itself. The
+      // renderer reads activeClip(), not only the semantic motion state.
+      const ownedClip = this.clipForSpecial(special);
+      const ownedMove = { ...special.move, clip: ownedClip };
+      return this.beginAttack(ownedClip as FighterMotionState, ownedMove);
     }
 
     // ── DIRECTIONAL CHARACTER MOVES ────────────────────────────────────────
