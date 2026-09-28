@@ -122,3 +122,34 @@ describe('a timed window does not depend on how the time is delivered', () => {
     }
   });
 });
+
+describe('Tekken directional input', () => {
+  it('jumps immediately on a single up press', async () => {
+    const { createTekkenStick } = await import('./TekkenInput.ts');
+    const stick = createTekkenStick();
+    const first = stick.resolve({ left: false, right: false, up: true, down: false }, 1000);
+    assert.equal(first.jump, true);
+    assert.equal(first.crouch, false);
+  });
+
+  it('keeps crouch held until down is released', async () => {
+    const { createTekkenStick } = await import('./TekkenInput.ts');
+    const stick = createTekkenStick();
+    const held = stick.resolve({ left: false, right: false, up: false, down: true }, 1000);
+    const heldLater = stick.resolve({ left: false, right: false, up: false, down: true }, 1100);
+    const released = stick.resolve({ left: false, right: false, up: false, down: false }, 1200);
+    assert.equal(held.crouch, true);
+    assert.equal(heldLater.crouch, true);
+    assert.equal(released.crouch, false);
+  });
+
+  it('turns a second up tap into a sidestep', async () => {
+    const { createTekkenStick } = await import('./TekkenInput.ts');
+    const stick = createTekkenStick();
+    stick.resolve({ left: false, right: false, up: true, down: false }, 1000);
+    stick.resolve({ left: false, right: false, up: false, down: false }, 1050);
+    const second = stick.resolve({ left: false, right: false, up: true, down: false }, 1150);
+    assert.equal(second.jump, false);
+    assert.equal(second.strafe, -1);
+  });
+});
