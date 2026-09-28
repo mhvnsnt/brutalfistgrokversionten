@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "purpose": "Semantic placement audit for fighting animations. This is a routing manifest, not a claim that every clip is visually certified.",
+  "source_priority": [
+    "owner-granted Schwarzerblitz common/animations",
+    "Bannon authored motion",
+    "CC0/open animation fill"
+  ],
+  "categories": {
+    "ground_punch": ["GRAFQUICKJAB", "GYAKUZUKI", "TIGERDYNAMOPUNCH"],
+    "ground_kick": ["QUICKKICK", "HEAVYKICK", "ROUNDHOUSEKICK"],
+    "crouching_strike": ["CROUCHINGKICK", "ROUNDHOUSELOW"],
+    "uppercut_rising": ["UPPERCUT"],
+    "airborne_jump_punch": ["DEFAULTJUMPPUNCH", "DEFAULTJUMPPUNCH2"],
+    "airborne_jump_kick": ["DEFAULTJUMPKICK", "JUMPAXEKICK"],
+    "spinning_or_rotating": ["ROUNDHOUSEKICK", "JUMPAXEKICK"],
+    "grapple_initiate": ["THROWSTART"],
+    "grapple_knee": ["KNEETHROW"],
+    "grapple_receiver": ["KNEETHROWREACTION", "KNEETHROWREACTION_NEW", "KNEETHROWREACTION_SLOW"],
+    "hit_reaction": ["REACTION_HITWEAKHIGH", "REACTION_HITSTRONGMID", "REACTION_HEAVYHITAIRREVOLT"],
+    "knockdown": ["FALLING_FLAT_IMPACT"],
+    "wakeup": ["KIP_UP"]
+  },
+  "routing_rules": {
+    "neutral_punch": "5+P uses ground_punch",
+    "neutral_kick": "5+K uses ground_kick",
+    "down_punch_or_kick": "2/3/1 commands must route to crouching_strike unless an explicit authored command has a stronger measured match",
+    "up_punch": "8/9+P routes to airborne_jump_punch or uppercut_rising according to stance",
+    "up_kick": "8/9+K routes to airborne_jump_kick",
+    "spin": "spinning/rotating clips are not rejected merely because facing temporarily turns away; the impact-frame facing and limb reach remain authoritative",
+    "grapple": "grapple initiators and receiver clips remain paired; never substitute a strike animation for a grapple",
+    "reaction": "receiver/reaction clips never enter the attacker strike pool"
+  },
+  "verification": {
+    "status": "runtime-playtest-required",
+    "rule": "UNKNOWN is never PASS",
+    "note": "Static measurements establish routing candidates; browser playtest must certify visible contact, timing, floor behavior, and recovery."
+  }
+}
