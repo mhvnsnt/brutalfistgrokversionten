@@ -1020,6 +1020,9 @@ async function fetchMotionBankClip({ key, file, semanticState }: MotionBankReque
   const url = `${BANNON_MOTION_BANK_BASE}${encodeURIComponent(file)}`;
   res = await fetch(url);
   if (!res.ok) throw new Error(`${key} HTTP ${res.status}`);
+  const json = await res.json();
+  const adapted = convertAnyBannonClipJson(json, key, semanticState);
+  if (adapted.trackCount === 0) throw new Error(`${key} NO_TRACKS`);
   (adapted.clip as any).userData = {
     ...(adapted.clip as any).userData,
     clipSourceType: (adapted.clip as any).userData?.clipSourceType ?? "RETARGETED_AUTHORED_CLIP",
