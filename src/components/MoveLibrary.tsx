@@ -66,6 +66,7 @@ function ClipPlayer({
   speed,
   onClips,
   onProgress,
+  offsetX = 0,
 }: {
   modelUrl: string;
   clip: string | null;
@@ -73,6 +74,8 @@ function ClipPlayer({
   onClips: (names: string[]) => void;
   /** 0..1 through the clip, so the list can show it is really running. */
   onProgress?: (p: { t: number; dur: number }) => void;
+  /** World-space presentation offset for paired attacker/receiver preview. */
+  offsetX?: number;
 }) {
   const group = useRef<THREE.Group>(null);
   const [rig, setRig] = useState<{
@@ -208,10 +211,35 @@ function ClipPlayer({
     if (rig.scene.parent !== group.current) group.current.add(rig.scene);
     const box = new THREE.Box3().setFromObject(rig.scene);
     const centre = box.getCenter(new THREE.Vector3());
-    group.current.position.set(-centre.x, -centre.y, -centre.z);
-  }, [rig]);
+    group.current.position.set(-centre.x + offsetX, -centre.y, -centre.z);
+  }, [rig, offsetX]);
 
   return <group ref={group} />;
+}
+
+function receiverForPreview(
+  selected: string | null,
+  manifest: Record<string, ManifestEntry>,
+  labels: MoveLabelMap,
+): { clip: string | null; kind: 'grapple' | 'reaction' | 'none' } {
+  if (!selected) return { clip: null, kind: 'none' };
+  const paired = labels[selected]?.pairedWith
+    ?? manifest[selected]?.pairedWith?.[0]
+    ?? receiverClipFor(selected, { labels })?.receiver;
+  if (paired && manifest[paired]?.receives) return { clip: paired, kind: 'grapple' };
+
+  const entry = manifest[selected];
+  const semantic = String(entry?.semantic ?? '').toLowerCase();
+  const name = selected.toLowerCase();
+  const candidates = entry?.airborne || /jump|air|launcher/.test(name)
+    ? ['REACTION_HEAVYHITAIRREVOLT', 'REACTION_HEAVYHITAIRREVOLTBACK']
+    : /low|crouch|duck/.test(name) || semantic === 'crouch'
+      ? ['REACTION_HITWEAKMEDIUM', 'REACTION_HITWEAKHIGH']
+      : /heavy|strong|launcher|smash/.test(name)
+        ? ['REACTION_HITSTRONGMID', 'REACTION_HITSTRONGHIGH', 'REACTION_HITWEAKMEDIUM']
+        : ['REACTION_HITWEAKMEDIUM', 'REACTION_HITWEAKHIGH', 'HIT_REACTION'];
+  const clip = candidates.find((n) => Boolean(manifest[n]));
+  return { clip: clip ?? null, kind: clip ? 'reaction' : 'none' };
 }
 
 export default function MoveLibrary({ onBack }: { onBack: () => void }) {
