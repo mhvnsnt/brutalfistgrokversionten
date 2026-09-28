@@ -345,6 +345,22 @@ export const RIGHT_THROW_MOVE: MoveWindow = {
 };
 
 /** Overdrive (2+3): RP+LK — activates Overdrive state */
+/** Airborne attacks: the input owns the limb, while the motion state stays jumpAttack. */
+export const AIR_LIGHT_MOVE: MoveWindow = {
+  startup: F(7), active: F(5), recovery: F(18),
+  animation: 'jumpAttack',
+  hitboxStartFrame: 7, hitboxEndFrame: 12, totalFrames: 30,
+  damage: 70, attackLevel: 'mid', onBlock: -9,
+  specialName: 'Jumping Light',
+};
+export const AIR_HEAVY_MOVE: MoveWindow = {
+  startup: F(10), active: F(6), recovery: F(22),
+  animation: 'jumpAttack',
+  hitboxStartFrame: 10, hitboxEndFrame: 16, totalFrames: 38,
+  damage: 105, attackLevel: 'mid', onBlock: -13,
+  specialName: 'Jumping Heavy',
+};
+
 export const OVERDRIVE_MOVE: MoveWindow = {
   startup: 0.15,
   active: 0.20,
@@ -2152,6 +2168,19 @@ export class FighterStateMachine {
     if (special) {
       this.walkVelocity = { forward: 0, strafe: 0 };
       return this.beginAttack(this.clipForSpecial(special), special.move);
+    }
+
+    // ── AIR ATTACKS: jump + limb is an aerial move, not a grounded strike.
+    // The locomotion arc is already armed from the same jump input above. Keep
+    // the combat state as jumpAttack so FighterMesh uses the real aerial slot,
+    // while the fighter-owned light/heavy clip still gives each roster member
+    // distinct visual ownership. A rising limb press must win over the grounded
+    // attack checks below.
+    if (resolvedInput.jump && (risingLp || risingLk || risingLight || risingRk || risingRp || risingHeavy)) {
+      this.walkVelocity.forward = 0;
+      const airMove = (risingLk || risingRk) ? AIR_HEAVY_MOVE : AIR_LIGHT_MOVE;
+      const airSlot: CharacterMoveClipSlot = (risingLk || risingRk) ? 'highKick' : 'lightAttack';
+      return this.beginAttack('jumpAttack', this.withCharacterClip(airMove, airSlot));
     }
 
     // ── DOWN + BUTTON, ahead of the standing attacks ──────────────────────
