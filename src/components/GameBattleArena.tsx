@@ -183,6 +183,21 @@ export default function GameBattleArena({
   const rafRef = useRef<number>(0);
   const [frame, setFrame] = useState(0);
   /**
+   * THE DEVICE IS THE INSTRUMENT.
+   *
+   * Owner: combat "is really buggy and glitchy ... not smooth." Every harness
+   * in this repo runs on swiftshader, a SOFTWARE rasterizer, which renders this
+   * match at 1.6-3.7 fps. At that rate a one-frame T-pose, a snap or a dropped
+   * input is smaller than one sample, so the probes report clean for the wrong
+   * reason -- and a long frame there says nothing about a phone GPU.
+   *
+   * So the phone reports its own number. fps is the live rate; worst is the
+   * longest single frame in the last second, because a 300ms hitch inside an
+   * otherwise-60fps second IS the thing that reads as a glitch, and an average
+   * hides it completely.
+   */
+  const [perf, setPerf] = useState<{ fps: number; worst: number }>({ fps: 0, worst: 0 });
+  /**
    * RAGE. The comeback state was half-built: `setP1FinisherAvailable(pct <= 0.25)`
    * gated the HUD on a magic number while FINISHER_HP_THRESHOLD, FINISHER_DAMAGE
    * and FINISHER_STARTUP_FRAMES had no readers at all, and BEING enraged did
@@ -700,6 +715,13 @@ export default function GameBattleArena({
       i.sidestepLeft = held.has("KeyQ");
       i.sidestepRight = held.has("KeyE");
     };
+    // THE INPUT LEDGER, PUBLISHED. inputStatsRef already answers the only
+    // question that separates a game defect from a broken probe -- "a press
+    // seen on N frames that produced no attack is the game's doing; a press
+    // seen on zero frames is the instrument's" -- and nothing could read it.
+    // A playtest that presses a button and sees nothing happen cannot tell
+    // those two apart without this, and has guessed wrong before.
+    window.__bfInputStats = () => ({ ...inputStatsRef.current });
     window.__controlsTest = {
       getYaw: () => -p1XRef.current,
       getSpeed: () =>
@@ -715,7 +737,29 @@ export default function GameBattleArena({
     };
     return () => {
       delete window.__controlsTest;
+      delete window.__bfInputStats;
     };
+  }, []);
+
+  useEffect(() => {
+    let raf = 0;
+    let last = performance.now();
+    let n = 0;
+    let worst = 0;
+    let windowStart = last;
+    const tick = (ts: number) => {
+      const dt = ts - last;
+      last = ts;
+      n++;
+      if (dt > worst) worst = dt;
+      if (ts - windowStart >= 1000) {
+        setPerf({ fps: Math.round((n * 1000) / (ts - windowStart)), worst: Math.round(worst) });
+        n = 0; worst = 0; windowStart = ts;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   // ── Damage event state ────────────────────────────────────────────────────
@@ -3266,6 +3310,13 @@ export default function GameBattleArena({
                   {String(roundTimer).padStart(2, '0')}
                 </div>
                 <div className="text-[7px] text-zinc-400 tracking-widest">F{frame}</div>
+                <div
+                  className="text-[7px] tabular-nums tracking-widest"
+                  style={{ color: perf.fps >= 50 ? '#4ade80' : perf.fps >= 30 ? '#facc15' : '#ef4444' }}
+                  title="live frames per second, and the longest single frame in the last second"
+                >
+                  {perf.fps}FPS{perf.worst > 80 ? ` ${perf.worst}ms` : ''}
+                </div>
               </div>
 
               {/* P2 health bar */}

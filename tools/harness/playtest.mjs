@@ -23,6 +23,22 @@ const args = process.argv.slice(2);
 const RECON = args.includes('--recon');
 const SHOTS = args.includes('--shots') || RECON;
 const SECONDS = Number((args.find((a) => a.startsWith('--seconds=')) || '--seconds=25').split('=')[1]);
+/**
+ * --nodraw: stub the rasterizer and keep everything else running.
+ *
+ * THIS IS THE WHOLE POINT OF THE HARNESS. swiftshader is a SOFTWARE rasterizer
+ * and it renders this scene at 1-2 fps. Every per-frame measurement then
+ * averages over a ~780ms window, which smooths away precisely the one-frame
+ * T-pose, snap and dropped input the owner is reporting. "0 glitches at 1.9fps"
+ * is not evidence of a clean game; it is an instrument with 1.9 samples a
+ * second looking for a defect that lasts 16ms.
+ *
+ * The rAF loop, the animation mixers, the state machines and the physics do not
+ * need pixels. Stubbing WebGLRenderer.render takes this to ~50fps, which CAN
+ * resolve a single frame. Screenshots are meaningless in this mode -- look at
+ * the game with --shots and measure it with --nodraw, never both at once.
+ */
+const NODRAW = args.includes('--nodraw');
 
 fs.mkdirSync(OUT, { recursive: true });
 const shot = async (page, name) => {
@@ -124,22 +140,33 @@ await go('stage', 'CONFIRM STAGE', 3000) || await go('stage', '\u25b6 CONFIRM ST
 // swiftshader runs this at a few fps, so a fixed sleep is a coin flip.
 let ready = null;
 for (let i = 0; i < 60; i++) {
+  try {
   ready = await page.evaluate(() => {
-    for (const c of document.querySelectorAll('canvas')) {
-      const r3f = c.__r3f;
-      const st = r3f && (r3f.root?.getState?.() ?? r3f.store?.getState?.() ?? r3f.getState?.());
-      if (st && st.scene) {
-        let n = 0; st.scene.traverse((o) => { if (o.isSkinnedMesh) n++; });
-        if (n > 0) return { rigs: n };
-      }
-    }
+    const sc = window.__BF_SCENE;
+    if (sc) { let n = 0; sc.traverse((o) => { if (o.isSkinnedMesh) n++; }); if (n > 0) return { rigs: n }; }
     return null;
   });
+  } catch { ready = null; }   // the arena is a real route change; the context dies mid-poll
   if (ready) break;
   await page.waitForTimeout(2000);
 }
 const where = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 100));
 console.log(`   arena ready: ${ready ? ready.rigs + ' skinned rigs' : 'NO -- never got rigs'}   screen: ${where}`);
+
+if (!ready) console.log('   (continuing anyway so the run still reports what it can)');
+if (NODRAW) {
+  const ok = await page.evaluate(() => {
+    const T = window.THREE;
+    if (!T || !T.WebGLRenderer) return false;
+    const proto = T.WebGLRenderer.prototype;
+    if (proto.__bfRealRender) return true;
+    proto.__bfRealRender = proto.render;
+    proto.render = function () { /* rasterization is the bottleneck, not the game */ };
+    return true;
+  });
+  console.log(`   --nodraw: rasterizer ${ok ? 'STUBBED (screenshots are now meaningless)' : 'NOT stubbed -- window.THREE missing'}`);
+  await page.waitForTimeout(1200);
+}
 
 // ── INSTRUMENT: what the owner reports, measured per frame ────────────────
 await page.evaluate(() => {
@@ -151,7 +178,13 @@ await page.evaluate(() => {
   w.__PT = S;
   const NEAR_BIND_DEG = 6;     // a bone within 6deg of bind is un-animated
   const TPOSE_SHARE = 0.75;    // most of the body un-animated = a T-pose
-  const SNAP_M = 0.18;         // a joint moving >18cm in ONE frame is a snap, not motion
+  // A PER-FRAME DISTANCE IS NOT A DEFECT -- it is a distance divided by the
+  // harness frame rate. swiftshader renders this at 1-3 fps, so a body walking
+  // normally covers half a metre between frames and reads as a teleport. The
+  // frame-rate-independent question is SPEED: no human joint, in any strike in
+  // any fighting game, travels faster than about 12 m/s. Past that it is not
+  // fast animation, it is the body being somewhere else.
+  const SNAP_MS = 12;          // metres per second
 
   const prev = new Map();      // rig uuid -> Float32Array of last world positions
   // matrixWorld elements 12,13,14 ARE the world translation -- no THREE global needed.
@@ -160,18 +193,12 @@ await page.evaluate(() => {
     const now = performance.now();
     const dt = now - (S.lastT || now);
     S.lastT = now;
+    const dtS = Math.max(1e-3, dt / 1000);
     S.frames++;
     if (dt > 120) S.longFrames.push(Math.round(dt));
 
     try {
-      if (!S.scene) {
-        for (const c of document.querySelectorAll('canvas')) {
-          const r3f = c.__r3f;
-          const st = r3f && (r3f.root?.getState?.() ?? r3f.store?.getState?.() ?? r3f.getState?.());
-          if (st && st.scene) { S.scene = st.scene; S.foundVia = 'r3f'; break; }
-        }
-        if (!S.scene && w.__scene) { S.scene = w.__scene; S.foundVia = '__scene'; }
-      }
+      if (!S.scene && w.__BF_SCENE) { S.scene = w.__BF_SCENE; S.foundVia = '__BF_SCENE'; }
       const sc = S.scene;
       if (sc) {
         let rigs = 0;
@@ -197,9 +224,10 @@ await page.evaluate(() => {
               const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
               if (d > frameMax) frameMax = d;
             }
-            if (frameMax > SNAP_M) S.snaps.push({ f: S.frames, d: +frameMax.toFixed(3), rig: o.name || 'rig' });
-            if (frameMax > S.maxStep) S.maxStep = frameMax;
-            S.stepHist.push(frameMax);
+            const speed = frameMax / dtS;
+            if (speed > SNAP_MS) S.snaps.push({ f: S.frames, d: +frameMax.toFixed(3), v: +speed.toFixed(1), dt: Math.round(dt), rig: o.name || 'rig' });
+            if (speed > S.maxStep) S.maxStep = speed;
+            S.stepHist.push(speed);
           }
           prev.set(o.uuid, cur);
           if (counted) { S.samples++; if (nearBind / counted > TPOSE_SHARE) S.tpose++; }
@@ -212,10 +240,96 @@ await page.evaluate(() => {
   requestAnimationFrame(tick);
 });
 
+// ── THE REAL QUESTION: DOES THE MOVE PLAY ALL THE WAY THROUGH? ───────────
+//
+// Owner: "the real thing that says if it works or not is did the animation play
+// all the way through or like completely how it's supposed to like it does in
+// Schwarzer Blitz."
+//
+// He is right and every earlier probe in this session measured the wrong thing.
+// "The press registered" (12/12) and "the health bar moved" are both true while
+// the body plays four frames of a jab and snaps back to idle. THAT is the bug.
+//
+// This is EVENT-based, not sampled, so the harness frame rate cannot hide it:
+// every AnimationAction records where it was when something cut it off. An
+// action that reaches its end fires the mixer's 'finished' event; one that is
+// stopped, halted or faded early is recorded with the exact fraction of the
+// clip that got to play.
+await page.evaluate(() => {
+  const T = window.THREE;
+  const S = (window.__PT = window.__PT || {});
+  S.anim = { started: 0, finished: 0, cut: [], byClip: {}, hooked: false };
+  if (!T || !T.AnimationAction || S.anim.hooked) return;
+  const A = S.anim;
+  const AP = T.AnimationAction.prototype;
+
+  const note = (action, via) => {
+    try {
+      const clip = action.getClip && action.getClip();
+      if (!clip || !(clip.duration > 0)) return;
+      if (!action.isRunning || !action.isRunning()) return;
+      const frac = action.time / clip.duration;
+      // A clip that has effectively finished is not a cut.
+      if (frac >= 0.97) return;
+      const rec = A.byClip[clip.name] || (A.byClip[clip.name] = { starts: 0, cuts: 0, worst: 1, sum: 0 });
+      rec.cuts++; rec.sum += frac; if (frac < rec.worst) rec.worst = frac;
+      A.cut.push({ clip: clip.name, frac: +frac.toFixed(3), t: +action.time.toFixed(3), dur: +clip.duration.toFixed(3), via, w: +(action.getEffectiveWeight?.() ?? 1).toFixed(2) });
+    } catch (e) { /* never break the game to measure it */ }
+  };
+
+  for (const m of ['stop', 'fadeOut', 'halt', 'crossFadeTo', 'crossFadeFrom']) {
+    const real = AP[m];
+    if (typeof real !== 'function') continue;
+    AP[m] = function (...a) { note(this, m); return real.apply(this, a); };
+  }
+  const realPlay = AP.play;
+  AP.play = function (...a) {
+    try {
+      const clip = this.getClip && this.getClip();
+      if (clip && clip.duration > 0) {
+        A.started++;
+        const rec = A.byClip[clip.name] || (A.byClip[clip.name] = { starts: 0, cuts: 0, worst: 1, sum: 0 });
+        rec.starts++;
+      }
+    } catch (e) {}
+    return realPlay.apply(this, a);
+  };
+  // A mixer fires 'finished' when a LoopOnce action reaches its end -- that is
+  // the definition of "played all the way through". Attach on first update.
+  const MP = T.AnimationMixer.prototype;
+  const realUpdate = MP.update;
+  MP.update = function (...a) {
+    if (!this.__bfListening) {
+      this.__bfListening = true;
+      this.addEventListener('finished', () => { A.finished++; });
+    }
+    return realUpdate.apply(this, a);
+  };
+  A.hooked = true;
+});
+console.log('   animation-completion hook installed');
+
 // ── PLAY. Real presses, the way a thumb plays. ────────────────────────────
 console.log(`\nPLAYING ${SECONDS}s -- real KeyboardEvents`);
 const KEY = { LP: 'u', RP: 'i', LK: 'j', RK: 'k', G: 'c', THROW: 'v' };
-const press = async (k, ms = 45) => {
+// A 45ms tap is a real jab on a phone at 60fps. In swiftshader the page
+// renders at 1-3 fps, so a 45ms press lands entirely BETWEEN two frames and the
+// game never samples it -- which looks exactly like "my button did nothing".
+// Hold for at least two frame intervals, measured, so a miss means the GAME
+// dropped it. __bfInputStats says which of the two actually happened.
+let frameMs = 60;
+const measureFrame = async () => {
+  frameMs = await page.evaluate(() => new Promise((res) => {
+    let n = 0; const t0 = performance.now();
+    const f = () => (++n < 8 ? requestAnimationFrame(f) : res((performance.now() - t0) / n));
+    requestAnimationFrame(f);
+  }));
+  return frameMs;
+};
+await measureFrame();
+console.log(`   harness frame time: ${frameMs.toFixed(0)}ms (${(1000 / frameMs).toFixed(1)} fps) -- presses held to suit`);
+const HOLD = Math.max(45, Math.round(frameMs * 2.5));
+const press = async (k, ms = HOLD) => {
   await page.keyboard.down(k);
   await page.waitForTimeout(ms);
   await page.keyboard.up(k);
@@ -235,6 +349,7 @@ const SCRIPT = [
 ];
 const t0 = Date.now();
 let beat = 0;
+console.log('   (attack-heavy script: the question is whether ATTACK clips complete)');
 while ((Date.now() - t0) / 1000 < SECONDS) {
   const [label, fn] = SCRIPT[beat % SCRIPT.length];
   await fn();
@@ -245,6 +360,15 @@ while ((Date.now() - t0) / 1000 < SECONDS) {
 console.log(`   ran ${beat} input beats`);
 await shot(page, '03-after-play');
 
+const ANIM = await page.evaluate(() => {
+  const a = (window.__PT || {}).anim;
+  if (!a) return null;
+  const clips = Object.entries(a.byClip)
+    .map(([name, r]) => ({ name, starts: r.starts, cuts: r.cuts, worst: +r.worst.toFixed(3), mean: r.cuts ? +(r.sum / r.cuts).toFixed(3) : 1 }))
+    .sort((x, y) => x.worst - y.worst);
+  return { started: a.started, finished: a.finished, cutCount: a.cut.length, cuts: a.cut.slice(-10), clips: clips.slice(0, 40), hooked: a.hooked };
+});
+const INP = await page.evaluate(() => (window.__bfInputStats ? window.__bfInputStats() : null));
 const S = await page.evaluate(() => {
   const s = window.__PT || {};
   const h = (s.stepHist || []).slice().sort((a, b) => a - b);
@@ -262,13 +386,48 @@ console.log('\n================ WHAT I SAW ================');
 console.log(`frames rendered   : ${S.frames}  (~${(S.frames / SECONDS).toFixed(1)} fps)`);
 console.log(`skinned rigs      : ${S.rigs}   (scene via ${S.foundVia})`);
 console.log(`near-BIND (T-pose): ${S.tpose} / ${S.samples} samples  (${S.samples ? ((100*S.tpose)/S.samples).toFixed(1) : '0'}%)`);
-console.log(`per-frame joint travel (m):  p50 ${S.p50}   p95 ${S.p95}   p99 ${S.p99}   max ${S.maxStep}   over ${S.steps} steps`);
-console.log(`POSE SNAPS >18cm  : ${S.snapCount}   <-- this is what "glitchy" looks like`);
-for (const s2 of S.snaps) console.log(`      ! f${s2.f}  ${s2.d}m  ${s2.rig}`);
+console.log(`joint SPEED (m/s) :  p50 ${S.p50}   p95 ${S.p95}   p99 ${S.p99}   max ${S.maxStep}   over ${S.steps} samples`);
+console.log(`TELEPORTS >12 m/s : ${S.snapCount}   (frame-rate independent; a per-frame DISTANCE is not a defect at ${(S.frames / SECONDS).toFixed(1)} fps)`);
+for (const s2 of S.snaps) console.log(`      ! f${s2.f}  ${s2.v} m/s  (${s2.d}m in ${s2.dt}ms)  ${s2.rig}`);
 console.log(`frames >120ms     : ${S.longCount}  ${S.longFrames.join(' ')}`);
+if (INP) {
+  const seen = INP.lp + INP.rp + INP.lk + INP.rk;
+  console.log(`\nINPUT LEDGER  (does a press reach the engine, and does it become a move?)`);
+  console.log(`  engine frames   : ${INP.frames}`);
+  console.log(`  attack btn seen : ${INP.anyAttackBtn} frames   lp ${INP.lp}  rp ${INP.rp}  lk ${INP.lk}  rk ${INP.rk}`);
+  console.log(`  press EDGES     : ${INP.edges}   (${INP.edgesDuringHitStop} during hitstop)`);
+  console.log(`  ATTACKS STARTED : ${INP.attackStarts}`);
+  const verdict = seen === 0
+    ? 'INSTRUMENT: the engine never saw a press -- the harness is at fault, not the game.'
+    : INP.attackStarts === 0
+      ? 'GAME: presses reached the engine and NONE became an attack.'
+      : INP.edges > 0 && INP.attackStarts < INP.edges * 0.5
+        ? `GAME: ${INP.attackStarts} attacks from ${INP.edges} presses -- over half the presses were dropped.`
+        : `OK: ${INP.attackStarts} attacks from ${INP.edges} presses.`;
+  console.log(`  VERDICT         : ${verdict}`);
+} else {
+  console.log(`\nINPUT LEDGER      : unavailable (never reached the arena)`);
+}
 if (S.instrErr) console.log(`instrument error  : ${S.instrErr}`);
 const uniq = [...new Set(failed)];
-console.log(`failed requests   : ${uniq.length}`);
+if (ANIM && ANIM.hooked) {
+  console.log(`\nDID THE MOVE PLAY ALL THE WAY THROUGH?  (event-based -- frame rate cannot hide this)`);
+  console.log(`  clips started   : ${ANIM.started}`);
+  console.log(`  ran to the end  : ${ANIM.finished}`);
+  console.log(`  CUT SHORT       : ${ANIM.cutCount}`);
+  if (ANIM.clips.length) {
+    console.log(`  every clip that played  (worst%  mean%  cut/starts  name):`);
+    for (const c of ANIM.clips) {
+      const pct = (v) => (v * 100).toFixed(0).padStart(4) + '%';
+      const flag = c.cuts === 0 ? ' ok  ' : (c.worst < 0.9 ? ' CUT ' : ' ~   ');
+      console.log(`    ${flag} ${pct(c.worst)} ${pct(c.mean)}  ${String(c.cuts)}/${String(c.starts)}   ${c.name}`);
+    }
+  }
+  for (const c of ANIM.cuts.slice(-6)) console.log(`     ! ${c.clip} cut at ${(c.frac * 100).toFixed(0)}% (${c.t}s of ${c.dur}s) via ${c.via}, weight ${c.w}`);
+} else {
+  console.log(`\nANIMATION COMPLETION: hook not installed (THREE missing or arena never reached)`);
+}
+console.log(`\nfailed requests   : ${uniq.length}`);
 for (const f of uniq.slice(0, 14)) console.log('   x ' + f);
 console.log(`page errors       : ${pageErrors.length}`);
 for (const e of pageErrors.slice(0, 8)) console.log('   ! ' + e);

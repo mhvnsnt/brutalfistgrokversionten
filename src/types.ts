@@ -78,5 +78,11 @@ declare global {
       setSteer?: (v: number) => void;
       setKeys?: (codes: string[]) => void;
     };
+    /** The input ledger, for playtest harnesses. See GameBattleArena. */
+    __bfInputStats?: () => {
+      frames: number; lp: number; rp: number; lk: number; rk: number;
+      anyAttackBtn: number; attackStarts: number; edges: number; prevAny: boolean;
+      edgesDuringHitStop: number; atEdge: Record<string, number>; startsAtEdge: number[];
+    };
   }
 }
