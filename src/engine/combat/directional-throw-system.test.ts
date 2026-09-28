@@ -6,6 +6,7 @@ import {
   initiateThrow,
   resolveThrowAttempt,
   tickThrow,
+  detectThrowInput,
 } from './DirectionalThrowSystem';
 
 test('directional throw enters a real break window instead of committing immediately', () => {
@@ -41,4 +42,21 @@ test('out-of-range directional throw whiffs instead of damaging', () => {
   assert.equal(state.phase, 'whiff');
   assert.equal(state.connected, false);
   assert.equal(state.whiffed, true);
+});
+
+
+test('forward and backward inputs select directional throws instead of side substitutions', () => {
+  assert.equal(detectThrowInput({ lp: true, rp: false, lk: true, rk: false, forward: true, backward: false }), 'forward_throw');
+  assert.equal(detectThrowInput({ lp: false, rp: true, lk: false, rk: true, forward: false, backward: true }), 'backward_throw');
+});
+
+test('directional throws use real grab/commit/receiver clips and bounded damage', () => {
+  assert.equal(THROW_CATALOG.forward_throw.attackerAnimation, 'THROWSTART');
+  assert.equal(THROW_CATALOG.forward_throw.commitAnimation, 'KNEETHROW');
+  assert.equal(THROW_CATALOG.forward_throw.defenderAnimation, 'KNEETHROWREACTION');
+  assert.equal(THROW_CATALOG.backward_throw.attackerAnimation, 'RENZOTHROW');
+  assert.equal(THROW_CATALOG.backward_throw.commitAnimation, 'RENZOTHROW');
+  assert.equal(THROW_CATALOG.backward_throw.defenderAnimation, 'RENZOTHROWREACTION');
+  assert.ok(THROW_CATALOG.forward_throw.damage < 150);
+  assert.ok(THROW_CATALOG.backward_throw.damage < 150);
 });
