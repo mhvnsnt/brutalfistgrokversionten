@@ -2876,7 +2876,9 @@ export class FighterStateMachine {
     // generic jab here is what made every combo end in the same punch.
     if (queued.special) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack(queued.special.move.animation, queued.special.move);
+      const ownedClip = this.clipForSpecial(queued.special);
+      const ownedMove = { ...queued.special.move, clip: ownedClip };
+      return this.beginAttack(ownedClip as FighterMotionState, ownedMove);
     }
     switch (queued.type) {
       case 'light':
