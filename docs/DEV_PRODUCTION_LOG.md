@@ -116,6 +116,16 @@ Important: these are implementation corrections, not a claim that all animation 
 - **Promotion rule:** do not mark aerial clips PASS from static code alone.
 
 
+### Airborne PR26 integration correction — 2026-09-28
+
+- CI on the first PR26 revision exposed four integration regressions rather than a problem with the airborne routing itself.
+- Corrected the ordering so aerial input is not pre-empted by the generic special resolver.
+- Corrected fighter-owned special presentation so the selected authored clip is retained on the active MoveWindow, which is the renderer's authoritative active-clip path.
+- Corrected attack start handling so non-aerial authored fighter clips can drive presentation without destroying semantic combat state; aerial attacks deliberately retain `jumpAttack` as the semantic state.
+- Latest correction commit: `e332d22e282e0a0d20820ff4a1f25f124282261a`.
+- GitHub Actions run #435 is attached to this revision and is currently pending. No CI/PWA PASS is claimed until its actual tests and browser stages complete.
+
+
 ### Fighter-owned special presentation pass — 2026-09-28
 
 - Continued directly on `main` in `mhvnsnt/brutalfistgrokversionten`; this pass did not switch to another repository.
