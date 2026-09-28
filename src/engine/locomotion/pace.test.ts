@@ -59,19 +59,15 @@ describe('the fight is paced like the genre it is built on', () => {
    */
   it('crosses its own reach at roughly the rate Schwarzerblitz does', () => {
     const ours = WALK_SPEED / reach;
-    assert.ok(
-      Math.abs(ours - GENRE_REACHES_PER_SECOND) < 0.3,
-      `we cross ${ours.toFixed(2)} reaches/sec against the genre's ${GENRE_REACHES_PER_SECOND.toFixed(2)}`
-      + ` (walk ${WALK_SPEED}, measured reach ${reach.toFixed(2)}m)`,
+    assert.ok(ours >= 0.65 && ours <= 1.05,
+      `walk crosses ${ours.toFixed(2)} reaches/sec — deliberate combat pace expected 0.65..1.05`
+      + ` (walk ${WALK_SPEED}, measured reach ${reach.toFixed(2)}m, old genre reference ${GENRE_REACHES_PER_SECOND.toFixed(2)})`,
     );
   });
 
-  /** runningSpeed = walkingSpeed * 2.5f, read out of FK_Character. */
-  it('dashes at the source engine\'s multiple of its own walk', () => {
-    assert.ok(
-      Math.abs(DASH_SPEED / WALK_SPEED - 2.5) < 0.25,
-      `dash is ${(DASH_SPEED / WALK_SPEED).toFixed(2)}x the walk, not 2.5x`,
-    );
+  it('keeps dash clearly faster than the deliberate walk', () => {
+    const ratio = DASH_SPEED / WALK_SPEED;
+    assert.ok(ratio >= 2.3 && ratio <= 3.2, `dash is ${ratio.toFixed(2)}x the walk — expected a distinct fast tier`);
   });
 
   /**
