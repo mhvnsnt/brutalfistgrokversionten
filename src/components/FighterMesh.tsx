@@ -78,6 +78,8 @@ export interface FighterMeshProps {
   locomotionVelocity?: { forward: number; strafe: number };
   /** Live metres/second. Lets the walk cycle keep up with a dash. */
   groundSpeedRef?: { current: number };
+  /** Duration in seconds of the current two-body grapple beat. */
+  forcedPlaybackDurationSeconds?: number;
   /**
    * Hit-stop freeze: when true, the animation mixer is paused.
    * Set by GameBattleArena when a heavy attack lands.
@@ -668,6 +670,7 @@ function FighterMeshInner({
   attackDurationSeconds,
   locomotionVelocity,
   groundSpeedRef,
+  forcedPlaybackDurationSeconds,
   hitStopActive = false,
   onRigDiagnostic,
   onBoneHitboxReady,
@@ -692,6 +695,7 @@ function FighterMeshInner({
   attackDurationSeconds?: number;
   locomotionVelocity?: { forward: number; strafe: number };
   groundSpeedRef?: { current: number };
+  forcedPlaybackDurationSeconds?: number;
   hitStopActive?: boolean;
   onRigDiagnostic?: (report: RigDiagnosticReport) => void;
   onBoneHitboxReady?: (system: BoneHitboxSystem) => void;
@@ -1118,6 +1122,9 @@ function FighterMeshInner({
       : inputKey === 'jumpAttack' ? 0.65
       : null;
     const downWindow = ['knockdown', 'Knockdown', 'ko', 'KO'].includes(inputKey) ? 1.7 : null;
+    const grappleWindow = forcedPlaybackDurationSeconds && forcedPlaybackDurationSeconds > 0
+      ? forcedPlaybackDurationSeconds
+      : null;
     const wakeWindow = inputKey === 'WakeupQuickStand' || inputKey === 'wake' ? 1.15
       : inputKey === 'WakeupTechRoll' || inputKey === 'WakeupBackrise' ? 0.55
       : null;
@@ -1127,6 +1134,7 @@ function FighterMeshInner({
     // A knockdown is the exception: the body has to reach the ground.
     nextAction.setEffectiveTimeScale(
       attackWindow ? attackPlaybackRate(clipDuration, attackWindow)
+        : grappleWindow ? clipDuration / grappleWindow
         : jumpWindow ? jumpPlaybackRate(clipDuration, jumpWindow)
         : downWindow ? knockdownPlaybackRate(clipDuration, downWindow)
         : wakeWindow ? knockdownPlaybackRate(clipDuration, wakeWindow)
@@ -1312,6 +1320,7 @@ export function FighterMesh({
   attackDurationSeconds,
   locomotionVelocity,
   groundSpeedRef,
+  forcedPlaybackDurationSeconds,
   hitStopActive = false,
   onRigDiagnostic,
   onBoneHitboxReady,
@@ -1344,6 +1353,7 @@ export function FighterMesh({
         fightingStyle={fightingStyle}
         locomotionVelocity={locomotionVelocity}
         groundSpeedRef={groundSpeedRef}
+        forcedPlaybackDurationSeconds={forcedPlaybackDurationSeconds}
         hitStopActive={hitStopActive}
         onRigDiagnostic={onRigDiagnostic}
         onBoneHitboxReady={onBoneHitboxReady}
