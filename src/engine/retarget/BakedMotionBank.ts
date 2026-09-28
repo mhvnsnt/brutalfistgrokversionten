@@ -362,6 +362,34 @@ const STANDING_START_SEMANTICS = /^(attack|idle|block|walk|strafe|run|dash|backd
 const INDEX_URL = '/motion/baked/index.json';
 const BASE = '/motion/baked/';
 
+/**
+ * Startup must not wait for the entire motion encyclopedia.
+ * The bake contains hundreds of clips, including taunts, props, demo loops and
+ * open-library utility motions. Fighters need the combat owners first; the
+ * rest can hydrate into the same Map after the arena is alive.
+ */
+const CORE_BAKED_SEMANTICS = new Set([
+  'idle','walk_forward','walk_back','strafe_left','strafe_right',
+  'attack_1','attack_rp','attack_2','attack_lk','attack_rk',
+  'block','hit_reaction','knockdown','getup','grapple',
+  'crouch','run','dash_forward','jump','finisher','overdrive',
+]);
+
+export function selectCoreBakedNames(manifest: Record<string, BakedManifestEntry>): string[] {
+  const names = new Set<string>();
+  for (const [name, entry] of Object.entries(manifest)) {
+    if (entry.owns || CORE_BAKED_SEMANTICS.has(entry.semantic ?? '')) names.add(name);
+  }
+  // If a core deliverer has an explicit receiver pair, bring the receiver
+  // online with it. Never infer a receiver from a filename.
+  for (const name of [...names]) {
+    for (const paired of manifest[name]?.pairedWith ?? []) {
+      if (manifest[paired]?.receives) names.add(paired);
+    }
+  }
+  return [...names].sort();
+}
+
 let cached: Map<string, THREE.AnimationClip> | null = null;
 /** True once a load has been tried, successfully or not. For reporting. */
 let attempted = false;
@@ -918,27 +946,52 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
     );
     if (names.length === 0) throw new Error('empty index');
 
-    const CHUNK = 16;
+    const CHUNK = 12;
+    const coreNames = selectCoreBakedNames(manifest);
+    const coreSet = new Set(coreNames);
     let failed = 0;
-    for (let i = 0; i < names.length; i += CHUNK) {
-      const slice = names.slice(i, i + CHUNK);
-      const loaded = await Promise.allSettled(
-        slice.map(async (name) => {
-          const data = await fetchZstdJson(BASE + encodeURIComponent(manifest[name].file));
-          return clipFromBaked(data as BakedClipFile);
-        }),
-      );
-      loaded.forEach((s, j) => {
-        if (s.status === 'fulfilled' && s.value) out.set(slice[j], s.value);
-        else failed++;
-      });
-      // Hand the frame back so a 366-clip bank cannot freeze the menu.
-      await new Promise((r) => setTimeout(r, 0));
-    }
+
+    const loadNames = async (loadList: string[]) => {
+      for (let i = 0; i < loadList.length; i += CHUNK) {
+        const slice = loadList.slice(i, i + CHUNK);
+        const loaded = await Promise.allSettled(
+          slice.map(async (name) => {
+            const data = await fetchZstdJson(BASE + encodeURIComponent(manifest[name].file));
+            return clipFromBaked(data as BakedClipFile);
+          }),
+        );
+        loaded.forEach((result, j) => {
+          if (result.status === 'fulfilled' && result.value) out.set(slice[j], result.value);
+          else failed++;
+        });
+        // Yield between small batches. This is intentionally below the
+        // fighter-ready path; a phone must get frames back between fetch/parse
+        // bursts rather than waiting for hundreds of JSON documents.
+        await new Promise((r) => setTimeout(r, 0));
+      }
+    };
+
+    // CORE FIRST: two fighters can enter the arena without waiting for the
+    // entire UAL/taunt/demo corpus. The same Map is retained for background
+    // hydration, so no second animation system exists.
+    await loadNames(coreNames);
+    cached = out;
     console.log(
-      `[BakedMotionBank] ✅ ${out.size} clip(s) already on the skeleton` +
-        (failed ? `, ${failed} failed` : ''),
+      `[BakedMotionBank] ⚡ core ready: ${out.size}/${coreNames.length} clip(s)` +
+        (failed ? `, ${failed} core failures` : ''),
     );
+
+    const backgroundNames = names.filter((name) => !coreSet.has(name));
+    void loadNames(backgroundNames).then(() => {
+      console.log(
+        `[BakedMotionBank] 🌊 background hydrated: ${out.size}/${names.length} clip(s)` +
+          (failed ? `, ${failed} total failures` : ''),
+      );
+    }).catch((error) => {
+      console.warn('[BakedMotionBank] background hydration stopped:', error);
+    });
+
+    return out;
   } catch (e: unknown) {
     // Not an error: a dev checkout that has not run the bake uses the live
     // retarget path, and says so once rather than looking broken.
