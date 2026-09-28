@@ -32,7 +32,7 @@ const Z_RANGE = 2.0;
  * accidentally replaced by a walk cycle while still giving forward/backward
  * walk, run and dash their own visual lanes.
  */
-function locomotionAnimationFor(
+function resolveLocomotionPresentation(
   state: string,
   velocity: { forward: number; strafe: number } | undefined,
   requested: string,
@@ -1126,7 +1126,7 @@ export default function CombatArena3D({
         {/* Combat: P1 yaw 0 (face +X / P2), P2 yaw π (face −X / P1). Not ±90 — that was back-to-cam / face-to-cam. */}
         <FighterMesh
           state={p1State}
-          animation={locomotionAnimationFor(p1State, p1LocomotionVelocity, p1Animation, p1YProp)}
+          animation={resolveLocomotionPresentation(p1State, p1LocomotionVelocity, p1Animation, p1YProp)}
           modelUrl={getFighterGlbUrl(p1Fighter.id, p1Fighter.model) ?? p1Fighter.portraitUrl}
           position={[p1FinalX, COMBAT_FIGHTER_Y + p1YProp, p1FinalZ]}
           facing={1}
@@ -1157,7 +1157,7 @@ export default function CombatArena3D({
         {/* P2 faces P1 */}
         <FighterMesh
           state={p2State}
-          animation={locomotionAnimationFor(p2State, p2LocomotionVelocity, p2Animation, p2YProp)}
+          animation={resolveLocomotionPresentation(p2State, p2LocomotionVelocity, p2Animation, p2YProp)}
           modelUrl={getFighterGlbUrl(p2Fighter.id, p2Fighter.model) ?? p2Fighter.portraitUrl}
           position={[p2FinalX, COMBAT_FIGHTER_Y + p2YProp, p2FinalZ]}
           facing={-1}
