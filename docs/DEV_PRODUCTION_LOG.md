@@ -66,3 +66,12 @@ Important: these are implementation corrections, not a claim that all animation 
 - Added regression assertions for side-throw timing and forward/back receiver offsets.
 - Current commits on main for this pass: `0ecff3b` (side-throw timing), `3caae34` (runtime body alignment), `71693b7` (regression coverage).
 - Runtime certification is still UNKNOWN until the real PWA/Chromium playtest observes the attacker clip, receiver clip, contact spacing, full-duration playback, and damage outcome together.
+
+
+### Locomotion + per-fighter animation ownership pass — 2026-09-28
+
+- User gameplay report added three concrete requirements to the active repair lane: holding Down must remain a true crouch stance; jumping must drive both the authored jump animation and the world-space jump arc; and fighters must no longer collapse onto one generic base moveset.
+- Found that `LocomotionSystem` already contained a real jump arc (`beginJump` / `airborneY`) but the arena never called `beginJump()`. The FSM could enter `Jumping` while the fighter stayed at ground Y. Arena wiring now starts/re-arms the locomotion jump from the same resolved input for both P1 and P2.
+- Found that `CharacterMoveSetSystem` and roster `defaultMoveSet` data existed, but normal base attacks and stance playback did not consume those per-fighter slots. The FSM now accepts canonical per-fighter animation choices, uses them for light/heavy/kick/crouch attacks, and exposes fighter-specific motion clips for idle/walk/crouch/guard fallback. Arena binds each fighter's roster move-set slots at match initialization.
+- The generic semantic resolver remains the fallback when an owned animation is unavailable or rejected by measured clip gates; this avoids silently playing an unverified clip just because a fighter owns a move ID.
+- Runtime certification remains UNKNOWN until the real PWA playtest verifies held crouch, jump arc + jump clip, directional attacks, and distinct fighter animation ownership together.
