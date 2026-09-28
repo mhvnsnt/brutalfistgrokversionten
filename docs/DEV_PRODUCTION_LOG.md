@@ -27,3 +27,25 @@
 - Corrected `selectCoreBakedNames` so startup loads the 6 authoritative owners plus at most one measured candidate per required semantic, with non-UAL/project material preferred and ordinary grounded/full-body clips preferred. Grapple owners additionally pull their paired receiver clips.
 - Static manifest replay now selects **20 core clips out of 455**, instead of 444, while preserving attacker/receiver pairing. The remaining bank stays available for background hydration.
 - This is a startup/performance correction only; it does not certify any animation visually. Runtime PWA evidence remains mandatory.
+
+
+## User gameplay test → throw/grapple repair pass — 2026-09-28
+
+The owner personally tested the current PWA and reported that animation quality is improving but still has broad visible failures: walking/forward/back movement, jumping, misplaced/out-of-context clips, grapples whose attacker/receiver halves do not read as the same move, and some throws/moves ending the match too quickly. Forward/back throws were specifically called out for excessive damage and premature match termination.
+
+Concrete implementation findings from that report:
+
+- Directional throws were only opening the defender's break transaction. The attacker was **not actually entering a directional throw animation state**, so the visible attacker could remain on its previous punch/idle animation.
+- The directional throw catalog was using generic `heavyAttack` / `knockdown` animation labels rather than the measured grapple clips.
+- Forward input plus throw buttons was incorrectly routed into the old side-throw branch, while the `backward` input field was effectively ignored.
+- Receiver playback for explicit directional pairs used a zero-duration override, which could release the receiver after the minimum timeout instead of the receiver clip's authored duration.
+- Directional throws now have explicit grab/commit/receiver clips:
+  - forward: `THROWSTART → KNEETHROW → KNEETHROWREACTION`
+  - backward: `RENZOTHROW → RENZOTHROW → RENZOTHROWREACTION`
+  - side families use `GRAFTHROW → GRAFTHROWREACTION`
+- Directional throws now enter the FSM's real `CommandThrow`/grapple path, switch from grab to commit animation after a successful catch, and force the receiver's paired clip for its measured duration.
+- Forward/back input selection is now directional rather than silently becoming a side throw.
+- Throw damage was reduced from the previous 180/200 directional values to 120/140, and the generic command throw was reduced from 220 to 160, in direct response to the owner's gameplay report that these interactions were ending matches too quickly.
+- Added regression coverage for directional input selection, real grab/commit/receiver clips, receiver pairing, and the new damage bounds.
+
+Important: these are implementation corrections, not a claim that all animation problems are solved. The next gate is the real PWA/Chromium run, followed by systematic locomotion/jump/clip-placement and grapple contact validation.
