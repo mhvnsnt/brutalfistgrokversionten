@@ -170,3 +170,15 @@ Important: these are implementation corrections, not a claim that all animation 
 - The reconciled pass preserves the current main intro/typecheck work rather than resetting files to the old PR base.
 - Added `docs/NAMED_GRAPPLE_TECHNICAL_MAP.md` to make technical move definitions and capture gaps explicit. Cody Buster remains UNKNOWN rather than being guessed; Titan Fall is documented as a throat-grab chokeslam; Hall Street Justice is documented as a street-fight combo ending in a knee; Getbackk is the F5-style fireman's-carry tornado slam; Chainsnatcher is the jumping double-knee backstabber and its current knee-bash pair remains a stand-in.
 - Owner footage for Getbackk and Chainsnatcher can be captured with Bannon's `tools/mocap/video_to_clip.py --two`, producing attacker + receiver halves from one take. Runtime certification of the newly reconciled assets remains UNKNOWN until the PWA is exercised.
+
+
+### Airborne / dive attack routing — 2026-09-28
+
+- Added `src/engine/combat/AirborneDiveSystem.ts` as the explicit airborne routing layer. Up/jump creates the airborne window; the attack press selects neutral, forward, or back airborne routing.
+- Fixed the existing FSM behavior so an attack can be pressed **after** the jump edge while the fighter is still airborne. Previously the jump-attack branch required `resolvedInput.jump` and therefore effectively required attack on the jump frame.
+- Added facing-relative command semantics: neutral airborne attack = 8, forward + up = 9, back + up = 7. These are routing commands, not claims that an exact named animation exists.
+- Added stage-dive metadata to `StageConfig` and registered initial launch points for the dojo upper edge, wrestling-ring ropes, steel-cage top, industrial upper catwalk, and sky-crane edge. Traversal/render runtime still requires browser/PWA evidence before this is called VERIFIED.
+- Named elbow drops, moonsaults, and other diving signatures remain authored-motion slots; no generic clip is being mislabeled as one.
+- Added regression coverage for delayed mid-air attack, directional airborne attack, stage-origin falling attack, and grounded rejection.
+- Getbackk and Chainsnatcher remain exact-capture jobs: owner footage should enter through `video_to_clip.py --two` as attacker + receiver pairs. No stand-in was promoted to exact.
+- Runtime/CI status remains UNKNOWN until the branch is built/tested and the PWA is exercised with the actual media/assets.
