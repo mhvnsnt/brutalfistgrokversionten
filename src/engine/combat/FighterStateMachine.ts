@@ -184,6 +184,7 @@ import {
   tickThrowBreak,
   type ThrowBreakState,
 } from './ThrowChains.ts';
+import { THROW_CATALOG, type ThrowDirection } from './DirectionalThrowSystem.ts';
 
 export interface SpecialMoveDefinition {
   id: string;
@@ -2343,6 +2344,42 @@ export class FighterStateMachine {
     return this.motionState;
   }
 
+  /** Start a directional throw with a real attacker clip and paired receiver. */
+  beginDirectionalThrow(throwId: string): FighterMotionState {
+    const def = THROW_CATALOG[throwId];
+    if (!def || this.actionState !== 'Idle') return this.motionState;
+    const direction: ThrowDirection = def.direction;
+    const move: MoveWindow = {
+      startup: def.startupFrames / FRAMES_PER_SECOND,
+      active: def.activeFrames / FRAMES_PER_SECOND,
+      recovery: def.attackerRecoveryFrames / FRAMES_PER_SECOND,
+      animation: 'grapple',
+      clip: def.attackerAnimation,
+      hitboxStartFrame: def.startupFrames,
+      hitboxEndFrame: def.startupFrames + def.activeFrames,
+      totalFrames: def.startupFrames + def.activeFrames + def.attackerRecoveryFrames,
+      damage: def.damage,
+      isThrow: true,
+      isUnblockable: true,
+      specialName: def.name,
+    };
+    this.walkVelocity = { forward: 0, strafe: 0 };
+    this.actionState = 'CommandThrow';
+    this.motionState = 'grapple';
+    this.currentMove = move;
+    this.moveTimer = move.startup + move.active + move.recovery;
+    this.moveElapsed = 0;
+    this.queuedAction = null;
+    this.commandThrowSucceeded = false;
+    this.throwComboQueue = [];
+    this.throwComboIndex = 0;
+    this.throwComboTimer = 0;
+    this.grabRangeActive = true;
+    this.grabRangeTimer = move.startup + move.active;
+    console.log('[FSM] 🤲 Directional throw started —', def.name, direction, def.attackerAnimation);
+    return this.motionState;
+  }
+
   /** Called by GameBattleArena when command throw hitbox connects */
   resolveCommandThrow(throwSucceeded: boolean) {
     this.commandThrowSucceeded = throwSucceeded;
@@ -2376,7 +2413,7 @@ export class FighterStateMachine {
   }
 
   /** The clip the victim's half must be looked up by. See THROW_COMMIT_MOVE. */
-  throwCommitClip(): string { return THROW_COMMIT_CLIP; }
+  throwCommitClip(): string { return this.currentMove?.clip ?? THROW_COMMIT_CLIP; }
 
   private updateWalking(input: FighterInput, dt: number): FighterMotionState {
     const targetForward = Math.abs(input.forward) > 0.1 ? Math.sign(input.forward) * Math.min(1, Math.abs(input.forward)) : 0;
