@@ -30,19 +30,23 @@ jobs:
 
       - run: npm ci
 
+      - name: Install Chromium for the real browser audit
+        run: npx playwright install --with-deps chromium
+
       - name: Start the real Vite game
         env:
           ROCKET_PREVIEW: '1'
         run: |
-          npm run dev > /tmp/brutal-fist-vite.log 2>&1 &
+          npx vite --host 0.0.0.0 --port 8080 > /tmp/brutal-fist-vite.log 2>&1 &
           echo $! > /tmp/brutal-fist-vite.pid
           for i in $(seq 1 90); do
-            if curl -fsS http://127.0.0.1:8080/ >/dev/null; then
+            if curl -fsS http://127.0.0.1:8080/ >/dev/null 2>/tmp/bf-curl.err; then
               exit 0
             fi
             sleep 2
           done
           cat /tmp/brutal-fist-vite.log
+          cat /tmp/bf-curl.err || true
           exit 1
 
       - name: Audit every shipped GLB through the universal pipeline
@@ -51,6 +55,7 @@ jobs:
           BF_BLEED_TOLERANCE: '0'
           CI: '1'
         run: |
+          set -o pipefail
           node scripts/audit-skin-bleed.mjs --all --pipeline --gate 2>&1 | tee universal-model-audit.txt
 
       - name: Upload universal audit report
