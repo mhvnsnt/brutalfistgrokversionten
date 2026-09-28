@@ -4105,6 +4105,7 @@ function buildP2AIInput(
       forward: 0, strafe: 0, light: false, heavy: false, guard: false,
       crouch: false, jump: false, directionalThrowId,
     };
+  }
 
   if (healthPressure && cycle === 4)
     return {forward:-1,strafe:0,light:false,heavy:false,guard:false,crouch:true,jump:false};
