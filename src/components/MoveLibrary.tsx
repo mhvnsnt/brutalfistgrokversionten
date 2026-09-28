@@ -860,6 +860,7 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
                     modelUrl={resolveGlbUrl(receiverModel)}
                     clip={receiverPreview.clip}
                     speed={receiverSpeed}
+                    onClips={() => {}}
                     offsetX={0.9}
                     rotationY={Math.PI}
                   />
