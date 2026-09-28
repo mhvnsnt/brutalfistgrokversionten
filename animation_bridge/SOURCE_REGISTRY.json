@@ -17,7 +17,7 @@
     { "id": "bannon-idle", "file": "/motion/IDLE.json", "semantic_state": "idle", "source_convention": "mixamo", "license": "owner-granted", "provenance": "mhvnsnt/Bannon assets/moves/clips" },
     { "id": "bannon-walk", "file": "/motion/DWARF_WALK.json", "semantic_state": "walk_forward", "source_convention": "mixamo", "license": "owner-granted", "provenance": "mhvnsnt/Bannon" },
     { "id": "bannon-jab", "file": "/motion/BOXING.json", "semantic_state": "attack_1", "source_convention": "mixamo", "license": "owner-granted", "provenance": "mhvnsnt/Bannon" },
-    { "id": "bannon-kick", "file": "/motion/HURRICANE_KICK.json", "semantic_state": "attack_2", "source_convention": "mixamo", "license": "owner-granted", "provenance": "mhvnsnt/Bannon" },
+    { "id": "bannon-kick", "file": "/motion/ROUNDHOUSEKICK.json", "semantic_state": "attack_2", "source_convention": "schwarzerblitz-baked", "license": "owner-granted", "provenance": "mhvnsnt/Bannon motion bank; measured safe replacement for frozen HURRICANE_KICK" },
     { "id": "bannon-block", "file": "/motion/CENTER_BLOCK.json", "semantic_state": "block", "source_convention": "mixamo", "license": "owner-granted", "provenance": "mhvnsnt/Bannon" },
     { "id": "bannon-hit", "file": "/motion/HIT_REACTION.json", "semantic_state": "hit_reaction", "source_convention": "mixamo", "license": "owner-granted", "provenance": "mhvnsnt/Bannon" },
     { "id": "bannon-kd", "file": "/motion/FALLING_FLAT_IMPACT.json", "semantic_state": "knockdown", "source_convention": "mixamo", "license": "owner-granted", "provenance": "mhvnsnt/Bannon" },
