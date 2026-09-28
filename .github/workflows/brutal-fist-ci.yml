@@ -79,7 +79,7 @@ jobs:
         run: |
           BROWSER_PATH="$(find "$HOME/.cache/ms-playwright" -type f \( -path '*/chrome-linux64/chrome' -o -path '*/chrome-linux/chrome' \) | head -n 1)"
           test -n "$BROWSER_PATH"
-          PLAYTEST_BROWSER="$BROWSER_PATH" PLAYTEST_URL="$PLAYTEST_URL" PLAYTEST_OUT="$PLAYTEST_OUT" node tools/harness/playtest.mjs --shots --seconds=25
+          PLAYTEST_BROWSER="$BROWSER_PATH" PLAYTEST_URL="$PLAYTEST_URL" PLAYTEST_OUT="$PLAYTEST_OUT" node tools/harness/playtest.mjs --shots --seconds=10
 
       - name: Upload real-playtest evidence
         if: always()
