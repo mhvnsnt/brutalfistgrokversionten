@@ -972,8 +972,53 @@ let tailPromise: Promise<Map<string, THREE.AnimationClip>> | null = null;
 async function fetchMotionBankClip({ key, file, semanticState }: MotionBankRequest) {
   const localUrl = `/motion/${encodeURIComponent(file)}`;
   let res = await fetch(localUrl);
-  const url = res.ok ? localUrl : `${BANNON_MOTION_BANK_BASE}${encodeURIComponent(file)}`;
-  if (!res.ok) res = await fetch(url);
+  if (res.ok) {
+    const json = await res.json();
+    const adapted = convertAnyBannonClipJson(json, key, semanticState);
+    if (adapted.trackCount === 0) throw new Error(`${key} NO_TRACKS`);
+    (adapted.clip as any).userData = {
+      ...(adapted.clip as any).userData,
+      clipSourceType: (adapted.clip as any).userData?.clipSourceType ?? "RETARGETED_AUTHORED_CLIP",
+      sourceUrl: localUrl,
+      sourceFile: file,
+      isProcedural: false,
+      semanticState,
+    };
+    return { key, semanticState, adapted };
+  }
+
+  // Many open/owner source entries are already baked into the canonical
+  // runtime bank. Do not turn a missing source-side JSON into a 404 storm:
+  // consume the measured baked clip when it exists, otherwise use the remote
+  // owner bank as the final fallback.
+  const bakedUrl = `/motion/baked/${encodeURIComponent(file)}`;
+  const bakedRes = await fetch(bakedUrl);
+  if (bakedRes.ok) {
+    const baked = await bakedRes.json();
+    if (baked?.tracks && baked?.bank) {
+      const tracks: THREE.KeyframeTrack[] = [];
+      for (const [bone, track] of Object.entries(baked.tracks as Record<string, {t:number[];q:number[]}>) ) {
+        if (!track?.t?.length || track.q.length !== track.t.length * 4) continue;
+        tracks.push(new THREE.QuaternionKeyframeTrack(`${bone}.quaternion`, track.t, track.q));
+      }
+      const clip = new THREE.AnimationClip(key, Number(baked.dur ?? 0), tracks);
+      (clip as any).userData = {
+        semanticState,
+        source: baked.source ?? baked.bank,
+        sourceUrl: bakedUrl,
+        sourceFile: file,
+        license: baked.license ?? 'unknown',
+        provenance: `BakedMotionBank: ${file}`,
+        clipSourceType: 'RETARGETED_AUTHORED_CLIP',
+        isProcedural: false,
+        bakedFallback: true,
+      };
+      return { key, semanticState, adapted: { clip, semanticState, trackCount: tracks.length, mappedBones: [], unmappedBones: [], source: String(baked.source ?? baked.bank), license: String(baked.license ?? 'unknown') } };
+    }
+  }
+
+  const url = `${BANNON_MOTION_BANK_BASE}${encodeURIComponent(file)}`;
+  res = await fetch(url);
   if (!res.ok) throw new Error(`${key} HTTP ${res.status}`);
   const json = await res.json();
   const adapted = convertAnyBannonClipJson(json, key, semanticState);
