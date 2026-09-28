@@ -87,6 +87,7 @@ import {
   loadBannonMotionBankVariants,
 } from '../retarget/BannonClipJsonAdapter';
 import { loadBakedMotionBank } from '../retarget/BakedMotionBank';
+import { isCollapsedAnimationClip, recoverBannonEulerClip } from '../retarget/UniversalAnimationRecovery.ts';
 import {
   buildSchwarzerblitzMotionClips,
   schwarzerblitzSourceRest,
@@ -830,7 +831,19 @@ export async function extractAndRetargetAnimations(
     const baked = await loadBakedMotionBank();
     for (const [name, clip] of baked) {
       if (processedClips.some((c) => c.name === name)) continue;
-      const copy = clip.clone();
+      let copy = clip.clone();
+      const bakedBank = String((copy as THREE.AnimationClip & { userData?: { bank?: string } }).userData?.bank ?? '');
+      // UNIVERSAL SOURCE RECOVERY. Only Bannon-owned baked clips have a
+      // guaranteed raw /motion/<name>.json source. CC0/other banks are never
+      // guessed into that URL, so a new pack cannot create a storm of 404s.
+      if (bakedBank === 'bannon' && isCollapsedAnimationClip(copy) && !String(copy.name).match(/REACTION|RECV|VICTIM/i)) {
+        try {
+          const recovered = await recoverBannonEulerClip(name, targetScene);
+          if (recovered) copy = recovered;
+        } catch {
+          // Raw source recovery is optional; the baked clip remains available.
+        }
+      }
       const ud = (copy as THREE.AnimationClip & { userData: Record<string, unknown> }).userData ?? {};
       const sem = String(ud.semanticState ?? resolveClipSemanticState(name) ?? '');
       (copy as THREE.AnimationClip & { userData: Record<string, unknown> }).userData = {
