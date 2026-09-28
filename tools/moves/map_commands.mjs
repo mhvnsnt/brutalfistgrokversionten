@@ -100,6 +100,7 @@ export function attackPool() {
       lift: s.footLift ?? 0,
       kick: measuredKick,
       airborne: Boolean(m.airborne),
+      spineUp: m.spineUp ?? 1,
       semantic: m.semantic ?? '',
       /**
        * DOES THE PIPELINE ALREADY THINK THIS IS AN ATTACK?
