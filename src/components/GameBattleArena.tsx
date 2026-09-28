@@ -263,9 +263,11 @@ export default function GameBattleArena({
   } | null>(null);
   const lastDirectionalThrowIdRef = useRef<string | null>(null);
 
-  const playOpponentHalf = useCallback((victim: 'p1' | 'p2', deliverer: string | null) => {
+  const playOpponentHalf = useCallback((victim: 'p1' | 'p2', deliverer: string | null, receiverOverride?: string | null) => {
     if (!deliverer) return;
-    const pick = receiverClipFor(deliverer, { available: (c) => bakedClipNames().has(c) });
+    const pick = receiverOverride
+      ? { receiver: receiverOverride, source: 'owner' as const, dur: 0 }
+      : receiverClipFor(deliverer, { available: (c) => bakedClipNames().has(c) });
     if (!pick) return;
     if (grappleBeatTimer.current !== null) window.clearTimeout(grappleBeatTimer.current);
     grappleBeatRef.current = { victim, clip: pick.receiver, source: pick.source };
@@ -1760,6 +1762,10 @@ export default function GameBattleArena({
         if (inRange) {
           const throwDef = THROW_CATALOG[detectedThrowId!];
           if (throwDef) {
+            // Directional throws are real FSM actions. Previously this branch only
+            // opened the victim's break window; the attacker kept whatever clip was
+            // already playing, so forward/back throws visually became punches/idle.
+            p1SMRef.current.beginDirectionalThrow(detectedThrowId!);
             p2SMRef.current.beginIncomingThrowBreak(0, throwDef.breakButton);
             directionalThrowPendingRef.current = {
               attacker: 'p1',
@@ -2088,7 +2094,7 @@ export default function GameBattleArena({
         directionalThrowPendingRef.current = null;
         const throwDmg = getThrowDamage(directionalP2Throw.throwId, false);
         p2SMRef.current.applyKnockdown();
-        playOpponentHalf('p2', p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1);
+        playOpponentHalf('p2', p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1, THROW_CATALOG[directionalP2Throw.throwId]?.defenderAnimation);
         p2LocoRef.current.halt();
         p2HitboxRef.current.reset();
         engineRef.current?.applyIncomingHit('p2', throwDmg, false, 0.3);
@@ -2164,7 +2170,7 @@ export default function GameBattleArena({
         p1SMRef.current.applyKnockdown();
         p1LocoRef.current.halt();
         p1HitboxRef.current.reset();
-        playOpponentHalf('p1', p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2);
+        playOpponentHalf('p1', p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2, THROW_CATALOG[directionalP1Throw.throwId]?.defenderAnimation);
         engineRef.current?.applyIncomingHit('p1', throwDmg, false, 0.3);
         if (settings.soundEnabled) sfx.playHeavyHit();
         audioManagerRef.current.playSFX('throw_connect');
