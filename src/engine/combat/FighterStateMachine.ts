@@ -201,6 +201,7 @@ import {
 } from './ThrowChains.ts';
 import { THROW_CATALOG, type ThrowDirection } from './DirectionalThrowSystem.ts';
 import { getMoveById } from '../BrutalFistMoveCatalog.ts';
+import { resolveAirborneDive } from './AirborneDiveSystem.ts';
 
 export interface SpecialMoveDefinition {
   id: string;
@@ -2268,11 +2269,21 @@ export class FighterStateMachine {
     // while the fighter-owned light/heavy clip still gives each roster member
     // distinct visual ownership. A rising limb press must win over the grounded
     // attack checks below.
-    if (resolvedInput.jump && (risingLp || risingLk || risingLight || risingRk || risingRp || risingHeavy)) {
+    if (this.jumpAirTimer > 0 && (risingLp || risingLk || risingLight || risingRk || risingRp || risingHeavy)) {
       this.walkVelocity.forward = 0;
-      const airMove = (risingLk || risingRk) ? AIR_HEAVY_MOVE : AIR_LIGHT_MOVE;
-      const airSlot: CharacterMoveClipSlot = (risingLk || risingRk) ? 'highKick' : 'lightAttack';
-      return this.beginAttack('jumpAttack', this.withCharacterClip(airMove, airSlot));
+      const dive = resolveAirborneDive({
+        airborne: true,
+        source: 'JUMP',
+        forward: resolvedInput.forward,
+        falling: this.jumpAirTimer < 0.22,
+        attackPressed: true,
+        kickPressed: risingLk || risingRk,
+      });
+      if (dive) {
+        const airMove = (risingLk || risingRk) ? AIR_HEAVY_MOVE : AIR_LIGHT_MOVE;
+        const airSlot: CharacterMoveClipSlot = (risingLk || risingRk) ? 'highKick' : 'lightAttack';
+        return this.beginAttack('jumpAttack', this.withCharacterClip(airMove, airSlot));
+      }
     }
 
     // ── DIRECTIONAL CHARACTER MOVES ────────────────────────────────────────
