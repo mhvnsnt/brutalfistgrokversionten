@@ -2373,28 +2373,28 @@ export class FighterStateMachine {
       && Math.abs(resolvedInput.strafe) < 0.2;
     if (crouchingNow && (risingLk || risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('crouchHeavyAttack', this.withCharacterClip(CROUCH_MOVE_WINDOWS.crouchHeavyAttack, 'lowKick'));
+      return this.beginAttack('crouchHeavyAttack', this.slotWindow('crouchKick', CROUCH_MOVE_WINDOWS.crouchHeavyAttack, 'lowKick'));
     }
     if (crouchingNow && (risingLp || risingRp || risingLight || risingHeavy)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('crouchLightAttack', this.withCharacterClip(CROUCH_MOVE_WINDOWS.crouchLightAttack, 'lightAttack'));
+      return this.beginAttack('crouchLightAttack', this.slotWindow('crouchLight', CROUCH_MOVE_WINDOWS.crouchLightAttack, 'lightAttack'));
     }
 
     if (risingLk && !risingLp) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('lightKick', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.lightKick, 'lowKick'));
+      return this.beginAttack('lightKick', this.slotWindow('lowKick', DEFAULT_MOVE_WINDOWS.lightKick));
     }
     if (risingRk && !risingRp) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('heavyKick', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.heavyKick, 'highKick'));
+      return this.beginAttack('heavyKick', this.slotWindow('highKick', DEFAULT_MOVE_WINDOWS.heavyKick));
     }
     if (risingLp || (risingLight && !risingLk && !risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('lightAttack', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.lightAttack, 'lightAttack'));
+      return this.beginAttack('lightAttack', this.slotWindow('lightAttack', DEFAULT_MOVE_WINDOWS.lightAttack));
     }
     if (risingRp || (risingHeavy && !risingLk && !risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('heavyAttack', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.heavyAttack, 'heavyAttack'));
+      return this.beginAttack('heavyAttack', this.slotWindow('heavyAttack', DEFAULT_MOVE_WINDOWS.heavyAttack));
     }
 
     if (resolvedInput.guard) {
@@ -2541,6 +2541,7 @@ export class FighterStateMachine {
 
   // ── Compute HitStun duration from active frames of the source move ─────────
   private computeHitStunDuration(move: MoveWindow): number {
+    if (move.hitstun !== undefined) return Math.max(HITSTUN_MIN, Math.min(HITSTUN_MAX, move.hitstun));
     const activeSeconds = move.active * HITSTUN_ACTIVE_FRAME_MULTIPLIER;
     return Math.max(HITSTUN_MIN, Math.min(HITSTUN_MAX, activeSeconds));
   }
