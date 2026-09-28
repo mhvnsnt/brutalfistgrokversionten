@@ -22,7 +22,8 @@ export type ActionState =
 // ── Wakeup option buffered during knockdown recovery ─────────────────────────
 export type WakeupOption = 'techRoll' | 'backrise' | 'quickStand' | null;
 
-type CharacterMoveClipSlot =
+export type CharacterMoveClipSlot =
+  | 'crouchLight' | 'crouchKick'
   | 'idle' | 'walkForward' | 'walkBackward' | 'crouch' | 'guard'
   | 'lightAttack' | 'heavyAttack'
   | 'forwardLight' | 'forwardHeavy' | 'forwardLowKick' | 'forwardHighKick'
@@ -167,6 +168,10 @@ export interface MoveWindow {
   damage?: number;
   /** Measured strike-limb reach in metres; drives the move-specific contact envelope. */
   contactReach?: number;
+  hitstun?: number;
+  pushback?: number;
+  launch?: number;
+  stringFollowups?: StringFollowup[];
   isSpecial?: boolean;
   specialName?: string;
   /** If true, this move is a throw — cannot be blocked by guard */
@@ -844,6 +849,7 @@ export class FighterStateMachine {
   private motionState: FighterMotionState = 'idle';
   /** Character-specific authored animation slots. Generic semantic aliases are only fallback. */
   private characterMoveClips: Partial<Record<CharacterMoveClipSlot, string>> = {};
+  private characterMoveWindows: Partial<Record<CharacterMoveClipSlot, MoveWindow>> = {};
   private characterMoveIds: Partial<Record<CharacterMoveClipSlot, string>> = {};
 
   private currentMove: MoveWindow | null = null;
@@ -1006,6 +1012,21 @@ export class FighterStateMachine {
   /** Install the fighter's canonical moveset animation choices. */
   setCharacterMoveClips(clips: Partial<Record<string, string>>): void {
     this.characterMoveClips = { ...clips };
+  }
+
+  /** Install the fighter's fully resolved style-profile move windows. */
+  setCharacterMoveWindows(windows: Partial<Record<string, MoveWindow>>): void {
+    this.characterMoveWindows = { ...windows } as Partial<Record<CharacterMoveClipSlot, MoveWindow>>;
+  }
+
+  characterWindowFor(slot: CharacterMoveClipSlot): MoveWindow | null {
+    return this.characterMoveWindows[slot] ?? null;
+  }
+
+  private slotWindow(slot: CharacterMoveClipSlot, fallback: MoveWindow, clipSlot: CharacterMoveClipSlot = slot): MoveWindow {
+    const own = this.characterMoveWindows[slot];
+    if (own) return own.clip || !this.characterMoveClips[clipSlot] ? own : { ...own, clip: this.characterMoveClips[clipSlot] };
+    return this.withCharacterClip(fallback, clipSlot);
   }
 
   /** Install the fighter's canonical catalog move IDs separately from clip names. */
