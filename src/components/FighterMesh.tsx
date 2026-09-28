@@ -253,6 +253,7 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   intro:             ['intro', 'Intro', 'entrance', 'Entrance', 'idle', 'Idle'],
   // ── Run / Dash ──────────────────────────────────────────────────────────────
   run:               ['run', 'Run', 'running', 'Running', 'sprint', 'Sprint', 'dash', 'Dash', 'walkForward', 'WalkForward', 'walk', 'Walk', 'DRUNK_RUN_FORWARD'],
+  runBackward:       ['runBackward', 'RunBackward', 'runningBackward', 'RunningBackward', 'backwardRun', 'BackwardRun', 'retreatRun', 'RetreatRun', 'runBack', 'RunBack', 'walkBackward', 'WalkBackward', 'walkBack', 'WalkBack'],
   dash:              ['dash', 'Dash', 'dashForward', 'DashForward', 'run', 'Run', 'walkForward', 'WalkForward', 'dash_forward'],
   dashForward:       ['dashForward', 'DashForward', 'dash', 'Dash', 'run', 'Run', 'walkForward', 'WalkForward', 'dash_forward'],
   dashBackward:      ['dashBackward', 'DashBackward', 'dashBack', 'DashBack', 'backDash', 'BackDash', 'backdash', 'Backdash', 'runBackward', 'RunBackward', 'walkBackward', 'WalkBackward'],
