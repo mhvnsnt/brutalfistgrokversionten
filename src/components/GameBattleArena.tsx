@@ -897,6 +897,35 @@ export default function GameBattleArena({
     // Reset state machines and hitbox systems for new match
     p1SMRef.current = new FighterStateMachine();
     p2SMRef.current = new FighterStateMachine();
+
+    const bindRoundMoveData = (fighterId: string, sm: FighterStateMachine) => {
+      const set = getCharacterMoveSet(fighterId);
+      if (!set) return;
+      const slots = [
+        'idle','walkForward','walkBackward','crouch','guard',
+        'lightAttack','heavyAttack',
+        'forwardLight','forwardHeavy','forwardLowKick','forwardHighKick',
+        'backLight','backHeavy','backLowKick','backHighKick',
+        'downForwardLight','downForwardHeavy',
+        'lowKick','highKick','primaryCombo','counter',
+        'grappleInitiate','primaryThrow','knockdown','wakeup',
+        'hitReaction','ko','signature',
+      ] as const;
+      const clips: Record<string,string> = {};
+      const ids: Record<string,string> = {};
+      for (const slot of slots) {
+        const moveId = set[slot];
+        if (!moveId) continue;
+        ids[slot] = moveId;
+        const move = getMoveById(moveId);
+        if (move?.animation) clips[slot] = move.animation;
+      }
+      sm.setCharacterMoveClips(clips);
+      sm.setCharacterMoveIds(ids);
+    };
+    bindRoundMoveData(p1Fighter.id, p1SMRef.current);
+    bindRoundMoveData(p2Fighter.id, p2SMRef.current);
+
     // The imported command list, plus the engine's own button specials
     // (registerSpecialMoves appends DEFAULT_SPECIAL_MOVES itself, so the
     // button sequences that already worked keep working).
