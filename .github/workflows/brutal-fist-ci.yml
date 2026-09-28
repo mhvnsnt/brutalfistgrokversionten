@@ -77,7 +77,7 @@ jobs:
           PLAYTEST_URL: http://127.0.0.1:8080/
           PLAYTEST_OUT: /tmp/brutal-fist-playtest-shots
         run: |
-          BROWSER_PATH="$(find "$HOME/.cache/ms-playwright" -type f -path '*/chrome-linux/chrome' | head -n 1)"
+          BROWSER_PATH="$(find "$HOME/.cache/ms-playwright" -type f \( -path '*/chrome-linux64/chrome' -o -path '*/chrome-linux/chrome' \) | head -n 1)"
           test -n "$BROWSER_PATH"
           PLAYTEST_BROWSER="$BROWSER_PATH" PLAYTEST_URL="$PLAYTEST_URL" PLAYTEST_OUT="$PLAYTEST_OUT" node tools/harness/playtest.mjs --shots --seconds=25
 
