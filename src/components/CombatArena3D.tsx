@@ -70,10 +70,13 @@ function locomotionAnimationFor(
   if (requested === 'run') {
     return f < -0.12 ? 'runBackward' : 'run';
   }
-  if (requested === 'walkBackward' || f < -0.12 && af >= as * 0.85) return 'walkBackward';
-  if (requested === 'strafeLeft' || (as > af * 1.15 && s < 0)) return 'strafeLeft';
-  if (requested === 'strafeRight' || (as > af * 1.15 && s > 0)) return 'strafeRight';
-  return 'walkForward';
+  // Once we are in the generic Walking state, the signed live velocity is
+  // the source of truth. Do not let a stale motion label make a right strafe
+  // look like a left strafe (or a retreat look like an advance).
+  if (as > af * 1.15) return s < 0 ? 'strafeLeft' : 'strafeRight';
+  if (f < -0.12) return 'walkBackward';
+  if (f > 0.12) return 'walkForward';
+  return requested || 'idle';
 }
 
 // ── Cinematic phases ──────────────────────────────────────────────────────────
