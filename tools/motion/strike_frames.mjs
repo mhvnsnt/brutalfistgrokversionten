@@ -47,7 +47,9 @@ import { loadRig, worldPose, poseAt, jointPos, keyCount, bindHeight } from './fk
 
 const BAKED = 'public/motion/baked';
 const OUT = 'public/motion/strike_frames.json';
-const RIG = process.env.STRIKE_RIG || 'public/models/BANNON.glb';
+// A SKINNED rig, not BANNON.glb -- that one is the 15-mesh rigid action-figure
+// model with no skin at all, so loadRig throws on json.skins[0].
+const RIG = process.env.STRIKE_RIG || 'public/models/BANNON_rigged.glb';
 const WRITE = process.argv.includes('--write');
 const ALL = process.argv.includes('--all');
 
