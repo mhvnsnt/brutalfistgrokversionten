@@ -137,7 +137,7 @@ describe('combat invariants (fuzzed)', () => {
     assert.deepEqual(all.slice(0, 6), [], `fall clip on a standing body:\n${all.slice(0, 6).join('\n')}`);
   });
 
-  it('every state ends — no input, and the machine comes back to neutral', () => {
+  it('every transient state ends — grounded bodies may deliberately stay down', () => {
     const stuck: string[] = [];
     for (const reaction of REACTIONS) {
       for (const move of [null, DEFAULT_MOVE_WINDOWS.heavyAttack ?? null]) {
@@ -147,7 +147,8 @@ describe('combat invariants (fuzzed)', () => {
         for (let f = 0; f < 60 * 12; f++) {
           fsm.tickAirborne(1 / 60);
           fsm.update(NEUTRAL, 1 / 60);
-          if (fsm.action === 'Idle' || fsm.action === 'Walking' || fsm.action === 'Guard') { settled = f; break; }
+          if (fsm.action === 'Idle' || fsm.action === 'Walking' || fsm.action === 'Guard'
+            || (fsm.action === 'Knockdown' && fsm.isGrounded())) { settled = f; break; }
         }
         if (settled < 0) stuck.push(`${reaction ?? 'default'}/${move ? 'heavy' : 'bare'} stuck in ${fsm.action}/${fsm.current} h=${fsm.juggleHeight.toFixed(3)}`);
       }
