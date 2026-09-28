@@ -2193,8 +2193,13 @@ export class FighterStateMachine {
         // as a jab. So a completed special replaces a queued plain attack; it
         // still cannot replace another special.
         const buffered = this.detectSpecialMove(now);
-        if (buffered && (!this.queuedAction || !this.queuedAction.special)) {
-          this.queuedAction = { type: 'light', special: buffered, at: this.moveElapsed };
+        if (buffered) {
+          // A completed explicit special sequence is a deliberate cancel/transition,
+          // not another buffered jab. Enter it immediately so the authored special
+          // clip is actually what the player sees on the confirming input.
+          const ownedClip = this.clipForSpecial(buffered);
+          const ownedMove = { ...buffered.move, clip: ownedClip };
+          return this.beginAttack(ownedClip as FighterMotionState, ownedMove);
         }
         if (risingLight && !this.queuedAction) this.queuedAction = { type: 'light', at: this.moveElapsed };
         if (risingHeavy && !this.queuedAction) this.queuedAction = { type: 'heavy', at: this.moveElapsed };
@@ -2316,7 +2321,13 @@ export class FighterStateMachine {
       }
     }
 
-    const special = this.detectSpecialMove(now);
+    // A simple direction + limb is owned by the fighter's roster move table.
+    // Do not let the generated command matrix steal Forward+LP/RP/LK/RK before
+    // the roster-specific branch below gets a chance to resolve it.
+    const hasDirectionalRosterInput =
+      ((resolvedInput.forward > 0.45 || resolvedInput.forward < -0.45) &&
+        (risingLp || risingRp || risingLk || risingRk || risingLight || risingHeavy));
+    const special = hasDirectionalRosterInput ? null : this.detectSpecialMove(now);
     if (special) {
       this.walkVelocity = { forward: 0, strafe: 0 };
       // Preserve the fighter-owned presentation on the move itself. The
