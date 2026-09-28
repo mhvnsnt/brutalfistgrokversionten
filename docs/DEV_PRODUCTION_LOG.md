@@ -231,3 +231,13 @@ Important: these are implementation corrections, not a claim that all animation 
 - “Make Bannon playable” is therefore not the project objective for this repo. The objective here is to make **Brutal Fist** playable and complete its own PWA/game flow. Bannon-derived material is treated as shared source/canon/asset input, not as a rename of the game.
 - Future production logs, PWA checks, animation work, combat work, stages, roster work, and open-source intake for this repository will be labeled **Brutal Fist** unless a Bannon asset/source is specifically being referenced.
 - Current deployment evidence: GitHub Pages run 36489445419 built and deployed main commit 7c70faba6b27aeb2946bc860437beda3a796ec47 successfully. This proves the new bundle reached the Pages deployment pipeline; it does **not** by itself prove that an already-installed phone PWA has refreshed to that generation. The service worker uses commit-stamped cache generations and controller-change/update checks, so the remaining gate is actual device/browser observation of the deployed Brutal Fist build.
+
+
+## 2026-09-28 — Grounded states, wakeup choices, AI throw discipline, grapple timing
+
+- Added a persistent grounded layer instead of forcing every knockdown to quick-stand. Fighters now retain face-up/face-down grounded presentation after the minimum fall duration and may remain down until the player chooses an option.
+- Added distinct wakeup state routes for forward roll, backward roll, side roll, kip-up, wake attack, backrise and quick-stand. These are separate semantic states so the mesh can resolve dedicated clips rather than turning every recovery into walking/idle.
+- Added grounded animation aliases for supine/prone, roll, kip-up and rising-attack candidates. Exact visual correctness remains UNKNOWN until a real PWA fighter is observed.
+- Changed successful grapple resolution so the throw break window can expire without immediately applying damage. The receiver is grounded and damaged only after the attacker's authored grapple move reaches its end, keeping attacker/receiver timing coupled.
+- Added an explicit AI throw cooldown and shortened approach pulses with a larger neutral band. The opponent should make discrete decisions instead of continuously translating with a retreating player or repeatedly holding a throw input.
+- Remaining grounded parity: four canonical face/feet orientations, grounded attacks, OTG rules, measured invulnerability/guard windows, and runtime PWA certification.
