@@ -247,3 +247,13 @@ Important: these are implementation corrections, not a claim that all animation 
 - Grounded wakeup CI trigger follows the corrected MoveLibrary state table and regression typing.
 
 - CI follow-up: removed the duplicate MoveWindow type import exposed by the next verification pass.
+
+
+## 2026-09-28 — Grounded/wakeup and grapple timing promoted to current main
+
+- Current main now contains the grounded combat layer: persistent face-up/face-down knockdown presentation, deliberate stay-down, forward/back/side rolls, kip-up and wake-attack routes, with semantic animation mappings and regression coverage.
+- Successful grapples now delay receiver damage/grounding until the attacker's authored grapple animation completes; failed breaks remain break outcomes instead of damage commits.
+- Opponent AI throw attempts have a real cooldown and its approach is pulse-based with a larger neutral band, reducing the old continuous pursuit/held-grapple exploit.
+- Dash playback cap raised from 2.6x to 3.0x so the measured 3.2 m/s dash can visually match the 1.15 m/s deliberate walk tier instead of being capped and skating.
+- CI typecheck passes on the current main changes. The remaining test failures are the pre-existing fighter-owned special/directional roster tests; they are being kept as failures rather than weakening them.
+- PR #27 and the stale-base reconciliation PR #28 were closed without deleting their commits; the grounded behavior itself is present on current main.
