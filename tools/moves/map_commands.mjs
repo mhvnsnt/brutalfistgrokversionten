@@ -85,15 +85,20 @@ export function attackPool() {
     // refused; one that merely passes through is not.
     if ((s.reachFace ?? s.faceMin ?? 1) < 0.15) continue;
     if ((m.dur ?? 9) > 2.2) continue;
+    if (!/^attack/.test(m.semantic ?? '')) continue;
+    if (m.receives) continue;
+    if ((m.spineUp ?? 1) < 0.75) continue;
     const hand = s.handReach ?? 0;
     const foot = s.footReach ?? 0;
     if (hand < 0.35 && foot < 0.60) continue;
+    const reachLimb = String(s.reachLimb ?? s.limb ?? '').toLowerCase();
+    const measuredKick = /foot|leg/.test(reachLimb) ? true : /hand|arm/.test(reachLimb) ? false : foot > hand;
     out.push({
       name: n,
       dur: m.dur,
       hand, foot,
       lift: s.footLift ?? 0,
-      kick: foot >= 0.60 && foot > hand,
+      kick: measuredKick,
       airborne: Boolean(m.airborne),
       semantic: m.semantic ?? '',
       /**
@@ -176,6 +181,17 @@ function exactClipForAnimation(animation, pool) {
   return exact ?? null;
 }
 
+function compatibleClip(clip, want) {
+  if (!clip.isAttack || clip.notAnAttack || clip.owns && clip.semantic === 'grapple') return false;
+  if (want.kick !== clip.kick) return false;
+  // Down commands must stay on the ground. Up commands may be a ground
+  // rising strike or an airborne attack; the semantic/routing layer decides.
+  if (want.height === 'low' && clip.airborne) return false;
+  // Never use a clip whose body is already inverted/near-horizontal.
+  if ((clip.spineUp ?? 1) < 0.75) return false;
+  return true;
+}
+
 function score(clip, want, used, seed) {
   let s = 0;
   // The pipeline's own verdict comes first. See `isAttack` in attackPool.
@@ -205,10 +221,11 @@ export function mapCommands(commands, seed = '') {
   for (const c of commands) {
     const want = { kick: c.kick, height: heightOf(c.dirs) };
     const explicit = COMMAND_CLIP_PLACEMENT[c.name.replace(/^!\s*/, '')];
-    const exact = explicit ? pool.find((clip) => normalizedClipName(clip.name) === normalizedClipName(explicit)) : exactClipForAnimation(c.animation, pool);
+    const exact = explicit ? pool.find((clip) => normalizedClipName(clip.name) === normalizedClipName(explicit) && compatibleClip(clip, want)) : (() => { const clip = exactClipForAnimation(c.animation, pool); return clip && compatibleClip(clip, want) ? clip : null; })();
     let best = exact;
     let bestScore = exact ? Number.POSITIVE_INFINITY : -Infinity;
     for (const clip of pool) {
+      if (!compatibleClip(clip, want)) continue;
       const v = score(clip, want, used, seed);
       if (v > bestScore) { bestScore = v; best = clip; }
     }
