@@ -114,3 +114,14 @@ Important: these are implementation corrections, not a claim that all animation 
 - **CI:** UNKNOWN until a GitHub Actions run is attached to commit `6164fd0362512adf86a4b65a5a18d1bd9e8e1b56`.
 - **Runtime PWA/browser:** UNKNOWN until an actual match verifies jump, aerial strike, landing, contact, and fighter-specific clip playback together.
 - **Promotion rule:** do not mark aerial clips PASS from static code alone.
+
+
+### Fighter-owned special presentation pass — 2026-09-28
+
+- Continued directly on `main` in `mhvnsnt/brutalfistgrokversionten`; this pass did not switch to another repository.
+- Found that the previous fighter-owned clip routing covered ordinary attacks and signature/finisher specials, but the shared `quick_combo` / `power_surge` path could still fall back to the same generic semantic clip for every fighter.
+- `clipForSpecial()` now routes shared combo/surge specials through the fighter's `primaryCombo` clip when one is owned, counter/reversal specials through `counter`, and throw/grapple/suplex-named specials through `primaryThrow`. Signature/finisher routing remains highest priority.
+- Combat semantics remain unchanged: input sequence, frame data, hitbox, damage, and cancel behavior still come from the shared special definition; only the visual clip is fighter-owned.
+- Added a deterministic regression test proving a shared combo definition can resolve to a fighter-owned primary-combo clip.
+- Main commits: `a997500e` (implementation), `d8823489` (regression test).
+- CI/runtime PWA visual certification is still UNKNOWN until the browser playtest observes the resulting clips on real Bannon/Kobra rigs.
