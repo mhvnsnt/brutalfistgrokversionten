@@ -92,18 +92,30 @@ export function getCharacterMoveSet(characterId: string): CustomizedMoveSet | nu
   const strikeOrKick = (m: BrutalFistMove | null | undefined) =>
     m && (m.category === 'strike' || m.category === 'kick') ? m.id : undefined;
 
+  // A duplicated core move is not a real directional slot. Some legacy
+  // roster rows carry bf_jab in the optional directional field, which made
+  // different fighters collapse back onto the same animation/gameplay branch.
+  // Treat an explicit duplicate as "missing" and prefer that fighter's own
+  // authored extra before falling back to the core slot.
+  const distinct = (candidate: string | undefined, core: string | undefined, fallback?: string) =>
+    candidate && candidate !== core ? candidate : fallback && fallback !== core ? fallback : undefined;
+  const forwardLight = distinct(base.forwardLight, base.lightAttack, strikeOrKick(authoredExtra1));
+  const forwardHeavy = distinct(base.forwardHeavy, base.heavyAttack, strikeOrKick(authoredExtra2));
+  const downForwardLight = distinct(base.downForwardLight, base.lightAttack, strikeOrKick(authoredExtra1));
+  const downForwardHeavy = distinct(base.downForwardHeavy, base.heavyAttack, strikeOrKick(authoredExtra2));
+
   return {
     ...base,
-    forwardLight: base.forwardLight ?? strikeOrKick(authoredExtra1) ?? base.lightAttack,
-    forwardHeavy: base.forwardHeavy ?? strikeOrKick(authoredExtra2) ?? base.heavyAttack,
+    forwardLight: forwardLight ?? base.lightAttack,
+    forwardHeavy: forwardHeavy ?? base.heavyAttack,
     forwardLowKick: base.forwardLowKick ?? base.lowKick,
     forwardHighKick: base.forwardHighKick ?? base.highKick,
     backLight: base.backLight ?? base.counter,
     backHeavy: base.backHeavy ?? base.primaryCombo,
     backLowKick: base.backLowKick ?? base.lowKick,
     backHighKick: base.backHighKick ?? base.highKick,
-    downForwardLight: base.downForwardLight ?? strikeOrKick(authoredExtra1) ?? base.lightAttack,
-    downForwardHeavy: base.downForwardHeavy ?? strikeOrKick(authoredExtra2) ?? base.highKick,
+    downForwardLight: downForwardLight ?? base.lightAttack,
+    downForwardHeavy: downForwardHeavy ?? base.highKick,
     characterId,
     isCustomized: false,
     customizedSlots: [],
