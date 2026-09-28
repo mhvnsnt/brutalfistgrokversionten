@@ -249,10 +249,10 @@ export default function GameBattleArena({
    * Which clip each body is REALLY playing comes from the resolver itself
    * (`onClipResolved`), not from a second copy of the lookup here.
    */
-  const [grappleBeat, setGrappleBeat] = useState<{ victim: 'p1' | 'p2'; clip: string; source: string } | null>(null);
+  const [grappleBeat, setGrappleBeat] = useState<{ victim: 'p1' | 'p2'; clip: string; source: string; durationSeconds: number } | null>(null);
   const grappleBeatTimer = useRef<number | null>(null);
   /** Mirrored for the probe: state is not readable from outside React. */
-  const grappleBeatRef = useRef<{ victim: 'p1' | 'p2'; clip: string; source: string } | null>(null);
+  const grappleBeatRef = useRef<{ victim: 'p1' | 'p2'; clip: string; source: string; durationSeconds: number } | null>(null);
   const liveClipRef = useRef<{ p1: string | null; p2: string | null }>({ p1: null, p2: null });
   /** The clip the attacker was playing when the grab connected. */
   const throwDelivererRef = useRef<{ p1: string | null; p2: string | null }>({ p1: null, p2: null });
@@ -285,16 +285,21 @@ export default function GameBattleArena({
     if (pendingThrowCommitTimerRef.current !== null) window.clearTimeout(pendingThrowCommitTimerRef.current);
     const attackerSM = attacker === 'p1' ? p1SMRef.current : p2SMRef.current;
     const delayMs = Math.max(0, Math.round(attackerSM.currentMoveRemainingSeconds() * 1000));
+    // The two halves start together when the throw commits. The old path
+    // started the receiver only inside this timeout, i.e. AFTER the deliverer
+    // had finished. That made a grapple look like attacker animation -> generic
+    // knockdown -> receiver animation, rather than one two-body performance.
+    const syncDuration = Math.max(0.05, delayMs / 1000);
+    if (directionalDef) alignDirectionalThrowBodies(attacker, directionalDef);
+    playOpponentHalf(victim, deliverer, receiverOverride, receiverDuration, syncDuration);
     pendingThrowCommitTimerRef.current = window.setTimeout(() => {
       pendingThrowCommitTimerRef.current = null;
       const victimSM = victim === 'p1' ? p1SMRef.current : p2SMRef.current;
       const victimLoco = victim === 'p1' ? p1LocoRef.current : p2LocoRef.current;
       const victimHitbox = victim === 'p1' ? p1HitboxRef.current : p2HitboxRef.current;
-      if (directionalDef) alignDirectionalThrowBodies(attacker, directionalDef);
       victimSM.applyKnockdown();
       victimLoco.halt();
       victimHitbox.reset();
-      playOpponentHalf(victim, deliverer, receiverOverride, receiverDuration);
       engineRef.current?.applyIncomingHit(victim, damage, false, 0.3);
       logHit(attacker, victim, damage, false, 'throw');
       if (settings.soundEnabled) sfx.playHeavyHit();
@@ -311,15 +316,16 @@ export default function GameBattleArena({
     }, delayMs);
   };
 
-  const playOpponentHalf = useCallback((victim: 'p1' | 'p2', deliverer: string | null, receiverOverride?: string | null, receiverDuration?: number) => {
+  const playOpponentHalf = useCallback((victim: 'p1' | 'p2', deliverer: string | null, receiverOverride?: string | null, receiverDuration?: number, syncDurationSeconds?: number) => {
     if (!deliverer) return;
     const pick = receiverOverride
       ? { receiver: receiverOverride, source: 'owner' as const, dur: receiverDuration ?? 0 }
       : receiverClipFor(deliverer, { available: (c) => bakedClipNames().has(c) });
     if (!pick) return;
     if (grappleBeatTimer.current !== null) window.clearTimeout(grappleBeatTimer.current);
-    grappleBeatRef.current = { victim, clip: pick.receiver, source: pick.source };
-    setGrappleBeat({ victim, clip: pick.receiver, source: pick.source });
+    const durationSeconds = Math.max(0.05, syncDurationSeconds ?? pick.dur ?? 0.8);
+    grappleBeatRef.current = { victim, clip: pick.receiver, source: pick.source, durationSeconds };
+    setGrappleBeat({ victim, clip: pick.receiver, source: pick.source, durationSeconds });
     console.log(
       `[Arena] 🤼 opponent half — ${deliverer} -> ${pick.receiver} (${pick.source}, ${pick.dur}s) on ${victim}`,
     );
@@ -327,7 +333,7 @@ export default function GameBattleArena({
     // reaction short and leave a 0.5 s knee throw standing in a pose.
     grappleBeatTimer.current = window.setTimeout(
       () => { grappleBeatRef.current = null; setGrappleBeat(null); grappleBeatTimer.current = null; },
-      Math.max(250, Math.round((pick.dur || 0.8) * 1000)),
+      Math.max(50, Math.round(durationSeconds * 1000)),
     );
   }, []);
 
