@@ -35,6 +35,43 @@ Animation/rig correctness is gameplay infrastructure, not cosmetic polish.
   60 Hz simulation and PWA playtest. The result should feed frame-window,
   buffering, reaction and locomotion work without copying protected assets.
 
+## Real PWA combat audit — 2026-09-28
+
+- [x] **Real Chromium portrait match reaches live combat** — `VERIFIED`.
+  The CI playtest drove the actual PWA at 412×915, reached a match with 2
+  skinned rigs, and sent real KeyboardEvents through the combat engine.
+- [x] **Input-to-attack path** — `VERIFIED / MEASURED`. In the 25-second
+  audit, the engine observed 9 press edges and started 8 attacks; the report
+  explicitly judged this `OK: 8 attacks from 9 presses`.
+- [x] **Missing optional audio must not poison combat** — `IMPLEMENTED`.
+  The first real round produced 24 HTTP 404 audio requests and 25 browser
+  errors because GlobalAudioManager constructed Howler sources for files that
+  do not exist in the repo. An authoritative `public/audio/manifest.json`
+  now gates file-backed audio; the follow-up run reduced browser page errors
+  to 0.
+- [ ] **Locomotion/stance/reaction clip ownership audit** — `IN PROGRESS`.
+  The real run recorded 28 clip starts, 12 full completions and 14 cuts. Attack
+  clips such as `GYAKUZUKI`, `GRAFQUICKJAB`, `HEAVYKICK` and
+  `CROUCHINGKICK` completed in the observed attack-heavy run, while
+  `SHAZWALK`, `JOHNSON_STANCE`, `TIGERSTANCE` and some reaction clips
+  were cut by stop/fadeOut. Do not label these cuts as bugs until the state
+  transition that caused each cut is classified.
+- [ ] **Portrait fight-camera composition** — `IN PROGRESS`. The real
+  screenshot shows both fighters visible and readable, but the fight occupies
+  the lower portion of the portrait arena with substantial unused upper
+  space. Compare against the external Tekken reference capture before changing
+  camera math; do not trade side-to-side framing for a worse mobile crop.
+- [ ] **Frame-rate-independent combat presentation** — `IN PROGRESS`.
+  The browser audit environment rendered around 2–3 FPS during the heavy 3D
+  scene. The instrumentation correctly avoided treating per-frame distance as
+  teleportation, but the real PWA still needs a measured performance lane so
+  animation/input timing remains 60 Hz authoritative even when rendering is
+  slow.
+- [ ] **Real Tekken side-by-side capture** — `IN PROGRESS`. The repo runner
+  is ready, but the owner's external disc image is not present in the CI
+  environment. No claim of a live Tekken-vs-Bannon run is made until the
+  external disc/core are actually available to the runner.
+
 ## Open-source animation / rigging intake lane — 2026-09-21
 
 - [ ] **Bulk CC0 humanoid animation intake** — `IN PROGRESS`. Quaternius Universal Animation Library 1 (120+ reported clips) and Library 2 (130+ reported clips) are registered as external source banks. They cover locomotion, combat, combos, parkour and defensive motion and are explicitly CC0. Do not promote a clip merely because it loads: every candidate must pass the existing canonical-skeleton bake, floor/airborne, facing, limb-reach, joint-limit, body-count and owner gates.
