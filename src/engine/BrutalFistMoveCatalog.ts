@@ -697,8 +697,18 @@ export const BRUTAL_FIST_FULL_CATALOG: Record<string, BrutalFistMove> = {
   ...SIGNATURE_MOVES,
 };
 
+/**
+ * The catalog is KEYED by short names ('jab') but every roster moveset and
+ * every UI stores the move's `id` ('bf_jab'). Looking the id up in the keyed
+ * record returned null for every roster move, so directional moves, clip
+ * bindings and the customizer silently fell back to generic data. Index both.
+ */
+const CATALOG_BY_ID: Record<string, BrutalFistMove> = Object.fromEntries(
+  Object.values(BRUTAL_FIST_FULL_CATALOG).map((m) => [m.id, m]),
+);
+
 export function getMoveById(id: string): BrutalFistMove | null {
-  return BRUTAL_FIST_FULL_CATALOG[id] ?? null;
+  return CATALOG_BY_ID[id] ?? BRUTAL_FIST_FULL_CATALOG[id] ?? null;
 }
 
 export function getMovesByCategory(category: MoveCategory): BrutalFistMove[] {

@@ -87,8 +87,8 @@ export function getCharacterMoveSet(characterId: string): CustomizedMoveSet | nu
   // Directional slots are part of the fighter's actual gameplay moveset. Use
   // the character's authored extras where they are real strikes/kicks, and
   // fall back to that fighter's own core move rather than a global animation.
-  const authoredExtra1 = base.extraMove1 && getMoveById(base.extraMove1);
-  const authoredExtra2 = base.extraMove2 && getMoveById(base.extraMove2);
+  const authoredExtra1 = base.extraMove1 ? getMoveById(base.extraMove1) : null;
+  const authoredExtra2 = base.extraMove2 ? getMoveById(base.extraMove2) : null;
   const strikeOrKick = (m: BrutalFistMove | null | undefined) =>
     m && (m.category === 'strike' || m.category === 'kick') ? m.id : undefined;
 
