@@ -124,6 +124,45 @@ const heightOf = (dirs) => {
   return 'mid';
 };
 
+const EXACT_ANIMATION_ALIASES = new Map([
+  ['dynamonova0', 'TIGERDYNAMOPUNCH_FIX'],
+  ['dynamitepunch', 'GRAFSURPRISEPUNCH'],
+  ['defaultjumppunch', 'DEFAULTJUMPPUNCH'],
+  ['defaultjumppunch2', 'DEFAULTJUMPPUNCH2'],
+  ['defaultjumpkick', 'DEFAULTJUMPKICK'],
+  ['tiger_heavykickcombo', 'TIGER_HEAVYKICKCOMBO'],
+  ['tigercommandocomboex', 'TIGERCOMMANDOCOMBO1'],
+  ['tigerdynamopunch_fix', 'TIGERDYNAMOPUNCH_FIX'],
+  ['tigerscarletscrew_nokick_fix', 'TIGERSCARLETSCREW_NOKICK_FIX'],
+  ['tigerscarletscrew_lowkick', 'TIGERSCARLETSCREW_LOWKICK'],
+  ['tigerkneebashslow', 'TIGERKNEEBASHSLOW'],
+  ['crouchingkick', 'CROUCHINGKICK'],
+  ['crouchingkickrenzo', 'CROUCHINGKICK'],
+  ['quickkick', 'QUICKKICK'],
+  ['axeKick', 'AXEKICK'],
+  ['jumpaxekick', 'JUMPAXEKICK'],
+  ['gyakuzuki', 'GYAKUZUKI'],
+  ['gyakuzuki_combo', 'GYAKUZUKI_COMBO'],
+  ['tigerquickpunch', 'TIGERQUICKPUNCH'],
+  ['doublehammer', 'TIGERDOUBLEHAMMERCOMBO'],
+  ['grafquickjab', 'GRAFQUICKJAB'],
+  ['quickroundhouse', 'ROUNDHOUSEKICK'],
+  ['flyingkick', 'DROP_KICK'],
+  ['lowkick2', 'CROUCHINGKICK'],
+  ['paperShredder2', 'JUMPAXEKICK'],
+]);
+
+function normalizedClipName(value) {
+  return String(value ?? '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+}
+
+function exactClipForAnimation(animation, pool) {
+  const key = normalizedClipName(animation);
+  const preferred = EXACT_ANIMATION_ALIASES.get(key) ?? String(animation ?? '').toUpperCase().replace(/[^A-Z0-9]+/g, '_');
+  const exact = pool.find((clip) => normalizedClipName(clip.name) === normalizedClipName(preferred));
+  return exact ?? null;
+}
+
 function score(clip, want, used, seed) {
   let s = 0;
   // The pipeline's own verdict comes first. See `isAttack` in attackPool.
@@ -152,8 +191,9 @@ export function mapCommands(commands, seed = '') {
   const out = {};
   for (const c of commands) {
     const want = { kick: c.kick, height: heightOf(c.dirs) };
-    let best = null;
-    let bestScore = -Infinity;
+    const exact = exactClipForAnimation(c.animation, pool);
+    let best = exact;
+    let bestScore = exact ? Number.POSITIVE_INFINITY : -Infinity;
     for (const clip of pool) {
       const v = score(clip, want, used, seed);
       if (v > bestScore) { bestScore = v; best = clip; }
@@ -175,6 +215,7 @@ const commandsFor = (set) => schwarzerblitzSpecials(set)
   .map((m) => ({
     id: m.id,
     name: m.name,
+    animation: m.animation,
     dirs: m.command.flatMap((s) => s.dirs),
     kick: m.command.some((s) => s.buttons.some((b) => /K/.test(b))),
   }));
