@@ -301,7 +301,7 @@ export class LocomotionSystem {
 
   beginJump() {
     if (this.jumpArmed && this.jumpY <= 0.02) {
-      this.jumpV = 5.8;
+      this.jumpV = 6.8;
       this.jumpArmed = false;
     }
   }
@@ -482,7 +482,7 @@ export class LocomotionSystem {
   /** Advance the world-space jump arc independently of X/Z locomotion. */
   private updateJumpArc(dt: number) {
     if (!(this.jumpY > 0 || this.jumpV > 0)) return;
-    this.jumpV -= 22 * dt;
+    this.jumpV -= 18 * dt;
     this.jumpY += this.jumpV * dt;
     if (this.jumpY <= 0) {
       this.jumpY = 0;
