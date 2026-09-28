@@ -16,11 +16,70 @@ import { playbackRateFor, authoredStrideSpeed } from '../motion/DistanceMatching
 /** Fallback pace for any clip whose authored stride has not been measured. */
 export const WALK_PLAYBACK_MPS = 1.72;
 
+/**
+ * A NUDGE IS 12%, NOT 45%.
+ *
+ * Owner: "the animation plays very quickly ... it doesn't play long enough for
+ * the full animation to play out. The move never looks like it makes contact."
+ *
+ * The band above this used to be `fit >= 0.8 && fit <= 1.45`, which called a
+ * 45% fast-forward a nudge -- the exact twitch the comment at the top of this
+ * file warns about. MEASURED on the clips that actually play in a match:
+ *
+ *   GRAFQUICKJAB  0.458s in a 0.333s light window -> fit 1.375 -> played 1.38x
+ *   GYAKUZUKI     0.417s                          -> fit 1.25  -> played 1.25x
+ *   HEAVYKICK     0.542s                          -> fit 1.63  -> 1x, then cut
+ *
+ * So every light attack ran a quarter to nearly two-fifths faster than it was
+ * authored, and the one that did not was truncated instead. Both read as a body
+ * that starts a punch and never lands it.
+ *
+ * THE DEEPER SHAPE, and it is the difference from the game this is measured
+ * against: a Schwarzerblitz move IS a slice of its animation -- the move
+ * carries `animation`, `frameStart` and `frameEnd`, so the window cannot
+ * disagree with the motion. Ours are two independent numbers: the window is
+ * `startup + active + recovery`, authored, and the clip is imported mocap, and
+ * nothing ever reconciled them. The speedup was the seam absorbing the
+ * difference, all of it on the animation's side.
+ *
+ * So the speedup is capped at a real nudge and the ANIMATION LAYER holds the
+ * strike long enough to finish instead (see `attackHoldSeconds`). Startup and
+ * active are untouched, so when a move hits and what it is worth on block do
+ * not move -- only how long the body is given to show the motion.
+ */
+/** The most a strike may be sped up before it reads as a twitch, not a punch. */
+export const ATTACK_MAX_SPEEDUP = 1.12;
+/**
+ * Past this, the clip is simply the wrong length for the slot — a long demo
+ * resolved onto a jab — and that is a data problem, not a playback one. It
+ * keeps the old behaviour: play at 1x and let the state machine cut it.
+ */
+export const ATTACK_RECONCILE_MAX_FIT = 2.2;
+
 export function attackPlaybackRate(clipDuration: number, windowSeconds: number): number {
   if (!(clipDuration > 0) || !(windowSeconds > 0)) return 1;
   const fit = clipDuration / windowSeconds;
-  if (fit >= 0.8 && fit <= 1.45) return fit;
-  return 1;
+  if (fit > ATTACK_RECONCILE_MAX_FIT) return 1;
+  // A clip SHORTER than its window is not slowed. Stretching it is slow motion;
+  // Tekken plays it at its authored speed and the last frame holds through
+  // recovery. Only a clip that overruns its window needs reconciling at all.
+  if (fit <= 1) return 1;
+  return Math.min(ATTACK_MAX_SPEEDUP, fit);
+}
+
+/**
+ * How long the animation layer must hold the strike for the motion to finish.
+ *
+ * The state machine's own window is unchanged -- this only stops the body being
+ * yanked off the swing before the arm arrives. A clip too far from its window
+ * to reconcile keeps the old behaviour and is cut.
+ */
+export function attackHoldSeconds(clipDuration: number, windowSeconds: number): number {
+  if (!(windowSeconds > 0)) return 0;
+  if (!(clipDuration > 0)) return windowSeconds;
+  if (clipDuration / windowSeconds > ATTACK_RECONCILE_MAX_FIT) return windowSeconds;
+  const rate = attackPlaybackRate(clipDuration, windowSeconds);
+  return Math.max(windowSeconds, clipDuration / rate);
 }
 
 /** A jump is a full arc. Cap the speedup so a long clip still leaves the ground

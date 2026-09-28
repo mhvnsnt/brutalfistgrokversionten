@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { BoneHitboxSystem } from '../engine/locomotion/BoneHitboxSystem';
 import { AutoRigDetector, type RigDiagnosticReport } from '../engine/locomotion/AutoRigDetector';
 import { ATTACK_ROOT_MOTION_PROFILES } from '../engine/locomotion/LocomotionSystem';
-import { attackPlaybackRate, jumpPlaybackRate, knockdownPlaybackRate, locomotionPlaybackRate } from '../engine/combat/ClipPlayback';
+import { attackPlaybackRate, attackHoldSeconds, jumpPlaybackRate, knockdownPlaybackRate, locomotionPlaybackRate } from '../engine/combat/ClipPlayback';
 import { blendDurationFor } from '../engine/motion/BlendDuration';
 import {
   runDeformationIntegrityTest,
@@ -1114,7 +1114,10 @@ function FighterMeshInner({
     );
     nextAction.setEffectiveWeight(1);
     if (isAttack && attackWindow) {
-      attackLockUntilRef.current = now + attackWindow;
+      // Hold the strike for as long as the MOTION needs, not just the window.
+      // The state machine's frame data is untouched; this only stops the body
+      // being pulled off the swing before the arm arrives.
+      attackLockUntilRef.current = now + attackHoldSeconds(clipDuration, attackWindow);
     }
 
     const seen = new Set<THREE.AnimationAction>();
