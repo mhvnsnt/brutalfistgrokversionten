@@ -7,9 +7,11 @@ interface IntroVideoGateProps {
   src?: string;
 }
 
-const DEFAULT_INTRO_SRC = '/intro/brutal-fist-intro.mp4';
+// The legacy MP4 is not shipped in the static PWA. Keep the gate usable
+// without issuing a guaranteed 404; pre-fight animation is handled by the
+// actual combat scene below it.
 
-export default function IntroVideoGate({ onComplete, src = DEFAULT_INTRO_SRC }: IntroVideoGateProps) {
+export default function IntroVideoGate({ onComplete, src = '' }: IntroVideoGateProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const completedRef = useRef(false);
   const [started, setStarted] = useState(false);
@@ -81,16 +83,18 @@ export default function IntroVideoGate({ onComplete, src = DEFAULT_INTRO_SRC }: 
         if (!started) void start();
       }}
     >
-      <video
-        ref={videoRef}
-        className="absolute inset-0 h-full w-full object-cover"
-        src={src}
-        playsInline
-        preload="auto"
-        onEnded={complete}
-        onError={complete}
-        aria-hidden="true"
-      />
+      {src && (
+        <video
+          ref={videoRef}
+          className="absolute inset-0 h-full w-full object-cover"
+          src={src}
+          playsInline
+          preload="auto"
+          onEnded={complete}
+          onError={complete}
+          aria-hidden="true"
+        />
+      )}
 
       {!started && (
         <div className="absolute inset-0 flex items-end justify-center bg-black/25 p-6 pb-[max(2rem,env(safe-area-inset-bottom))]">
