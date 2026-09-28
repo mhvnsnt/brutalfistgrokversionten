@@ -159,3 +159,14 @@ Important: these are implementation corrections, not a claim that all animation 
 - Missing or unloadable intro media calls the same completion path, so the PWA falls through directly to the existing start screen instead of trapping the player on a blank/video error state.
 - This is the shell for Repo Co Dev's separate rough-cut renderer; the actual 60-second media file is intentionally not fabricated or committed here.
 - Runtime status: UNKNOWN until the PWA is opened with the real media file and the browser observes audio unlock, playback, skip, natural completion, and missing-file fallback.
+
+
+### PR20/PR23 non-destructive reconciliation completed — 2026-09-28
+
+- PR #20 and PR #23 were not force-merged from their old `db752c8` base. Two fresh reconciliation branches were created from current `main`.
+- PR #24 reconciled the PR23 stage/blockout + named-grapple work onto current main and merged as `a8e8d6a375b3fd20e0c7f5c15e214876312b0949`.
+- PR #25 reconciled the PR20 per-fighter style/move-window/OSS intake work onto current main and merged as `90cca08a568caa19ba2f9bb0aca87d773b8f83c9`.
+- Original PR #20 and PR #23 were closed as superseded, preserving their history while removing the stale merge targets.
+- The reconciled pass preserves the current main intro/typecheck work rather than resetting files to the old PR base.
+- Added `docs/NAMED_GRAPPLE_TECHNICAL_MAP.md` to make technical move definitions and capture gaps explicit. Cody Buster remains UNKNOWN rather than being guessed; Titan Fall is documented as a throat-grab chokeslam; Hall Street Justice is documented as a street-fight combo ending in a knee; Getbackk is the F5-style fireman's-carry tornado slam; Chainsnatcher is the jumping double-knee backstabber and its current knee-bash pair remains a stand-in.
+- Owner footage for Getbackk and Chainsnatcher can be captured with Bannon's `tools/mocap/video_to_clip.py --two`, producing attacker + receiver halves from one take. Runtime certification of the newly reconciled assets remains UNKNOWN until the PWA is exercised.
