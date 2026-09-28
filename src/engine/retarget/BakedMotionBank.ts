@@ -375,15 +375,41 @@ const CORE_BAKED_SEMANTICS = new Set([
 ]);
 
 export function selectCoreBakedNames(manifest: Record<string, BakedManifestEntry>): string[] {
+  const entries = Object.entries(manifest);
   const names = new Set<string>();
-  for (const [name, entry] of Object.entries(manifest)) {
-    if (entry.owns || CORE_BAKED_SEMANTICS.has(entry.semantic ?? '')) names.add(name);
+
+  // semantic is a routing label, not a request to preload every clip carrying
+  // that label. The bank contains a large UAL utility population; loading every
+  // idle/attack_2/etc. clip defeats the combat-first startup contract.
+  for (const [name, entry] of entries) if (entry.owns) names.add(name);
+
+  // Keep exactly one measured candidate for each required semantic that does
+  // not already have an owner. Prefer project/Schwarzerblitz material over
+  // bulk UAL utility clips, then prefer grounded, full-body clips.
+  for (const semantic of CORE_BAKED_SEMANTICS) {
+    if ([...names].some((name) => manifest[name]?.semantic === semantic)) continue;
+    const candidates = entries
+      .filter(([, entry]) => entry.semantic === semantic && entry.bodies === 1)
+      .sort((a, b) => {
+        const score = (entry: BakedManifestEntry) =>
+          (entry.bank === 'ual1' || entry.bank === 'ual2' ? 1000 : 0) +
+          (entry.airborne ? 100 : 0) +
+          (entry.receives ? 50 : 0) +
+          Math.max(0, 8 - (entry.movingBones ?? 0));
+        return score(a[1]) - score(b[1]) || a[0].localeCompare(b[0]);
+      });
+    if (candidates[0]) names.add(candidates[0][0]);
   }
+
+  // Grapples are two-body contracts. If an attacker is in core, its receiver
+  // must be in core too; never preload a solo throw and leave its reaction
+  // behind in background hydration.
   for (const name of [...names]) {
     for (const paired of manifest[name]?.pairedWith ?? []) {
       if (manifest[paired]?.receives) names.add(paired);
     }
   }
+
   return [...names].sort();
 }
 
