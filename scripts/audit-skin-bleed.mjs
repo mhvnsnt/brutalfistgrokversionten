@@ -14,7 +14,7 @@
  * Usage: npm run dev, then
  *   node scripts/audit-skin-bleed.mjs                 # every wired model
  *   node scripts/audit-skin-bleed.mjs VIPER.glb,JAGER.glb
- *   node scripts/audit-skin-bleed.mjs --gate          # non-zero exit on a regression
+ *   node scripts/audit-skin-bleed.mjs --all --pipeline --gate          # non-zero exit on a regression
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -22,6 +22,7 @@ import { chromium } from 'playwright';
 
 const ARGS = process.argv.slice(2);
 const GATE = ARGS.includes('--gate');
+const ALL = ARGS.includes('--all');
 const ONLY = ARGS.find((a) => !a.startsWith('--'));
 /** Measure what the GAME loads (after the repair) rather than the raw file. */
 const PIPELINE = ARGS.includes('--pipeline');
@@ -58,7 +59,7 @@ function wiredModels() {
   };
   walk('src');
   const text = haystack.join('\n');
-  return all.filter((f) => text.includes(f));
+  return ALL ? all : all.filter((f) => text.includes(f));
 }
 
 const models = wiredModels();
