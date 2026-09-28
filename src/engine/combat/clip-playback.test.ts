@@ -21,9 +21,9 @@ describe('clips play at Tekken speed, not fast-forward', () => {
   });
 
   it('matches the feet to the ground: walk 1x, dash 2.5x', () => {
-    assert.equal(locomotionPlaybackRate(1.15), 1);
-    const dash = locomotionPlaybackRate(3.2);
-    assert.ok(Math.abs(dash - (3.2 / 1.15)) < 0.02, `dash rate ${dash}`);
+    assert.equal(locomotionPlaybackRate(0.95), 1);
+    const dash = locomotionPlaybackRate(3.0);
+    assert.ok(Math.abs(dash - (3.0 / 0.95)) < 0.02, `dash rate ${dash}`);
     assert.equal(locomotionPlaybackRate(0), 1);
   });
 
