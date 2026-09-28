@@ -263,6 +263,52 @@ export default function GameBattleArena({
     throwId: string;
   } | null>(null);
   const lastDirectionalThrowIdRef = useRef<string | null>(null);
+  const pendingThrowCommitTimerRef = useRef<number | null>(null);
+
+  /**
+   * A throw break is decided immediately, but a successful throw is not applied
+   * immediately. The defender's break window closes first; then both bodies stay
+   * in their authored grapple until the attacker's clip reaches its end. Only
+   * then do we ground/damage the receiver. This prevents the old "grab -> instant
+   * generic knockdown" shortcut and makes the receiver half a true consequence of
+   * the throw that was actually played.
+   */
+  const scheduleThrowCommit = (
+    attacker: 'p1' | 'p2',
+    victim: 'p1' | 'p2',
+    damage: number,
+    deliverer: string | null,
+    receiverOverride?: string | null,
+    receiverDuration?: number,
+    directionalDef?: { defenderPositionOffset: { x: number; y: number; z: number } },
+  ) => {
+    if (pendingThrowCommitTimerRef.current !== null) window.clearTimeout(pendingThrowCommitTimerRef.current);
+    const attackerSM = attacker === 'p1' ? p1SMRef.current : p2SMRef.current;
+    const delayMs = Math.max(0, Math.round(attackerSM.currentMoveRemainingSeconds() * 1000));
+    pendingThrowCommitTimerRef.current = window.setTimeout(() => {
+      pendingThrowCommitTimerRef.current = null;
+      const victimSM = victim === 'p1' ? p1SMRef.current : p2SMRef.current;
+      const victimLoco = victim === 'p1' ? p1LocoRef.current : p2LocoRef.current;
+      const victimHitbox = victim === 'p1' ? p1HitboxRef.current : p2HitboxRef.current;
+      if (directionalDef) alignDirectionalThrowBodies(attacker, directionalDef);
+      victimSM.applyKnockdown();
+      victimLoco.halt();
+      victimHitbox.reset();
+      playOpponentHalf(victim, deliverer, receiverOverride, receiverDuration);
+      engineRef.current?.applyIncomingHit(victim, damage, false, 0.3);
+      if (settings.soundEnabled) sfx.playHeavyHit();
+      audioManagerRef.current.playSFX('throw_connect');
+      setDamageEvent({
+        count: ++damageEventCountRef.current,
+        player: victim,
+        damage,
+        isCounter: false,
+        factionColor: victim === 'p1' ? p1Color : p2Color,
+      });
+      setKnockdownEvent({ count: ++knockdownEventCountRef.current, player: victim });
+      console.log(`[Arena] 🤼 Throw commit after authored grapple: ${attacker} -> ${victim}, delay=${delayMs}ms, damage=${damage}`);
+    }, delayMs);
+  };
 
   const playOpponentHalf = useCallback((victim: 'p1' | 'p2', deliverer: string | null, receiverOverride?: string | null, receiverDuration?: number) => {
     if (!deliverer) return;
@@ -308,6 +354,7 @@ export default function GameBattleArena({
 
   useEffect(() => () => {
     if (grappleBeatTimer.current !== null) window.clearTimeout(grappleBeatTimer.current);
+    if (pendingThrowCommitTimerRef.current !== null) window.clearTimeout(pendingThrowCommitTimerRef.current);
   }, []);
   const [ko, setKo] = useState(false);
   const [winner, setWinner] = useState<'p1' | 'p2' | 'draw' | null>(null);
@@ -2197,23 +2244,8 @@ export default function GameBattleArena({
       } else if (throwBreakOutcome === 'committed' && directionalP2Throw) {
         directionalThrowPendingRef.current = null;
         const throwDmg = getThrowDamage(directionalP2Throw.throwId, false);
-        p2SMRef.current.applyKnockdown();
         const p2ThrowDef = THROW_CATALOG[directionalP2Throw.throwId];
-        if (p2ThrowDef) alignDirectionalThrowBodies('p1', p2ThrowDef);
-        playOpponentHalf('p2', p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1, p2ThrowDef?.defenderAnimation, p2ThrowDef?.receiverDuration);
-        p2LocoRef.current.halt();
-        p2HitboxRef.current.reset();
-        engineRef.current?.applyIncomingHit('p2', throwDmg, false, 0.3);
-        if (settings.soundEnabled) sfx.playHeavyHit();
-        audioManagerRef.current.playSFX('throw_connect');
-        setDamageEvent({
-          count: ++damageEventCountRef.current,
-          player: 'p2',
-          damage: throwDmg,
-          isCounter: false,
-          factionColor: p2Color,
-        });
-        setKnockdownEvent({ count: ++knockdownEventCountRef.current, player: 'p2' });
+        scheduleThrowCommit('p1', 'p2', throwDmg, p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1, p2ThrowDef?.defenderAnimation, p2ThrowDef?.receiverDuration, p2ThrowDef);
       } else if (throwBreakOutcome === 'broken') {
         p1SMRef.current.resolveCommandThrow(false);
         p2LocoRef.current.applyPushback(0.35);
@@ -2223,36 +2255,8 @@ export default function GameBattleArena({
         setTimeout(() => setSpecialMoveNotice(null), 900);
       } else if (throwBreakOutcome === 'committed') {
         const throwDmg = COMMAND_THROW_MOVE.damage ?? 220;
-        p2SMRef.current.applyKnockdown();
-        // THE OTHER MAN'S HALF. applyKnockdown still runs underneath, so the
-        // physics, the damage and the wake-up are untouched — this only
-        // decides what his body is seen doing while it happens.
-        playOpponentHalf('p2', p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1);
-        p2LocoRef.current.halt();
-        p2HitboxRef.current.reset();
-        console.log('[Arena] ✅ Command throw committed — damage:', throwDmg);
-        engineRef.current?.applyIncomingHit('p2', throwDmg, false, 0.3);
-        logHit('p1', 'p2', throwDmg, false, 'throw');
-        if (settings.soundEnabled) sfx.playHeavyHit();
-        audioManagerRef.current.playSFX('throw_connect');
-        setDamageEvent({
-          count: ++damageEventCountRef.current,
-          player: 'p2',
-          damage: throwDmg,
-          isCounter: false,
-          factionColor: p2Color,
-        });
-        setFeedbackEvents(prev => [...prev.slice(-6), {
-          id: ++feedbackIdRef.current,
-          moveId: 'commandThrow',
-          moveName: 'Command Throw',
-          damage: throwDmg,
-          isBlocked: false,
-          isCounter: false,
-          player: 'p1',
-          x: 60 + Math.random() * 10,
-          y: 20 + Math.random() * 20,
-        }]);
+        scheduleThrowCommit('p1', 'p2', throwDmg, p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1);
+        console.log('[Arena] 🤼 Command throw committed; damage waits for grapple completion:', throwDmg);
       }
 
       // ── THE SAME THING, WITH THE PLAYER AS THE VICTIM ─────────────────
@@ -2273,23 +2277,8 @@ export default function GameBattleArena({
       } else if (p1ThrowBreakOutcome === 'committed' && directionalP1Throw) {
         directionalThrowPendingRef.current = null;
         const throwDmg = getThrowDamage(directionalP1Throw.throwId, false);
-        p1SMRef.current.applyKnockdown();
-        p1LocoRef.current.halt();
-        p1HitboxRef.current.reset();
         const p1ThrowDef = THROW_CATALOG[directionalP1Throw.throwId];
-        if (p1ThrowDef) alignDirectionalThrowBodies('p2', p1ThrowDef);
-        playOpponentHalf('p1', p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2, p1ThrowDef?.defenderAnimation, p1ThrowDef?.receiverDuration);
-        engineRef.current?.applyIncomingHit('p1', throwDmg, false, 0.3);
-        if (settings.soundEnabled) sfx.playHeavyHit();
-        audioManagerRef.current.playSFX('throw_connect');
-        setDamageEvent({
-          count: ++damageEventCountRef.current,
-          player: 'p1',
-          damage: throwDmg,
-          isCounter: false,
-          factionColor: p1Color,
-        });
-        setKnockdownEvent({ count: ++knockdownEventCountRef.current, player: 'p1' });
+        scheduleThrowCommit('p2', 'p1', throwDmg, p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2, p1ThrowDef?.defenderAnimation, p1ThrowDef?.receiverDuration, p1ThrowDef);
       } else if (p1ThrowBreakOutcome === 'broken') {
         p2SMRef.current.resolveCommandThrow(false);
         p1LocoRef.current.applyPushback(0.35);
@@ -2299,21 +2288,8 @@ export default function GameBattleArena({
         setTimeout(() => setSpecialMoveNotice(null), 900);
       } else if (p1ThrowBreakOutcome === 'committed') {
         const throwDmg = COMMAND_THROW_MOVE.damage ?? 220;
-        p1SMRef.current.applyKnockdown();
-        p1LocoRef.current.halt();
-        p1HitboxRef.current.reset();
-        playOpponentHalf('p1', p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2);
-        engineRef.current?.applyIncomingHit('p1', throwDmg, false, 0.3);
-        logHit('p2', 'p1', throwDmg, false, 'throw');
-        if (settings.soundEnabled) sfx.playHeavyHit();
-        audioManagerRef.current.playSFX('throw_connect');
-        setDamageEvent({
-          count: ++damageEventCountRef.current,
-          player: 'p1',
-          damage: throwDmg,
-          isCounter: false,
-          factionColor: p1Color,
-        });
+        scheduleThrowCommit('p2', 'p1', throwDmg, p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2);
+        console.log('[Arena] 🤼 AI command throw committed; damage waits for grapple completion:', throwDmg);
       }
 
       const p2Hb = p2HitboxRef.current;
