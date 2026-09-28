@@ -212,3 +212,14 @@ Important: these are implementation corrections, not a claim that all animation 
 - The workflow still builds the Vite bundle with the repository base path, stamps the service-worker cache generation, creates `404.html`, runs `verify-pwa-build.mjs`, uploads `dist`, and deploys through the `github-pages` environment.
 - IMPORTANT: GitHub connector access available in this session does not expose the push-triggered Pages run/deployment result, and web access could not open the private/live deployment endpoint. Therefore runtime/PWA visual status remains UNKNOWN rather than being called PASS.
 - Next runtime gate: obtain the actual Pages deployment URL/run result, then browser-test Bannon vs Kobra on the newly deployed generation before calling the PWA verified.
+
+
+## Locomotion + knockdown correction pass — 2026-09-28
+
+- Owner runtime report promoted to P0: ordinary walking was visually reading as hyper-speed skating, and P2 AI pursuit made both bodies translate together across the arena when P1 retreated.
+- Root cause found in the current architecture: programmatic locomotion was using a 1.72 m/s walk tier while P2 AI continuously requested forward pursuit whenever outside its preferred gap. That made a player retreat and AI pursuit look like one sliding pair. Walk/run/backdash were not sufficiently separated in the browser feel.
+- Tuned locomotion tiers on main to deliberate walk 1.15 m/s, dash/run 3.2 m/s, backdash 2.7 m/s, sidestep 1.0 m/s; matched the unknown-clip animation playback fallback to 1.15 m/s.
+- Changed P2 pursuit to short approach pulses with a larger neutral band instead of continuously chasing the player. This preserves approach behavior without gluing both fighters together across the stage.
+- Added an authored `Smackdown` reaction to the canonical heavy-kick move so an ordinary playable attack now has an explicit grounded knockdown path instead of relying only on imported moves that may not be selected by the basic controls.
+- Updated the locomotion pace regression to enforce the new deliberate-walk contract and a clearly distinct dash tier.
+- IMPORTANT: these are source-level fixes; PWA/browser visual status remains UNKNOWN until the deployed generation is actually played. Do not call the walk, knockdown, or animation PASS from tests alone.
