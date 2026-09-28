@@ -84,9 +84,9 @@ export const SEMANTIC_PREFERRED_CLIPS: Record<string, string[]> = {
   strafe_right:   ['CROUCH_TORCH_WALK_RIGHT', 'INJURED_TURN_RIGHT'],
   attack_1:       ['BOXING', 'BODY_JAB_CROSS', 'BOXING__1_'],
   attack_rp:      ['COMBO_PUNCH', 'BOXING__2_', 'ILLEGAL_ELBOW_PUNCH', 'ILLEGAL_ELBOW_PUNCH__1_', 'BASEBALL_HIT'],
-  attack_2:       ['HURRICANE_KICK', 'DROP_KICK', 'ILLEGAL_KNEE'],
-  attack_lk:      ['DROP_KICK', 'ILLEGAL_KNEE', 'TIGER_FEINT_KICK'],
-  attack_rk:      ['HURRICANE_KICK', 'AU', 'CAPOEIRA', 'BASH', 'CROSS_JUMPS'],
+  attack_2:       ['HEAVYKICK', 'ROUNDHOUSEKICK', 'JUMPAXEKICK', 'DEFAULTJUMPKICK'],
+  attack_lk:      ['QUICKKICK', 'HEAVYKICK', 'GRAFKNEEASSAULT'],
+  attack_rk:      ['HEAVYKICK', 'ROUNDHOUSEKICK', 'JUMPAXEKICK'],
   block:          ['CENTER_BLOCK', 'GUARD_HIGH', 'GUARD_LOW', 'DEFENDER', 'ESQUIVA_4'],
   hit_reaction:   ['HIT_REACTION', 'HIT_TO_BODY', 'HIT_TO_HEAD', 'BIG_RIB_HIT', 'HIT_ON_THE_BACK', 'HIT_ON_SIDE_OF_HEAD', 'BIG_BODY_BLOW'],
   knockdown:      ['FALLING_FLAT_IMPACT', 'FALLING_FORWARD_DEATH', 'DEFEAT', 'DYING_BACKWARDS'],
@@ -94,7 +94,7 @@ export const SEMANTIC_PREFERRED_CLIPS: Record<string, string[]> = {
   // Deliverer halves first. SUPLEX / GERMANSUPLEX / DDT / CHOKESLAM and
   // DOUBLE_LEG_TAKEDOWN___VICTIM are the RECEIVER'S halves — they begin
   // with the head on the mat. See STANDING_START_MIN in BakedMotionBank.
-  grapple:        ['THROWSTART', 'KNEETHROW', 'JUNGLE_JUICE', 'SUPLEX', 'GERMANSUPLEX', 'DDT', 'CHOKESLAM'],
+  grapple:        ['THROWSTART', 'KNEETHROW'],
   crouch:         ['STANCE_CROUCH', 'CROUCH_IDLE_02_LOOKING_AROUND', 'CROUCH_WALK_FORWARD'],
   run:            ['DRUNK_RUN_FORWARD', 'LOCO_LIGHT'],
   dash_forward:   ['DRUNK_RUN_FORWARD', 'LOCO_STRUT'],

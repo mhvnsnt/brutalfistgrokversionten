@@ -330,11 +330,21 @@ export function normalizeClipState(name: string): FighterMotionState | null {
   return aliases[key] ?? null;
 }
 
-export function mapAnimationClips<T extends { name: string }>(clips: T[]) {
+export function mapAnimationClips<T extends { name: string; userData?: Record<string, unknown> }>(clips: T[]) {
   const mapped = new Map<FighterMotionState, T>();
+  const priority = (clip: T) => {
+    const u = clip.userData ?? {};
+    const semantic = typeof u.semanticState === 'string' ? normalizeClipState(u.semanticState) : null;
+    return (u.owns === true ? 4 : 0) + (u.baked === true ? 2 : 0) + (semantic ? 1 : 0);
+  };
   for (const clip of clips) {
-    const state = normalizeClipState(clip.name);
-    if (state && !mapped.has(state)) mapped.set(state, clip);
+    const metadataState = typeof clip.userData?.semanticState === 'string'
+      ? normalizeClipState(String(clip.userData.semanticState))
+      : null;
+    const state = metadataState ?? normalizeClipState(clip.name);
+    if (!state) continue;
+    const existing = mapped.get(state);
+    if (!existing || priority(clip) > priority(existing)) mapped.set(state, clip);
   }
   return mapped;
 }
