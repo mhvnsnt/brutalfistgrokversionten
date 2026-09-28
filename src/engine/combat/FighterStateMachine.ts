@@ -1203,8 +1203,37 @@ export class FighterStateMachine {
    * to own input, frame data, hitboxes and damage.
    */
   private clipForSpecial(move: SpecialMoveDefinition): string {
-    if (this.characterMoveClips.signature && (move.id.includes('finisher') || move.id.includes('signature') || move.id.includes('beast') || move.id.includes('verdict'))) {
+    // Special combat definitions are shared, but their presentation must not
+    // collapse back onto the same two generic swings. CharacterMoveSet owns
+    // the visual clip while the special definition continues to own timing,
+    // hitbox, damage, and input semantics.
+    if (this.characterMoveClips.signature && (
+      move.id.includes('finisher')
+      || move.id.includes('signature')
+      || move.id.includes('beast')
+      || move.id.includes('verdict')
+    )) {
       return this.characterMoveClips.signature;
+    }
+    if (this.characterMoveClips.primaryCombo && (
+      move.id.includes('combo')
+      || move.id.includes('surge')
+      || move.id.includes('rush')
+    )) {
+      return this.characterMoveClips.primaryCombo;
+    }
+    if (this.characterMoveClips.counter && (
+      move.id.includes('counter')
+      || move.id.includes('reversal')
+    )) {
+      return this.characterMoveClips.counter;
+    }
+    if (this.characterMoveClips.primaryThrow && (
+      move.id.includes('throw')
+      || move.id.includes('grapple')
+      || move.id.includes('suplex')
+    )) {
+      return this.characterMoveClips.primaryThrow;
     }
     return move.move.animation;
   }
