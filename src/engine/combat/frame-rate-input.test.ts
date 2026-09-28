@@ -200,3 +200,27 @@ describe('airborne attack routing', () => {
     });
   });
 });
+
+describe('fighter-owned special presentation', () => {
+  it('routes a shared combo special through the fighter primary-combo clip', () => {
+    withClock((advance) => {
+      const fsm = new FighterStateMachine();
+      fsm.setCharacterMoveClips({ primaryCombo: 'FIGHTER_UNIQUE_COMBO' });
+      for (let i = 0; i < 30; i++) {
+        advance(1 / 60);
+        fsm.update(BASE, 1 / 60);
+      }
+      advance(1 / 60);
+      fsm.update({ ...BASE, light: true }, 1 / 60);
+      advance(1 / 60);
+      fsm.update({ ...BASE, light: false }, 1 / 60);
+      advance(1 / 60);
+      fsm.update({ ...BASE, heavy: true }, 1 / 60);
+      advance(1 / 60);
+      fsm.update({ ...BASE, heavy: false }, 1 / 60);
+      advance(1 / 60);
+      fsm.update({ ...BASE, light: true }, 1 / 60);
+      assert.equal(fsm.activeClip(), 'FIGHTER_UNIQUE_COMBO');
+    });
+  });
+});
