@@ -41,8 +41,13 @@ const renderer = join(
 function findCreateRootEntry() {
   const assets = join(staticDir, "assets");
   if (!existsSync(assets)) return null;
-  for (const name of readdirSync(assets)) {
-    if (!name.endsWith(".js")) continue;
+  const names = readdirSync(assets).filter((name) => name.endsWith(".js"));
+  // Rolldown can erase/minify the createRoot identifier entirely. Vite's
+  // application entry is emitted as assets/index-<hash>.js, so prefer that
+  // structural entry name before falling back to content inspection.
+  const indexEntry = names.find((name) => /^index-[^/]+\\.js$/.test(name));
+  if (indexEntry) return `/assets/${indexEntry}`;
+  for (const name of names) {
     const text = readFileSync(join(assets, name), "utf8");
     if (text.includes("createRoot(") || text.includes("createRoot (")) return `/assets/${name}`;
   }
