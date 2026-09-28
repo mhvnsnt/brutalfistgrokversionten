@@ -255,6 +255,7 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   run:               ['run', 'Run', 'running', 'Running', 'sprint', 'Sprint', 'dash', 'Dash', 'walkForward', 'WalkForward', 'walk', 'Walk', 'DRUNK_RUN_FORWARD'],
   dash:              ['dash', 'Dash', 'dashForward', 'DashForward', 'run', 'Run', 'walkForward', 'WalkForward', 'dash_forward'],
   dashForward:       ['dashForward', 'DashForward', 'dash', 'Dash', 'run', 'Run', 'walkForward', 'WalkForward', 'dash_forward'],
+  dashBackward:      ['dashBackward', 'DashBackward', 'dashBack', 'DashBack', 'backDash', 'BackDash', 'backdash', 'Backdash', 'runBackward', 'RunBackward', 'walkBackward', 'WalkBackward'],
   // Real authored jump clips first. CROSS_JUMPS is a source clip but reads as
   // a jumping-jack loop, so it is a last-resort fallback rather than the normal
   // jump. World-space forward/back travel comes from LocomotionSystem.
@@ -292,6 +293,7 @@ const FADE_DURATIONS: Record<string, number> = {
   run:               0.060,
   dash:              0.050,
   dashForward:       0.050,
+  dashBackward:      0.050,
   jump:              0.040,
   jumpForward:       0.040,
   jumpBack:          0.040,
@@ -352,7 +354,7 @@ const LOOP_STATES = new Set([
   // knockdown replay its fall instead of holding the final pose.
   'idle', 'Neutral', 'walk', 'walkForward', 'walkBackward', 'Walking',
   'strafeLeft', 'strafeRight', 'sidestepLeft', 'sidestepRight',
-  'run', 'dash', 'dashForward', 'crouch',
+  'run', 'runBackward', 'dash', 'dashForward', 'dashBackward', 'crouch',
   'Backdashing',
 ]);
 
@@ -361,7 +363,7 @@ const WAKE_STATES = new Set(['WakeupTechRoll', 'WakeupBackrise', 'WakeupQuickSta
 const LOCO_RATE_STATES = new Set([
   'walk', 'walkForward', 'walkBackward', 'Walking',
   'strafeLeft', 'strafeRight', 'sidestepLeft', 'sidestepRight',
-  'run', 'dash', 'dashForward', 'Backdashing', 'crouchWalk',
+  'run', 'runBackward', 'dash', 'dashForward', 'dashBackward', 'Backdashing', 'crouchWalk',
 ]);
 
 const ATTACK_STATES = new Set([
