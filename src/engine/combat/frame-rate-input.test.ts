@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { FighterStateMachine } from './FighterStateMachine.ts';
+import { getCharacterMoveSet } from '../CharacterMoveSetSystem.ts';
 
 /**
  * DOES A PRESS STILL COME OUT WHEN THE FRAME RATE DROPS?
@@ -239,5 +240,29 @@ describe('fighter-owned special presentation', () => {
       }
       assert.equal(fsm.activeClip(), 'FIGHTER_UNIQUE_COMBO');
     });
+  });
+});
+
+
+describe('directional roster moves are gameplay-owned', () => {
+  it('uses a fighter-owned catalog move for forward + LP instead of the generic jab', () => {
+    withClock((advance) => {
+      const fsm = new FighterStateMachine();
+      fsm.setCharacterMoveIds({ forwardLight: 'bf_uppercut' });
+      fsm.setCharacterMoveClips({ forwardLight: 'uppercut' });
+      advance(1 / 60);
+      fsm.update({ ...BASE, forward: 1, lp: true }, 1 / 60);
+      assert.equal(fsm.current, 'lightAttack');
+      assert.equal(fsm.activeMoveName(), 'Uppercut');
+      assert.equal(fsm.activeClip(), 'uppercut');
+    });
+  });
+
+  it('derives distinct directional move identities from the roster data', () => {
+    const bannon = getCharacterMoveSet('bannon');
+    const onyx = getCharacterMoveSet('onyx');
+    assert.ok(bannon?.forwardLight);
+    assert.ok(onyx?.forwardLight);
+    assert.notEqual(bannon?.forwardLight, onyx?.forwardLight);
   });
 });
