@@ -499,15 +499,12 @@ export default function GameBattleArena({
     p1SMRef.current = new FighterStateMachine();
     p2SMRef.current = new FighterStateMachine();
 
-    // Bind each fighter's authored animation ownership on the FIRST match too.
-    // resetForRound already did this for later rounds, but the initial match
-    // path recreated the state machines without installing the roster move-set
-    // clips, so both fighters fell back to the shared semantic bank until the
-    // first round reset. That made per-fighter ownership appear to work only
-    // after a round transition.
-    const buildCharacterClipMap = (fighterId: string) => {
+    // Bind both the visual clip and the actual catalog move ID for every
+    // fighter-owned directional slot. The ID is what changes gameplay frame data;
+    // the clip is what changes the animation.
+    const buildCharacterMoveData = (fighterId: string) => {
       const set = getCharacterMoveSet(fighterId);
-      if (!set) return {};
+      if (!set) return { clips: {}, ids: {} };
       const slots = [
         'idle','walkForward','walkBackward','crouch','guard',
         'lightAttack','heavyAttack',
@@ -518,41 +515,27 @@ export default function GameBattleArena({
         'grappleInitiate','primaryThrow','knockdown','wakeup',
         'hitReaction','ko','signature',
       ] as const;
-      const out: Record<string, string> = {};
+      const clips: Record<string, string> = {};
+      const ids: Record<string, string> = {};
       for (const slot of slots) {
-        const move = getMoveById(set[slot]);
-        if (move?.animation) out[slot] = move.animation;
+        const moveId = set[slot];
+        if (!moveId) continue;
+        ids[slot] = moveId;
+        const move = getMoveById(moveId);
+        if (move?.animation) clips[slot] = move.animation;
       }
-      return out;
+      return { clips, ids };
     };
-    p1SMRef.current.setCharacterMoveClips(buildCharacterClipMap(p1Fighter.id));
-    p2SMRef.current.setCharacterMoveClips(buildCharacterClipMap(p2Fighter.id));
+    const p1MoveData = buildCharacterMoveData(p1Fighter.id);
+    const p2MoveData = buildCharacterMoveData(p2Fighter.id);
+    p1SMRef.current.setCharacterMoveClips(p1MoveData.clips);
+    p2SMRef.current.setCharacterMoveClips(p2MoveData.clips);
+    p1SMRef.current.setCharacterMoveIds(p1MoveData.ids);
+    p2SMRef.current.setCharacterMoveIds(p2MoveData.ids);
 
-    // The roster's CharacterMoveSet is authoritative for each fighter's owned
-    // animations. The generic semantic bank remains only the fallback when an
-    // authored slot is unavailable on that rig.
-    const buildCharacterClipMap = (fighterId: string) => {
-      const set = getCharacterMoveSet(fighterId);
-      if (!set) return {};
-      const slots = [
-        'idle','walkForward','walkBackward','crouch','guard',
-        'lightAttack','heavyAttack',
-        'forwardLight','forwardHeavy','forwardLowKick','forwardHighKick',
-        'backLight','backHeavy','backLowKick','backHighKick',
-        'downForwardLight','downForwardHeavy',
-        'lowKick','highKick','primaryCombo','counter',
-        'grappleInitiate','primaryThrow','knockdown','wakeup',
-        'hitReaction','ko','signature',
-      ] as const;
-      const out: Record<string,string> = {};
-      for (const slot of slots) {
-        const move = getMoveById(set[slot]);
-        if (move?.animation) out[slot] = move.animation;
-      }
-      return out;
-    };
-    p1SMRef.current.setCharacterMoveClips(buildCharacterClipMap(p1Fighter.id));
-    p2SMRef.current.setCharacterMoveClips(buildCharacterClipMap(p2Fighter.id));
+    // The roster's CharacterMoveSet is authoritative for each fighter's
+    // presentation AND directional combat data. The generic semantic bank is
+    // only the fallback when that fighter's rig lacks the requested clip.
     p1SMRef.current.registerSpecialMoves([...schwarzerblitzSpecials(moveSetForFighter(p1Fighter.id), p1Fighter.id), ...generatedMoveset(p1Fighter.id)]);
     p2SMRef.current.registerSpecialMoves([...schwarzerblitzSpecials(moveSetForFighter(p2Fighter.id), p2Fighter.id), ...generatedMoveset(p2Fighter.id)]);
     p1SMRef.current.attachCommandBuffer(p1CommandRef.current);
