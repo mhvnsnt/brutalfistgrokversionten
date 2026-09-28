@@ -60,6 +60,7 @@ const CROSSFADE_DURATIONS: Partial<Record<FighterMotionState, number>> = {
   jumpAttack:        0.050,
   runAttack:         0.050,
   CommandThrow:      0.067,
+  grapple:            0.067,
   Startup:           0.050,
   Active:            0.033,
   // Tekken specials
@@ -107,7 +108,7 @@ const LOOP_STATES = new Set<FighterMotionState>([
 // ── States that play once and return to idle ──────────────────────────────────
 const ONESHOT_STATES = new Set<FighterMotionState>([
   'lightAttack', 'heavyAttack', 'lightKick', 'heavyKick', 'crouchLightAttack', 'crouchHeavyAttack',
-  'jumpAttack', 'runAttack', 'CommandThrow', 'ThrowWhiff',
+  'jumpAttack', 'runAttack', 'CommandThrow', 'grapple', 'ThrowWhiff',
   'overdrive', 'finisher', 'superArmor',
   'hit', 'hitLow', 'hitHigh', 'HitStun', 'Stunned', 'Hitstun',
   'knockdown', 'Crumple',
