@@ -44,7 +44,7 @@ function findCreateRootEntry() {
   for (const name of readdirSync(assets)) {
     if (!name.endsWith(".js")) continue;
     const text = readFileSync(join(assets, name), "utf8");
-    if (text.includes("Preview runtime error")) return `/assets/${name}`;
+    if (text.includes("createRoot(") || text.includes("createRoot (")) return `/assets/${name}`;
   }
   return null;
 }
