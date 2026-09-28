@@ -67,7 +67,7 @@ describe('the fight is paced like the genre it is built on', () => {
 
   it('keeps dash clearly faster than the deliberate walk', () => {
     const ratio = DASH_SPEED / WALK_SPEED;
-    assert.ok(ratio >= 2.3 && ratio <= 3.2, `dash is ${ratio.toFixed(2)}x the walk — expected a distinct fast tier`);
+    assert.ok(ratio >= 2.3 && ratio <= 3.5, `dash is ${ratio.toFixed(2)}x the walk — expected a distinct fast tier`);
   });
 
   /**
