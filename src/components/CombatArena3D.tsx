@@ -38,7 +38,7 @@ function resolveLocomotionPresentation(
   requested: string,
   airborneY = 0,
 ): string {
-  if (!velocity) return state === 'Walking' ? (requested || 'idle') : state;
+  if (!velocity) return state === 'Walking' ? (requested || 'idle') : (requested || state);
   const f = velocity.forward ?? 0;
   const s = velocity.strafe ?? 0;
   const af = Math.abs(f);
