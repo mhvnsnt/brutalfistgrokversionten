@@ -4045,6 +4045,11 @@ function mapActionToDisplayState(
 }
 
 /** Character-authored P2 combat brain. */
+let p2ThrowCooldownUntil = 0;
+const P2_THROW_COOLDOWN_MS = 1200;
+const P2_APPROACH_PERIOD_MS = 1100;
+const P2_APPROACH_PULSE_MS = 140;
+
 function buildP2AIInput(
   p2State: string, p1Health: number, p2Health: number,
   p2X: number, p1X: number, p2Z: number, p1Z: number,
@@ -4074,8 +4079,9 @@ function buildP2AIInput(
   // the two fighters translate together across the whole arena, which reads as
   // skating instead of footwork. Approach in short pulses and leave a larger
   // neutral band once the preferred range is reached.
-  const approachPulse = Math.floor(now / 260) % 2 === 0;
-  const approachGap = preferredGap + 0.45;
+  const approachPhase = now % P2_APPROACH_PERIOD_MS;
+  const approachPulse = approachPhase < P2_APPROACH_PULSE_MS;
+  const approachGap = preferredGap + 0.70;
   if (distance > approachGap && approachPulse)
     return {forward:1,strafe:orbit,light:false,heavy:false,guard:false,crouch:false,jump:false};
   if ((aerialStyle || speedStyle) && cycle === 6)
@@ -4093,7 +4099,8 @@ function buildP2AIInput(
     powerStyle,
     evasiveStyle,
   });
-  if (directionalThrowId)
+  if (directionalThrowId && now >= p2ThrowCooldownUntil) {
+    p2ThrowCooldownUntil = now + P2_THROW_COOLDOWN_MS;
     return {
       forward: 0, strafe: 0, light: false, heavy: false, guard: false,
       crouch: false, jump: false, directionalThrowId,
@@ -4115,8 +4122,10 @@ function buildP2AIInput(
    * wrestler or brawler reaches for it, everyone else does it occasionally.
    * The player gets the same 0.35 s break window the AI does.
    */
-  if (distance <= 1.35 && (cycle === 4 || (powerStyle && cycle === 2)))
+  if (distance <= 1.35 && now >= p2ThrowCooldownUntil && (cycle === 4 || (powerStyle && cycle === 2))) {
+    p2ThrowCooldownUntil = now + P2_THROW_COOLDOWN_MS;
     return {forward:0,strafe:0,light:false,heavy:false,guard:false,crouch:false,jump:false,grapple:true};
+  }
   switch (cycle) {
     case 0: case 1: return {forward:0,strafe:orbit,light:true,heavy:false,guard:false,crouch:false,jump:false};
     case 2: return {forward:0,strafe:orbit,light:false,heavy:true,guard:false,crouch:false,jump:false};
