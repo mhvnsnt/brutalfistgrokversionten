@@ -844,6 +844,7 @@ export class FighterStateMachine {
   private motionState: FighterMotionState = 'idle';
   /** Character-specific authored animation slots. Generic semantic aliases are only fallback. */
   private characterMoveClips: Partial<Record<CharacterMoveClipSlot, string>> = {};
+  private characterMoveIds: Partial<Record<CharacterMoveClipSlot, string>> = {};
 
   private currentMove: MoveWindow | null = null;
   private moveTimer = 0;
@@ -1005,6 +1006,11 @@ export class FighterStateMachine {
   /** Install the fighter's canonical moveset animation choices. */
   setCharacterMoveClips(clips: Partial<Record<string, string>>): void {
     this.characterMoveClips = { ...clips };
+  }
+
+  /** Install the fighter's canonical catalog move IDs separately from clip names. */
+  setCharacterMoveIds(moveIds: Partial<Record<string, string>>): void {
+    this.characterMoveIds = { ...moveIds };
   }
 
   /** Clip override for the current non-attack motion, if this fighter owns one. */
@@ -2253,7 +2259,7 @@ export class FighterStateMachine {
     const back = resolvedInput.forward < -0.45;
     const downForward = resolvedInput.crouch && forward;
     if (downForward && (risingLp || risingLight)) {
-      const moveId = this.characterMoveClips.downForwardLight;
+      const moveId = this.characterMoveIds.downForwardLight;
       if (moveId) {
         this.walkVelocity = { forward: 0, strafe: 0 };
         return this.beginAttack(
@@ -2263,7 +2269,7 @@ export class FighterStateMachine {
       }
     }
     if (downForward && (risingRp || risingHeavy || risingLk || risingRk)) {
-      const moveId = this.characterMoveClips.downForwardHeavy;
+      const moveId = this.characterMoveIds.downForwardHeavy;
       if (moveId) {
         this.walkVelocity = { forward: 0, strafe: 0 };
         return this.beginAttack(
@@ -2274,28 +2280,28 @@ export class FighterStateMachine {
     }
     if (forward) {
       if (risingLp || (risingLight && !risingLk && !risingRk)) {
-        const moveId = this.characterMoveClips.forwardLight;
+        const moveId = this.characterMoveIds.forwardLight;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           return this.beginAttack('lightAttack', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightAttack, 'forwardLight', 'lightAttack'));
         }
       }
       if (risingRp || (risingHeavy && !risingLk && !risingRk)) {
-        const moveId = this.characterMoveClips.forwardHeavy;
+        const moveId = this.characterMoveIds.forwardHeavy;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           return this.beginAttack('heavyAttack', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyAttack, 'forwardHeavy', 'heavyAttack'));
         }
       }
       if (risingLk) {
-        const moveId = this.characterMoveClips.forwardLowKick;
+        const moveId = this.characterMoveIds.forwardLowKick;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           return this.beginAttack('lightKick', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightKick, 'forwardLowKick', 'lightKick'));
         }
       }
       if (risingRk) {
-        const moveId = this.characterMoveClips.forwardHighKick;
+        const moveId = this.characterMoveIds.forwardHighKick;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           return this.beginAttack('heavyKick', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyKick, 'forwardHighKick', 'heavyKick'));
@@ -2304,28 +2310,28 @@ export class FighterStateMachine {
     }
     if (back) {
       if (risingLp || (risingLight && !risingLk && !risingRk)) {
-        const moveId = this.characterMoveClips.backLight;
+        const moveId = this.characterMoveIds.backLight;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           return this.beginAttack('lightAttack', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightAttack, 'backLight', 'lightAttack'));
         }
       }
       if (risingRp || (risingHeavy && !risingLk && !risingRk)) {
-        const moveId = this.characterMoveClips.backHeavy;
+        const moveId = this.characterMoveIds.backHeavy;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           return this.beginAttack('heavyAttack', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyAttack, 'backHeavy', 'heavyAttack'));
         }
       }
       if (risingLk) {
-        const moveId = this.characterMoveClips.backLowKick;
+        const moveId = this.characterMoveIds.backLowKick;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           return this.beginAttack('lightKick', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightKick, 'backLowKick', 'lightKick'));
         }
       }
       if (risingRk) {
-        const moveId = this.characterMoveClips.backHighKick;
+        const moveId = this.characterMoveIds.backHighKick;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           return this.beginAttack('heavyKick', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyKick, 'backHighKick', 'heavyKick'));
