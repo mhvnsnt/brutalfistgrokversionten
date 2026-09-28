@@ -3,6 +3,17 @@ import { normalizeUniversalAnimation } from './UniversalAnimationPipeline.ts';
 
 interface EulerFile { dur:number; keys:Array<{t:number;bones:Record<string,{rx:number;ry:number;rz:number}>}>; }
 
+export function isCollapsedAnimationClip(clip:THREE.AnimationClip,minMovingBones=3):boolean{
+  const seen=new Set<string>();
+  for(const track of clip.tracks){
+    if(!track.name.endsWith('.quaternion')) continue;
+    const v=track.values; let widest=0;
+    for(let i=4;i+3<v.length;i+=4){const dot=Math.min(1,Math.abs(v[i]*v[0]+v[i+1]*v[1]+v[i+2]*v[2]+v[i+3]*v[3])); widest=Math.max(widest,Math.acos(dot)*2*180/Math.PI);}
+    if(widest>5) seen.add(track.name);
+  }
+  return seen.size<minMovingBones;
+}
+
 export async function recoverBannonEulerClip(name:string,targetRoot:THREE.Object3D):Promise<THREE.AnimationClip|null>{
   const response=await fetch('/motion/'+encodeURIComponent(name)+'.json',{cache:'no-cache'});
   if(!response.ok) return null;
