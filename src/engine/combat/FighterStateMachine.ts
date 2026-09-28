@@ -22,6 +22,8 @@ export type ActionState =
 // ── Wakeup option buffered during knockdown recovery ─────────────────────────
 export type WakeupOption = 'techRoll' | 'backrise' | 'quickStand' | null;
 
+type CharacterMoveClipSlot = 'idle' | 'walkForward' | 'walkBackward' | 'crouch' | 'guard' | 'lightAttack' | 'heavyAttack' | 'lowKick' | 'highKick' | 'primaryCombo' | 'counter' | 'grappleInitiate' | 'primaryThrow' | 'knockdown' | 'wakeup' | 'hitReaction' | 'ko' | 'signature';
+
 export interface FighterInput {
   forward: number;
   strafe: number;
@@ -816,7 +818,7 @@ export class FighterStateMachine {
   private actionState: ActionState = 'Idle';
   private motionState: FighterMotionState = 'idle';
   /** Character-specific authored animation slots. Generic semantic aliases are only fallback. */
-  private characterMoveClips: Partial<Record<'idle' | 'walkForward' | 'walkBackward' | 'crouch' | 'guard' | 'lightAttack' | 'heavyAttack' | 'lowKick' | 'highKick' | 'primaryCombo' | 'counter' | 'grappleInitiate' | 'primaryThrow' | 'knockdown' | 'wakeup' | 'hitReaction' | 'ko' | 'signature', string>> = {};
+  private characterMoveClips: Partial<Record<CharacterMoveClipSlot, string>> = {};
 
   private currentMove: MoveWindow | null = null;
   private moveTimer = 0;
@@ -991,13 +993,13 @@ export class FighterStateMachine {
       case 'guardLow': return this.characterMoveClips.guard ?? null;
       case 'jump':
       case 'jumpForward':
-      case 'jumpBack': return this.characterMoveClips.primaryCombo ?? null;
+      case 'jumpBack': return null;
       case 'idle': return this.characterMoveClips.idle ?? null;
       default: return null;
     }
   }
 
-  private withCharacterClip(move: MoveWindow, slot: keyof typeof this.characterMoveClips): MoveWindow {
+  private withCharacterClip(move: MoveWindow, slot: CharacterMoveClipSlot): MoveWindow {
     const clip = this.characterMoveClips[slot];
     return clip ? { ...move, clip } : move;
   }
