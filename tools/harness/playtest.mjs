@@ -133,7 +133,18 @@ const go = async (label, t, ms = 2200) => {
 await page.mouse.click(206, 458); await page.waitForTimeout(2500);   // PRESS START
 await go('mode', 'VERSUS');
 await go('P1', 'BANNON', 1400);
+// SWITCH to player 2 explicitly. Tapping a second roster tile moves the CURSOR;
+// it does not fill the other slot, so without this the run sits on player
+// select forever and FIGHT! never appears (measured: three runs lost this way).
+await go('to P2', 'SWITCH', 1200);
 await go('P2', 'VIPER', 1600);
+// Only start once the button really exists -- it is rendered by `canStart`.
+for (let i = 0; i < 8; i++) {
+  const ready = await page.evaluate(() => [...document.querySelectorAll('button')].some((b) => /^FIGHT!?$/i.test((b.textContent || '').trim())));
+  if (ready) break;
+  await go('to P2 (retry)', 'SWITCH', 800);
+  await go('P2 (retry)', 'VIPER', 1200);
+}
 await go('start', 'FIGHT!', 3000);
 await go('stage', 'CONFIRM STAGE', 3000) || await go('stage', '\u25b6 CONFIRM STAGE', 3000);
 // Wait for the arena to actually be live: a scene with skinned rigs in it.
