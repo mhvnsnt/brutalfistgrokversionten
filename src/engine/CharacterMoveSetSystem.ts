@@ -82,8 +82,28 @@ export function getCharacterMoveSet(characterId: string): CustomizedMoveSet | nu
   }
   const fighter = getBannonFighter(characterId);
   if (!fighter) return null;
+
+  const base = fighter.defaultMoveSet;
+  // Directional slots are part of the fighter's actual gameplay moveset. Use
+  // the character's authored extras where they are real strikes/kicks, and
+  // fall back to that fighter's own core move rather than a global animation.
+  const authoredExtra1 = base.extraMove1 && getMoveById(base.extraMove1);
+  const authoredExtra2 = base.extraMove2 && getMoveById(base.extraMove2);
+  const strikeOrKick = (m: BrutalFistMove | null | undefined) =>
+    m && (m.category === 'strike' || m.category === 'kick') ? m.id : undefined;
+
   return {
-    ...fighter.defaultMoveSet,
+    ...base,
+    forwardLight: base.forwardLight ?? strikeOrKick(authoredExtra1) ?? base.lightAttack,
+    forwardHeavy: base.forwardHeavy ?? strikeOrKick(authoredExtra2) ?? base.heavyAttack,
+    forwardLowKick: base.forwardLowKick ?? base.lowKick,
+    forwardHighKick: base.forwardHighKick ?? base.highKick,
+    backLight: base.backLight ?? base.counter,
+    backHeavy: base.backHeavy ?? base.primaryCombo,
+    backLowKick: base.backLowKick ?? base.lowKick,
+    backHighKick: base.backHighKick ?? base.highKick,
+    downForwardLight: base.downForwardLight ?? strikeOrKick(authoredExtra1) ?? base.lightAttack,
+    downForwardHeavy: base.downForwardHeavy ?? strikeOrKick(authoredExtra2) ?? base.highKick,
     characterId,
     isCustomized: false,
     customizedSlots: [],
