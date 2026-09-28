@@ -22,7 +22,8 @@ export type ActionState =
 // ── Wakeup option buffered during knockdown recovery ─────────────────────────
 export type WakeupOption = 'techRoll' | 'backrise' | 'quickStand' | null;
 
-type CharacterMoveClipSlot =
+export type CharacterMoveClipSlot =
+  | 'crouchLight' | 'crouchKick'
   | 'idle' | 'walkForward' | 'walkBackward' | 'crouch' | 'guard'
   | 'lightAttack' | 'heavyAttack'
   | 'forwardLight' | 'forwardHeavy' | 'forwardLowKick' | 'forwardHighKick'
@@ -167,6 +168,10 @@ export interface MoveWindow {
   damage?: number;
   /** Measured strike-limb reach in metres; drives the move-specific contact envelope. */
   contactReach?: number;
+  hitstun?: number;
+  pushback?: number;
+  launch?: number;
+  stringFollowups?: StringFollowup[];
   isSpecial?: boolean;
   specialName?: string;
   /** If true, this move is a throw — cannot be blocked by guard */
@@ -844,6 +849,7 @@ export class FighterStateMachine {
   private motionState: FighterMotionState = 'idle';
   /** Character-specific authored animation slots. Generic semantic aliases are only fallback. */
   private characterMoveClips: Partial<Record<CharacterMoveClipSlot, string>> = {};
+  private characterMoveWindows: Partial<Record<CharacterMoveClipSlot, MoveWindow>> = {};
   private characterMoveIds: Partial<Record<CharacterMoveClipSlot, string>> = {};
 
   private currentMove: MoveWindow | null = null;
@@ -1006,6 +1012,21 @@ export class FighterStateMachine {
   /** Install the fighter's canonical moveset animation choices. */
   setCharacterMoveClips(clips: Partial<Record<string, string>>): void {
     this.characterMoveClips = { ...clips };
+  }
+
+  /** Install the fighter's fully resolved style-profile move windows. */
+  setCharacterMoveWindows(windows: Partial<Record<string, MoveWindow>>): void {
+    this.characterMoveWindows = { ...windows } as Partial<Record<CharacterMoveClipSlot, MoveWindow>>;
+  }
+
+  characterWindowFor(slot: CharacterMoveClipSlot): MoveWindow | null {
+    return this.characterMoveWindows[slot] ?? null;
+  }
+
+  private slotWindow(slot: CharacterMoveClipSlot, fallback: MoveWindow, clipSlot: CharacterMoveClipSlot = slot): MoveWindow {
+    const own = this.characterMoveWindows[slot];
+    if (own) return own.clip || !this.characterMoveClips[clipSlot] ? own : { ...own, clip: this.characterMoveClips[clipSlot] };
+    return this.withCharacterClip(fallback, clipSlot);
   }
 
   /** Install the fighter's canonical catalog move IDs separately from clip names. */
@@ -2352,28 +2373,28 @@ export class FighterStateMachine {
       && Math.abs(resolvedInput.strafe) < 0.2;
     if (crouchingNow && (risingLk || risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('crouchHeavyAttack', this.withCharacterClip(CROUCH_MOVE_WINDOWS.crouchHeavyAttack, 'lowKick'));
+      return this.beginAttack('crouchHeavyAttack', this.slotWindow('crouchKick', CROUCH_MOVE_WINDOWS.crouchHeavyAttack, 'lowKick'));
     }
     if (crouchingNow && (risingLp || risingRp || risingLight || risingHeavy)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('crouchLightAttack', this.withCharacterClip(CROUCH_MOVE_WINDOWS.crouchLightAttack, 'lightAttack'));
+      return this.beginAttack('crouchLightAttack', this.slotWindow('crouchLight', CROUCH_MOVE_WINDOWS.crouchLightAttack, 'lightAttack'));
     }
 
     if (risingLk && !risingLp) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('lightKick', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.lightKick, 'lowKick'));
+      return this.beginAttack('lightKick', this.slotWindow('lowKick', DEFAULT_MOVE_WINDOWS.lightKick));
     }
     if (risingRk && !risingRp) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('heavyKick', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.heavyKick, 'highKick'));
+      return this.beginAttack('heavyKick', this.slotWindow('highKick', DEFAULT_MOVE_WINDOWS.heavyKick));
     }
     if (risingLp || (risingLight && !risingLk && !risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('lightAttack', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.lightAttack, 'lightAttack'));
+      return this.beginAttack('lightAttack', this.slotWindow('lightAttack', DEFAULT_MOVE_WINDOWS.lightAttack));
     }
     if (risingRp || (risingHeavy && !risingLk && !risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('heavyAttack', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.heavyAttack, 'heavyAttack'));
+      return this.beginAttack('heavyAttack', this.slotWindow('heavyAttack', DEFAULT_MOVE_WINDOWS.heavyAttack));
     }
 
     if (resolvedInput.guard) {
@@ -2520,6 +2541,7 @@ export class FighterStateMachine {
 
   // ── Compute HitStun duration from active frames of the source move ─────────
   private computeHitStunDuration(move: MoveWindow): number {
+    if (move.hitstun !== undefined) return Math.max(HITSTUN_MIN, Math.min(HITSTUN_MAX, move.hitstun));
     const activeSeconds = move.active * HITSTUN_ACTIVE_FRAME_MULTIPLIER;
     return Math.max(HITSTUN_MIN, Math.min(HITSTUN_MAX, activeSeconds));
   }

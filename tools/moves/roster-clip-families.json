@@ -1,0 +1,156 @@
+{
+ "bannon": {
+  "bank": 22,
+  "brawl": 7,
+  "knee": 3
+ },
+ "maime": {
+  "bank": 9,
+  "karate": 9,
+  "boxing": 11,
+  "spin": 3
+ },
+ "onyx": {
+  "bank": 22,
+  "brawl": 7,
+  "boxing": 3
+ },
+ "cain_elias": {
+  "bank": 14,
+  "boxing": 12,
+  "knee": 4,
+  "brawl": 2
+ },
+ "stick_up": {
+  "boxing": 13,
+  "bank": 12,
+  "karate": 4,
+  "spin": 3
+ },
+ "cipher": {
+  "bank": 10,
+  "boxing": 12,
+  "karate": 8,
+  "spin": 2
+ },
+ "echo": {
+  "bank": 11,
+  "boxing": 13,
+  "spin": 3,
+  "karate": 5
+ },
+ "cody": {
+  "bank": 16,
+  "brawl": 6,
+  "boxing": 10
+ },
+ "hall_nighter": {
+  "bank": 17,
+  "boxing": 10,
+  "knee": 3,
+  "brawl": 2
+ },
+ "static": {
+  "boxing": 15,
+  "karate": 10,
+  "bank": 6,
+  "spin": 1
+ },
+ "viper": {
+  "boxing": 13,
+  "bank": 14,
+  "spin": 2,
+  "karate": 2,
+  "knee": 1
+ },
+ "kobra": {
+  "boxing": 13,
+  "bank": 13,
+  "knee": 4,
+  "spin": 1,
+  "karate": 1
+ },
+ "aaron_ruben": {
+  "bank": 19,
+  "boxing": 10,
+  "knee": 2,
+  "brawl": 1
+ },
+ "hollow": {
+  "boxing": 13,
+  "bank": 17,
+  "karate": 1,
+  "knee": 1
+ },
+ "edwin_kennedy": {
+  "bank": 20,
+  "brawl": 4,
+  "boxing": 8
+ },
+ "pablo": {
+  "bank": 19,
+  "boxing": 8,
+  "brawl": 5
+ },
+ "tyneshia": {
+  "bank": 13,
+  "boxing": 13,
+  "knee": 4,
+  "brawl": 2
+ },
+ "triple_xxx": {
+  "boxing": 14,
+  "bank": 11,
+  "spin": 3,
+  "karate": 4
+ },
+ "el_toro_de_oro": {
+  "bank": 21,
+  "boxing": 7,
+  "brawl": 2,
+  "spin": 2
+ },
+ "stan_combs": {
+  "boxing": 15,
+  "bank": 15,
+  "knee": 2
+ },
+ "brutus": {
+  "bank": 20,
+  "brawl": 6,
+  "boxing": 6
+ },
+ "titan": {
+  "bank": 17,
+  "boxing": 8,
+  "brawl": 4,
+  "knee": 3
+ },
+ "master_sensei": {
+  "boxing": 14,
+  "karate": 9,
+  "bank": 9
+ },
+ "wreck_patterson": {
+  "bank": 11,
+  "boxing": 12,
+  "knee": 6,
+  "brawl": 3
+ },
+ "jager": {
+  "bank": 15,
+  "boxing": 13,
+  "karate": 4
+ },
+ "finxsse": {
+  "boxing": 16,
+  "bank": 13,
+  "knee": 3
+ },
+ "tarzanian_devil": {
+  "boxing": 14,
+  "bank": 14,
+  "spin": 2,
+  "karate": 2
+ }
+}

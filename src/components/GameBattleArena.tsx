@@ -98,6 +98,7 @@ import {
 } from '../engine/combat/RoundSystem';
 import { commandButtonsFor, moveSetForFighter, schwarzerblitzSpecials } from '../engine/combat/SchwarzerblitzSpecials';
 import { generatedMoveset } from '../engine/combat/GeneratedMovesets';
+import { resolveRosterMoveWindows } from '../engine/combat/RosterMoveWindows';
 // ── Overdrive / super armor / Finisher ──────────────────────────────────────
 import { type OverdriveState, type SuperArmorState, type FinisherState,  } from '../engine/combat/OverdriveSystem';
 // ── Directional throw system ──────────────────────────────────────────────────
@@ -532,6 +533,8 @@ export default function GameBattleArena({
     p2SMRef.current.setCharacterMoveClips(p2MoveData.clips);
     p1SMRef.current.setCharacterMoveIds(p1MoveData.ids);
     p2SMRef.current.setCharacterMoveIds(p2MoveData.ids);
+    p1SMRef.current.setCharacterMoveWindows(resolveRosterMoveWindows(p1Fighter.id)?.windows ?? {});
+    p2SMRef.current.setCharacterMoveWindows(resolveRosterMoveWindows(p2Fighter.id)?.windows ?? {});
 
     // The roster's CharacterMoveSet is authoritative for each fighter's
     // presentation AND directional combat data. The generic semantic bank is
