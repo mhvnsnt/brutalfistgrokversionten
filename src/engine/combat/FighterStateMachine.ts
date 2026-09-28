@@ -2420,7 +2420,10 @@ export class FighterStateMachine {
         : THROW_COMMIT_MOVE;
       this.motionState = 'grapple';
       this.moveTimer = directional
-        ? this.currentMove.active + this.currentMove.recovery
+        ? Math.max(
+            this.currentMove.active + this.currentMove.recovery,
+            directional.commitDuration,
+          )
         : THROW_COMMIT_MOVE.active + THROW_COMMIT_MOVE.recovery;
       this.moveElapsed = 0;
       console.log('[FSM] ✅ CommandThrow connected —', THROW_COMMIT_CLIP,
