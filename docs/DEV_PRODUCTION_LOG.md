@@ -103,3 +103,14 @@ Important: these are implementation corrections, not a claim that all animation 
 - Added regression coverage proving Up + LP enters `jumpAttack`, `Attacking`, and the authored `Jumping Light` move rather than a grounded jab.
 - Main commits: `63b128af133a8e6957cf5c68c7cc62f665bd9091` (implementation), `e1df64e3489dac680ef90dc7d3f6e576d4a1ebc4` (test).
 - Runtime/browser certification remains UNKNOWN; this pass specifically closes the input-routing seam, not the claim that every aerial clip is visually correct on every rig.
+
+
+## 2026-09-28 — Aerial attack playback lock/timing correction
+
+- Fixed `FighterMesh` so `jumpAttack` is treated as a real attack state by the visual animation layer instead of falling through the ordinary locomotion path.
+- Added the aerial attack window to the same authored-clip hold/reconciliation path used by grounded attacks, with a dedicated 0.65s aerial presentation window.
+- This prevents a fighter-specific aerial clip from being immediately treated like a normal jump/locomotion clip and being cut or blended away before the authored attack motion can read.
+- Existing `AIR_LIGHT_MOVE` / `AIR_HEAVY_MOVE` frame data remains authoritative for combat timing; this change is visual playback synchronization only.
+- **CI:** UNKNOWN until a GitHub Actions run is attached to commit `6164fd0362512adf86a4b65a5a18d1bd9e8e1b56`.
+- **Runtime PWA/browser:** UNKNOWN until an actual match verifies jump, aerial strike, landing, contact, and fighter-specific clip playback together.
+- **Promotion rule:** do not mark aerial clips PASS from static code alone.
