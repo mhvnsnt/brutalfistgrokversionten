@@ -260,9 +260,9 @@ describe('directional roster moves are gameplay-owned', () => {
 
   it('derives distinct directional move identities from the roster data', () => {
     const bannon = getCharacterMoveSet('bannon');
-    const onyx = getCharacterMoveSet('onyx');
+    const maime = getCharacterMoveSet('maime');
     assert.ok(bannon?.forwardLight);
-    assert.ok(onyx?.forwardLight);
-    assert.notEqual(bannon?.forwardLight, onyx?.forwardLight);
+    assert.ok(maime?.forwardLight);
+    assert.notEqual(bannon?.forwardLight, maime?.forwardLight);
   });
 });
