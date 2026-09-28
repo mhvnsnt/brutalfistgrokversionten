@@ -500,6 +500,8 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
   }
 
   const fighterName = BANNON_ROSTER.find((f) => f.id === fighter)?.name ?? fighter;
+  const receiverPreview = receiverForPreview(selected, manifest, labels);
+  const receiverModel = preferredModel;
 
   return (
     <div className="fixed inset-0 bg-[#0d1016] text-white font-mono flex flex-col p-safe">
@@ -845,7 +847,16 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
                   speed={speed}
                   onClips={setAvailable}
                   onProgress={setPlayhead}
+                  offsetX={-0.9}
                 />
+                {receiverPreview.clip && (
+                  <ClipPlayer
+                    modelUrl={resolveGlbUrl(receiverModel)}
+                    clip={receiverPreview.clip}
+                    speed={speed}
+                    offsetX={0.9}
+                  />
+                )}
               </Suspense>
               <OrbitControls target={[0, 0, 0]} enablePan={false} />
             </Canvas>
@@ -871,6 +882,11 @@ export default function MoveLibrary({ onBack }: { onBack: () => void }) {
               <span className="ml-auto text-[9px] text-zinc-500">
                 {playhead.dur > 0 ? `${playhead.t.toFixed(2)} / ${playhead.dur.toFixed(2)}s` : ''}
               </span>
+              {receiverPreview.clip && (
+                <span className="text-[9px] text-sky-300">
+                  RECEIVER · {receiverPreview.clip} · {receiverPreview.kind}
+                </span>
+              )}
             </div>
             {playhead.dur > 0 && (
               <div className="absolute inset-x-2 top-5 h-[2px] bg-white/10">
