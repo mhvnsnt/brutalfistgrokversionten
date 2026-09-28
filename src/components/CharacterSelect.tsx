@@ -595,7 +595,7 @@ export default function CharacterSelect({ onSelectP1, onSelectP2, onStartMatch }
         style={{ background: 'linear-gradient(180deg, #0d0d0f 0%, #080808 100%)' }}
       >
         {/* Controls bar */}
-        <div className="flex items-center justify-between px-3 py-1 border-b border-zinc-800/50">
+        <div className="flex flex-wrap items-center justify-between gap-y-1 px-3 py-1 border-b border-zinc-800/50">
           <div className="flex items-center gap-2">
             <span className="text-[8px] text-zinc-600 tracking-[0.3em]">SELECTING FOR</span>
             <span className={`bf-side ${activeSlot === 'p1' ? 'bf-side-p1' : 'bf-side-p2'}`}>
@@ -618,16 +618,24 @@ export default function CharacterSelect({ onSelectP1, onSelectP2, onStartMatch }
                 CUSTOMIZE
               </button>
             )}
-            {canStart && (
-              <button
-                onClick={handleStartMatch}
-                className="bf-fight"
-              >
-                FIGHT!
-              </button>
-            )}
           </div>
         </div>
+
+        {/* FIGHT gets its OWN full-width row, never a chip in the controls bar.
+            Measured on a 412px portrait viewport (the owner plays vertical): the
+            button laid out at x=473 -- 61px past the right edge -- with
+            document.scrollWidth == innerWidth, so there was no scroll to reach
+            it and the match could not be started by tapping at all. */}
+        {canStart && (
+          <div className="px-2 pt-1.5">
+            <button
+              onClick={handleStartMatch}
+              className="bf-fight block w-full text-center py-2"
+            >
+              FIGHT!
+            </button>
+          </div>
+        )}
 
         {/* Roster rows — Tekken-3 bottom-anchored block grid */}
         <div className="flex flex-col gap-0.5 px-1 py-1">
