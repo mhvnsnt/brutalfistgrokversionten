@@ -120,9 +120,8 @@ export function locomotionPlaybackRate(speedMps: number, clipName?: string | nul
   if (!(speedMps > 0.2)) return 1;
   const measured = authoredStrideSpeed(clipName);
   if (measured !== null) return playbackRateFor(clipName, speedMps);
-  // Unmeasured clips are deliberately left at authored speed. A global ratio
-  // makes back-walks and unrelated clips skate or race because their actual
-  // stride is unknown. Movement speed is owned by locomotion; animation speed
-  // is only distance-matched when we have a measured clip record.
-  return 1;
+  // Unmeasured clips stay authored-speed at the deliberate walk tier. Dash/run
+  // is different: its engine tier is intentionally faster, so an unmeasured
+  // locomotion clip must advance by the same tier ratio or its feet visibly lag.
+  return speedMps > WALK_PLAYBACK_MPS * 1.15 ? speedMps / WALK_PLAYBACK_MPS : 1;
 }
