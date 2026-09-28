@@ -200,7 +200,13 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   finisher:          ['finisher', 'Finisher', 'finisher_move', 'Finisher_Move', 'ORAORAORA', 'TIGER_HEAVYKICKCOMBO', 'GYAKUZUKI_COMBO', 'heavyAttack', 'HeavyAttack'],
   superArmor:        ['superArmor', 'SuperArmor', 'power_crush', 'armorMove', 'ArmorMove', 'heavyAttack', 'HeavyAttack'],
   // ── Command Throw ───────────────────────────────────────────────────────────
-  CommandThrow:      ['heavyAttack', 'HeavyAttack', 'heavy', 'Heavy', 'grab', 'Grab', 'throw', 'Throw', 'grapple', 'Grapple', 'suplex', 'Suplex', 'slam', 'Slam', 'SBW_throw', 'T_1_3', 'T_2_4', 'bf_grab', 'bf_beastMode'],
+  // A GRAB IS A GRAB. This list used to open with 'heavyAttack' and 'heavy',
+  // so even after the state machine asked for a throw the mesh handed back a
+  // PUNCH -- the owner's "he's visibly doing 1 punch". Real grabs first now;
+  // the strike names stay on the end as a last resort for a rig that ships no
+  // grapple clip at all, which is better than playing nothing.
+  CommandThrow:      ['THROWSTART', 'THROWSTART_STEP', 'grab', 'Grab', 'throw', 'Throw', 'grapple', 'Grapple', 'KNEETHROW', 'suplex', 'Suplex', 'SUPLEX', 'slam', 'Slam', 'SBW_throw', 'T_1_3', 'T_2_4', 'bf_grab', 'heavyAttack', 'HeavyAttack', 'heavy', 'Heavy'],
+  grapple:           ['THROWSTART', 'THROWSTART_STEP', 'KNEETHROW', 'grab', 'Grab', 'throw', 'Throw', 'grapple', 'Grapple', 'GRAFTHROW', 'RENZOTHROW', 'DDT', 'SUPLEX', 'GERMANSUPLEX', 'CHOKESLAM', 'SBW_throw', 'T_1_3', 'bf_grab'],
   ThrowWhiff:        ['idle', 'Idle', 'neutral', 'Neutral'],
   // ── Hit Reactions ───────────────────────────────────────────────────────────
   hit:               ['hit', 'Hit', 'hurt', 'Hurt', 'flinch', 'Flinch', 'hitstun', 'Hitstun', 'damage', 'Damage', 'react', 'React', 'stagger', 'Stagger', 'recoil', 'Recoil', 'SBW_hit', 'T_hit', 'bf_hit_reaction', 'gettingHit', 'hitImpact'],
@@ -300,6 +306,7 @@ const FADE_DURATIONS: Record<string, number> = {
   heavy:             0.067,
   heavyAttack:       0.067,
   CommandThrow:      0.067,
+  grapple:           0.067,
   // Hit reactions — very fast
   hit:               0.033,
   Hitstun:           0.033,

@@ -213,6 +213,7 @@ export const COMBAT_STATE_TO_SEMANTIC: Record<string, string> = {
   jumpAttack:        'attack_rk',
   runAttack:         'attack_rp',
   CommandThrow:      'grapple',
+  grapple:           'grapple',
   ThrowWhiff:        'idle',
   guard:             'block',
   Guard:             'block',

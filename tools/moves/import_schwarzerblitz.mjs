@@ -52,7 +52,8 @@ function parseMoves(text, character) {
   const out = [];
   let cur = null;
   let block = null;
-  const open = (name) => { block = name; if (cur && !cur[name]) cur[name] = []; };
+  let throwSub = null;
+  const open = (name) => { block = name; throwSub = null; if (cur && !cur[name]) cur[name] = []; };
   for (const raw of lines) {
     const line = raw.trim();
     if (!line) continue;
@@ -100,7 +101,16 @@ function parseMoves(text, character) {
         case '#ARMOR_FRAMES_AGAINST': open('armorAgainst'); break;
         case '#MODIFY_OBJECT_AT_FRAME': open('modifyObject'); break;
         default:
-          if (tag.endsWith('_END')) block = null;
+          // THE TWO HALVES OF A THROW ARE DECLARED, NOT GUESSED.
+          //
+          // Inside #THROW the sub-tags are LOWERCASE (#animation,
+          // #starting_distance) so they fall through this default and the
+          // block stays open. Remembering WHICH sub-tag we are under is the
+          // whole difference between structured data and two ordered strings:
+          // `throw: ['kneeThrowReaction_slow 0 22', '34']` is what this file
+          // produced before, and nothing downstream could read it.
+          if (block === 'throw' && /^#[a-z]/.test(tag)) { throwSub = tag.slice(1); }
+          if (tag.endsWith('_END')) { block = null; throwSub = null; }
           break;
       }
       continue;
@@ -110,6 +120,26 @@ function parseMoves(text, character) {
     // column by one and parsed the DAMAGE as the reaction. Drop it.
     const parts = line.split(/\s+/).filter((t, i) => !(i === 0 && t === '!'));
     switch (block) {
+      case 'throw': {
+        // #animation        <receiverClip> <from> <to>
+        // #starting_distance <units>
+        //
+        // The receiver's clip AND its frame window AND how far apart the two
+        // bodies stand. That last number is why a thrown man travels sideways
+        // instead of straight up: it is a horizontal separation, in the same
+        // units as #MOVEMENT.
+        cur.throw.push(line);                       // keep the raw lines
+        cur.throwSpec ??= {};
+        if (throwSub === 'animation') {
+          const [clip, from, to] = parts;
+          cur.throwSpec.receiverClip = clip;
+          if (Number.isFinite(Number(from))) cur.throwSpec.receiverFrom = Number(from);
+          if (Number.isFinite(Number(to))) cur.throwSpec.receiverTo = Number(to);
+        } else if (throwSub === 'starting_distance') {
+          cur.throwSpec.startingDistance = Number(parts[0]);
+        }
+        break;
+      }
       case 'hitboxes': {
         // bone start end damage hits ? reaction height
         const [bone, s, e, dmg, hits, extra, reaction, height] = parts;

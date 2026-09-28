@@ -371,11 +371,47 @@ export const FINISHER_MOVE: MoveWindow = {
 };
 
 // ── Command Throw move definition ─────────────────────────────────────────────
+/**
+ * A THROW IS A GRAB AND THEN A THROW. IT IS NOT A PUNCH.
+ *
+ * Owner, from the phone: "he's visibly doing 1 punch, but somehow hitting me
+ * like 7 times ... it's not throwing my character horizontal it's making them
+ * do the launch and everything vertically ... there's no actual grapple
+ * animation happening."
+ *
+ * He was reading the screen correctly. `motionState` was hard-set to
+ * `'heavyAttack'` in beginCommandThrow, which resolves through the semantic
+ * slot table to `attack_rp` -> UPPERCUT. The throw literally played a punch,
+ * and because UPPERCUT is not one of the deliverers the bake paired, the
+ * victim's half never resolved and he was left on the generic vertical
+ * knockdown. MEASURED with tools/harness/throw_probe.mjs.
+ *
+ * SCHWARZERBLITZ'S OWN DATA IS THE MODEL, read out of
+ * characters/chara_dummy/moves.txt rather than invented:
+ *
+ *     #MOVE ! Throw                 #MOVE ! TW_KneeBash
+ *     #ANIMATION throwStart_step    #ANIMATION kneeThrow_slow
+ *     #FRAMES 0 8                   #THROW
+ *     #FOLLOWUP                     #animation
+ *     TW_KneeBash 0 5               kneeThrowReaction_slow 0 22
+ *                                   #starting_distance
+ *                                   34
+ *
+ * So: the GRAB is its own short move, and the THROW is a followup that names
+ * the victim's clip, the victim's frame window, and how far apart the two
+ * bodies stand. Both halves and the separation are DECLARED — the engine never
+ * has to guess which reaction goes with which throw.
+ *
+ * `clip` names the animation outright instead of leaving it to a fuzzy slot
+ * lookup across 455 clips. THROWSTART (0.375s) is a real grab; both it and the
+ * commit clip below are already in the shipped bank.
+ */
 export const COMMAND_THROW_MOVE: MoveWindow = {
   startup: 0.10,
   active: 0.08,
   recovery: 0.55,
-  animation: 'heavyAttack',
+  animation: 'grapple',
+  clip: 'THROWSTART',
   hitboxStartFrame: 6,
   hitboxEndFrame: 11,
   totalFrames: 43,
@@ -386,6 +422,40 @@ export const COMMAND_THROW_MOVE: MoveWindow = {
   grabRange: 1.4,
   specialName: 'Command Throw',
   throwComboRoute: ['light', 'heavy'],
+};
+
+/**
+ * THE COMMIT HALF — what the thrower's body does once the grab has caught.
+ *
+ * Kept separate from COMMAND_THROW_MOVE for the reason Schwarzerblitz keeps
+ * them separate: the grab can whiff or be broken, and only the commit owns the
+ * victim. `clip` is a PAIRED deliverer, which is what guarantees the other man
+ * has a half to play — receiverClipFor(THROW_COMMIT_CLIP) is never null, so the
+ * victim can never silently fall back to the generic knockdown.
+ *
+ * The receiver frames and separation are Schwarzerblitz's own numbers for this
+ * pair (kneeThrowReaction_slow 0 22, starting_distance 34). The separation is
+ * horizontal, in the same units as #MOVEMENT, which is why a thrown man travels
+ * sideways instead of straight up.
+ */
+export const THROW_COMMIT_CLIP = 'KNEETHROW';
+export const THROW_RECEIVER_FRAMES = { from: 0, to: 22 } as const;
+/** Schwarzerblitz `#starting_distance 34`, converted from its units to metres. */
+export const THROW_SEPARATION_M = 0.34;
+
+export const THROW_COMMIT_MOVE: MoveWindow = {
+  startup: 0,
+  active: 0.10,
+  recovery: 0.44,
+  animation: 'grapple',
+  clip: THROW_COMMIT_CLIP,
+  hitboxStartFrame: 0,
+  hitboxEndFrame: 6,
+  totalFrames: 33,
+  damage: 0,          // the damage is billed once, by the grab that caught
+  isThrow: true,
+  isUnblockable: true,
+  specialName: 'Command Throw',
 };
 
 // ── Default special moves catalog ────────────────────────────────────────────
@@ -2234,7 +2304,9 @@ export class FighterStateMachine {
   private beginCommandThrowWithMove(move: MoveWindow): FighterMotionState {
     this.walkVelocity = { forward: 0, strafe: 0 };
     this.actionState = 'CommandThrow';
-    this.motionState = 'heavyAttack';
+    // The MOVE decides what it looks like. This used to be hard-set to
+    // 'heavyAttack', which overrode every throw's own animation with a punch.
+    this.motionState = (move.animation as FighterMotionState | undefined) ?? 'grapple';
     this.currentMove = move;
     this.moveTimer = move.startup + move.active + move.recovery;
     this.moveElapsed = 0;
@@ -2252,7 +2324,9 @@ export class FighterStateMachine {
   private beginCommandThrow(): FighterMotionState {
     this.walkVelocity = { forward: 0, strafe: 0 };
     this.actionState = 'CommandThrow';
-    this.motionState = 'heavyAttack';
+    // NOT 'heavyAttack'. See COMMAND_THROW_MOVE — that one word made the throw
+    // play a punch and cost the victim his grapple half.
+    this.motionState = 'grapple';
     this.currentMove = COMMAND_THROW_MOVE;
     this.moveTimer = COMMAND_THROW_MOVE.startup + COMMAND_THROW_MOVE.active + COMMAND_THROW_MOVE.recovery;
     this.moveElapsed = 0;
@@ -2281,9 +2355,28 @@ export class FighterStateMachine {
       this.throwComboQueue = [];
       console.log('[FSM] ❌ CommandThrow whiffed — extra recovery penalty');
     } else {
-      console.log('[FSM] ✅ CommandThrow connected — combo chain queued:', this.throwComboQueue);
+      /**
+       * THE GRAB CAUGHT, SO HAND OFF TO THE THROW ITSELF.
+       *
+       * Schwarzerblitz's `! Throw` is 8 frames of reaching and then a FOLLOWUP
+       * (`TW_KneeBash`) does the throwing. Without this the thrower stood in
+       * THROWSTART for the whole 0.73s while the victim was already on the mat,
+       * and the arena had no paired deliverer to look the victim's half up by.
+       *
+       * The clip is a PAIRED deliverer, which is what makes the victim's half
+       * resolvable every single time instead of 13-in-455 of the time.
+       */
+      this.currentMove = THROW_COMMIT_MOVE;
+      this.motionState = 'grapple';
+      this.moveTimer = THROW_COMMIT_MOVE.active + THROW_COMMIT_MOVE.recovery;
+      this.moveElapsed = 0;
+      console.log('[FSM] ✅ CommandThrow connected —', THROW_COMMIT_CLIP,
+        '| combo chain queued:', this.throwComboQueue);
     }
   }
+
+  /** The clip the victim's half must be looked up by. See THROW_COMMIT_MOVE. */
+  throwCommitClip(): string { return THROW_COMMIT_CLIP; }
 
   private updateWalking(input: FighterInput, dt: number): FighterMotionState {
     const targetForward = Math.abs(input.forward) > 0.1 ? Math.sign(input.forward) * Math.min(1, Math.abs(input.forward)) : 0;

@@ -2088,7 +2088,7 @@ export default function GameBattleArena({
         directionalThrowPendingRef.current = null;
         const throwDmg = getThrowDamage(directionalP2Throw.throwId, false);
         p2SMRef.current.applyKnockdown();
-        playOpponentHalf('p2', throwDelivererRef.current.p1);
+        playOpponentHalf('p2', p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1);
         p2LocoRef.current.halt();
         p2HitboxRef.current.reset();
         engineRef.current?.applyIncomingHit('p2', throwDmg, false, 0.3);
@@ -2115,7 +2115,7 @@ export default function GameBattleArena({
         // THE OTHER MAN'S HALF. applyKnockdown still runs underneath, so the
         // physics, the damage and the wake-up are untouched — this only
         // decides what his body is seen doing while it happens.
-        playOpponentHalf('p2', throwDelivererRef.current.p1);
+        playOpponentHalf('p2', p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1);
         p2LocoRef.current.halt();
         p2HitboxRef.current.reset();
         console.log('[Arena] ✅ Command throw committed — damage:', throwDmg);
@@ -2164,7 +2164,7 @@ export default function GameBattleArena({
         p1SMRef.current.applyKnockdown();
         p1LocoRef.current.halt();
         p1HitboxRef.current.reset();
-        playOpponentHalf('p1', throwDelivererRef.current.p2);
+        playOpponentHalf('p1', p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2);
         engineRef.current?.applyIncomingHit('p1', throwDmg, false, 0.3);
         if (settings.soundEnabled) sfx.playHeavyHit();
         audioManagerRef.current.playSFX('throw_connect');
@@ -2188,7 +2188,7 @@ export default function GameBattleArena({
         p1SMRef.current.applyKnockdown();
         p1LocoRef.current.halt();
         p1HitboxRef.current.reset();
-        playOpponentHalf('p1', throwDelivererRef.current.p2);
+        playOpponentHalf('p1', p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2);
         engineRef.current?.applyIncomingHit('p1', throwDmg, false, 0.3);
         logHit('p2', 'p1', throwDmg, false, 'throw');
         if (settings.soundEnabled) sfx.playHeavyHit();

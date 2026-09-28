@@ -14,6 +14,9 @@ export type FighterMotionState =
   | 'WakeupTechRoll'| 'WakeupBackrise' | 'WakeupQuickStand' |'HitStun' | 'Stunned' | 'Crumple' | 'CommandThrow' | 'ThrowWhiff'
   // ── Extended combat states ────────────────────────────────────────────────
   | 'Startup' | 'Active' | 'Blockstun' | 'Hitstun'
+  // A GRAB IS ITS OWN MOTION, NOT A PUNCH. Without this state the command
+  // throw had nowhere to point but 'heavyAttack', and it played an UPPERCUT.
+  | 'grapple'
   // ── Tekken-specific states ────────────────────────────────────────────────
   | 'overdrive' | 'finisher' | 'superArmor' | 'sidestepLeft' | 'sidestepRight'
   | 'jump' | 'jumpForward' | 'jumpBack'

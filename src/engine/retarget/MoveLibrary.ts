@@ -341,6 +341,9 @@ const DEFAULT_FRAME_DATA: Record<FighterMotionState, Omit<MoveFrameData, 'motion
   Stunned:            { startupFrames: 0, activeFrames: 0, recoveryFrames: 20, totalFrames: 20, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.33 },
   Crumple:            { startupFrames: 0, activeFrames: 0, recoveryFrames: 60, totalFrames: 60, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 1.0 },
   CommandThrow:       { startupFrames: 6, activeFrames: 4, recoveryFrames: 33, totalFrames: 43, hitboxStartFrame: 6, hitboxEndFrame: 10, damage: 220, isSpecial: false, durationSeconds: 0.72, isThrow: true },
+  // The commit half of a throw -- THROW_COMMIT_MOVE. It bills no damage of its
+  // own; the grab that caught already did. Frames match KNEETHROW (0.542s).
+  grapple:            { startupFrames: 0, activeFrames: 6, recoveryFrames: 27, totalFrames: 33, hitboxStartFrame: 0, hitboxEndFrame: 6, damage: 0, isSpecial: false, durationSeconds: 0.54, isThrow: true },
   ThrowWhiff:         { startupFrames: 0, activeFrames: 0, recoveryFrames: 30, totalFrames: 30, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.5 },
   Startup:            { startupFrames: 8, activeFrames: 6, recoveryFrames: 12, totalFrames: 26, hitboxStartFrame: 8, hitboxEndFrame: 14, damage: 80, isSpecial: false, durationSeconds: 0.43 },
   Active:             { startupFrames: 8, activeFrames: 6, recoveryFrames: 12, totalFrames: 26, hitboxStartFrame: 8, hitboxEndFrame: 14, damage: 80, isSpecial: false, durationSeconds: 0.43 },
