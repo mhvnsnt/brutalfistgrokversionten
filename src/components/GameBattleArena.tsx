@@ -1714,6 +1714,9 @@ export default function GameBattleArena({
         }),
       };
 
+      // Jump state and world-space jump arc share the same input authority.
+      if (smInput.jump) p1LocoRef.current.beginJump();
+      else p1LocoRef.current.armJump();
       p1SM.tickAirborne(dt);
       const p1NextMotion = p1SM.update(smInput, dt);
       // THE WINDOW THE FIGHTER PASSED THROUGH, not the one he is in. With
