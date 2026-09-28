@@ -435,6 +435,12 @@ interface BufferEntry {
 interface QueuedAction {
   type: 'light' | 'heavy' | 'guard' | 'grapple' | 'commandThrow';
   /**
+   * Seconds of move-time elapsed when the button went down, so a press held
+   * over from the very start of a long move can expire instead of firing half
+   * a second after the player gave up on it. See INPUT_BUFFER_S.
+   */
+  at?: number;
+  /**
    * The special the player actually earned, when they earned one. Without
    * this a buffered follow-up always came out as the generic jab, which is
    * most of why a combo felt like the same move twice.
@@ -643,6 +649,30 @@ const QUICKSTAND_DURATION = 0.30;
 /** HitStun duration = active frames of the attack that landed (in seconds) */
 const HITSTUN_ACTIVE_FRAME_MULTIPLIER = 1.0;
 /** Minimum hitstun regardless of attack active frames */
+/**
+ * HOW LONG A PRESS IS REMEMBERED WHILE A MOVE IS RUNNING.
+ *
+ * Owner: "the combat looking incoherent, buggy, and glitchy."
+ *
+ * MEASURED on the real state machine, sweeping the second press across every
+ * frame of the first move (Y = it came out, . = it was thrown away):
+ *
+ *     light->heavy  .............YYYYYYYYYYYYYYYYYYYYYYYYYYY
+ *     heavy->light  ..................YYYYYYYYYYYYYYYYYYYYYY
+ *
+ * The buffer only opened once the move reached RECOVERY, so the first 13
+ * frames of a light and the first 19 of a heavy read your input and discarded
+ * it. Press a button in that window and the game does nothing at all — which is
+ * what "I press it and nothing happens" is, and it is most of why the combat
+ * does not feel like it is listening.
+ *
+ * Tekken buffers throughout the move and fires on the first actionable frame.
+ * 20 frames is the window a press stays alive for; anything older is dropped,
+ * so a stab at the very start of a 39-frame heavy does not come out long after
+ * the player has moved on.
+ */
+const INPUT_BUFFER_S = 20 / 60;
+
 const HITSTUN_MIN = 0.18;
 /** Maximum hitstun cap */
 const HITSTUN_MAX = 0.65;
@@ -1301,6 +1331,9 @@ export class FighterStateMachine {
    * pushback / direction / rotation scales the ARENA applies, since it owns
    * positions. Null until something has been hit.
    */
+  /** Move-time on the frame the last attack ended, for buffer expiry. */
+  private moveElapsedAtEnd = 0;
+
   lastReaction: ({ victim: VictimState } & ReturnType<typeof resolveReaction>) | null = null;
 
   /**
@@ -1806,15 +1839,28 @@ export class FighterStateMachine {
         return this.beginAttack(cancel.move.animation, cancel.move);
       }
 
-      if (this.isRecovering) {
-        // Recovery still BUFFERS anything — that is the input window, not an
-        // interruption, and the queued move fires when the current one ends.
+      // ── THE INPUT BUFFER IS OPEN FOR THE WHOLE MOVE ─────────────────────
+      // It used to open only at `isRecovering`, so a press during startup or
+      // active frames was read and thrown away — 13 dead frames on a light, 19
+      // on a heavy. Buffering is not interrupting: the queued move still waits
+      // for this one to finish. `at` stamps the press so a stale one expires.
+      {
+        // A SPECIAL OUTRANKS A PLAIN PRESS ALREADY IN THE QUEUE.
+        //
+        // The sequence that makes a special is spelled out one button at a
+        // time. With the buffer open for the whole move, the FIRST of those
+        // buttons now queues as a plain jab, and "first press wins" would then
+        // refuse the special the player was actually spelling — L,L,H came out
+        // as a jab. So a completed special replaces a queued plain attack; it
+        // still cannot replace another special.
         const buffered = this.detectSpecialMove(now);
-        if (buffered && !this.queuedAction) this.queuedAction = { type: 'light', special: buffered };
-        if (risingLight && !this.queuedAction) this.queuedAction = { type: 'light' };
-        if (risingHeavy && !this.queuedAction) this.queuedAction = { type: 'heavy' };
-        if (risingGuard && !this.queuedAction) this.queuedAction = { type: 'guard' };
-        if (risingGrapple && !this.queuedAction) this.queuedAction = { type: 'grapple' };
+        if (buffered && (!this.queuedAction || !this.queuedAction.special)) {
+          this.queuedAction = { type: 'light', special: buffered, at: this.moveElapsed };
+        }
+        if (risingLight && !this.queuedAction) this.queuedAction = { type: 'light', at: this.moveElapsed };
+        if (risingHeavy && !this.queuedAction) this.queuedAction = { type: 'heavy', at: this.moveElapsed };
+        if (risingGuard && !this.queuedAction) this.queuedAction = { type: 'guard', at: this.moveElapsed };
+        if (risingGrapple && !this.queuedAction) this.queuedAction = { type: 'grapple', at: this.moveElapsed };
       }
 
       if (this.moveTimer <= 0) {
@@ -1822,12 +1868,18 @@ export class FighterStateMachine {
         this.applyEndStance(this.currentMove);
         this.currentMove = null;
         this.actionState = 'Idle';
+        this.moveElapsedAtEnd = this.moveElapsed;
         this.moveElapsed = 0;
 
         if (this.queuedAction) {
           const queued = this.queuedAction;
           this.queuedAction = null;
-          return this.executeQueuedAction(queued);
+          // A press only survives INPUT_BUFFER_S of move-time. Without this a
+          // button stabbed on frame 1 of a 39-frame heavy would come out two
+          // thirds of a second later, which reads as the game doing something
+          // you did not ask for.
+          const age = queued.at === undefined ? 0 : this.moveElapsedAtEnd - queued.at;
+          if (age <= INPUT_BUFFER_S) return this.executeQueuedAction(queued);
         }
       } else {
         return this.motionState;
