@@ -192,3 +192,12 @@ Important: these are implementation corrections, not a claim that all animation 
 - Added regression coverage for delayed mid-air attack, directional airborne attack, stage-origin falling attack, and grounded rejection.
 - Getbackk and Chainsnatcher remain exact-capture jobs: owner footage should enter through `video_to_clip.py --two` as attacker + receiver pairs. No stand-in was promoted to exact.
 - Runtime/CI status remains UNKNOWN until the branch is built/tested and the PWA is exercised with the actual media/assets.
+
+
+### Airborne PR #26 promoted to main — 2026-09-28
+
+- PR #26 was merged non-destructively with a normal merge commit: `618451e2767bcdf967f38e6f60e749a90e06db10`.
+- The merge preserves the full PR history and does not reset or rewrite `main`.
+- The promoted work includes delayed airborne attack input, neutral/forward/back airborne routing, stage-dive launch metadata, regression coverage, and the fighter-owned presentation integration corrections.
+- The branch had no current CI status attached at merge time; therefore the merge is a source-control promotion, **not** a claim of CI or PWA certification.
+- Next gate is deployment/browser verification on `main`; any runtime issue will be fixed with a new follow-up commit/PR so this merged history remains intact.
