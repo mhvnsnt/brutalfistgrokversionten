@@ -26,9 +26,9 @@
 export const THROW_BREAK_WINDOW_FRAMES = 12;    // frames to input throw break
 export const THROW_WHIFF_RECOVERY_FRAMES = 38;  // recovery frames on missed throw
 export const THROW_GRAB_RANGE = 1.2;            // max distance for throw to connect (world units)
-export const THROW_FORWARD_DAMAGE = 180;        // forward throw damage
-export const THROW_BACKWARD_DAMAGE = 200;       // backward throw damage (harder to break)
-export const THROW_SIDE_DAMAGE = 190;           // side throw damage
+export const THROW_FORWARD_DAMAGE = 120;        // throw is a punish, not a round-ending strike
+export const THROW_BACKWARD_DAMAGE = 140;       // modestly stronger, still far below a finisher
+export const THROW_SIDE_DAMAGE = 130;           // side throw damage
 export const THROW_STARTUP_FRAMES = 5;          // frames before throw grab window opens
 export const THROW_ACTIVE_FRAMES = 6;           // frames the grab window is open
 
@@ -73,8 +73,8 @@ export const THROW_CATALOG: Record<string, ThrowDefinition> = {
     attackerRecoveryFrames: 28,
     defenderRecoveryFrames: 45,
     breakButton: '1',
-    attackerAnimation: 'heavyAttack',
-    defenderAnimation: 'knockdown',
+    attackerAnimation: 'THROWSTART',
+    defenderAnimation: 'KNEETHROWREACTION',
     wallCarry: false,
     defenderPositionOffset: { x: 1.5, y: 0, z: 0 },
   },
@@ -88,8 +88,8 @@ export const THROW_CATALOG: Record<string, ThrowDefinition> = {
     attackerRecoveryFrames: 32,
     defenderRecoveryFrames: 55,
     breakButton: '2',
-    attackerAnimation: 'heavyAttack',
-    defenderAnimation: 'knockdown',
+    attackerAnimation: 'RENZOTHROW',
+    defenderAnimation: 'RENZOTHROWREACTION',
     wallCarry: false,
     defenderPositionOffset: { x: -1.8, y: 0, z: 0 },
   },
@@ -103,8 +103,8 @@ export const THROW_CATALOG: Record<string, ThrowDefinition> = {
     attackerRecoveryFrames: 30,
     defenderRecoveryFrames: 50,
     breakButton: 'either',
-    attackerAnimation: 'heavyAttack',
-    defenderAnimation: 'knockdown',
+    attackerAnimation: 'GRAFTHROW',
+    defenderAnimation: 'GRAFTHROWREACTION',
     wallCarry: true,
     defenderPositionOffset: { x: 0, y: 0, z: 1.5 },
   },
@@ -118,8 +118,8 @@ export const THROW_CATALOG: Record<string, ThrowDefinition> = {
     attackerRecoveryFrames: 30,
     defenderRecoveryFrames: 50,
     breakButton: 'either',
-    attackerAnimation: 'heavyAttack',
-    defenderAnimation: 'knockdown',
+    attackerAnimation: 'GRAFTHROW',
+    defenderAnimation: 'GRAFTHROWREACTION',
     wallCarry: true,
     defenderPositionOffset: { x: 0, y: 0, z: -1.5 },
   },
@@ -334,15 +334,16 @@ export interface ThrowInputState {
 export function detectThrowInput(input: ThrowInputState): string | null {
   const { lp, rp, lk, rk, forward, backward } = input;
 
-  // Side throws: forward + 1+3 or forward + 2+4
-  if (forward && lp && lk) return 'side_throw_right';
-  if (forward && rp && rk) return 'side_throw_left';
+  // Direction is part of the throw command. A directional input must never
+  // silently turn a forward/back throw into a side throw.
+  if (backward && lp && lk) return 'backward_throw';
+  if (backward && rp && rk) return 'backward_throw';
+  if (forward && lp && lk) return 'forward_throw';
+  if (forward && rp && rk) return 'forward_throw';
 
-  // Backward throw: 2+4 (RP+RK)
-  if (rp && rk && !lp && !lk) return 'backward_throw';
-
-  // Forward throw: 1+3 (LP+LK)
+  // Neutral 1+3 / 2+4 remain the ordinary side/button throws.
   if (lp && lk && !rp && !rk) return 'forward_throw';
+  if (rp && rk && !lp && !lk) return 'backward_throw';
 
   return null;
 }
