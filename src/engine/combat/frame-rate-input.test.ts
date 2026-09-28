@@ -186,3 +186,17 @@ describe('fighter-owned animation slots', () => {
     });
   });
 });
+
+
+describe('airborne attack routing', () => {
+  it('routes jump plus punch to jumpAttack instead of a grounded jab', () => {
+    withClock((advance) => {
+      const fsm = new FighterStateMachine();
+      advance(1 / 60);
+      fsm.update({ ...BASE, jump: true, lp: true }, 1 / 60);
+      assert.equal(fsm.current, 'jumpAttack');
+      assert.equal(fsm.action, 'Attacking');
+      assert.equal(fsm.activeMoveName(), 'Jumping Light');
+    });
+  });
+});
