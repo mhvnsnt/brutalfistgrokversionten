@@ -30,6 +30,23 @@ At the time of this ledger pass, the accessible GitHub API search did **not** re
 - screenshot/reference evidence
 - status: CANON / DOCUMENTED / UNKNOWN
 
+### Canon stages located (2026-09 pass)
+
+These entries come from owner canon in `mhvnsnt/Bannon` @ d575dd67 and the owner's stage list. All 8 are playable **BLOCKOUT** geometry (graybox, not final art); see `docs/stage_architecture.md` §9.
+
+| Stage id | Canon location | Source | Status |
+|---|---|---|---|
+| banyan_tree | The Great Banyan Tree, Sector 7: 60 × 60 m open space; the Banyan Ring inside the roots, lit by bioluminescent fungi | Bannon canon/05b_book5_level99_part2.md, canon/06_book6_kayfabe_is_real.md | CANON (dims) / BLOCKOUT |
+| black_swamp | Black Swamp, Sector 7 (the Island) | owner stage list; Sector 7 per canon/05b, canon/06 | DOCUMENTED / BLOCKOUT |
+| club_onyx | Club Onyx, Miami (stripper-pole club, "The Club God") | Bannon canon/06 | CANON / BLOCKOUT |
+| jpcw_arena | JPCW Arena, Tokyo | Bannon canon/00_cast_and_world.md | CANON / BLOCKOUT |
+| kennedy_debate | Presidential Debate, Kennedy Center | owner stage list (Book 6 election arc) | DOCUMENTED / BLOCKOUT |
+| void_ring | Void Ring | owner stage list | DOCUMENTED / BLOCKOUT |
+| aztec_temple | Aztec Temple | owner stage list | DOCUMENTED / BLOCKOUT |
+| parking_lot | Parking Lot (corporate district parking structure) | owner stage list; StoryModeScreen location | DOCUMENTED / BLOCKOUT |
+
+Dimensions other than the Banyan's 60 m are engine choices (boundaryX/Z in StageConfig), not canon.
+
 ## Story / canon
 
 This repo pass did not expose authoritative book/story text through the available repository search endpoint. Do not invent missing lore.
