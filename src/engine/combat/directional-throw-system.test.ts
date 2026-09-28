@@ -57,6 +57,10 @@ test('directional throws use real grab/commit/receiver clips and bounded damage'
   assert.equal(THROW_CATALOG.backward_throw.attackerAnimation, 'RENZOTHROW');
   assert.equal(THROW_CATALOG.backward_throw.commitAnimation, 'RENZOTHROW');
   assert.equal(THROW_CATALOG.backward_throw.defenderAnimation, 'RENZOTHROWREACTION');
+  assert.equal(THROW_CATALOG.side_throw_right.commitDuration, 1.7083);
+  assert.equal(THROW_CATALOG.side_throw_right.receiverDuration, 1.375);
+  assert.equal(THROW_CATALOG.forward_throw.defenderPositionOffset.x, 1.5);
+  assert.equal(THROW_CATALOG.backward_throw.defenderPositionOffset.x, -1.8);
   assert.ok(THROW_CATALOG.forward_throw.damage < 150);
   assert.ok(THROW_CATALOG.backward_throw.damage < 150);
 });
