@@ -293,6 +293,7 @@ export const DEFAULT_MOVE_WINDOWS: Record<'lightAttack' | 'heavyAttack' | 'light
     animation: 'heavyKick',
     hitboxStartFrame: 16, hitboxEndFrame: 20, totalFrames: 42,
     damage: 170, attackLevel: 'mid', onBlock: -10,
+    reaction: 'Smackdown',
     specialName: 'Right Kick',
   },
 };
@@ -792,9 +793,9 @@ const HITSTUN_MIN = 0.18;
 const HITSTUN_MAX = 0.65;
 
 // ── Walking acceleration constants ───────────────────────────────────────────
-const WALK_ACCEL = 8.0;
-const WALK_DECEL = 14.0;
-const WALK_MAX_SPEED = 1.0;
+const WALK_ACCEL = 6.0;
+const WALK_DECEL = 10.0;
+const WALK_MAX_SPEED = 1.15;
 const BACKDASH_VELOCITY = -1.0;
 const BACKDASH_DURATION = 0.28;
 const BACKDASH_DECEL = 6.0;
