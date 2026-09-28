@@ -140,3 +140,13 @@ Important: these are implementation corrections, not a claim that all animation 
 - Expanded docs/OPEN_SOURCE_ANIMATION_INTAKE.md with KayKit Character Animations as a CC0 candidate source and with the larger per-character move-graph target.
 - Main implementation sequence: 6241232f (directional slots), 1075d7d9 (slot library), 1644acfe (catalog frame-data resolution), 1092e552 (directional kick slots), 85ff8149 (directional input routing), cbd013ff (fighter-specific synthesized defaults), fd216f68 (separate move IDs from clips), e7dc4f36 (initial-match binding cleanup), 42054a30 (reset binding), c68b7584 + 17667bac (tests), 389cf2c1 (open-source intake update), a0192d18 (persistent gaps).
 - CI/browser runtime certification is still UNKNOWN; no GitHub Actions workflow run was attached to the latest test commits when checked.
+
+
+### PWA intro / canon-stage / grapple handoff — 2026-09-28
+
+- Repo Co Dev is building the real 60-second intro renderer on a separate branch: tap-to-start gate for browser audio autoplay permission, Skip control, Esc/Enter/Start keyboard equivalents, clean handoff to the existing start screen, and a missing-video fallback straight to the start screen. The actual rough-cut video is intentionally not added to main until the owner's media pass is ready.
+- Owner production is supplying music, arena backgrounds, the Great Banyan Tree environment, fighter placement marks, and the Cyborg Stick-Up stand-in. Stand-ins remain clearly labeled and unpublished until the real captures/models exist.
+- PR #23 (grok/canon-stages-and-grapple-pairs) contains 8 canon graybox stages and 8 Bannon grapple/aerial capture imports with provenance. It remains a draft and is currently based on the pre-typecheck-fix main, so it is not merged yet.
+- Merged PR #22 (grok/fix-main-typecheck) into main as 6fd4c07d32348c7427b380771bea8ebc6040dd0d; this removes the pre-existing TypeScript errors in CharacterMoveSetSystem, DirectionalThrowSystem, and FighterStateMachine without changing intended runtime behavior.
+- PR #20 (grok/per-fighter-movesets) contains the larger style-driven 27-fighter moveset/OSS intake pass: measured style profiles, generated move windows/strings, 113 baked OSS strike candidates, and 141/269 intake passes. It remains a draft and is based on the earlier main, so it must be reconciled with current main before promotion.
+- Runtime rule remains unchanged: static tests/builds and intake measurements do not equal PWA visual certification. Intro playback, audio unlock, skip/handoff, stage rendering, grapples, and per-fighter move individuality remain UNKNOWN until observed in the browser/PWA.
