@@ -15,6 +15,7 @@ import { readFileSync } from 'node:fs';
 import {
   resolveReaction, distinctOutcomes, VICTIM_STATES, REACTION_KINDS,
 } from './ReactionMatrix.ts';
+import type { MoveWindow } from './FighterStateMachine.ts';
 import { FighterStateMachine } from './FighterStateMachine.ts';
 
 describe('the reaction matrix', () => {
