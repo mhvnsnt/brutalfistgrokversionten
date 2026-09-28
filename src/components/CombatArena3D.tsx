@@ -1067,7 +1067,7 @@ export default function CombatArena3D({
         {/* Combat: P1 yaw 0 (face +X / P2), P2 yaw π (face −X / P1). Not ±90 — that was back-to-cam / face-to-cam. */}
         <FighterMesh
           state={p1State}
-          animation={p1Animation}
+          animation={locomotionAnimationFor(p1State, p1LocomotionVelocity) === 'idle' && p1Animation === 'Walking' ? 'idle' : locomotionAnimationFor(p1State, p1LocomotionVelocity) === p1State ? p1Animation : locomotionAnimationFor(p1State, p1LocomotionVelocity)}
           modelUrl={getFighterGlbUrl(p1Fighter.id, p1Fighter.model) ?? p1Fighter.portraitUrl}
           position={[p1FinalX, COMBAT_FIGHTER_Y + p1YProp, p1FinalZ]}
           facing={1}
@@ -1078,7 +1078,7 @@ export default function CombatArena3D({
           animationTrigger={p1AnimTrigger}
           attackDurationSeconds={p1AttackDurationSeconds}
           locomotionVelocity={p1LocomotionVelocity}
-          groundSpeedRef={p1GroundSpeedRef}
+          groundSpeedRef={p1GroundSpeedRef ?? { current: Math.hypot(p1LocomotionVelocity?.forward ?? 0, p1LocomotionVelocity?.strafe ?? 0) }}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP1BoneHitboxReady}
           attackClip={p1AttackClip}
@@ -1097,7 +1097,7 @@ export default function CombatArena3D({
         {/* P2 faces P1 */}
         <FighterMesh
           state={p2State}
-          animation={p2Animation}
+          animation={locomotionAnimationFor(p2State, p2LocomotionVelocity) === 'idle' && p2Animation === 'Walking' ? 'idle' : locomotionAnimationFor(p2State, p2LocomotionVelocity) === p2State ? p2Animation : locomotionAnimationFor(p2State, p2LocomotionVelocity)}
           modelUrl={getFighterGlbUrl(p2Fighter.id, p2Fighter.model) ?? p2Fighter.portraitUrl}
           position={[p2FinalX, COMBAT_FIGHTER_Y + p2YProp, p2FinalZ]}
           facing={-1}
@@ -1108,7 +1108,7 @@ export default function CombatArena3D({
           animationTrigger={p2AnimTrigger}
           attackDurationSeconds={p2AttackDurationSeconds}
           locomotionVelocity={p2LocomotionVelocity}
-          groundSpeedRef={p2GroundSpeedRef}
+          groundSpeedRef={p2GroundSpeedRef ?? { current: Math.hypot(p2LocomotionVelocity?.forward ?? 0, p2LocomotionVelocity?.strafe ?? 0) }}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP2BoneHitboxReady}
           attackClip={p2AttackClip}
