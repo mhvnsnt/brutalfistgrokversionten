@@ -5,17 +5,17 @@ Updated: 2026-09-28
 ## Source priority
 
 ### Quaternius Universal Animation Library 1 (UAL1)
-- Official source: https://quaternius.itch.io/universal-animation-library
-- License: CC0 1.0 Universal.
-- Current official release includes Standard and Root Motion exports.
-- The 2026 release changed the Unreal export to GLB, fixed a double-root issue, and updated the rig naming scheme.
-- Intake rule: use the Standard/in-place bank for ordinary fighter-controlled actions; evaluate the Root Motion variant separately for moves whose authored displacement is part of the move.
+- Official source: https://quaternius.com/packs/universalanimationlibrary.html
+- Official page currently identifies the pack as March 2025, with 120+ animations, FBX/GLB/Blend formats, and CC0 licensing.
+- The pack uses a universal humanoid rig intended for retargeting and covers locomotion in 8 directions plus combat, crawling, swimming, sitting, death and other actions.
+- Do not claim a Root Motion export or a later 2026 release from the source page unless a downloaded release artifact and version record verifies it.
+- Intake rule: treat any downloaded export variant as its own measured source family; ordinary in-place motion and authored displacement must not be conflated.
 
 ### Quaternius Universal Animation Library 2 (UAL2)
-- Official source: https://quaternius.itch.io/universal-animation-library-2
-- License: CC0 1.0 Universal.
-- 130+ animations are advertised by the author, including melee/combat combos, parkour, locomotion and other actions.
-- The June 2026 release added root-motion and non-root-motion exports and fixed directional-step synchronization.
+- Official source: https://quaternius.com/packs/universalanimationlibrary2.html
+- Official page currently identifies the pack as January 2026, with 130+ animations, FBX/GLB/Blend formats, and CC0 licensing.
+- It complements UAL1 with melee/armed combos, parkour, farming, fishing, zombie locomotion and other actions; the author specifically advertises 3- and 4-hit combos split into individual hits/recoveries as well as full combo animations.
+- Do not infer root-motion availability, directional-step fixes, or other release-specific details unless the exact downloaded artifact/version is recorded and measured.
 - Intake rule: do not bulk-promote the library. Every candidate must pass the same source → retarget → bake → measure → runtime certification pipeline as existing motion.
 
 ## Current repo status
