@@ -416,7 +416,7 @@ export const COMMAND_THROW_MOVE: MoveWindow = {
   hitboxStartFrame: 6,
   hitboxEndFrame: 11,
   totalFrames: 43,
-  damage: 220,
+  damage: 160,
   isThrow: true,
   isCommandThrow: true,
   isUnblockable: true,
