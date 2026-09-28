@@ -87,6 +87,7 @@ import {
   loadBannonMotionBankVariants,
 } from '../retarget/BannonClipJsonAdapter';
 import { loadBakedMotionBank } from '../retarget/BakedMotionBank';
+import { isCollapsedAnimationClip, recoverBannonEulerClip } from '../retarget/UniversalAnimationRecovery.ts';
 import {
   buildSchwarzerblitzMotionClips,
   schwarzerblitzSourceRest,
@@ -830,7 +831,19 @@ export async function extractAndRetargetAnimations(
     const baked = await loadBakedMotionBank();
     for (const [name, clip] of baked) {
       if (processedClips.some((c) => c.name === name)) continue;
-      const copy = clip.clone();
+      let copy = clip.clone();
+      // UNIVERSAL SOURCE RECOVERY. The bake is canonical, but a collapsed
+      // multi-bone source can survive as a technically valid file. Once the
+      // actual fighter rig exists, rebuild that source through the universal
+      // intake path so the repair is made against THIS model's bind pose.
+      if (isCollapsedAnimationClip(copy) && !String(copy.name).match(/REACTION|RECV|VICTIM/i)) {
+        try {
+          const recovered = await recoverBannonEulerClip(name, cloned);
+          if (recovered) copy = recovered;
+        } catch {
+          // Raw source recovery is optional; the baked clip remains available.
+        }
+      }
       const ud = (copy as THREE.AnimationClip & { userData: Record<string, unknown> }).userData ?? {};
       const sem = String(ud.semanticState ?? resolveClipSemanticState(name) ?? '');
       (copy as THREE.AnimationClip & { userData: Record<string, unknown> }).userData = {
