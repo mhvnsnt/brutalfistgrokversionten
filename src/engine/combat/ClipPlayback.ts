@@ -120,6 +120,9 @@ export function locomotionPlaybackRate(speedMps: number, clipName?: string | nul
   if (!(speedMps > 0.2)) return 1;
   const measured = authoredStrideSpeed(clipName);
   if (measured !== null) return playbackRateFor(clipName, speedMps);
-  const rate = speedMps / WALK_PLAYBACK_MPS;
-  return Math.min(3.0, Math.max(0.75, rate));
+  // Unmeasured clips are deliberately left at authored speed. A global ratio
+  // makes back-walks and unrelated clips skate or race because their actual
+  // stride is unknown. Movement speed is owned by locomotion; animation speed
+  // is only distance-matched when we have a measured clip record.
+  return 1;
 }
