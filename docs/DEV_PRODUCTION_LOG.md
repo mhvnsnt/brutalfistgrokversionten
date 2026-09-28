@@ -84,3 +84,13 @@ Important: these are implementation corrections, not a claim that all animation 
 - Normal attack slots already added in the previous pass remain separate from generic semantic state: the FSM selects the fighter's move-set clip while `FighterMesh` continues to use the semantic state for combat timing/root-motion. This prevents changing a clip from changing what the move mechanically is.
 - The remaining animation work is intentionally not being declared solved: several roster slots still point at shared generic IDs such as `bf_idle`, `bf_walk_fwd`, `bf_crouch`, and `bf_jab`. Those are legitimate fallback definitions, but they are not evidence of unique authored animations. The production law remains source → retarget → bake → measure → runtime test → promote.
 - Runtime status remains UNKNOWN until PWA playtesting verifies held crouch, jump, movement, distinct fighter attacks/signatures, and full animation completion on actual rigs.
+
+
+### Initial-match animation ownership correction + regression locks — 2026-09-28
+
+- Found a concrete lifecycle bug in the previous per-fighter animation pass: resetForRound() installed each fighter's CharacterMoveSet clip map, but the initial match construction recreated both FighterStateMachine instances without installing those maps. The first playable round could therefore fall back to the shared semantic bank until a round transition.
+- Fixed the initial match path so P1 and P2 receive their own roster-derived animation slots immediately after their FSMs are constructed. This applies to idle, walk forward/back, crouch, guard, base attacks, kicks, combos, counters, grapple/throw, knockdown, wakeup, hit reaction, KO, and signature slots.
+- Added direct FSM regression coverage proving a fighter-owned light-attack clip is actually selected and that a fighter-owned crouch clip persists while Down remains held and clears after release.
+- Changes are on main: 183ffb7f1eeca96f8fbd6fecfc231f5a10d030a8 (initial-match ownership) and 2c6c740c49645b617d31e8d8b3efc37d3a56b1dd (regression tests).
+- GitHub reports no workflow run for the latest test commit, so CI is UNKNOWN, not green. Local execution could not be performed in this environment because outbound GitHub network access is unavailable.
+- Runtime PWA certification remains UNKNOWN. The next required evidence is an actual browser/mobile playtest confirming: held Down crouch, immediate jump + visible vertical arc, fighter-specific attacks/signatures on the first round, correct directional movement, and no attack clip being overwritten by locomotion state.
