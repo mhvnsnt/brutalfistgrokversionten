@@ -296,6 +296,7 @@ export default function GameBattleArena({
       victimHitbox.reset();
       playOpponentHalf(victim, deliverer, receiverOverride, receiverDuration);
       engineRef.current?.applyIncomingHit(victim, damage, false, 0.3);
+      logHit(attacker, victim, damage, false, 'throw');
       if (settings.soundEnabled) sfx.playHeavyHit();
       audioManagerRef.current.playSFX('throw_connect');
       setDamageEvent({
