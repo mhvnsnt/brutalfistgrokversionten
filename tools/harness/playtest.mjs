@@ -47,8 +47,9 @@ const shot = async (page, name) => {
   console.log(`   [shot] ${name}.png`);
 };
 
+const executablePath = process.env.PLAYTEST_BROWSER || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const browser = await chromium.launch({
-  executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+  ...(fs.existsSync(executablePath) ? { executablePath } : {}),
   args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox'],
 });
 // The owner plays on an Android phone in PORTRAIT. Test what he sees.
