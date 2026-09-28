@@ -94,3 +94,12 @@ Important: these are implementation corrections, not a claim that all animation 
 - Changes are on main: 183ffb7f1eeca96f8fbd6fecfc231f5a10d030a8 (initial-match ownership) and 2c6c740c49645b617d31e8d8b3efc37d3a56b1dd (regression tests).
 - GitHub reports no workflow run for the latest test commit, so CI is UNKNOWN, not green. Local execution could not be performed in this environment because outbound GitHub network access is unavailable.
 - Runtime PWA certification remains UNKNOWN. The next required evidence is an actual browser/mobile playtest confirming: held Down crouch, immediate jump + visible vertical arc, fighter-specific attacks/signatures on the first round, correct directional movement, and no attack clip being overwritten by locomotion state.
+
+
+### Jump + limb aerial routing pass — 2026-09-28
+
+- Found a concrete input-order bug: jump was evaluated after the grounded LP/RP/LK/RK branches. A simultaneous Up + limb therefore became a standing attack even though the locomotion jump arc had already been armed.
+- Added explicit `jumpAttack` routing for jump + punch/kick input. The aerial move keeps its own startup/active/recovery/hitbox data while using the fighter-owned light/heavy clip slot for visual individuality; the FSM motion identity remains `jumpAttack` so the renderer does not confuse the clip with a grounded punch.
+- Added regression coverage proving Up + LP enters `jumpAttack`, `Attacking`, and the authored `Jumping Light` move rather than a grounded jab.
+- Main commits: `63b128af133a8e6957cf5c68c7cc62f665bd9091` (implementation), `e1df64e3489dac680ef90dc7d3f6e576d4a1ebc4` (test).
+- Runtime/browser certification remains UNKNOWN; this pass specifically closes the input-routing seam, not the claim that every aerial clip is visually correct on every rig.
