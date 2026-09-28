@@ -1,6 +1,7 @@
 import './engine/assets/installAssetStream';
 import { TitleScreen } from './components/TitleScreen';
 import { useState } from 'react';
+import { useTapThroughGuard } from './pwa/useTapThroughGuard';
 import { AppScreen } from './types';
 import { BANNON_GLB_PLAYABLE_MODELS } from './data/bannonGlbRoster';
 import { type BannonFighterProfile, getBannonFighter, getAllBannonFighters } from './data/bannonRoster';
@@ -39,6 +40,10 @@ const PreCombatValidationScreen = dynamic(() => import('./components/PreCombatVa
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
   const [screen, setScreen] = useState<AppScreen>(AppScreen.Title);
+  // A tap must not press the screen it opens — see useTapThroughGuard. Without
+  // this, PRESS START's own synthesised click landed on whichever mode button
+  // the menu drew at that pixel.
+  useTapThroughGuard(screen);
   const [p1BannonFighter, setP1BannonFighter] = useState<BannonFighterProfile | null>(null);
   const [p2BannonFighter, setP2BannonFighter] = useState<BannonFighterProfile | null>(null);
   const [matchWinner, setMatchWinner] = useState<'p1' | 'p2' | 'draw' | null>(null);
