@@ -1879,6 +1879,7 @@ export class FighterStateMachine {
     const risingForwardPos = resolvedInput.forward > 0.5 && this.prevInput.forward <= 0.5;
     const risingForwardNeg = resolvedInput.forward < -0.5 && this.prevInput.forward >= -0.5;
     const risingStrafe = Math.abs(resolvedInput.strafe) > 0.5 && Math.abs(this.prevInput.strafe) <= 0.5;
+    const risingJump = !!resolvedInput.jump && !this.prevInput.jump;
 
     // Track forward press time for command throw detection
     if (risingForwardPos) {
@@ -2044,7 +2045,7 @@ export class FighterStateMachine {
         } else if (risingGuard) {
           this.wakeupBuffered = 'backrise';
           console.log('[FSM] ↩️ Wakeup buffered: backrise');
-        } else if (resolvedInput.jump && !this.prevInput.jump) {
+        } else if (risingJump) {
           this.wakeupBuffered = 'kipUp';
           console.log('[FSM] 🥋 Wakeup buffered: kipUp');
         }
