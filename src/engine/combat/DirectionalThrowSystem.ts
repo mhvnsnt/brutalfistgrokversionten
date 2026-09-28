@@ -56,6 +56,8 @@ export interface ThrowDefinition {
   attackerAnimation: string;
   /** Animation clip name for defender */
   defenderAnimation: string;
+  /** Commit animation after the grab catches. */
+  commitAnimation: string;
   /** Whether this throw carries the opponent to the wall */
   wallCarry: boolean;
   /** Positional offset applied to defender after throw */
@@ -74,6 +76,7 @@ export const THROW_CATALOG: Record<string, ThrowDefinition> = {
     defenderRecoveryFrames: 45,
     breakButton: '1',
     attackerAnimation: 'THROWSTART',
+    commitAnimation: 'KNEETHROW',
     defenderAnimation: 'KNEETHROWREACTION',
     wallCarry: false,
     defenderPositionOffset: { x: 1.5, y: 0, z: 0 },
@@ -89,6 +92,7 @@ export const THROW_CATALOG: Record<string, ThrowDefinition> = {
     defenderRecoveryFrames: 55,
     breakButton: '2',
     attackerAnimation: 'RENZOTHROW',
+    commitAnimation: 'RENZOTHROW',
     defenderAnimation: 'RENZOTHROWREACTION',
     wallCarry: false,
     defenderPositionOffset: { x: -1.8, y: 0, z: 0 },
@@ -104,6 +108,7 @@ export const THROW_CATALOG: Record<string, ThrowDefinition> = {
     defenderRecoveryFrames: 50,
     breakButton: 'either',
     attackerAnimation: 'GRAFTHROW',
+    commitAnimation: 'GRAFTHROW',
     defenderAnimation: 'GRAFTHROWREACTION',
     wallCarry: true,
     defenderPositionOffset: { x: 0, y: 0, z: 1.5 },
