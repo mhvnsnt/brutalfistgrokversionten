@@ -1,0 +1,69 @@
+name: Universal model and attire audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/models/**'
+      - 'src/engine/pipeline/**'
+      - 'src/engine/retarget/**'
+      - 'scripts/audit-skin-bleed.mjs'
+      - '.github/workflows/universal-model-audit.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * 0'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Start the real Vite game
+        env:
+          ROCKET_PREVIEW: '1'
+        run: |
+          npm run dev > /tmp/brutal-fist-vite.log 2>&1 &
+          echo $! > /tmp/brutal-fist-vite.pid
+          for i in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8080/ >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/brutal-fist-vite.log
+          exit 1
+
+      - name: Audit every shipped GLB through the universal pipeline
+        env:
+          BF_BASE: http://127.0.0.1:8080
+          BF_BLEED_TOLERANCE: '0'
+          CI: '1'
+        run: |
+          node scripts/audit-skin-bleed.mjs --all --pipeline --gate 2>&1 | tee universal-model-audit.txt
+
+      - name: Upload universal audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: brutal-fist-universal-model-audit
+          path: |
+            universal-model-audit.txt
+            /tmp/brutal-fist-vite.log
+          if-no-files-found: ignore
+
+      - name: Stop Vite
+        if: always()
+        run: |
+          if [ -f /tmp/brutal-fist-vite.pid ]; then kill $(cat /tmp/brutal-fist-vite.pid) || true; fi
