@@ -100,9 +100,9 @@ export const ATTACK_ROOT_MOTION_PROFILES: Record<string, { forwardDisplacement: 
 // * 2.5f, read from FK_Character), and the backdash and sidestep keep their
 // existing proportions, so only the PACE changes and none of the relationships
 // between the moves do.
-export const WALK_SPEED = 1.15;  // metres/sec — deliberate small-step combat walk
-export const DASH_SPEED = 3.2;    // metres/sec — fast run/dash tier, separate from walk
-const BACKDASH_SPEED = 2.7;       // metres/sec — fast retreat tier, separate from walk
+export const WALK_SPEED = 0.90;  // metres/sec — deliberately readable combat walk
+export const DASH_SPEED = 2.25;    // metres/sec — controlled forward dash/run tier
+const BACKDASH_SPEED = 2.05;       // metres/sec — controlled retreat tier
 const SIDESTEP_SPEED = 1.0;       // metres/sec — controlled lateral step
 
 /**
@@ -410,6 +410,11 @@ export class LocomotionSystem {
     // independently of whatever the stick is asking for.
     this.tickPushback(dt);
 
+    // Vertical travel has one owner. It must continue even while an attack is
+    // using root-motion mode; otherwise entering an attack during a jump freezes
+    // the body at its last sampled Y.
+    this.updateJumpArc(dt);
+
     if (this.state.mode === 'rootMotion') {
       this.updateRootMotion(dt);
       return;
@@ -472,14 +477,25 @@ export class LocomotionSystem {
     this.state.rootX = this.clampWalkX(this.state.rootX + this.state.velocityX * dt);
     this.state.rootZ = this.clampToZ(this.state.rootZ + this.state.velocityZ * dt);
 
-    if (this.jumpY > 0 || this.jumpV > 0) {
-      this.jumpV -= 22 * dt;
-      this.jumpY += this.jumpV * dt;
-      if (this.jumpY <= 0) {
-        this.jumpY = 0;
-        this.jumpV = 0;
-      }
+  }
+
+  /** Advance the world-space jump arc independently of X/Z locomotion. */
+  private updateJumpArc(dt: number) {
+    if (!(this.jumpY > 0 || this.jumpV > 0)) return;
+    this.jumpV -= 22 * dt;
+    this.jumpY += this.jumpV * dt;
+    if (this.jumpY <= 0) {
+      this.jumpY = 0;
+      this.jumpV = 0;
+      this.jumpArmed = true;
     }
+  }
+
+  /** Force a real floor landing for knockdown/get-up transitions. */
+  land() {
+    this.jumpY = 0;
+    this.jumpV = 0;
+    this.jumpArmed = true;
   }
 
   private updateRootMotion(dt: number): void {
