@@ -19,3 +19,11 @@
 - Next repair lane: rerun the real Chromium PWA gate against the arena-first loader, isolate the remaining runtime failure from its captured evidence, then restore Hurricane Kick as an actual rotating/root-motion special and certify it in-browser.
 - Grapples remain two-body events: attacker and receiver roles must be paired; receiver reactions cannot fall back to unrelated solo attack clips.
 - Open-source animation intake remains bulk-oriented but fail-closed: source -> retarget -> bake -> measure -> runtime PWA test -> promotion. No unverified clip is promoted merely because its filename/reach resembles an attack.
+
+
+## Combat startup correction — 2026-09-28
+
+- Found a concrete reason the first arena-first loader could still be effectively a full-bank preload: the 455-entry manifest has only 6 explicit `owns` clips, while semantic labels cover 444 entries, largely because 249 clips are labelled `idle`. Treating every required semantic as core therefore selected 444 clips.
+- Corrected `selectCoreBakedNames` so startup loads the 6 authoritative owners plus at most one measured candidate per required semantic, with non-UAL/project material preferred and ordinary grounded/full-body clips preferred. Grapple owners additionally pull their paired receiver clips.
+- Static manifest replay now selects **20 core clips out of 455**, instead of 444, while preserving attacker/receiver pairing. The remaining bank stays available for background hydration.
+- This is a startup/performance correction only; it does not certify any animation visually. Runtime PWA evidence remains mandatory.
