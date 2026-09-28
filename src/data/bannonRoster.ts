@@ -64,6 +64,15 @@ export interface CharacterMoveSet {
   // Core attacks
   lightAttack: string;
   heavyAttack: string;
+  // Directional attacks — these are actual gameplay moves, not just animation
+  // aliases. A fighter may therefore have a different move when advancing,
+  // retreating, or entering from down-forward.
+  forwardLight?: string;
+  forwardHeavy?: string;
+  backLight?: string;
+  backHeavy?: string;
+  downForwardLight?: string;
+  downForwardHeavy?: string;
   // Kick
   lowKick: string;
   highKick: string;
