@@ -20,6 +20,21 @@ Animation/rig correctness is gameplay infrastructure, not cosmetic polish.
 
 ---
 
+## Reference-game instrumentation lane — 2026-09-28
+
+- [x] **RetroArch/libretro reference runner** — `IMPLEMENTED`. Added
+  `tools/reference/retroarch_reference.mjs` with documented keyboard
+  bindings, external PCSX-ReARMed preference, explicit failure when the core is
+  absent, and no BIOS/disc/assets committed to the repository.
+- [ ] **RetroArch reference capture/side-by-side** — `IN PROGRESS`. The
+  runner must be exercised against the owner's external Tekken 3 copy when the
+  external RetroArch/core environment is available. Capture only measured
+  timing/input behavior; do not import Tekken assets.
+- [ ] **Reference input timing comparison** — `IN PROGRESS`. Compare the
+  reference runner's measured input-to-motion timing with Brutal Fist's real
+  60 Hz simulation and PWA playtest. The result should feed frame-window,
+  buffering, reaction and locomotion work without copying protected assets.
+
 ## Open-source animation / rigging intake lane — 2026-09-21
 
 - [ ] **Bulk CC0 humanoid animation intake** — `IN PROGRESS`. Quaternius Universal Animation Library 1 (120+ reported clips) and Library 2 (130+ reported clips) are registered as external source banks. They cover locomotion, combat, combos, parkour and defensive motion and are explicitly CC0. Do not promote a clip merely because it loads: every candidate must pass the existing canonical-skeleton bake, floor/airborne, facing, limb-reach, joint-limit, body-count and owner gates.
