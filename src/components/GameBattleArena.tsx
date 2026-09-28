@@ -2489,7 +2489,12 @@ export default function GameBattleArena({
         } else if (!p1GuardResult.blocked) {
           p1SMRef.current.applyReaction(
             resolveHitReaction(
-              { launch: p2Hit.launch, reaction: (p2HbWindow.move as { reaction?: string } | undefined)?.reaction },
+              {
+                launch: p2Hit.launch,
+                reaction:
+                  (p2HbWindow.move as { reaction?: string } | undefined)?.reaction ??
+                  (p2HbWindow.move?.animation === 'heavyKick' ? 'Smackdown' : undefined),
+              },
               p1SMRef.current.isAirborne,
             ),
             p2HbWindow.move ?? null,
