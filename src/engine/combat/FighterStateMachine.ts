@@ -22,7 +22,14 @@ export type ActionState =
 // ── Wakeup option buffered during knockdown recovery ─────────────────────────
 export type WakeupOption = 'techRoll' | 'backrise' | 'quickStand' | null;
 
-type CharacterMoveClipSlot = 'idle' | 'walkForward' | 'walkBackward' | 'crouch' | 'guard' | 'lightAttack' | 'heavyAttack' | 'lowKick' | 'highKick' | 'primaryCombo' | 'counter' | 'grappleInitiate' | 'primaryThrow' | 'knockdown' | 'wakeup' | 'hitReaction' | 'ko' | 'signature';
+type CharacterMoveClipSlot =
+  | 'idle' | 'walkForward' | 'walkBackward' | 'crouch' | 'guard'
+  | 'lightAttack' | 'heavyAttack'
+  | 'forwardLight' | 'forwardHeavy' | 'backLight' | 'backHeavy'
+  | 'downForwardLight' | 'downForwardHeavy'
+  | 'lowKick' | 'highKick'
+  | 'primaryCombo' | 'counter' | 'grappleInitiate' | 'primaryThrow'
+  | 'knockdown' | 'wakeup' | 'hitReaction' | 'ko' | 'signature';
 
 export interface FighterInput {
   forward: number;
@@ -187,6 +194,7 @@ import {
   type ThrowBreakState,
 } from './ThrowChains.ts';
 import { THROW_CATALOG, type ThrowDirection } from './DirectionalThrowSystem.ts';
+import { getMoveById } from '../BrutalFistMoveCatalog.ts';
 
 export interface SpecialMoveDefinition {
   id: string;
@@ -1018,6 +1026,30 @@ export class FighterStateMachine {
   private withCharacterClip(move: MoveWindow, slot: CharacterMoveClipSlot): MoveWindow {
     const clip = this.characterMoveClips[slot];
     return clip ? { ...move, clip } : move;
+  }
+
+  /**
+   * A roster move ID is real gameplay data, not just a clip label. Resolve it
+   * into the catalog's startup/active/recovery/damage/hitbox/pushback values,
+   * while keeping the FSM semantic state stable for collision and rendering.
+   */
+  private characterMoveWindow(
+    moveId: string | undefined,
+    fallback: MoveWindow,
+    slot: CharacterMoveClipSlot,
+    semanticAnimation: FighterMotionState,
+  ): MoveWindow {
+    if (!moveId) return this.withCharacterClip(fallback, slot);
+    const catalog = getMoveById(moveId);
+    if (!catalog) return this.withCharacterClip(fallback, slot);
+
+    return {
+      ...(catalog as unknown as MoveWindow),
+      animation: semanticAnimation,
+      clip: this.characterMoveClips[slot] ?? catalog.animation,
+      isSpecial: fallback.isSpecial,
+      specialName: catalog.displayName,
+    };
   }
   get action(): ActionState { return this.actionState; }
   get isRecovering(): boolean {
