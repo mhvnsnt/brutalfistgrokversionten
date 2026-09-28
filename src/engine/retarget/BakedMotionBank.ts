@@ -1001,8 +1001,6 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
     cached = null;
     return out;
   }
-  cached = out;
-  return out;
 }
 
 /**
