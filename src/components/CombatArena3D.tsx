@@ -25,6 +25,44 @@ const P1_X = -1.8;
 const P2_X = 1.8;
 const Z_RANGE = 2.0;
 
+/**
+ * Pick locomotion presentation from the FSM's semantic state plus the live
+ * signed velocity. Combat states remain authoritative; only locomotion states
+ * are redirected here. This keeps a grapple receiver/hit reaction from being
+ * accidentally replaced by a walk cycle while still giving forward/backward
+ * walk, run and dash their own visual lanes.
+ */
+function locomotionAnimationFor(
+  state: string,
+  velocity: { forward: number; strafe: number } | undefined,
+  requested: string,
+): string {
+  if (!velocity) return state === 'Walking' ? (requested || 'idle') : state;
+  const f = velocity.forward ?? 0;
+  const s = velocity.strafe ?? 0;
+  const af = Math.abs(f);
+  const as = Math.abs(s);
+  const moving = Math.hypot(f, s) > 0.12;
+
+  if (state === 'Backdashing') return 'Backdashing';
+  if (state !== 'Walking') return state;
+  if (!moving) return 'idle';
+
+  // The FSM already distinguishes run/dash from walk. Preserve that request,
+  // but choose the signed variant so holding dash backwards does not play a
+  // forward run while the capsule travels backwards.
+  if (requested === 'dash' || requested === 'dashForward') {
+    return f < -0.12 ? 'dashBackward' : 'dashForward';
+  }
+  if (requested === 'run') {
+    return f < -0.12 ? 'runBackward' : 'run';
+  }
+  if (requested === 'walkBackward' || f < -0.12 && af >= as * 0.85) return 'walkBackward';
+  if (requested === 'strafeLeft' || (as > af * 1.15 && s < 0)) return 'strafeLeft';
+  if (requested === 'strafeRight' || (as > af * 1.15 && s > 0)) return 'strafeRight';
+  return 'walkForward';
+}
+
 // ── Cinematic phases ──────────────────────────────────────────────────────────
 export type CinematicPhase = 'sweep' | 'intro' | 'fight' | 'victory';
 
