@@ -38,6 +38,12 @@ function resolveLocomotionPresentation(
   requested: string,
   airborneY = 0,
 ): string {
+  // Explicit stance requests outrank the generic Idle label. Crouch is
+  // intentionally an Idle action in the FSM, so letting the generic Idle
+  // fallback win here silently replaced crouch with the standing idle clip.
+  if (requested === 'crouch' || requested === 'guardLow' || requested === 'crouchWalk') {
+    return requested;
+  }
   if (!velocity) return state === 'Walking' ? (requested || 'idle') : (requested || state);
   const f = velocity.forward ?? 0;
   const s = velocity.strafe ?? 0;
@@ -51,6 +57,11 @@ function resolveLocomotionPresentation(
   // mid-flight. This is also what makes the visual lift/fall match the actual
   // capsule height.
   if (airborneY > 0.02 && state !== 'Knockdown' && state !== 'Juggled') {
+    return f < -0.12 ? 'jumpBack' : f > 0.12 ? 'jumpForward' : 'jump';
+  }
+  // The world-space Y arc is authoritative. A frame of React/state latency must
+  // not turn an airborne fighter back into a standing locomotion clip.
+  if (state === 'Jumping' && airborneY > 0) {
     return f < -0.12 ? 'jumpBack' : f > 0.12 ? 'jumpForward' : 'jump';
   }
 
