@@ -124,6 +124,58 @@ const heightOf = (dirs) => {
   return 'mid';
 };
 
+const EXACT_ANIMATION_ALIASES = new Map([
+  ['defaultjumppunch', 'DEFAULTJUMPPUNCH'],
+  ['defaultjumppunch2', 'DEFAULTJUMPPUNCH2'],
+  ['defaultjumpkick', 'DEFAULTJUMPKICK'],
+  ['tigerheavykickcombo', 'ROUNDHOUSEKICK'],
+  ['tigercommandocomboex', 'JUMPAXEKICK'],
+  ['tigerdynamopunchfix', 'TIGERDYNAMOPUNCH'],
+  ['tigerscarletscrewnokickfix', 'JUMPAXEKICK'],
+  ['tigerscarletscrewlowkick', 'ROUNDHOUSELOW'],
+  ['tigerkneebashslow', 'TIGERKNEEBASHSLOW'],
+  ['crouchingkick', 'CROUCHINGKICK'],
+  ['crouchingkickrenzo', 'CROUCHINGKICK'],
+  ['quickkick', 'QUICKKICK'],
+  ['axekick', 'JUMPAXEKICK'],
+  ['jumpaxekick', 'JUMPAXEKICK'],
+  ['gyakuzuki', 'GYAKUZUKI'],
+  ['gyakuzukicombo', 'GYAKUZUKI_COMBO'],
+  ['tigerquickpunch', 'TIGERQUICKPUNCH'],
+  ['doublehammer', 'TIGERDOUBLEHAMMERCOMBO'],
+  ['dynamonova0', 'TIGERDYNAMOPUNCH'],
+  ['grafquickjab', 'GRAFQUICKJAB'],
+  ['quickroundhouse', 'ROUNDHOUSEKICK'],
+  ['flyingkick', 'DROP_KICK'],
+  ['lowkick2', 'CROUCHINGKICK'],
+  ['papershredder2', 'JUMPAXEKICK'],
+]);
+
+const COMMAND_CLIP_PLACEMENT = {
+  Ducking_Comet: 'ROUNDHOUSELOW',
+  Double_Hammer: 'TIGERDOUBLEHAMMERCOMBO',
+  Dynamo_Punch: 'TIGERDYNAMOPUNCH',
+  CrouchUppercut: 'UPPERCUT',
+  Heavy_Kick_Eins: 'ROUNDHOUSEKICK',
+  AirScarletScrew: 'JUMPAXEKICK',
+  CrouchingScarletScrew: 'ROUNDHOUSELOW',
+  GroundScarletScrew: 'ROUNDHOUSELOW',
+  Knee_Commando: 'TIGERKNEEBASHSLOW',
+  Rising_Blade: 'JUMPAXEKICK',
+  Crouching_Kick: 'CROUCHINGKICK',
+};
+
+function normalizedClipName(value) {
+  return String(value ?? '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+}
+
+function exactClipForAnimation(animation, pool) {
+  const key = normalizedClipName(animation);
+  const preferred = EXACT_ANIMATION_ALIASES.get(key) ?? String(animation ?? '').toUpperCase().replace(/[^A-Z0-9]+/g, '_');
+  const exact = pool.find((clip) => normalizedClipName(clip.name) === normalizedClipName(preferred));
+  return exact ?? null;
+}
+
 function score(clip, want, used, seed) {
   let s = 0;
   // The pipeline's own verdict comes first. See `isAttack` in attackPool.
@@ -152,8 +204,10 @@ export function mapCommands(commands, seed = '') {
   const out = {};
   for (const c of commands) {
     const want = { kick: c.kick, height: heightOf(c.dirs) };
-    let best = null;
-    let bestScore = -Infinity;
+    const explicit = COMMAND_CLIP_PLACEMENT[c.name.replace(/^!\s*/, '')];
+    const exact = explicit ? pool.find((clip) => normalizedClipName(clip.name) === normalizedClipName(explicit)) : exactClipForAnimation(c.animation, pool);
+    let best = exact;
+    let bestScore = exact ? Number.POSITIVE_INFINITY : -Infinity;
     for (const clip of pool) {
       const v = score(clip, want, used, seed);
       if (v > bestScore) { bestScore = v; best = clip; }
@@ -175,6 +229,7 @@ const commandsFor = (set) => schwarzerblitzSpecials(set)
   .map((m) => ({
     id: m.id,
     name: m.name,
+    animation: m.animation,
     dirs: m.command.flatMap((s) => s.dirs),
     kick: m.command.some((s) => s.buttons.some((b) => /K/.test(b))),
   }));
