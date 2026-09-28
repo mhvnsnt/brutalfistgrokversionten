@@ -201,3 +201,14 @@ Important: these are implementation corrections, not a claim that all animation 
 - The promoted work includes delayed airborne attack input, neutral/forward/back airborne routing, stage-dive launch metadata, regression coverage, and the fighter-owned presentation integration corrections.
 - The branch had no current CI status attached at merge time; therefore the merge is a source-control promotion, **not** a claim of CI or PWA certification.
 - Next gate is deployment/browser verification on `main`; any runtime issue will be fixed with a new follow-up commit/PR so this merged history remains intact.
+
+
+## GitHub Pages PWA deployment hardening — 2026-09-28
+
+- Inspected the live deployment path on `main` rather than treating the PR merge as a PWA verification.
+- Confirmed `.github/workflows/pages.yml` is the repository's GitHub Pages PWA publisher and triggers on pushes to `main`.
+- Hardened the workflow with `actions/configure-pages@v5` and upgraded `actions/upload-pages-artifact` to `@v4`, matching the current GitHub Pages custom-workflow deployment pattern.
+- Commit: `6b4589b705da76bb7ce9235febbac789232d1c05`.
+- The workflow still builds the Vite bundle with the repository base path, stamps the service-worker cache generation, creates `404.html`, runs `verify-pwa-build.mjs`, uploads `dist`, and deploys through the `github-pages` environment.
+- IMPORTANT: GitHub connector access available in this session does not expose the push-triggered Pages run/deployment result, and web access could not open the private/live deployment endpoint. Therefore runtime/PWA visual status remains UNKNOWN rather than being called PASS.
+- Next runtime gate: obtain the actual Pages deployment URL/run result, then browser-test Bannon vs Kobra on the newly deployed generation before calling the PWA verified.
