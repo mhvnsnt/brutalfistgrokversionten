@@ -52,3 +52,31 @@ ALSA errors in the log are a missing sound card and are harmless.
 Every combat probe written before this compared our game against MY IDEA of how
 a fighting game should behave. This replaces that with a measurement of one that
 demonstrably does.
+
+## RetroArch / libretro reference lane
+
+tools/reference/retroarch_reference.mjs is the second reference path. It uses
+RetroArch's documented libretro keyboard configuration rather than reverse-
+engineering a keymap plugin. It prefers an externally installed PCSX-ReARMed
+core and writes an isolated config under the temporary output directory.
+
+The runner deliberately does **not** fetch or bundle a Sony BIOS, the disc, or
+any game assets. PCSX-ReARMed may use its HLE BIOS when the installed core
+supports it. If RetroArch or the core is absent, the tool fails explicitly
+instead of pretending the reference was measured.
+
+Example:
+
+    node tools/reference/retroarch_reference.mjs --cue="<path>/Tekken 3 (USA).cue"
+
+Keyboard reference mapping is deterministic:
+
+- WASD = directions
+- X/Z/S/A = PSX face buttons
+- Q/W = L1/R1
+- Enter = Start
+- Right Shift = Select
+
+This is for timing/input/reference measurement only. The PWA never depends on
+RetroArch and no Tekken asset enters the build.
+
