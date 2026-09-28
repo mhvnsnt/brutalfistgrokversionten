@@ -49,3 +49,10 @@ Concrete implementation findings from that report:
 - Added regression coverage for directional input selection, real grab/commit/receiver clips, receiver pairing, and the new damage bounds.
 
 Important: these are implementation corrections, not a claim that all animation problems are solved. The next gate is the real PWA/Chromium run, followed by systematic locomotion/jump/clip-placement and grapple contact validation.
+
+
+### Follow-up timing correction — 2026-09-28
+
+- Directional throw commits now carry measured attacker durations as well as receiver durations.
+- The FSM keeps the attacker in the directional throw commit for the full authored clip when that exceeds the ordinary recovery window. This specifically prevents long backward/side grapple clips from being cut at ~0.5–0.7s.
+- This follows the production law: do not speed a long authored grapple into a twitch and do not let the combat clock pull the animation off-screen before the paired performance finishes.
