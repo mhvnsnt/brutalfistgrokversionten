@@ -9,3 +9,13 @@
 - Arena/stage names and exact specifications were not promoted to canon in this pass because the accessible GitHub search did not expose authoritative source data. Unknown remains UNKNOWN.
 - Hurricane Kick is tracked for dedicated recovery: it must be reintroduced as a rotating/root-motion special and runtime-certified, not silently mapped to a normal kick.
 - Open-source queue explicitly includes Quaternius Universal Animation Library 1 and 2, with root-motion/in-place distinctions preserved and license/provenance gates.
+
+
+## Continuation pass — 2026-09-28 13:14 CDT
+
+- Merged PR #18 (611332e): combat animation startup is now arena-first. Required combat owners and explicit paired receivers load before the rest of the baked bank; remaining clips hydrate in the background. This directly addresses the measured real-playtest startup bottleneck where the arena was reached with 0 rigs at roughly 2.3 fps while the full baked corpus was loading.
+- Merged PR #19 (924fdd4): canon/arena/stage/roster ledger and production rules are now on main, including MODEL_NEEDED placeholders for book-canon characters and UNKNOWN gates for unverified stage facts.
+- Production law remains: static gates can reject bad work, but they cannot promote runtime animation to PASS. Runtime PWA evidence is still required.
+- Next repair lane: rerun the real Chromium PWA gate against the arena-first loader, isolate the remaining runtime failure from its captured evidence, then restore Hurricane Kick as an actual rotating/root-motion special and certify it in-browser.
+- Grapples remain two-body events: attacker and receiver roles must be paired; receiver reactions cannot fall back to unrelated solo attack clips.
+- Open-source animation intake remains bulk-oriented but fail-closed: source -> retarget -> bake -> measure -> runtime PWA test -> promotion. No unverified clip is promoted merely because its filename/reach resembles an attack.
