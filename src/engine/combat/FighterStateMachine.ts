@@ -5,6 +5,7 @@ import type { FighterMotionState } from '../retarget/AnimationController.ts';
 import { powerCrushWindow, resolveDefensiveWindows, type DefensiveWindow } from './DefensiveWindows.ts';
 import { counterWindowOf, counterScaledDamage, counterBonusHitstun, isCounterWindow, type CounterWindow } from './CounterHit.ts';
 import { attackLevelFor } from './DerivedAttackLevels.ts';
+import { reactionClipFor } from './ReactionClips.ts';
 import { resolveReaction, type VictimState, type ReactionKind } from './ReactionMatrix.ts';
 import {
   applyAirHit, applyLaunch, freshJuggle, juggleScale, reactionFor, tickJuggle,
@@ -1041,6 +1042,12 @@ export class FighterStateMachine {
    * as a clip name, so handing this straight through is all that is needed.
    */
   activeClip(): string | null {
+    // A VICTIM HAS NO `currentMove` -- applyHitStun clears it -- so without this
+    // the mesh fell back to matching the motion state by name against eighteen
+    // clips that all claim semantic `hit_reaction` and run from 0.167s to
+    // 3.300s. A jab could start a 3.3-second animation and be cut 5% in, which
+    // is the "glitchy hit reaction". The reaction names its own clip; serve it.
+    if (this.actionState === 'HitStun' && this.reactionClip) return this.reactionClip;
     return this.currentMove?.clip ?? null;
   }
 
@@ -1130,7 +1137,13 @@ export class FighterStateMachine {
       victim,
       counterHit: opts.counterHit ?? false,
     });
-    this.lastReaction = { victim, ...resolved };
+    // THE REACTION'S NAME IS THE BINDING TO ITS ANIMATION, so keep it.
+    // Schwarzerblitz's clips are named after these reactions -- `WeakHigh` and
+    // REACTION_HITWEAKHIGH are the same fact written twice -- and dropping the
+    // name here is why the mesh had to guess by similarity across eighteen
+    // clips ranging from 0.167s to 3.300s. See ReactionClips.
+    this.lastReaction = { victim, reaction: reactionName ?? 'None', ...resolved };
+    this.reactionClip = reactionClipFor(reactionName, { backTurned: this.backTurned });
     switch (effect.kind) {
       case 'none':
         return effect;
@@ -1334,7 +1347,9 @@ export class FighterStateMachine {
   /** Move-time on the frame the last attack ended, for buffer expiry. */
   private moveElapsedAtEnd = 0;
 
-  lastReaction: ({ victim: VictimState } & ReturnType<typeof resolveReaction>) | null = null;
+  lastReaction: ({ victim: VictimState; reaction: string } & ReturnType<typeof resolveReaction>) | null = null;
+  /** The clip this reaction plays, bound by name. Cleared when hitstun ends. */
+  reactionClip: string | null = null;
 
   /**
    * Guard posture from the last resolved stick. Called when a hit connects,
