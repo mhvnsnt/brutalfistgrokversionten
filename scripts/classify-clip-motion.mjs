@@ -160,6 +160,10 @@ export function loadAllBanks() {
 
 async function main() {
   const banks = loadAllBanks();
+  const bankCounts = Object.values(banks).map((bank) => Object.keys(bank ?? {}).length);
+  if (bankCounts.reduce((a, n) => a + n, 0) === 0) {
+    throw new Error('No motion-bank clips were loaded; refusing to generate an empty classifier.');
+  }
   const { resolveClipAlias } = await import('../src/engine/retarget/MoveLibrary.ts').catch(() => ({}));
 
   // The resolver is TypeScript; when it cannot be imported directly we still
