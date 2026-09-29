@@ -419,7 +419,12 @@ export function buildAnimationController(
       for (const [action, remaining] of retiringActions) {
         const left = remaining - delta;
         if (left <= 0) {
-          if (action !== currentAction && action !== stanceAction) action.stop();
+          if (action !== currentAction && action !== stanceAction) {
+            action.stop();
+            // Do not leave a stopped action scheduled in the mixer. Reusing the
+            // cached clipAction is safe; the next play() resets it.
+            action.enabled = false;
+          }
           retiringActions.delete(action);
         } else {
           retiringActions.set(action, left);
