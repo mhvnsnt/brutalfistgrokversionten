@@ -33,7 +33,7 @@ describe('grounded animation contract', () => {
     assert.match(meshSource, /allowGroundedStart \|\| \(clipStandsUpright\(c\) && clipStartsStanding\(c\)\)/);
     assert.match(meshSource, /WakeupRollSide:\s+\['ROLLOUTRIGHT'/);
     assert.match(meshSource, /GroundedFaceUp:\s+\['SUPINE'/);
-    assert.match(meshSource, /GroundedFaceDown:\s+\['PRONE_HOLD', 'PRONEROTATION'//);
+    assert.match(meshSource, /GroundedFaceDown:\s+\['PRONE_HOLD', 'PRONEROTATION'\]/
   });
 
   it('keeps the fighter prone when there is no wakeup input', () => {
