@@ -17,6 +17,7 @@
  */
 
 import type { FighterMotionState } from '../retarget/AnimationController';
+import { CLIP_MOTION_STATES } from '../../generated/ClipMotionStates.generated.ts';
 
 // ── Frame-data metadata per move ─────────────────────────────────────────────
 
@@ -410,6 +411,17 @@ export function resolveClipAlias(clipName: string): { motionState: FighterMotion
   if (lower.includes('defeat') || lower.includes('lose')) return { motionState: 'defeat', source: 'generic' };
   if (lower.includes('taunt')) return { motionState: 'taunt', source: 'generic' };
   if (lower.includes('intro') || lower.includes('entrance')) return { motionState: 'intro', source: 'generic' };
+
+  // ── MEASURED MOTION FALLBACK ───────────────────────────────────────────
+  // If neither the canonical/fuzzy vocabulary nor the extended move-name
+  // rules know this clip, use the batch classifier generated from the actual
+  // keyframes. This is deliberately LAST: it can never override a known-good
+  // authored alias. The classifier is the bulk path for the hundreds of clips
+  // whose names are character/move titles rather than semantic labels.
+  const measured = CLIP_MOTION_STATES[clipName];
+  if (measured) {
+    return { motionState: measured.state as FighterMotionState, source: 'generic', matched: `measured:${measured.confidence}` };
+  }
 
   // ── EXTENDED VOCABULARY ────────────────────────────────────────────────
   // MEASURED: 210 of the 367 synced clips resolved to NOTHING here, so more
