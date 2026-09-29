@@ -9,6 +9,7 @@ This is the persistent cross-agent checklist. Add new concrete missing work here
 - [x] Grapple runtime now distinguishes a real/baked two-body pair from a duration-based stand-in; stand-ins cannot be certified as real pairs.
 - [x] Regression coverage added for certified vs stand-in grapple pairing.
 - [ ] CI execution result still needs to appear for the workflow; until then, no build/test/PWA PASS is claimed.
+- [x] CI now installs Chromium, serves the production `dist`, and runs a browser runtime smoke (`scripts/verify-pwa-runtime.mjs`) after build/typecheck/test/PWA verification. This proves the built shell mounts in a real browser; it does not replace visual animation certification.
 
 
 - [x] Grounded resolver now has a dedicated evidence lane so SUPINE/PRONEROTATION/roll/get-up clips are not rejected by standing-only gates.
@@ -27,7 +28,8 @@ This is the persistent cross-agent checklist. Add new concrete missing work here
 
 ## P0 — Runtime certification
 
-- [ ] Run the current PWA runtime certification pass on real fighter pairs and record visual results. Static tests are not visual PASS.
+- [ ] Run the current PWA runtime certification pass on real fighter pairs and record visual results. Static tests and browser smoke are not visual PASS.
+- [x] Production CI browser smoke is wired into `main` so runtime mount/page errors fail the gate instead of silently passing a build artifact.
 - [ ] Verify the neutral LP/RP/LK/RK baseline remains intact after every animation-bank promotion.
 - [ ] Verify walk/run/strafe transitions do not leave stacked locomotion actions or ghost poses.
 - [ ] Certify airborne jump/dive arcs in the PWA, including neutral/back/directional variants.
