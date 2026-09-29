@@ -897,6 +897,7 @@ function FighterMeshInner({
     }
 
     const inputKey = animation ?? state;
+    const isAttack = ATTACK_STATES.has(inputKey);
     let clipName = resolveClipName(
       inputKey,
       actions,
@@ -924,7 +925,6 @@ function FighterMeshInner({
       clipName = attackClip;
     }
 
-    const isAttack = ATTACK_STATES.has(inputKey);
     if (isAttack) {
       const profile = ATTACK_ROOT_MOTION_PROFILES[inputKey];
       if (profile?.hasRootMotion) {
