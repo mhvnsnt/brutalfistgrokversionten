@@ -176,6 +176,26 @@ export function pairPlaybackRate(deliverer: string, receiver: string): number {
   return d > 0 && r > 0 ? r / d : 1;
 }
 
+/**
+ * Runtime ownership gate for two-body playback.
+ *
+ * A stand-in is useful for development coverage, but it must never be reported
+ * as a certified grapple pair. The PWA can use it only as an explicitly
+ * labelled fallback while the exact receiver is still missing.
+ */
+export function isCertifiedGrapplePair(
+  deliverer: string,
+  choice: GrapplePairChoice | null,
+): boolean {
+  if (!choice) return false;
+  if (choice.source === 'standin') return false;
+  const d = durOf.get(deliverer) ?? 0;
+  const r = durOf.get(choice.receiver) ?? choice.dur;
+  if (!(d > 0) || !(r > 0)) return false;
+  const timing = r / d;
+  return timing >= 1 / 1.25 && timing <= 1.25;
+}
+
 /** For the probes: what every grapple in the bank resolves to right now. */
 export function grapplePairingReport(deliverers: readonly string[]) {
   const rows = deliverers.map((d) => ({ deliverer: d, ...(receiverClipFor(d) ?? { receiver: null, source: 'none' as const, dur: 0 }) }));
