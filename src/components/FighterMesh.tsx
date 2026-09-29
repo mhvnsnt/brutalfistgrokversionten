@@ -527,9 +527,12 @@ function resolveClipName(
   // T-pose gate at 0.49 against 0.50, and two taunts that play lying flat
   // passed everything but the eye. Marking a clip BROKEN in the Move
   // Library takes it out of the game.
+  const GROUND_HOLD_CLIPS = new Set(['SUPINE', 'PRONE', 'GROUNDED_IDLE', 'GROUND_IDLE']);
   const usable = (c: string, forAttack = true, allowGroundedStart = false) =>
     !labelRefuses(c)
-    && clipAnimates(c, actions[c]?.getClip())
+    // SUPINE is intentionally a frozen hold: zero moving bones is correct here,
+    // because "do nothing" must actually leave the fighter lying on the mat.
+    && (clipAnimates(c, actions[c]?.getClip()) || (allowGroundedStart && GROUND_HOLD_CLIPS.has(c.toUpperCase())))
     && clipIsAuthoredPose(c)
     && !clipIsTeamCapture(c)
     // Grounded recovery is its own evidence lane: a prone hold/roll/get-up
