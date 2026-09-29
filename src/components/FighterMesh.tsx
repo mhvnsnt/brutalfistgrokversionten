@@ -493,7 +493,7 @@ function resolveClipName(
   // Library takes it out of the game.
   const usable = (c: string, forAttack = true) =>
     !labelRefuses(c)
-    && clipAnimates(c)
+    && clipAnimates(c, actions[c]?.getClip())
     // A measured T-pose/starfish or rest-pose clip is not a locomotion/combat
     // answer. The bake already records these as authored-pose failures; keep
     // them out of runtime resolution instead of making the skeleton contort.
@@ -913,7 +913,7 @@ function FighterMeshInner({
       attackClip &&
       actions[attackClip] &&
       !labelRefuses(attackClip) &&
-      clipAnimates(attackClip) &&
+      clipAnimates(attackClip, actions[attackClip]?.getClip()) &&
       clipIsAuthoredPose(attackClip) &&
       !clipIsTeamCapture(attackClip) &&
       clipStandsUpright(attackClip) &&
