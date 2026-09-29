@@ -394,8 +394,9 @@ const CERTIFIED_RUNTIME_CLIPS: Record<string, string[]> = {
 };
 
 const ATTACK_STATES = new Set([
-  'lightAttack', 'heavyAttack', 'lightKick', 'heavyKick', 'jumpAttack',
-  'light', 'heavy', 'Startup', 'Active', 'CommandThrow',
+  'lightAttack', 'heavyAttack', 'lightKick', 'heavyKick',
+  'crouchLightAttack', 'crouchHeavyAttack', 'jumpAttack', 'runAttack',
+  'light', 'heavy', 'Startup', 'Active', 'CommandThrow', 'grapple', 'overdrive', 'finisher';
 ]);
 
 // ─────────────────────────────────────────────────────────────────────────────
