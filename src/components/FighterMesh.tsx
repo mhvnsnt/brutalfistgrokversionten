@@ -949,8 +949,12 @@ function FighterMeshInner({
       clipAnimates(attackClip, actions[attackClip]?.getClip()) &&
       clipIsAuthoredPose(attackClip) &&
       !clipIsTeamCapture(attackClip) &&
-      clipStandsUpright(attackClip) &&
-      clipStartsStanding(attackClip) &&
+      // The move catalog/state machine already selected this clip as the
+      // command's authored animation. Do not run locomotion-style
+      // "starts standing/upright" gates over a known-good kick or punch:
+      // a real kick can begin with the knee lifted or the torso pitched.
+      // Those gates were the regression that replaced the default strikes
+      // with unrelated fallback clips.
       (!isAttack || (!isReceivingClip(attackClip) && clipStrikesForward(attackClip) && clipKeepsFacing(attackClip)))
     ) {
       // Explicit command clips still have to pass the same measured gates as
@@ -1203,9 +1207,19 @@ function FighterMeshInner({
       const a = actions[name];
       if (!a || a === nextAction || seen.has(a)) continue;
       seen.add(a);
-      // Hard-cut idle off whenever a real combat/locomotion clip plays so
-      // breathing-idle cannot win the blend and leave a "living statue".
-      if (isUrgent || (inputKey !== 'idle' && inputKey !== 'Neutral')) {
+      // Locomotion is a single authoritative pose, not a stack of fading
+      // poses. Rapid walk↔idle/turn state publication used to leave several
+      // old locomotion actions alive at once; their weighted poses visibly
+      // produced the "double/ghost fighter" while the world-space speed was
+      // otherwise correct. Combat can blend; locomotion must hand off cleanly.
+      const previousKey = inputKeyRef.current;
+      const previousWasLocomotion = LOCO_RATE_STATES.has(previousKey) || LOOP_STATES.has(previousKey);
+      const nextIsLocomotion = LOCO_RATE_STATES.has(inputKey) || LOOP_STATES.has(inputKey);
+      if (nextIsLocomotion && previousWasLocomotion) {
+        a.stop();
+        a.enabled = false;
+        a.setEffectiveWeight(0);
+      } else if (isUrgent || (inputKey !== 'idle' && inputKey !== 'Neutral')) {
         a.stop();
         a.enabled = false;
         a.setEffectiveWeight(0);
