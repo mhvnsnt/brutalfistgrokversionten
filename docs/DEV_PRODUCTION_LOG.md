@@ -299,3 +299,13 @@ Important: these are implementation corrections, not a claim that all animation 
 - Full 455-clip current audit and targeted rebake/re-author pass: IN PROGRESS.
 - UAL1/UAL2 retarget quality audit and selective promotion: IN PROGRESS.
 - PWA combat visual certification of movement, sub-states, bones/joints, strikes, guards, crouches, jumps, wakeups and grapples: REQUIRED.
+
+
+## 2026-09-28 — Authored animation playback / moveset regression repair
+
+- Root cause found for the current “some attacks do not play / some are too fast” regression: authored per-fighter clips were being pushed into the FSM's semantic motion-state field. That makes the renderer lose the canonical attack state while the visual clip is being selected, so attack locks, root-motion/attack-state routing and replay ownership can disagree. Fixed by keeping `lightAttack`/`heavyAttack`/`lightKick`/`heavyKick` (or the move's semantic animation) as the state and carrying the authored animation only in `MoveWindow.clip`.
+- Explicit per-fighter clips now use the same measured attack safety gates as semantic resolution: live motion, upright/start posture, single-body capture, non-receiver, forward strike, and facing. A bad generated assignment is rejected and falls back to a measured semantic clip instead of forcing a visibly broken animation.
+- Attack playback speed is now explicitly 1.0x for authored combat clips. The combat frame-data clock and animation playback clock are separate; no attack clip is silently sped up to fit startup/active/recovery. A valid longer clip is allowed to finish at authored speed rather than being fast-forwarded. This removes the prior speed regression without changing the deliberate locomotion pacing contract.
+- Locomotion pacing remains the deliberate measured contract: walk 0.90 m/s, retreat/back-walk 1.10 m/s, dash 3.00 m/s, sidestep 1.00 m/s, with the unmeasured locomotion fallback at 0.95 m/s.
+- Current generated move data contains several measured clips that fail the grounded attack gates (examples include backward-striking/airborne/long demonstration captures). Those assignments are no longer allowed to bypass the runtime gate; they remain in the move bank for audit/reclassification instead of being deleted.
+- PWA visual certification is still REQUIRED. GitHub has no workflow/status result attached to the three repair commits yet, so this pass is source-corrected but not claimed as browser-certified.
