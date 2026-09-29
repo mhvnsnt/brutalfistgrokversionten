@@ -110,7 +110,7 @@ const LOOP_STATES = new Set<FighterMotionState>([
   'strafeLeft', 'strafeRight', 'sidestepLeft', 'sidestepRight',
   'crouch', 'crouchWalk', 'guard', 'guardLow', 'Guard',
   'Backdashing', 'Knockdown',
-  'WakeupTechRoll', 'WakeupBackrise', 'WakeupQuickStand',
+  'GroundedFaceUp', 'GroundedFaceDown', 'GroundedRoll',
 ]);
 
 // ── States that play once and return to idle ──────────────────────────────────
@@ -120,6 +120,11 @@ const ONESHOT_STATES = new Set<FighterMotionState>([
   'overdrive', 'finisher', 'superArmor',
   'hit', 'hitLow', 'hitHigh', 'HitStun', 'Stunned', 'Hitstun',
   'knockdown', 'Crumple',
+  'WakeupTechRoll', 'WakeupBackrise', 'WakeupQuickStand',
+  'WakeupRollForward', 'WakeupRollBack', 'WakeupRollSide',
+  'WakeupKipUp', 'WakeupAttack',
+  'jump', 'jumpForward', 'jumpBack',
+  'GroundedRoll',
   'victory', 'defeat', 'taunt', 'intro',
 ]);
 
@@ -239,6 +244,20 @@ export function buildAnimationController(
         hitGround:         ['knockdown', 'hit'],
         guardLow:          ['guard'],
         crouchWalk:        ['crouch', 'walkForward'],
+        wake:              ['WakeupQuickStand', 'WakeupBackrise', 'knockdown', 'idle'],
+        WakeupTechRoll:    ['GroundedRoll', 'knockdown', 'wake', 'idle'],
+        WakeupBackrise:    ['wake', 'knockdown', 'idle'],
+        WakeupQuickStand:  ['wake', 'knockdown', 'idle'],
+        WakeupRollForward: ['GroundedRoll', 'knockdown', 'wake', 'idle'],
+        WakeupRollBack:    ['GroundedRoll', 'knockdown', 'wake', 'idle'],
+        WakeupRollSide:    ['GroundedRoll', 'knockdown', 'wake', 'idle'],
+        WakeupKipUp:       ['wake', 'knockdown', 'idle'],
+        WakeupAttack:      ['lightAttack', 'heavyAttack', 'wake', 'idle'],
+        GroundedFaceUp:    ['knockdown', 'hitGround', 'idle'],
+        GroundedFaceDown:  ['knockdown', 'hitGround', 'idle'],
+        GroundedRoll:      ['knockdown', 'hitGround', 'idle'],
+        jumpForward:       ['jump', 'idle'],
+        jumpBack:          ['jump', 'idle'],
         sidestepLeft:      ['strafeLeft', 'walkBackward'],
         sidestepRight:     ['strafeRight', 'walkForward'],
         dashForward:       ['walkForward', 'walk'],
