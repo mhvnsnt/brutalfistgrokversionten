@@ -17,6 +17,7 @@ describe('AnimationRepairPipeline', () => {
       unresolvedTracks: 0,
       lowerBodyCredible: true,
       hasRootTravel: false,
+      loopable: true,
       owner: true,
     });
     assert.equal(d.repairClass, 'KEEP');
@@ -37,6 +38,7 @@ describe('AnimationRepairPipeline', () => {
       unresolvedTracks: 0,
       lowerBodyCredible: true,
       hasRootTravel: false,
+      loopable: true,
       owner: false,
     });
     assert.equal(d.repairClass, 'KEEP');
@@ -82,4 +84,25 @@ describe('AnimationRepairPipeline', () => {
     assert.equal(d.repairClass, 'BLOCK');
     assert.ok(d.faults.includes('TEAM_CAPTURE'));
   });
+  it('rebakes a locomotion clip that cannot safely loop', () => {
+    const d = diagnoseAnimation({
+      clipName: 'BROKEN_LOOP',
+      semantic: 'walk_forward',
+      source: 'RETARGETED',
+      movingBones: 18,
+      boneCount: 22,
+      spineUp: 0.99,
+      startUp: 1,
+      faceMin: 0.8,
+      bodies: 1,
+      unresolvedTracks: 0,
+      lowerBodyCredible: true,
+      hasRootTravel: false,
+      loopable: false,
+      owner: false,
+    });
+    assert.equal(d.repairClass, 'REBAKE');
+    assert.ok(d.faults.includes('LOOP_UNSAFE'));
+  });
+
 });
