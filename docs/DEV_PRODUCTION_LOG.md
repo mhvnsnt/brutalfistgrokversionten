@@ -309,3 +309,12 @@ Important: these are implementation corrections, not a claim that all animation 
 - Locomotion pacing remains the deliberate measured contract: walk 0.90 m/s, retreat/back-walk 1.10 m/s, dash 3.00 m/s, sidestep 1.00 m/s, with the unmeasured locomotion fallback at 0.95 m/s.
 - Current generated move data contains several measured clips that fail the grounded attack gates (examples include backward-striking/airborne/long demonstration captures). Those assignments are no longer allowed to bypass the runtime gate; they remain in the move bank for audit/reclassification instead of being deleted.
 - PWA visual certification is still REQUIRED. GitHub has no workflow/status result attached to the three repair commits yet, so this pass is source-corrected but not claimed as browser-certified.
+
+
+## 2026-09-29 — Preview crash hotfix
+
+- Preview crash `attackClip is not defined` traced to the first explicit-clip safety patch being inserted inside `resolveClipName()`, where the prop is not in scope.
+- Removed that out-of-scope reference and moved the explicit per-fighter clip validation into the FighterMesh render/playback effect, where `attackClip` is actually available.
+- The safety behavior is preserved: explicit clips must pass motion/upright/start/team-capture and grounded attack direction/receiver gates before they can override the semantic move. Otherwise the normal measured resolver remains authoritative.
+- Main hotfix commit: `e9d5d1c9e6a63fa74302f33373e2ac3e76964003`.
+- PWA visual certification remains pending; this fixes the client-module crash so preview can load again.
