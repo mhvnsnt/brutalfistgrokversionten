@@ -107,7 +107,7 @@ export function diagnoseAnimation(e: AnimationEvidence): AnimationDiagnosis {
   );
 
   let repairClass: AnimationDiagnosis['repairClass'] = 'KEEP';
-  if (faults.includes('TEAM_CAPTURE')) repairClass = 'BLOCK';
+  if (faults.includes('TEAM_CAPTURE') || faults.includes('WRONG_SEMANTIC')) repairClass = 'BLOCK';
   else if (hasStructuralFault) repairClass = 'REBAKE';
   else if (canRoute && faults.length > 0) repairClass = 'ROUTE';
   else if (faults.includes('UNKNOWN')) repairClass = 'BLOCK';
