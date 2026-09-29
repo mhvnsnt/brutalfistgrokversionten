@@ -11,6 +11,11 @@ This is the persistent cross-agent checklist. Add new concrete missing work here
 - [ ] CI execution result still needs to appear for the workflow; until then, no build/test/PWA PASS is claimed.
 
 
+- [x] Grounded resolver now has a dedicated evidence lane so SUPINE/PRONEROTATION/roll/get-up clips are not rejected by standing-only gates.
+- [x] Wire the shipped Schwarzerblitz grounded recovery clips: SUPINE/PRONEROTATION, ROLLOUT/ROLLOUTRIGHT, LAZORBACKROLL/LAZORFORWARDROLL, WAKEUPANIMATION, KIP_UP/CORKSCREW_KIP_UP.
+- [x] Prevent WakeupAttack from silently falling through to a standing jab/heavy when no real grounded attack clip exists.
+- [ ] Runtime-certify the new grounded states on multiple fighters in the PWA: face-up, face-down/prone, stay-down, forward/back/side roll, quickstand, backrise, kip-up, and wake attack.
+- [ ] Import/certify actual grounded attack clips for SupineReversal / wake-up kick behavior. The current Schwarzerblitz move graph names faceRun2/flyingKick/lowAttack1, but those corresponding clips are not present in the 455-clip baked bank; do not substitute a standing attack.
 - [ ] Runtime-certify the new wakeup/jump state routing on multiple fighters; code routing is updated but this is not a visual PASS until the PWA is exercised.
 - [ ] Exercise real two-body grapples with different fighter pairs and record deliverer/receiver clip IDs, source, synchronized duration, and contact alignment.
 - [ ] Promote only exact/owner/baked grapple pairs to named moves; keep stand-ins visibly/provenance-marked until the matching receiver is captured.
