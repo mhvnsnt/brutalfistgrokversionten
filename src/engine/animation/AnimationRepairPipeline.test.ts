@@ -24,10 +24,10 @@ describe('AnimationRepairPipeline', () => {
     assert.deepEqual(d.faults, []);
   });
 
-  it('routes a semantically wrong but structurally valid clip instead of re-rigging it', () => {
+  it('blocks a clip whose semantic evidence is missing instead of passing it', () => {
     const d = diagnoseAnimation({
-      clipName: 'SHADOW_BOX',
-      semantic: 'attack_1',
+      clipName: 'UNLABELED_MOTION',
+      semantic: null,
       source: 'AUTHORED',
       movingBones: 20,
       boneCount: 22,
@@ -41,7 +41,8 @@ describe('AnimationRepairPipeline', () => {
       loopable: true,
       owner: false,
     });
-    assert.equal(d.repairClass, 'KEEP');
+    assert.equal(d.repairClass, 'BLOCK');
+    assert.ok(d.faults.includes('WRONG_SEMANTIC'));
   });
 
   it('rebakes a frozen clip rather than trying to repair it with playback speed', () => {
@@ -58,6 +59,7 @@ describe('AnimationRepairPipeline', () => {
       unresolvedTracks: 0,
       lowerBodyCredible: false,
       hasRootTravel: false,
+      loopable: true,
       owner: false,
     });
     assert.equal(d.repairClass, 'REBAKE');
