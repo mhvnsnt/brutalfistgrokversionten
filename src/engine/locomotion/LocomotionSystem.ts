@@ -95,15 +95,15 @@ export const ATTACK_ROOT_MOTION_PROFILES: Record<string, { forwardDisplacement: 
 // sluggish. Driving every attack out to its furthest connecting distance says
 // all four reach 1.40 m, so the real gap was 1.28x.
 //
-// The pace is therefore 1.23 reaches/second over that measured reach: 1.72 m/s.
+// The previous pace was deliberately conservative, but the current presentation pass intentionally reduces walk/run world speed to 25% of that baseline so the authored locomotion cycles can be inspected and played at a deliberate PS1 fighting-game cadence.
 // Schwarzerblitz's running speed is its walk x2.5 (runningSpeed = walkingSpeed
 // * 2.5f, read from FK_Character), and the backdash and sidestep keep their
 // existing proportions, so only the PACE changes and none of the relationships
 // between the moves do.
-export const WALK_SPEED = 0.90;  // metres/sec — deliberately slow combat walk tier; prevents screen-skating
-export const DASH_SPEED = 3.00;    // metres/sec — distinct fast dash/run tier
-const BACKDASH_SPEED = 1.10;       // metres/sec — controlled retreat tier
-const SIDESTEP_SPEED = 1.0;       // metres/sec — controlled lateral step
+export const WALK_SPEED = 0.225;  // metres/sec — 25% of the previous 0.90 m/s walk tier
+export const DASH_SPEED = 0.75;    // metres/sec — 25% of the previous 3.00 m/s run/dash tier
+const BACKDASH_SPEED = 0.275;       // metres/sec — keep retreat proportional to the new walk tier
+const SIDESTEP_SPEED = 0.25;       // metres/sec — keep lateral movement deliberate
 
 /**
  * THE ONE PLACE THAT DECIDES HOW FAST THE BODY MOVES. Exported because the
