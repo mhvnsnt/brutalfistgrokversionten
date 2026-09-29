@@ -257,3 +257,23 @@ Important: these are implementation corrections, not a claim that all animation 
 - Dash playback cap raised from 2.6x to 3.0x so the measured 3.2 m/s dash can visually match the 1.15 m/s deliberate walk tier instead of being capped and skating.
 - CI typecheck passes on the current main changes. The remaining test failures are the pre-existing fighter-owned special/directional roster tests; they are being kept as failures rather than weakening them.
 - PR #27 and the stale-base reconciliation PR #28 were closed without deleting their commits; the grounded behavior itself is present on current main.
+
+
+## 2026-09-29 — Animation recovery pass: preserve authored rotational attacks
+
+- Audited the shipped baked manifest (455 clips) against the runtime animation gates before changing behavior.
+- Found a concrete false-positive: `HURRICANE_KICK` is measured as 1/22 moving bones, but it is not a frozen pose. Its baked evidence is 0.67 m travel, airborne=true, 0.991 strike reach, 0.8046 m strike extent, and 0.997 median spine-up. The old frozen/turn-away gates could therefore discard a visually authored spinning kick.
+- Fixed `markFrozen()` and `markTurnsAway()` to recognize measured rotational-attack signatures instead of treating every low-moving-bone or rear-facing frame as broken. The same evidence is now exposed to the repair audit as `rotationalAttack`.
+- Added a regression test proving Hurricane Kick remains animated and facing-valid after manifest verdict installation.
+- Existing grapples remain on the two-body contract: deliverer + paired receiver. The baked bank already contains measured grapple pairing and 89 Quaternius source clips; Quaternius' current Universal Animation Library releases are CC0 and include combat/locomotion/root-motion variants, so that open-source lane remains available for replacement/rebake candidates.
+- IMPORTANT: do not blanket-repair the 455 clips. The audit must continue to protect known-good guards, walks, jumps, crouches, and authored default strikes/kicks, and only replace clips after measured evidence or visual certification shows a fault.
+
+### Animation work still required / missing
+
+- Generate a real per-clip repair report artifact with KEEP/ROUTE/REBAKE/REAUTHOR/BLOCK plus the underlying measurements; console-only audit is insufficient.
+- Add a measured loopability field instead of leaving locomotion loopability UNKNOWN in the runtime audit.
+- Add actual unresolved-track evidence to the runtime audit instead of hard-coding unresolvedTracks=0.
+- Separate semantic/routing defects from actual motion defects; do not let a bad semantic label cause a good clip to be treated as a rig failure.
+- Continue two-sided grapple certification using the existing Schwarzerblitz/Forger-Blitz-intended grapple lane and the user's Getbackk/Chainsnatcher footage when available; every promoted grapple needs synchronized attacker/receiver evidence.
+- Re-audit all open-source/Quaternius clips after routing changes; preserve good clips and only rebake/re-author measured failures.
+- PWA visual certification is still required after the latest main changes; CI/deploy status must be verified from GitHub Actions before calling the PWA fixed.
