@@ -163,6 +163,8 @@ export interface BakedManifestEntry {
   spineUp?: number;
   /** Which way the legs hang, median over the clip. -1 is a standing leg. */
   legDown?: number;
+  /** Offline lower-body evidence, merged into the runtime audit when available. */
+  lowerBodyCredible?: boolean;
 }
 
 /** Past this, a clip's feet never reach the ground and it cannot be a stance. */
@@ -780,7 +782,7 @@ export function auditBakedAnimationManifest(
     faceMin: entry.strike?.faceMin ?? null,
     bodies: entry.bodies ?? 1,
     unresolvedTracks: 0,
-    lowerBodyCredible: null,
+    lowerBodyCredible: entry.lowerBodyCredible ?? null,
     hasRootTravel: (entry.travels ?? 0) > 0,
     loopable: null,
     owner: Boolean(entry.owns),
@@ -939,7 +941,31 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
   const out = new Map<string, THREE.AnimationClip>();
   try {
     const manifest = (await fetchZstdJson(INDEX_URL)) as Record<string, BakedManifestEntry>;
+
+    // Merge the independently measured lower-body evidence before auditing.
+    // This keeps the repair classifier tied to the actual bake measurements,
+    // while preserving fail-open loading if the optional report is absent.
+    try {
+      const lower = await fetchZstdJson('/motion/lower_body_credibility.json') as {
+        clips?: Record<string, { credible?: boolean }>;
+      };
+      for (const [name, row] of Object.entries(lower.clips ?? {})) {
+        if (manifest[name] && typeof row.credible === 'boolean') {
+          manifest[name].lowerBodyCredible = row.credible;
+        }
+      }
+    } catch {
+      // Missing optional evidence stays null/unknown in the classifier.
+    }
+
     applyStandability(manifest);
+    const animationAudit = auditBakedAnimationManifest(manifest);
+    console.info(
+      '[AnimationRepairPipeline] baked audit:',
+      animationAudit.summary,
+      'healthy owner references:',
+      animationAudit.healthyReferenceClips.length,
+    );
     // The opponent's half of every grapple, read off the same index rather
     // than a second fetch. See engine/combat/GrapplePairing.
     markGrapplePairs(manifest);
