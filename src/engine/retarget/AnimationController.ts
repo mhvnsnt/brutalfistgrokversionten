@@ -262,7 +262,12 @@ export function buildAnimationController(
         WakeupRollBack:    ['GroundedRoll', 'knockdown', 'wake', 'idle'],
         WakeupRollSide:    ['GroundedRoll', 'knockdown', 'wake', 'idle'],
         WakeupKipUp:       ['wake', 'knockdown', 'idle'],
-        WakeupAttack:      ['lightAttack', 'heavyAttack', 'wake', 'idle'],
+        // Grounded attacks must never fall through to a standing jab/heavy.
+        // The Schwarzerblitz move graph has SupineReversal/Gbackroll/Gforeroll
+        // contracts, but the corresponding faceRun2/flyingKick/lowAttack1 clips
+        // are not present in the 455-clip baked bank. Keep the state honest until
+        // a real grounded attack clip is imported rather than inventing a pose.
+        WakeupAttack:      ['GroundedFaceUp', 'GroundedFaceDown', 'wake', 'idle'],
         GroundedFaceUp:    ['knockdown', 'hitGround', 'idle'],
         GroundedFaceDown:  ['knockdown', 'hitGround', 'idle'],
         GroundedRoll:      ['knockdown', 'hitGround', 'idle'],
