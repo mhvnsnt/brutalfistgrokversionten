@@ -495,6 +495,21 @@ function resolveClipName(
     // SHARKNADO_REACTION and GRAFTHROWREACTION among the "punches".
     && (!forAttack || (!isReceivingClip(c) && clipStrikesForward(c) && clipKeepsFacing(c)));
   const attackSlot = /^attack|finisher|overdrive/.test(COMBAT_STATE_TO_SEMANTIC[key] ?? key);
+
+  // THE COMMAND'S OWN ANIMATION WINS — but only if it is actually a usable
+  // attack. The old bypass checked only BROKEN and team-capture labels. That
+  // let generated movesets put backward strikes, receiver halves, frozen
+  // captures, and non-standing clips directly on the fighter. The result was
+  // exactly the reported mix: some moves did nothing useful and others looked
+  // like the wrong animation. A per-fighter move may add variety; it may not
+  // bypass the same measured safety contract as the semantic bank.
+  if (
+    attackClip
+    && actions[attackClip]
+    && usable(attackClip, attackSlot)
+  ) {
+    clipName = attackClip;
+  }
   const pick = (test: (c: string) => boolean): string | undefined =>
     availableClips.find((c) => test(c) && usable(c, attackSlot)) ?? availableClips.find(test);
 
@@ -883,14 +898,7 @@ function FighterMeshInner({
       stanceKit ? stancePreferences(stanceKit, inputKey) : [],
     ) as string | null;
 
-    // THE COMMAND'S OWN ANIMATION WINS. See `attackClip`: the move keeps its
-    // state, its windows and its root motion, and only the clip changes —
-    // which is the whole difference between a moveset and four swings.
-    // Refused clips are still refused: his BROKEN verdict and the team-capture
-    // gate both apply, so this can never smuggle one back in.
-    if (attackClip && actions[attackClip] && !labelRefuses(attackClip) && !clipIsTeamCapture(attackClip)) {
-      clipName = attackClip;
-    }
+    // attackClip is applied only after the same measured attack gates used by semantic resolution below.\n    // This prevents generated per-fighter variety from re-introducing a broken, backward,\n    // receiver-side, frozen, or airborne clip into a grounded attack slot.\n    // The authored clip remains preferred when it passes; otherwise the safe semantic owner wins.\n
 
     const isAttack = ATTACK_STATES.has(inputKey);
     if (isAttack) {
