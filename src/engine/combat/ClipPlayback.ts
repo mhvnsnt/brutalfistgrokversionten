@@ -49,6 +49,8 @@ export const WALK_PLAYBACK_MPS = 0.95;
  */
 /** The most a strike may be sped up before it reads as a twitch, not a punch. */
 export const ATTACK_MAX_SPEEDUP = 1.0;
+/** Clips beyond this duration/window fit are data mismatches and are cut, not held. */
+export const ATTACK_RECONCILE_MAX_FIT = 1.45;
 
 /**
  * Combat clips are authored motion, not something to stretch to fit frame data.
@@ -66,8 +68,16 @@ export function attackPlaybackRate(clipDuration: number, windowSeconds: number):
 
 /** Let a valid authored attack finish at its original speed. */
 export function attackHoldSeconds(clipDuration: number, windowSeconds: number): number {
-  if (clipDuration > 0) return clipDuration;
-  return Math.max(0, windowSeconds);
+  if (!(windowSeconds > 0)) return 0;
+  if (!(clipDuration > 0)) return windowSeconds;
+  const fit = clipDuration / windowSeconds;
+  // A modestly longer authored strike gets enough time to finish. A demo,
+  // reaction, or throw that is dramatically longer than the slot is not
+  // allowed to hijack the combat state; it is treated as bad slot data and
+  // the semantic fallback/gate remains authoritative.
+  return fit <= ATTACK_RECONCILE_MAX_FIT
+    ? Math.max(windowSeconds, clipDuration)
+    : windowSeconds;
 }
 
 /** A jump is a full arc. Cap the speedup so a long clip still leaves the ground
