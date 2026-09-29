@@ -95,15 +95,15 @@ export const ATTACK_ROOT_MOTION_PROFILES: Record<string, { forwardDisplacement: 
 // sluggish. Driving every attack out to its furthest connecting distance says
 // all four reach 1.40 m, so the real gap was 1.28x.
 //
-// The previous pace was deliberately conservative, but the current presentation pass intentionally reduces walk/run world speed to 25% of that baseline so the authored locomotion cycles can be inspected and played at a deliberate PS1 fighting-game cadence.
+// The pace is therefore 1.23 reaches/second over that measured reach: 1.72 m/s.
 // Schwarzerblitz's running speed is its walk x2.5 (runningSpeed = walkingSpeed
 // * 2.5f, read from FK_Character), and the backdash and sidestep keep their
 // existing proportions, so only the PACE changes and none of the relationships
 // between the moves do.
-export const WALK_SPEED = 0.225;  // metres/sec — 25% of the previous 0.90 m/s walk tier
-export const DASH_SPEED = 0.75;    // metres/sec — 25% of the previous 3.00 m/s run/dash tier
-const BACKDASH_SPEED = 0.275;       // metres/sec — keep retreat proportional to the new walk tier
-const SIDESTEP_SPEED = 0.25;       // metres/sec — keep lateral movement deliberate
+export const WALK_SPEED = 1.72;  // metres/sec — 1.23 reaches/sec over a 1.40m reach
+export const DASH_SPEED = 4.3;   // metres/sec — Schwarzerblitz's walk x2.5
+const BACKDASH_SPEED = 3.63;     // metres/sec — keeps its 0.84 ratio to the dash
+const SIDESTEP_SPEED = 1.41;     // metres/sec — keeps its 0.82 ratio to the walk
 
 /**
  * THE ONE PLACE THAT DECIDES HOW FAST THE BODY MOVES. Exported because the
@@ -301,7 +301,7 @@ export class LocomotionSystem {
 
   beginJump() {
     if (this.jumpArmed && this.jumpY <= 0.02) {
-      this.jumpV = 6.8;
+      this.jumpV = 5.8;
       this.jumpArmed = false;
     }
   }
@@ -410,11 +410,6 @@ export class LocomotionSystem {
     // independently of whatever the stick is asking for.
     this.tickPushback(dt);
 
-    // Vertical travel has one owner. It must continue even while an attack is
-    // using root-motion mode; otherwise entering an attack during a jump freezes
-    // the body at its last sampled Y.
-    this.updateJumpArc(dt);
-
     if (this.state.mode === 'rootMotion') {
       this.updateRootMotion(dt);
       return;
@@ -477,25 +472,14 @@ export class LocomotionSystem {
     this.state.rootX = this.clampWalkX(this.state.rootX + this.state.velocityX * dt);
     this.state.rootZ = this.clampToZ(this.state.rootZ + this.state.velocityZ * dt);
 
-  }
-
-  /** Advance the world-space jump arc independently of X/Z locomotion. */
-  private updateJumpArc(dt: number) {
-    if (!(this.jumpY > 0 || this.jumpV > 0)) return;
-    this.jumpV -= 18 * dt;
-    this.jumpY += this.jumpV * dt;
-    if (this.jumpY <= 0) {
-      this.jumpY = 0;
-      this.jumpV = 0;
-      this.jumpArmed = true;
+    if (this.jumpY > 0 || this.jumpV > 0) {
+      this.jumpV -= 22 * dt;
+      this.jumpY += this.jumpV * dt;
+      if (this.jumpY <= 0) {
+        this.jumpY = 0;
+        this.jumpV = 0;
+      }
     }
-  }
-
-  /** Force a real floor landing for knockdown/get-up transitions. */
-  land() {
-    this.jumpY = 0;
-    this.jumpV = 0;
-    this.jumpArmed = true;
   }
 
   private updateRootMotion(dt: number): void {
