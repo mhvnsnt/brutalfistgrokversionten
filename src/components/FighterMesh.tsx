@@ -452,9 +452,42 @@ function resolveClipName(
    * named after a state would jump the queue and skip every check.
    */
   const isVocabulary = key in COMBAT_STATE_TO_SEMANTIC || key in SEMANTIC_STATE_ALIASES;
-  if (!isVocabulary && actions[key] && !labelRefuses(key)) return key;
-
   const clipsByState = buildClipsByState(actions);
+
+  /**
+   * EXPLICIT CLIP NAMES ARE NOT IMMUNE TO A BROKEN CAPTURE.
+   *
+   * A named clip used to return immediately here, bypassing the evidence gates
+   * used by the semantic resolver. That allowed frozen/inverted/team captures
+   * to play simply because a caller knew the filename.
+   *
+   * Real grapple receivers are the intentional exception: starting down or
+   * leaving the floor is part of the victim animation. They still must animate,
+   * be authored, be single-body, and not be labelled broken.
+   *
+   * If a named solo clip fails, fall through to the measured semantic/alias pool
+   * so the move gets healthy motion instead of a frozen or malformed pose.
+   */
+  if (!isVocabulary && actions[key] && !labelRefuses(key)) {
+    const explicitIsReceiver = isThrowVictimClip(key);
+    const inferred = inferSemanticStateFromClipName(key) ?? '';
+    const explicitUsable = explicitIsReceiver
+      ? clipAnimates(key, actions[key].getClip()) &&
+        clipIsAuthoredPose(key) &&
+        !clipIsTeamCapture(key)
+      : clipAnimates(key, actions[key].getClip()) &&
+        clipIsAuthoredPose(key) &&
+        !clipIsTeamCapture(key) &&
+        clipStandsUpright(key) &&
+        clipStartsStanding(key) &&
+        (!/^attack/.test(inferred) ||
+          (!isReceivingClip(key) && clipStrikesForward(key) && clipKeepsFacing(key)));
+    if (explicitUsable) return key;
+    console.warn(
+      '[FighterMesh] Explicit clip "' + key +
+      '" failed live animation gates; routing to a measured healthy alternative.',
+    );
+  }
 
   /**
    * A FROZEN CLIP IS NEVER THE ANSWER IF ANYTHING ELSE MATCHES.
