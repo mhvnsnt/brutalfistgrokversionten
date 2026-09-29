@@ -105,6 +105,14 @@ describe('the opponent half of a grapple', () => {
   });
 
   it('keeps a real named two-body pair on its canonical receiver', () => {
+    markGrapplePairs({
+      PUMPHANDLE_GERMAN_DOUBLE: {
+        dur: 1.0, receives: false, pairedWith: ['PUMPHANDLE_GERMAN_DOUBLE__RECV'],
+      } as any,
+      PUMPHANDLE_GERMAN_DOUBLE__RECV: {
+        dur: 1.0, receives: true, pairedWith: [],
+      } as any,
+    });
     const pick = receiverClipFor('PUMPHANDLE_GERMAN_DOUBLE');
     assert.equal(pick?.receiver, 'PUMPHANDLE_GERMAN_DOUBLE__RECV');
     assert.equal(pick?.source, 'baked');
