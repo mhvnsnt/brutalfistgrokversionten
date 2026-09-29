@@ -107,6 +107,42 @@ function quaternionTrackMap(clip) {
   return map;
 }
 
+function repairIsolatedLimbSpikes(clip) {
+  // Repair only the high-confidence loose-doll signature: one joint in a
+  // three-joint chain snaps >80° while both neighbouring chain joints move
+  // <4° in the same sample. Do NOT smooth ordinary fast chains; capoeira,
+  // uprock and other acrobatics are allowed to move quickly when the chain
+  // itself is coherent.
+  const tracks = quaternionTrackMap(clip);
+  let repaired = 0;
+  for (const chain of LIMB_CHAIN_SPECS) {
+    const qs = chain.bones.map((b) => tracks.get(b));
+    if (qs.some((q) => !q)) continue;
+    const frames = Math.min(...qs.map((q) => q.times.length));
+    for (let i = 1; i < frames - 1; i++) {
+      const deltas = qs.map((q) => {
+        const j = (i - 1) * 4, k = i * 4;
+        const a = new THREE.Quaternion(q.values[j], q.values[j+1], q.values[j+2], q.values[j+3]);
+        const b = new THREE.Quaternion(q.values[k], q.values[k+1], q.values[k+2], q.values[k+3]);
+        return a.angleTo(b);
+      });
+      const max = Math.max(...deltas);
+      const min = Math.min(...deltas);
+      if (max <= THREE.MathUtils.degToRad(80) || min >= THREE.MathUtils.degToRad(4)) continue;
+      const joint = deltas.indexOf(max);
+      const q = qs[joint];
+      const k = i * 4;
+      const prev = new THREE.Quaternion(q.values[k-4], q.values[k-3], q.values[k-2], q.values[k-1]);
+      const next = new THREE.Quaternion(q.values[k+4], q.values[k+5], q.values[k+6], q.values[k+7]);
+      const blended = prev.clone().slerp(next, 0.5).normalize();
+      q.values[k] = blended.x; q.values[k+1] = blended.y;
+      q.values[k+2] = blended.z; q.values[k+3] = blended.w;
+      repaired++;
+    }
+  }
+  return repaired;
+}
+
 function measureLimbCoherence(clip) {
   const tracks = quaternionTrackMap(clip);
   const findings = [];
@@ -1235,6 +1271,7 @@ const report = {
   rejectedOwners: [],
   worst: [],
   limbCoherence: [],
+  limbCoherenceRepairs: 0,
 };
 
 /**
@@ -1414,6 +1451,15 @@ for (const src of [...sources(), ...(await loadQuaterniusSources())]) {
   // thighs sideways; normalize the convention first, then constrain true motion.
   const conventionTwists = removeConstantConventionTwist(relative, bind);
   report.conventionTwistCorrections += conventionTwists.length;
+
+  // Fix only measured single-joint spikes before anatomical constraints. The
+  // correction is deliberately conservative and reversible: coherent fast
+  // chains are untouched, while isolated retarget snaps are replaced by the
+  // midpoint between their surrounding poses.
+  const isolatedLimbRepairs = repairIsolatedLimbSpikes(relative);
+  if (isolatedLimbRepairs) {
+    report.limbCoherenceRepairs = (report.limbCoherenceRepairs ?? 0) + isolatedLimbRepairs;
+  }
 
   // PUT THE LEGS BACK UNDER THE BODY — a convention fix, so it belongs here
   // beside the twist and BEFORE the anatomical limits.
