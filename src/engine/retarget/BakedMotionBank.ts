@@ -9,6 +9,7 @@ import { fetchZstdJson } from '../assets/zstdJson.ts';
 import { setLowerBodyCredibility } from '../motion/BoneMask.ts';
 import { setAuthoredStrideSpeeds } from '../motion/DistanceMatching.ts';
 import { setDerivedAttackLevels } from '../combat/DerivedAttackLevels.ts';
+import { diagnoseAnimation, summarizeAnimationAudit, type AnimationDiagnosis } from '../animation/AnimationRepairPipeline.ts';
 
 /**
  * CLIPS ALREADY RESOLVED ONTO THE ONE SKELETON.
@@ -757,6 +758,40 @@ export function applyStandability(manifest: Record<string, BakedManifestEntry>):
   turnsAway = markTurnsAway(manifest);
   startsDown = markGroundStarts(manifest);
   return notStandable;
+}
+
+/**
+ * Evidence-first audit of the baked bank. This is deliberately derived from
+ * the same measurements already present in index.json; it does not invent a
+ * PASS from a filename or playback success. Missing measurements remain
+ * UNKNOWN/null and therefore cannot silently become a healthy verdict.
+ */
+export function auditBakedAnimationManifest(
+  manifest: Record<string, BakedManifestEntry>,
+): { rows: AnimationDiagnosis[]; summary: ReturnType<typeof summarizeAnimationAudit>; healthyReferenceClips: string[] } {
+  const rows = Object.entries(manifest).map(([name, entry]) => diagnoseAnimation({
+    clipName: name,
+    semantic: entry.semantic ?? null,
+    source: 'RETARGETED',
+    movingBones: entry.movingBones ?? null,
+    boneCount: entry.boneCount ?? entry.bones ?? null,
+    spineUp: entry.spineUp ?? null,
+    startUp: entry.strike?.startUp ?? null,
+    faceMin: entry.strike?.faceMin ?? null,
+    bodies: entry.bodies ?? 1,
+    unresolvedTracks: 0,
+    lowerBodyCredible: null,
+    hasRootTravel: (entry.travels ?? 0) > 0,
+    loopable: null,
+    owner: Boolean(entry.owns),
+  }));
+  // A reference is a measured healthy OWNER, not merely a clip whose name
+  // contains "punch" or "kick". These references protect the working defaults
+  // from broad repair passes and become the control group for future rebakes.
+  const healthyReferenceClips = rows
+    .filter(r => r.repairClass === 'KEEP' && r.evidence.owner)
+    .map(r => r.clipName);
+  return { rows, summary: summarizeAnimationAudit(rows), healthyReferenceClips };
 }
 
 /** Decide standability from a manifest without needing the network. */
