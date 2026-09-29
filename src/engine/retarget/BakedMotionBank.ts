@@ -560,7 +560,20 @@ export function markTurnsAway(manifest: Record<string, BakedManifestEntry>): Set
     if (!/^attack/.test(entry.semantic ?? '')) continue;
     const worst = entry.strike?.faceMin;
     if (worst === undefined) continue;
-    if (worst < FACE_AWAY_MIN) out.add(name);
+    if (worst >= FACE_AWAY_MIN) continue;
+
+    // Spinning attacks legitimately pass through rear-facing frames. Refusing
+    // every attack whose minimum facing crosses zero was the exact failure
+    // mode that broke Hurricane Kick even though its strike reach is clean.
+    // Require both large rotational travel and a long strike extension before
+    // treating a rear-facing frame as an authored spin rather than a backward
+    // strike.
+    const authoredSpin =
+      entry.airborne === true &&
+      (entry.travels ?? 0) >= 0.4 &&
+      (entry.strike?.reach ?? 0) >= 0.85 &&
+      (entry.strike?.reachExtent ?? 0) >= 0.7;
+    if (!authoredSpin) out.add(name);
   }
   return out;
 }
@@ -691,7 +704,22 @@ export function markFrozen(manifest: Record<string, BakedManifestEntry>): Set<st
     const bones = entry.boneCount;
     const moving = entry.movingBones;
     if (bones === undefined || moving === undefined) continue;
-    if (bones >= ANIMATED_MIN_BONES && moving < MIN_MOVING_BONES) out.add(name);
+    if (bones < ANIMATED_MIN_BONES || moving >= MIN_MOVING_BONES) continue;
+
+    // A low moving-bone count is NOT enough to call a rotational combat move
+    // frozen. Baked clips are quaternion-only, so a Hurricane Kick can express
+    // most of its body motion through the hips/root while the limbs remain
+    // relatively stable. HURRICANE_KICK is the measured control case:
+    // 1/22 bones cross the 5-degree threshold, but it travels 0.67 m, is
+    // airborne, reaches 0.991 forward, and has 0.8046 m strike extent.
+    // Treat that signature as authored rotational motion, not a statue.
+    const rotationalAttack =
+      /^attack/.test(entry.semantic ?? '') &&
+      entry.airborne === true &&
+      (entry.travels ?? 0) >= 0.4 &&
+      (entry.strike?.reach ?? 0) >= 0.85 &&
+      (entry.strike?.reachExtent ?? 0) >= 0.7;
+    if (!rotationalAttack) out.add(name);
   }
   return out;
 }
