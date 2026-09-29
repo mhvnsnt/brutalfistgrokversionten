@@ -513,7 +513,7 @@ function resolveClipName(
     && (!forAttack || (!isReceivingClip(c) && clipStrikesForward(c) && clipKeepsFacing(c)));
   const attackSlot = /^attack|finisher|overdrive/.test(COMBAT_STATE_TO_SEMANTIC[key] ?? key);
   const pick = (test: (c: string) => boolean): string | undefined =>
-    availableClips.find((c) => test(c) && usable(c, attackSlot)) ?? availableClips.find(test);
+    availableClips.find((c) => test(c) && usable(c, attackSlot));
 
   /**
    * ALIAS ORDER IS PRIORITY, AND IT WAS BEING IGNORED.
@@ -530,13 +530,11 @@ function resolveClipName(
    * mean anything.
    */
   const byAliasOrder = (aliases: string[]): string | undefined => {
-    for (const pass of [true, false]) {
-      for (const alias of aliases) {
-        const hit = availableClips.find(
-          (c) => c.toLowerCase() === alias.toLowerCase() && (!pass || usable(c, attackSlot)),
-        );
-        if (hit) return hit;
-      }
+    for (const alias of aliases) {
+      const hit = availableClips.find(
+        (c) => c.toLowerCase() === alias.toLowerCase() && usable(c, attackSlot),
+      );
+      if (hit) return hit;
     }
     return undefined;
   };
@@ -550,7 +548,10 @@ function resolveClipName(
   const bridged = AnimationBridge.getClipForCombatState(key, clipsByState);
   if (bridged) {
     const clipName = Object.keys(actions).find((n) => actions[n].getClip() === bridged) ?? bridged.name;
-    if (actions[clipName]) return clipName;
+    // The bridge is a routing hint, not a bypass around measured clip safety.
+    // A stale bridge entry must not resurrect a frozen, inverted, team-capture,
+    // receiver, or non-striking attack just because it has a familiar name.
+    if (actions[clipName] && usable(clipName, attackSlot)) return clipName;
   }
 
   const semanticState = COMBAT_STATE_TO_SEMANTIC[key];
@@ -907,7 +908,19 @@ function FighterMeshInner({
     // which is the whole difference between a moveset and four swings.
     // Refused clips are still refused: his BROKEN verdict and the team-capture
     // gate both apply, so this can never smuggle one back in.
-    if (attackClip && actions[attackClip] && !labelRefuses(attackClip) && !clipIsTeamCapture(attackClip)) {
+    if (
+      attackClip &&
+      actions[attackClip] &&
+      !labelRefuses(attackClip) &&
+      clipAnimates(attackClip) &&
+      clipIsAuthoredPose(attackClip) &&
+      !clipIsTeamCapture(attackClip) &&
+      clipStandsUpright(attackClip) &&
+      clipStartsStanding(attackClip) &&
+      (!isAttack || (!isReceivingClip(attackClip) && clipStrikesForward(attackClip) && clipKeepsFacing(attackClip)))
+    ) {
+      // Explicit command clips still have to pass the same measured gates as
+      // aliases. Commands choose a move; they do not certify a broken one.
       clipName = attackClip;
     }
 
