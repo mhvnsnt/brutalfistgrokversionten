@@ -100,8 +100,10 @@ export function diagnoseAnimation(e: AnimationEvidence): AnimationDiagnosis {
     f === 'STATIC' || f === 'POSE_STARFISH' || f === 'INVERTED' ||
     f === 'UNRESOLVED_TRACKS' || f === 'LOWER_BODY_UNCREDIBLE' || f === 'LOOP_UNSAFE'
   );
-  const canRoute = faults.every(f =>
-    f === 'WRONG_SEMANTIC' || f === 'TURN_AWAY' || f === 'STARTS_DOWN'
+  // Missing semantic is not a routing problem. There is no slot to route to,
+  // so WRONG_SEMANTIC is fail-closed just like UNKNOWN evidence.
+  const canRoute = Boolean(e.semantic) && faults.every(f =>
+    f === 'TURN_AWAY' || f === 'STARTS_DOWN'
   );
 
   let repairClass: AnimationDiagnosis['repairClass'] = 'KEEP';
