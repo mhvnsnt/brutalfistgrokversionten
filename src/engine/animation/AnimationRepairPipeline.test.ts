@@ -107,4 +107,26 @@ describe('AnimationRepairPipeline', () => {
     assert.ok(d.faults.includes('LOOP_UNSAFE'));
   });
 
+  it('keeps a measured rotational attack even when the body faces away during the spin', () => {
+    const d = diagnoseAnimation({
+      clipName: 'HURRICANE_KICK',
+      semantic: 'attack_2',
+      source: 'RETARGETED',
+      movingBones: 1,
+      boneCount: 22,
+      spineUp: 0.997,
+      startUp: 1,
+      faceMin: -0.999,
+      bodies: 1,
+      unresolvedTracks: 0,
+      lowerBodyCredible: true,
+      hasRootTravel: true,
+      rotationalAttack: true,
+      loopable: true,
+      owner: false,
+    });
+    assert.equal(d.repairClass, 'KEEP');
+    assert.deepEqual(d.faults, []);
+  });
+
 });
