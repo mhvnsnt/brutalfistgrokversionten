@@ -706,20 +706,13 @@ export function markFrozen(manifest: Record<string, BakedManifestEntry>): Set<st
     if (bones === undefined || moving === undefined) continue;
     if (bones < ANIMATED_MIN_BONES || moving >= MIN_MOVING_BONES) continue;
 
-    // A low moving-bone count is NOT enough to call a rotational combat move
-    // frozen. Baked clips are quaternion-only, so a Hurricane Kick can express
-    // most of its body motion through the hips/root while the limbs remain
-    // relatively stable. HURRICANE_KICK is the measured control case:
-    // 1/22 bones cross the 5-degree threshold, but it travels 0.67 m, is
-    // airborne, reaches 0.991 forward, and has 0.8046 m strike extent.
-    // Treat that signature as authored rotational motion, not a statue.
-    const rotationalAttack =
-      /^attack/.test(entry.semantic ?? '') &&
-      entry.airborne === true &&
-      (entry.travels ?? 0) >= 0.4 &&
-      (entry.strike?.reach ?? 0) >= 0.85 &&
-      (entry.strike?.reachExtent ?? 0) >= 0.7;
-    if (!rotationalAttack) out.add(name);
+    // Root travel, airborne state, strike reach, or a large hip rotation
+    // cannot turn a one-bone clip into a full-body animation. That exact
+    // exception previously protected HURRICANE_KICK: 1/22 bones moved while
+    // the hips spun ~172 degrees, so the runtime rendered a spinning statue.
+    // Rotational attacks still need articulated limb/body motion; they are
+    // not exempt from the static gate.
+    out.add(name);
   }
   return out;
 }
