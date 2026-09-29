@@ -792,6 +792,7 @@ function FighterMeshInner({
 
     // Normalize and create mixer bound to the cloned visible scene
     let cancelled = false;
+    let ownedResult: NormalizedFighter | null = null;
     normalizeGLB(scene as THREE.Group, animations, gltfUrl, report).then(result => {
       if (cancelled) return;
 
@@ -813,6 +814,7 @@ function FighterMeshInner({
       boneHitboxRef.current.initFromSkeleton(result.scene);
       onBoneHitboxReady?.(boneHitboxRef.current);
 
+      ownedResult = result;
       setNormalized(result);
       onModelReady?.(true);
     });
@@ -822,12 +824,6 @@ function FighterMeshInner({
     // normalized clone becomes visible. Otherwise its actions can keep
     // evaluating the same skeleton in parallel and present as a "double
     // ghost body" even though the React component itself only renders once.
-    let ownedResult: NormalizedFighter | null = null;
-    // The promise below assigns this only for the live effect instance.
-    normalizeGLB(scene as THREE.Group, animations, gltfUrl, report).then(result => {
-      if (cancelled) return;
-      ownedResult = result;
-    });
     return () => {
       cancelled = true;
       if (ownedResult) {
