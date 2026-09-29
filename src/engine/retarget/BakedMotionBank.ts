@@ -370,6 +370,36 @@ const BASE = '/motion/baked/';
  * Fighters need combat owners first; taunts, demos and utility/open-library
  * clips hydrate into the same Map after the arena is alive.
  */
+/**
+ * Filter generated per-fighter attack assignments against the SAME measured
+ * manifest gates used by FighterMesh. Once the manifest exists, UNKNOWN is not
+ * promoted to PASS: a generated clip must have enough evidence to be a real,
+ * solo, upright, forward-facing attack before it can replace a semantic move.
+ */
+function sanitizeGeneratedMoveClips(manifest: Record<string, BakedManifestEntry>, raw: Record<string, Array<Record<string, unknown>>>): Record<string, Array<Record<string, unknown>>> {
+  const out: Record<string, Array<Record<string, unknown>>> = {};
+  for (const [fighterId, rows] of Object.entries(raw ?? {})) {
+    out[fighterId] = (rows ?? []).map((row) => {
+      const clip = typeof row.clip === 'string' ? row.clip : '';
+      const entry = clip ? manifest[clip] : undefined;
+      if (!entry) return { ...row, clip: '' };
+      const animated = (entry.boneCount ?? entry.bones ?? 0) >= ANIMATED_MIN_BONES && (entry.movingBones ?? 0) >= MIN_MOVING_BONES;
+      const solo = (entry.bodies ?? 1) < TEAM_BODY_MIN;
+      const grounded = entry.airborne !== true;
+      const groundedSafe = !grounded || (entry.floorGap ?? Number.POSITIVE_INFINITY) <= STANDABLE_FLOOR_GAP_M;
+      const safe = animated && solo && groundedSafe
+        && !notAPose.has(clip)
+        && !notAnimated.has(clip)
+        && !inverted.has(clip)
+        && !startsDown.has(clip)
+        && !strikesBackwards.has(clip)
+        && !turnsAway.has(clip);
+      return safe ? row : { ...row, clip: '' };
+    });
+  }
+  return out;
+}
+
 const CORE_BAKED_SEMANTICS = new Set([
   'idle','walk_forward','walk_back','strafe_left','strafe_right',
   'attack_1','attack_rp','attack_2','attack_lk','attack_rk',
@@ -1036,7 +1066,14 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
     // The generated per-fighter movesets, same deal: silent on failure, and
     // absent it every fighter keeps exactly the imported commands he had.
     void fetchZstdJson('/motion/movesets.json')
-      .then((m) => { if (m) setGeneratedMovesets(m as never); })
+      .then((m) => {
+        if (!m) return;
+        const sanitized = sanitizeGeneratedMoveClips(
+          manifest,
+          m as Record<string, Array<Record<string, unknown>>>,
+        );
+        setGeneratedMovesets(sanitized as never);
+      })
       .catch(() => {});
     void fetchZstdJson('/motion/command-clips.json')
       .then((m) => { if (m) setCommandClipMap(m as never); })
