@@ -25,7 +25,12 @@ export default function IntroVideoGate({ onComplete, src = '' }: IntroVideoGateP
 
   const start = useCallback(async () => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video) {
+      // Missing/disabled intro: a user gesture still counts as an explicit
+      // start and must advance into the game.
+      complete();
+      return;
+    }
     setStarted(true);
     setPlayError(false);
     video.muted = false;
@@ -38,6 +43,14 @@ export default function IntroVideoGate({ onComplete, src = '' }: IntroVideoGateP
       setStarted(false);
     }
   }, []);
+
+  // No intro asset is shipped in the static PWA. The gate must fail open to
+  // the real title screen instead of becoming an uncloseable black overlay.
+  useEffect(() => {
+    if (!src) {
+      complete();
+    }
+  }, [src, complete]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -73,6 +86,8 @@ export default function IntroVideoGate({ onComplete, src = '' }: IntroVideoGateP
     frame = requestAnimationFrame(pollGamepad);
     return () => cancelAnimationFrame(frame);
   }, [start]);
+
+  if (!src) return null;
 
   return (
     <div
