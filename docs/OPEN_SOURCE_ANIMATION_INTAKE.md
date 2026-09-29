@@ -18,6 +18,10 @@ Updated: 2026-09-28
 - Do not infer root-motion availability, directional-step fixes, or other release-specific details unless the exact downloaded artifact/version is recorded and measured.
 - Intake rule: do not bulk-promote the library. Every candidate must pass the same source → retarget → bake → measure → runtime certification pipeline as existing motion.
 
+## June 2026 UAL release correction
+
+Quaternius' June 16, 2026 update added root-motion variants to UAL1 and UAL2 and corrected the foot synchronization of the 8-direction animations. The repository's intake must therefore keep `Standard` and `_RM` families separate: Standard is the default in-place gameplay candidate; RM is a measured root-motion source for the movement pipeline, never a silent substitute. The source devlog documents both changes. 
+
 ## Current repo status
 
 - UAL1/UAL2 are not currently represented as a dedicated checked-in source-bank manifest in this repository.
