@@ -385,9 +385,23 @@ function sanitizeGeneratedMoveClips(manifest: Record<string, BakedManifestEntry>
       if (!entry) return { ...row, clip: '' };
       const animated = (entry.boneCount ?? entry.bones ?? 0) >= ANIMATED_MIN_BONES && (entry.movingBones ?? 0) >= MIN_MOVING_BONES;
       const solo = (entry.bodies ?? 1) < TEAM_BODY_MIN;
-      const grounded = entry.airborne !== true;
-      const groundedSafe = !grounded || (entry.floorGap ?? Number.POSITIVE_INFINITY) <= STANDABLE_FLOOR_GAP_M;
-      const safe = animated && solo && groundedSafe
+      const wantsAir = row.stance === 'Air';
+      const isAir = entry.airborne === true;
+      const stanceMatches = wantsAir ? isAir : !isAir;
+      const groundedSafe = isAir || (entry.floorGap ?? Number.POSITIVE_INFINITY) <= STANDABLE_FLOOR_GAP_M;
+      const button = Array.isArray((row.command as { [key: string]: unknown })?.[0]) ? '' : '';
+      const buttons = Array.isArray(row.command)
+        ? row.command.flatMap((step) => Array.isArray((step as { buttons?: unknown }).buttons) ? (step as { buttons: unknown[] }).buttons : [])
+        : [];
+      const limb = entry.strike?.limb ?? '';
+      const buttonMatchesLimb =
+        buttons.length === 0 ||
+        (buttons.includes('K') ? !/Hand|Arm/i.test(limb) : true) &&
+        (buttons.includes('P') ? !/Foot|Leg/i.test(limb) : true);
+      const window = Number(row.startup ?? 0) + Number(row.active ?? 0) + Number(row.recovery ?? 0);
+      const durationFits = !(entry.dur > 0 && window > 0) || entry.dur <= window * 1.45;
+      const safe = animated && solo && stanceMatches && groundedSafe && buttonMatchesLimb && durationFits
+        && /^attack(?:_|$)/.test(entry.semantic ?? '')
         && !notAPose.has(clip)
         && !notAnimated.has(clip)
         && !inverted.has(clip)
