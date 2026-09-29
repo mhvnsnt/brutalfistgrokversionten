@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe,it } from 'node:test';
+import * as THREE from 'three';
 import { applyStandability, clipAnimates, clipKeepsFacing, frozenClips, selectCoreBakedNames } from './BakedMotionBank.ts';
 
 describe('baked motion startup selection',()=>{
@@ -44,4 +45,16 @@ describe('baked motion startup selection',()=>{
     assert.ok(frozenClips().has('HURRICANE_KICK'));
     assert.equal(clipKeepsFacing('HURRICANE_KICK'),true);
   });
+  it('uses the loaded quaternion tracks when the committed moving-bone count is stale',()=>{
+    const tracks=[];
+    for(let i=0;i<8;i++){
+      const q0=[0,0,0,1];
+      const q1=i<3?[0,Math.sin(Math.PI/8),0,Math.cos(Math.PI/8)]:q0;
+      tracks.push(new THREE.QuaternionKeyframeTrack(`bone${i}.quaternion`,[0,1],[...q0,...q1]));
+    }
+    const clip=new THREE.AnimationClip('STALE_MANIFEST_CLIP',1,tracks);
+    applyStandability({STALE_MANIFEST_CLIP:{file:'STALE.json',bank:'bannon',dur:1,bones:22,boneCount:22,movingBones:0,semantic:'walk_forward'}});
+    assert.equal(clipAnimates('STALE_MANIFEST_CLIP',clip),true);
+  });
+
 });
