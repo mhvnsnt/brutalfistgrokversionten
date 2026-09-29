@@ -389,7 +389,6 @@ function sanitizeGeneratedMoveClips(manifest: Record<string, BakedManifestEntry>
       const isAir = entry.airborne === true;
       const stanceMatches = wantsAir ? isAir : !isAir;
       const groundedSafe = isAir || (entry.floorGap ?? Number.POSITIVE_INFINITY) <= STANDABLE_FLOOR_GAP_M;
-      const button = Array.isArray((row.command as { [key: string]: unknown })?.[0]) ? '' : '';
       const buttons = Array.isArray(row.command)
         ? row.command.flatMap((step) => Array.isArray((step as { buttons?: unknown }).buttons) ? (step as { buttons: unknown[] }).buttons : [])
         : [];
