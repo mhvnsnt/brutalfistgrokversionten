@@ -52,22 +52,21 @@ describe('the fight is paced like the genre it is built on', () => {
     assert.ok(reach > 0.5, `a jab connects no further than ${reach.toFixed(2)}m`);
   });
 
-  /**
-   * THIS IS THE NUMBER THAT MADE BACK ATTACKS WHIFF. Walking fast relative to
-   * your own reach means any moment spent holding back puts you outside your
-   * range before your active frames arrive — the attack was never the problem.
-   */
-  it('crosses its own reach at roughly the rate Schwarzerblitz does', () => {
-    const ours = WALK_SPEED / reach;
-    assert.ok(ours >= 0.65 && ours <= 1.05,
-      `walk crosses ${ours.toFixed(2)} reaches/sec — deliberate combat pace expected 0.65..1.05`
-      + ` (walk ${WALK_SPEED}, measured reach ${reach.toFixed(2)}m, old genre reference ${GENRE_REACHES_PER_SECOND.toFixed(2)})`,
-    );
+  it('uses exactly 25 percent of the previous walk and run tiers', () => {
+    assert.equal(WALK_SPEED, 0.225);
+    assert.equal(DASH_SPEED, 0.75);
   });
 
-  it('keeps dash clearly faster than the deliberate walk', () => {
+  it('keeps the run tier distinct while preserving the 3.33x relationship', () => {
     const ratio = DASH_SPEED / WALK_SPEED;
-    assert.ok(ratio >= 2.3 && ratio <= 3.5, `dash is ${ratio.toFixed(2)}x the walk — expected a distinct fast tier`);
+    assert.ok(Math.abs(ratio - (3 / 0.9)) < 1e-9, `run is ${ratio.toFixed(2)}x the walk — expected the prior tier relationship`);
+  });
+
+  it('paces the slowed walk against measured strike reach without restoring the old speed', () => {
+    const ours = WALK_SPEED / reach;
+    assert.ok(ours > 0 && ours < 0.35,
+      `walk crosses ${ours.toFixed(2)} reaches/sec — the 25% movement tier must remain deliberately slow`,
+    );
   });
 
   /**
@@ -84,8 +83,8 @@ describe('the fight is paced like the genre it is built on', () => {
     assert.equal(loco.airborneY, 0);
   });
 
-  it('still closes the round-start gap in a couple of seconds', () => {
+  it('still closes the round-start gap without exceeding the new deliberate pace', () => {
     const closeSeconds = (3.6 - reach) / (WALK_SPEED * 2);
-    assert.ok(closeSeconds < 2.5, `it would take ${closeSeconds.toFixed(1)}s to get in range`);
+    assert.ok(closeSeconds > 4.0 && closeSeconds < 10.0, `it would take ${closeSeconds.toFixed(1)}s to get in range at the 25% walk tier`);
   });
 });
