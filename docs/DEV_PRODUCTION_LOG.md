@@ -277,3 +277,25 @@ Important: these are implementation corrections, not a claim that all animation 
 - Continue two-sided grapple certification using the existing Schwarzerblitz/Forger-Blitz-intended grapple lane and the user's Getbackk/Chainsnatcher footage when available; every promoted grapple needs synchronized attacker/receiver evidence.
 - Re-audit all open-source/Quaternius clips after routing changes; preserve good clips and only rebake/re-author measured failures.
 - PWA visual certification is still required after the latest main changes; CI/deploy status must be verified from GitHub Actions before calling the PWA fixed.
+
+## 2026-09-29 — Animation routing + two-body grapple correction pass
+
+- Re-audited the current public/motion/baked/index.json directly instead of treating old working reports as protection. The bank currently contains 455 clips. Raw evidence flags include 72 low-motion/static candidates, 104 inverted candidates, 65 starts-down candidates, 15 turn-away attack candidates, and 12 multi-body/team captures. These are audit flags, not blanket repair counts; semantic role matters (receivers, taunts, aerials and rotational attacks can legitimately violate a standing-slot measurement).
+- Found an important runtime hole: a caller supplying a clip filename directly could bypass the measured animation safety gates. That meant a currently-broken explicit clip could still play even though the semantic resolver would have rejected it. Fixed FighterMesh so explicit solo clips now pass live keyframe motion, authored-pose, team-capture, upright/start/facing/strike gates before playback. Failed explicit clips fall through to a measured healthy semantic/alias candidate. Real grapple receiver clips retain their receiver-specific allowance while still being required to animate and remain single-body/not owner-labelled broken.
+- This is specifically intended to stop stale historical 'this used to work' assignments from protecting a clip that is broken now.
+- Fixed the repair classifier so semantic=null is BLOCK/WRONG_SEMANTIC rather than accidentally becoming ROUTE. UNKNOWN remains fail-closed.
+- Reconciled movement regression expectations with the current deliberate 25%-tier locomotion contract rather than raising movement speeds just to satisfy old tests. The current fallback prevents an unmeasured clip from being fast-forwarded past the 1.5x safety cap.
+- Current Quaternius intake is real baked source data, not just documentation: the bank contains UAL1/UAL2 vendor clips, including locomotion, crouch, jump, punch, hit, roll, melee and receiver variants. The official Quaternius libraries are CC0, retargetable humanoid packs, and the June 2026 releases include separate root-motion and in-place variants.
+- Grapple lane remains two-body-first. Current inventory documents 14 Bannon two-body captures (12 grapple/aerial pairs after excluding two locomotion captures), plus existing Schwarzerblitz/Bannon receiver clips. Getbackk and Chainsnatcher remain explicit two-sided certification jobs; no synthetic receiver is being promoted as an exact owner capture.
+- Next runtime work is now centered on repairing/re-routing clips that fail current evidence, not preserving historical assignments: per-clip repair artifact, measured loopability/unresolved-track evidence, named grapple pair smoke scenarios across different roster fighters, then PWA visual certification.
+- Current GitHub Pages deployment for the newest changes is queued/in progress; CI is also queued. Do not call the latest animation pass PWA-certified until those runs complete and the browser playtest passes.
+
+### Animation missing-needed list update
+- Live explicit-clip safety routing: DONE.
+- Semantic UNKNOWN fail-closed: DONE.
+- Two-body grapple receiver synchronization: IN PROGRESS.
+- Attach real grapple pairs to multiple distinct roster fighters for visible gameplay coverage: IN PROGRESS.
+- Per-clip repair artifact + measured loopability + real unresolved-track evidence: REQUIRED.
+- Full 455-clip current audit and targeted rebake/re-author pass: IN PROGRESS.
+- UAL1/UAL2 retarget quality audit and selective promotion: IN PROGRESS.
+- PWA combat visual certification of movement, sub-states, bones/joints, strikes, guards, crouches, jumps, wakeups and grapples: REQUIRED.
