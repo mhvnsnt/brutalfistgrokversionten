@@ -1,0 +1,55 @@
+name: Bannon PWA Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bannon-pwa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build production PWA
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: npm run build
+
+      - name: Verify installable PWA
+        run: npm run pwa:verify -- dist
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Animation/combat tests
+        run: npm test
+
+      - name: Upload production bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bannon-pwa-${{ github.sha }}
+          path: dist
+          if-no-files-found: warn
+          retention-days: 7
