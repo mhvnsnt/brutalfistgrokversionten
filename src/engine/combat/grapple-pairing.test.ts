@@ -98,4 +98,15 @@ describe('the opponent half of a grapple', () => {
     const pick = receiverClipFor('KNEETHROW', { available: (c) => c !== 'KNEETHROWREACTION' });
     assert.notEqual(pick?.receiver, 'KNEETHROWREACTION');
   });
+
+  it('does not silently stand in for an explicitly incomplete named grapple', () => {
+    const pick = receiverClipFor('F5');
+    assert.equal(pick, null, 'Getbackk/F5 must stay incomplete until its receiver is captured');
+  });
+
+  it('keeps a real named two-body pair on its canonical receiver', () => {
+    const pick = receiverClipFor('PUMPHANDLE_GERMAN_DOUBLE');
+    assert.equal(pick?.receiver, 'PUMPHANDLE_GERMAN_DOUBLE__RECV');
+    assert.equal(pick?.source, 'baked');
+  });
 });
