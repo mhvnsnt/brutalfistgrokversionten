@@ -31,6 +31,7 @@ describe('baked motion startup selection',()=>{
         travels:0.67,
         floorGap:0.029,
         strike:{
+          fwd:0.95,
           reach:0.991,
           reachExtent:0.8046,
           faceMin:-0.999,
