@@ -233,17 +233,20 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   KO:                ['ko', 'KO', 'knockout', 'Knockout', 'death', 'Death', 'fall', 'Fall', 'knockdown', 'Knockdown'],
   Crumple:           ['ko', 'KO', 'knockdown', 'Knockdown', 'fall', 'Fall', 'death', 'Death', 'crumple', 'Crumple'],
   // ── Wakeup ──────────────────────────────────────────────────────────────────
-  WakeupTechRoll:    ['techRoll', 'TechRoll', 'roll', 'Roll', 'rollForward', 'RollForward', 'forwardRoll', 'ForwardRoll', 'walkForward', 'WalkForward', 'walk', 'Walk', 'SBW_techroll', 'T_techroll'],
-  WakeupBackrise:    ['backrise', 'Backrise', 'getUp', 'GetUp', 'rollBack', 'RollBack', 'walkBackward', 'WalkBackward', 'walk', 'Walk', 'T_backrise'],
-  WakeupQuickStand:  ['quickStand', 'QuickStand', 'getUp', 'GetUp', 'gettingUp', 'GettingUp', 'idle', 'Idle', 'standing', 'Standing', 'T_quickstand'],
-  WakeupRollForward: ['rollForward', 'RollForward', 'forwardRoll', 'ForwardRoll', 'techRoll', 'TechRoll', 'ROLL_FORWARD', 'SBW_techroll'],
-  WakeupRollBack:    ['rollBack', 'RollBack', 'backRoll', 'BackRoll', 'backrise', 'Backrise', 'BACKROLL', 'T_backrise'],
-  WakeupRollSide:    ['rollSide', 'RollSide', 'sideRoll', 'SideRoll', 'sideTechRoll', 'SIDE_ROLL', 'techRoll', 'TechRoll'],
-  WakeupKipUp:       ['KIP_UP', 'CORKSCREW_KIP_UP', 'kipUp', 'KipUp', 'Kip-up', 'WAKEUPANIMATION', 'getUp', 'GettingUp'],
-  WakeupAttack:      ['wakeAttack', 'WakeAttack', 'getUpAttack', 'GetUpAttack', 'risingAttack', 'RisingAttack', 'wakeStrike', 'WakeStrike', 'lightAttack', 'heavyAttack'],
-  GroundedFaceUp:    ['SUPINE', 'supine', 'groundedFaceUp', 'GroundedFaceUp', 'proneFaceUp', 'ProneFaceUp', 'FALLING_FLAT_IMPACT', 'knockdown', 'Knockdown'],
-  GroundedFaceDown:  ['PRONE', 'prone', 'groundedFaceDown', 'GroundedFaceDown', 'proneFaceDown', 'ProneFaceDown', 'FALLING_FORWARD_DEATH', 'knockdown', 'Knockdown'],
-  GroundedRoll:      ['roll', 'Roll', 'groundRoll', 'GroundRoll', 'techRoll', 'TechRoll'],
+  // Real Schwarzerblitz recovery clips are preferred over standing fallbacks.
+  WakeupTechRoll:    ['ROLLOUTRIGHT', 'ROLLOUT', 'rolloutRight', 'rollout', 'techRoll', 'TechRoll', 'roll', 'Roll', 'SBW_techroll', 'T_techroll'],
+  WakeupBackrise:    ['LAZORBACKROLL', 'lazorBackroll', 'BACKROLL', 'backrise', 'Backrise', 'getUp', 'GetUp', 'rollBack', 'RollBack', 'T_backrise'],
+  WakeupQuickStand:  ['WAKEUPANIMATION', 'KIP_UP', 'CORKSCREW_KIP_UP', 'getUp', 'GetUp', 'gettingUp', 'GettingUp', 'quickStand', 'QuickStand', 'idle', 'Idle', 'standing', 'Standing', 'T_quickstand'],
+  WakeupRollForward: ['ROLLOUTRIGHT', 'ROLLOUT', 'rolloutRight', 'rollout', 'LAZORFORWARDROLL', 'lazorForwardRoll', 'rollForward', 'RollForward', 'forwardRoll', 'ForwardRoll', 'ROLL_FORWARD', 'SBW_techroll'],
+  WakeupRollBack:    ['LAZORBACKROLL', 'lazorBackroll', 'ROLLOUT', 'rollout', 'backRoll', 'BackRoll', 'backrise', 'Backrise', 'BACKROLL', 'T_backrise'],
+  WakeupRollSide:    ['ROLLOUTRIGHT', 'ROLLOUT', 'rolloutRight', 'rollout', 'PRONEROTATION', 'sideRoll', 'SideRoll', 'rollSide', 'RollSide', 'SIDE_ROLL', 'techRoll', 'TechRoll'],
+  WakeupKipUp:       ['KIP_UP', 'CORKSCREW_KIP_UP', 'WAKEUPANIMATION', 'getUp', 'GettingUp'],
+  // Never fake a grounded attack with a standing jab. A dedicated source clip
+  // is used when present; otherwise this state remains a grounded recovery.
+  WakeupAttack:      ['wakeAttack', 'WakeAttack', 'getUpAttack', 'GetUpAttack', 'risingAttack', 'RisingAttack', 'wakeStrike', 'WakeStrike'],
+  GroundedFaceUp:    ['SUPINE', 'supine', 'groundedFaceUp', 'GroundedFaceUp', 'FALLING_FLAT_IMPACT', 'knockdown', 'Knockdown'],
+  GroundedFaceDown:  ['PRONEROTATION', 'PRONE', 'prone', 'groundedFaceDown', 'GroundedFaceDown', 'FALLING_FORWARD_DEATH', 'SUPINE', 'supine'],
+  GroundedRoll:      ['ROLLOUTRIGHT', 'ROLLOUT', 'rolloutRight', 'rollout', 'LAZORBACKROLL', 'LAZORFORWARDROLL', 'PRONEROTATION', 'roll', 'Roll', 'groundRoll', 'GroundRoll', 'techRoll', 'TechRoll'],
   // `wake` is reachable: MoveLibrary files clips like 'Getting Up', 'bf_wakeup'
   // and 'SBW_wakeup' under it. It had no list here, so one of those resolved
   // through the default instead of to a get-up.
@@ -524,29 +527,25 @@ function resolveClipName(
   // T-pose gate at 0.49 against 0.50, and two taunts that play lying flat
   // passed everything but the eye. Marking a clip BROKEN in the Move
   // Library takes it out of the game.
-  const usable = (c: string, forAttack = true) =>
+  const usable = (c: string, forAttack = true, allowGroundedStart = false) =>
     !labelRefuses(c)
     && clipAnimates(c, actions[c]?.getClip())
-    // A measured T-pose/starfish or rest-pose clip is not a locomotion/combat
-    // answer. The bake already records these as authored-pose failures; keep
-    // them out of runtime resolution instead of making the skeleton contort.
     && clipIsAuthoredPose(c)
-    // A CAPTURE OF THREE WRESTLERS IS NOT A MOVE ONE MAN CAN DO. Twelve of
-    // these are in the game, eight of them filling the IDLE slot, and a
-    // fighter playing one performs his partner's and his victim's motion at
-    // the same time. That is the weird twisting, and no rig work fixes it.
     && !clipIsTeamCapture(c)
-    && clipStandsUpright(c)
-    && clipStartsStanding(c)
-    // A CLIP HE TAGGED AS A REACTION IS NEVER AN ATTACK. This is the one
-    // question no measurement here can answer — a thrown body extends a
-    // limb forward exactly like a punching one, which is why filtering all
-    // 366 clips on reach, plant, facing and uprightness still returns
-    // SHARKNADO_REACTION and GRAFTHROWREACTION among the "punches".
+    // Grounded recovery is its own evidence lane: a prone hold/roll/get-up
+    // deliberately starts off the feet and must not be rejected by standing gates.
+    && (allowGroundedStart || (clipStandsUpright(c) && clipStartsStanding(c)))
     && (!forAttack || (!isReceivingClip(c) && clipStrikesForward(c) && clipKeepsFacing(c)));
+  const GROUNDED_ANIMATION_STATES = new Set([
+    'GroundedFaceUp', 'GroundedFaceDown', 'GroundedRoll',
+    'WakeupTechRoll', 'WakeupBackrise', 'WakeupQuickStand',
+    'WakeupRollForward', 'WakeupRollBack', 'WakeupRollSide',
+    'WakeupKipUp', 'WakeupAttack', 'wake',
+  ]);
+  const groundedState = GROUNDED_ANIMATION_STATES.has(key);
   const attackSlot = /^attack|finisher|overdrive/.test(COMBAT_STATE_TO_SEMANTIC[key] ?? key);
   const pick = (test: (c: string) => boolean): string | undefined =>
-    availableClips.find((c) => test(c) && usable(c, attackSlot));
+    availableClips.find((c) => test(c) && usable(c, attackSlot, groundedState));
 
   /**
    * ALIAS ORDER IS PRIORITY, AND IT WAS BEING IGNORED.
@@ -562,10 +561,10 @@ function resolveClipName(
    * bank. Walking the aliases in order instead is what makes a preference
    * mean anything.
    */
-  const byAliasOrder = (aliases: string[]): string | undefined => {
+  const byAliasOrder = (aliases: string[], allowGroundedStart = groundedState): string | undefined => {
     for (const alias of aliases) {
       const hit = availableClips.find(
-        (c) => c.toLowerCase() === alias.toLowerCase() && usable(c, attackSlot),
+        (c) => c.toLowerCase() === alias.toLowerCase() && usable(c, attackSlot, allowGroundedStart),
       );
       if (hit) return hit;
     }
@@ -573,7 +572,7 @@ function resolveClipName(
   };
 
   for (const want of preferred) {
-    if (actions[want] && usable(want, attackSlot)) return want;
+    if (actions[want] && usable(want, attackSlot, groundedState)) return want;
     const ci = pick((c) => c.toLowerCase() === want.toLowerCase());
     if (ci) return ci;
   }
@@ -584,7 +583,7 @@ function resolveClipName(
     // The bridge is a routing hint, not a bypass around measured clip safety.
     // A stale bridge entry must not resurrect a frozen, inverted, team-capture,
     // receiver, or non-striking attack just because it has a familiar name.
-    if (actions[clipName] && usable(clipName, attackSlot)) return clipName;
+    if (actions[clipName] && usable(clipName, attackSlot, groundedState)) return clipName;
   }
 
   const semanticState = COMBAT_STATE_TO_SEMANTIC[key];
@@ -597,14 +596,14 @@ function resolveClipName(
     // clip beats the bake's heuristic, which is the entire reason the Move
     // Library has a "where does it go?" field.
     for (const picked of clipsLabelledFor(semanticState)) {
-      if (actions[picked] && usable(picked, attackSlot)) return picked;
+      if (actions[picked] && usable(picked, attackSlot, groundedState)) return picked;
     }
     // THE BAKE'S PICK STILL HAS TO BE PLAYABLE. This returned the slot
     // owner unchecked, so a clip the gates refuse everywhere else could
     // still reach the screen by owning a slot.
     const owner = slotOwnerFor(semanticState);
-    if (owner && actions[owner] && usable(owner, attackSlot)) return owner;
-    if (actions[semanticState] && usable(semanticState, attackSlot)) return semanticState;
+    if (owner && actions[owner] && usable(owner, attackSlot, groundedState)) return owner;
+    if (actions[semanticState] && usable(semanticState, attackSlot, groundedState)) return semanticState;
     const aliases = SEMANTIC_STATE_ALIASES[semanticState] ?? [semanticState];
     const semanticFound = byAliasOrder(aliases);
     if (semanticFound) return semanticFound;
