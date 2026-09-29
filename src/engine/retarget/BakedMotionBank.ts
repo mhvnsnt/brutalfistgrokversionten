@@ -688,8 +688,42 @@ export function markSlotOwners(manifest: Record<string, BakedManifestEntry>): Ma
  *
  * Unknown clips are allowed, so a checkout with no bake behaves as before.
  */
-export function clipAnimates(name: string): boolean {
-  return !notAnimated.has(name);
+/**
+ * Runtime animation evidence can be newer than the committed manifest. In
+ * particular, a stale movingBones field must not quarantine a real imported
+ * clip, and a stale "healthy" field must not resurrect a frozen one.
+ *
+ * When the actual AnimationClip is available, measure its quaternion tracks
+ * directly. Three.js AnimationClip stores the actual keyframe tracks, so this
+ * check is independent of filename/alias ordering and catches stale bake
+ * metadata at the point where the clip is about to play.
+ */
+export function clipAnimates(name: string, clip?: THREE.AnimationClip): boolean {
+  const manifestSaysAnimated = !notAnimated.has(name);
+  if (!clip) return manifestSaysAnimated;
+
+  const quaternionTracks = clip.tracks.filter((track) => track.name.endsWith('.quaternion'));
+  if (quaternionTracks.length < ANIMATED_MIN_BONES) return false;
+
+  let movingBones = 0;
+  for (const track of quaternionTracks) {
+    const values = track.values;
+    if (values.length < 8) continue;
+    const x0 = values[0], y0 = values[1], z0 = values[2], w0 = values[3];
+    let widest = 0;
+    for (let i = 4; i + 3 < values.length; i += 4) {
+      const dot = Math.abs(
+        x0 * values[i] + y0 * values[i + 1] + z0 * values[i + 2] + w0 * values[i + 3],
+      );
+      widest = Math.max(widest, Math.acos(Math.min(1, dot)) * 2 * 180 / Math.PI);
+    }
+    if (widest > 5) movingBones++;
+  }
+
+  // Actual clip evidence is authoritative for the static/frozen question.
+  // The manifest is still useful before loading, but it cannot override what
+  // the loaded keyframes actually contain.
+  return movingBones >= MIN_MOVING_BONES;
 }
 
 /** For tests: the clips the last manifest ruled out as frozen. */
