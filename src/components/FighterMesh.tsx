@@ -496,20 +496,9 @@ function resolveClipName(
     && (!forAttack || (!isReceivingClip(c) && clipStrikesForward(c) && clipKeepsFacing(c)));
   const attackSlot = /^attack|finisher|overdrive/.test(COMBAT_STATE_TO_SEMANTIC[key] ?? key);
 
-  // THE COMMAND'S OWN ANIMATION WINS — but only if it is actually a usable
-  // attack. The old bypass checked only BROKEN and team-capture labels. That
-  // let generated movesets put backward strikes, receiver halves, frozen
-  // captures, and non-standing clips directly on the fighter. The result was
-  // exactly the reported mix: some moves did nothing useful and others looked
-  // like the wrong animation. A per-fighter move may add variety; it may not
-  // bypass the same measured safety contract as the semantic bank.
-  if (
-    attackClip
-    && actions[attackClip]
-    && usable(attackClip, attackSlot)
-  ) {
-    clipName = attackClip;
-  }
+  // Explicit per-fighter clips are validated in the render effect below,
+  // where attackClip is actually in scope. This resolver only selects from
+  // semantic/alias candidates and never references caller-only props.
   const pick = (test: (c: string) => boolean): string | undefined =>
     availableClips.find((c) => test(c) && usable(c, attackSlot)) ?? availableClips.find(test);
 
