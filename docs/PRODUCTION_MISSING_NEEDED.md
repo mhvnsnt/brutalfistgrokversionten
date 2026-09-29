@@ -68,6 +68,14 @@ This is the persistent cross-agent checklist. Add new concrete missing work here
 - [ ] Evaluate KungFuAthlete as a research/reference source for high-dynamic fist, ground, jump, flip and recovery motion; verify dataset redistribution terms before shipping any extracted motion.
 - [ ] Keep LAFAN1 as a non-shipping research/reference lane unless its CC BY-NC-ND terms are compatible with the intended Bannon distribution; never silently copy its motion into the shipping corpus.
 
+## P0 — Runtime animation stability
+
+- [ ] Keep authored/per-fighter semantic routing ahead of the certified fallback lane; fallback clips must never flatten fighter individuality.
+- [ ] Treat locomotion as a single pose owner: stop stale walk/strafe/idle actions at locomotion handoffs so no double/ghost body can appear.
+- [ ] Treat explicit attack clips as authoritative only while the published state is an attack (or a real grapple receiver), preventing stale attack props from overwriting movement.
+- [ ] Replay the already-selected clip after integrity recovery; never re-resolve a different semantic clip during the recovery path.
+- [ ] Include the FighterMesh runtime-routing contract in CI so these invariants cannot silently disappear.
+
 ## P0 — Grapple pairs
 
 - [ ] Attach real two-body grapple pairs to different fighters so the deliverer and receiver are both visible in the PWA.
