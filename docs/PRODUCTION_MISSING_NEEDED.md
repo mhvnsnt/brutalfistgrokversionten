@@ -13,6 +13,7 @@ This is the persistent cross-agent checklist. Add new concrete missing work here
 
 - [x] Grounded resolver now has a dedicated evidence lane so SUPINE/PRONEROTATION/roll/get-up clips are not rejected by standing-only gates.
 - [x] Wire the shipped Schwarzerblitz grounded recovery clips: SUPINE/PRONEROTATION, ROLLOUT/ROLLOUTRIGHT, LAZORBACKROLL/LAZORFORWARDROLL, WAKEUPANIMATION, KIP_UP/CORKSCREW_KIP_UP.
+- [x] Add `PRONE_HOLD`, a derived static hold from the measured first frame of the real `PRONEROTATION` source, so no-input face-down recovery does not loop a roll.
 - [x] Prevent WakeupAttack from silently falling through to a standing jab/heavy when no real grounded attack clip exists.
 - [ ] Runtime-certify the new grounded states on multiple fighters in the PWA: face-up, face-down/prone, stay-down, forward/back/side roll, quickstand, backrise, kip-up, and wake attack.
 - [ ] Import/certify actual grounded attack clips for SupineReversal / wake-up kick behavior. The current Schwarzerblitz move graph names faceRun2/flyingKick/lowAttack1, but those corresponding clips are not present in the 455-clip baked bank; do not substitute a standing attack.
