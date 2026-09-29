@@ -1,6 +1,7 @@
 // `.ts` extensions on purpose — the repo's runner resolves them literally.
 import type { BakedManifestEntry } from '../retarget/BakedMotionBank.ts';
 import { loadMoveLabels, type MoveLabelMap } from '../assets/moveLabels.ts';
+import { namedGrappleBinding } from './NamedGrappleBindings.ts';
 
 /**
  * A GRAPPLE IS TWO PERFORMANCES. THIS IS THE OTHER ONE.
@@ -133,6 +134,17 @@ export function receiverClipFor(
   const labels = opts.labels ?? loadMoveLabels();
   const can = opts.available ?? (() => true);
   const usable = (c: string) => Boolean(c) && labels[c]?.verdict !== 'broken' && can(c);
+
+  // Named owner moves are a hard boundary. A deliverer-only capture such as
+  // Getbackk/F5 must NOT fall through to the generic duration stand-in pool:
+  // that would put a plausible-looking victim on screen and silently turn an
+  // explicitly incomplete grapple into a fake PASS. Real named pairs are
+  // allowed through the same live integrity gate as every other clip.
+  const named = namedGrappleBinding(deliverer);
+  if (named?.status === 'DELIVERER_ONLY' || named?.status === 'MISSING_CLIP') return null;
+  if (named?.status === 'REAL_PAIR' && named.receiver && usable(named.receiver)) {
+    return { receiver: named.receiver, source: 'baked', dur: durOf.get(named.receiver) ?? 0 };
+  }
 
   const said = labels[deliverer]?.pairedWith;
   if (said && usable(said)) {
