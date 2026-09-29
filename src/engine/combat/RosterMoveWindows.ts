@@ -195,15 +195,24 @@ export function resolveRosterMoveWindows(fighterId: string): RosterMoveResolutio
     // borrowing a grapple's frame data for a strike.
     const usable = move && (move.category === 'strike' || move.category === 'kick' || move.category === 'combo' || move.category === 'counter' || move.category === 'signature') && !move.throw;
     const w = usable ? catalogWindowForStyle(move!, sem.state, sem.base, style) : baseWindowForStyle(sem.base, style);
-    const clip = (clips as Record<string, string | null> | null)?.[slot] ?? null;
+    // NEUTRAL SAFETY LAW: the original authored LP/RP/LK/RK animations are
+    // already the known-good baseline. The large style-intake bank is allowed
+    // to expand directional moves, but it must not replace a certified basic
+    // punch/kick merely because a candidate passed static measurements.
+    // Visual certification belongs to the PWA/runtime pass, not this table.
+    const directionalSlot = /^forward|^back|^downForward/.test(slot);
+    const candidateClip = (clips as Record<string, string | null> | null)?.[slot] ?? null;
+    const clip = directionalSlot ? candidateClip : null;
     windows[slot] = clip ? { ...w, clip } : w;
     if (moveId) ids[slot] = moveId;
     provenance.push({ slot, moveId: usable ? moveId! : null, clip, clipStatus: clip ? 'STYLE_CLIP' : 'MISSING_CLIP' });
   }
   for (const [slot, base] of [['crouchLight', CROUCH_MOVE_WINDOWS.crouchLightAttack], ['crouchKick', CROUCH_MOVE_WINDOWS.crouchHeavyAttack]] as const) {
     const w = baseWindowForStyle(base, style);
-    const clip = clips?.[slot] ?? null;
-    windows[slot] = clip ? { ...w, clip } : w;
+    // Crouch basics remain on the authored semantic baseline until a visual
+    // PWA certification promotes a replacement.
+    const clip = null;
+    windows[slot] = w;
     provenance.push({ slot, moveId: null, clip, clipStatus: clip ? 'STYLE_CLIP' : 'MISSING_CLIP' });
   }
   attachNeutralString(windows, style);
