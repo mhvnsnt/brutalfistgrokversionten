@@ -61,6 +61,12 @@ This is the persistent cross-agent checklist. Add new concrete missing work here
 - [ ] Run the bulk intake -> classification -> canonical bake -> continuity gate as one repeatable lane.
 - [ ] Expand the CC0 source pool when it materially improves a missing motion family; do not add assets without provenance/license metadata.
 - [ ] Prefer official/openly redistributable source packages; do not silently import restricted/proprietary animation packs.
+- [x] Add Kenney Animated Characters 3 (CC0) to reproducible source intake as a compatibility/reference lane; do not let its small idle/jump/run set replace Bannon-authored combat clips.
+- [ ] Add a selective CMU mocap conversion lane for boxing, kicks, walks/runs, jumps, getting-up, acrobatics and motion transitions. CMU permits use in commercially-sold products but prohibits reselling the motion data itself; converted clips must retain the source terms/acknowledgement.
+- [ ] Evaluate Mesh2Motion as an MIT tooling + CC0-animation lane for browser-side/custom retargeting, but only promote exported motion after the same canonical bake and PWA certification gates.
+- [ ] Evaluate Styloo's CC0 Robot Character (11 animations, including walk/jump/attack/grab) as a motion/reference source; adapt only animation data that can be legally and technically separated from the source rig.
+- [ ] Evaluate KungFuAthlete as a research/reference source for high-dynamic fist, ground, jump, flip and recovery motion; verify dataset redistribution terms before shipping any extracted motion.
+- [ ] Keep LAFAN1 as a non-shipping research/reference lane unless its CC BY-NC-ND terms are compatible with the intended Bannon distribution; never silently copy its motion into the shipping corpus.
 
 ## P0 — Grapple pairs
 
