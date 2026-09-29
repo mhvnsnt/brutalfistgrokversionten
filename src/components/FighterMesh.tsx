@@ -161,9 +161,9 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   idle:              ['idle', 'Idle', 'neutral', 'Neutral', 'standing', 'Standing', 'stance', 'Stance', 'bind', 'T-pose', 'TPose', 'tpose', 'rest', 'Rest', 'combatIdle', 'CombatIdle', 'fightingStance', 'FightingStance', 'readyStance', 'ReadyStance'],
   Neutral:           ['idle', 'Idle', 'neutral', 'Neutral', 'standing', 'Standing', 'stance', 'Stance'],
   // ── Walk Forward ────────────────────────────────────────────────────────────
-  walk:              ['walk', 'Walk', 'walking', 'Walking', 'run', 'Run', 'walkForward', 'WalkForward', 'walk_fwd', 'SBW_walk_fwd', 'T_walk_fwd', 'bf_walk_fwd'],
-  Walking:           ['walk', 'Walk', 'walking', 'Walking', 'run', 'Run', 'walkForward', 'WalkForward'],
-  walkForward:       ['walkForward', 'WalkForward', 'walk', 'Walk', 'walking', 'Walking', 'forward', 'Forward', 'run', 'Run', 'walk_fwd', 'walk_forward', 'SBW_walk_fwd', 'T_walk_fwd', 'bf_walk_fwd', 'advance', 'approach', 'movingForward'],
+  walk:              ['walk', 'Walk', 'walking', 'Walking', 'walkForward', 'WalkForward', 'walk_fwd', 'walk_forward', 'SBW_walk_fwd', 'T_walk_fwd', 'bf_walk_fwd', 'advance', 'approach'],
+  Walking:           ['walk', 'Walk', 'walking', 'Walking', 'walkForward', 'WalkForward'],
+  walkForward:       ['walkForward', 'WalkForward', 'walk', 'Walk', 'walking', 'Walking', 'forward', 'Forward', 'walk_fwd', 'walk_forward', 'SBW_walk_fwd', 'T_walk_fwd', 'bf_walk_fwd', 'advance', 'approach', 'movingForward'],
   // ── Walk Backward ───────────────────────────────────────────────────────────
   walkBackward:      ['walkBack', 'WalkBack', 'walkBackward', 'WalkBackward', 'walk', 'Walk', 'backward', 'Backward', 'retreat', 'Retreat', 'walk_back', 'walk_bwd', 'SBW_walk_back', 'T_walk_back', 'bf_walk_back', 'movingBackward'],
   // ── Strafe ──────────────────────────────────────────────────────────────────
@@ -254,10 +254,10 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   taunt:             ['taunt', 'Taunt', 'idle', 'Idle', 'victory', 'Victory'],
   intro:             ['intro', 'Intro', 'entrance', 'Entrance', 'idle', 'Idle'],
   // ── Run / Dash ──────────────────────────────────────────────────────────────
-  run:               ['run', 'Run', 'running', 'Running', 'sprint', 'Sprint', 'dash', 'Dash', 'walkForward', 'WalkForward', 'walk', 'Walk', 'DRUNK_RUN_FORWARD'],
+  run:               ['run', 'Run', 'running', 'Running', 'sprint', 'Sprint', 'DRUNK_RUN_FORWARD', 'dash', 'Dash'],
   runBackward:       ['runBackward', 'RunBackward', 'runningBackward', 'RunningBackward', 'backwardRun', 'BackwardRun', 'retreatRun', 'RetreatRun', 'runBack', 'RunBack', 'walkBackward', 'WalkBackward', 'walkBack', 'WalkBack'],
-  dash:              ['dash', 'Dash', 'dashForward', 'DashForward', 'run', 'Run', 'walkForward', 'WalkForward', 'dash_forward'],
-  dashForward:       ['dashForward', 'DashForward', 'dash', 'Dash', 'run', 'Run', 'walkForward', 'WalkForward', 'dash_forward'],
+  dash:              ['dash', 'Dash', 'dashForward', 'DashForward', 'run', 'Run', 'running', 'Running', 'sprint', 'Sprint', 'DRUNK_RUN_FORWARD', 'dash_forward'],
+  dashForward:       ['dashForward', 'DashForward', 'dash', 'Dash', 'run', 'Run', 'running', 'Running', 'sprint', 'Sprint', 'DRUNK_RUN_FORWARD', 'dash_forward'],
   dashBackward:      ['dashBackward', 'DashBackward', 'dashBack', 'DashBack', 'backDash', 'BackDash', 'backdash', 'Backdash', 'runBackward', 'RunBackward', 'walkBackward', 'WalkBackward'],
   // Real authored jump clips first. CROSS_JUMPS is a source clip but reads as
   // a jumping-jack loop, so it is a last-resort fallback rather than the normal
