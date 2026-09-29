@@ -80,6 +80,7 @@ describe('AnimationRepairPipeline', () => {
       bodies: 3,
       unresolvedTracks: 0,
       lowerBodyCredible: true,
+      loopable: true,
       hasRootTravel: false,
       owner: false,
     });
