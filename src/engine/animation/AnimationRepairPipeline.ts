@@ -27,6 +27,7 @@ export type AnimationFault =
   | 'LOWER_BODY_UNCREDIBLE'
   | 'WRONG_SEMANTIC'
   | 'ROOT_TRAVEL_CONFLICT'
+  | 'LOOP_UNSAFE'
   | 'UNKNOWN';
 
 export interface AnimationEvidence {
@@ -42,6 +43,7 @@ export interface AnimationEvidence {
   unresolvedTracks: number;
   lowerBodyCredible: boolean | null;
   hasRootTravel: boolean;
+  loopable: boolean | null;
   owner: boolean;
 }
 
@@ -75,11 +77,12 @@ export function diagnoseAnimation(e: AnimationEvidence): AnimationDiagnosis {
   }
   if (e.unresolvedTracks > 0) faults.push('UNRESOLVED_TRACKS');
   if (e.lowerBodyCredible === false) faults.push('LOWER_BODY_UNCREDIBLE');
+  if (e.loopable === false && e.semantic && /^(idle|walk|run|dash|crouch)/.test(e.semantic)) faults.push('LOOP_UNSAFE');
   if (!e.semantic) faults.push('WRONG_SEMANTIC');
 
   const hasStructuralFault = faults.some(f =>
     f === 'STATIC' || f === 'POSE_STARFISH' || f === 'INVERTED' ||
-    f === 'UNRESOLVED_TRACKS' || f === 'LOWER_BODY_UNCREDIBLE'
+    f === 'UNRESOLVED_TRACKS' || f === 'LOWER_BODY_UNCREDIBLE' || f === 'LOOP_UNSAFE'
   );
   const canRoute = faults.every(f =>
     f === 'WRONG_SEMANTIC' || f === 'TURN_AWAY' || f === 'STARTS_DOWN' ||
