@@ -2199,7 +2199,11 @@ export class FighterStateMachine {
           // clip is actually what the player sees on the confirming input.
           const ownedClip = this.clipForSpecial(buffered);
           const ownedMove = { ...buffered.move, clip: ownedClip };
-          return this.beginAttack(ownedClip as FighterMotionState, ownedMove);
+          // The semantic motion state owns combat timing/locks. The authored
+          // clip rides on MoveWindow.clip. Passing the clip name as the motion
+          // state makes ATTACK_STATES miss and turns a real attack into a
+          // non-attack animation transition.
+          return this.beginAttack(ownedMove.animation, ownedMove);
         }
         if (risingLight && !this.queuedAction) this.queuedAction = { type: 'light', at: this.moveElapsed };
         if (risingHeavy && !this.queuedAction) this.queuedAction = { type: 'heavy', at: this.moveElapsed };
@@ -2342,27 +2346,27 @@ export class FighterStateMachine {
       const back = resolvedInput.forward < -0.45;
       if (forward && (risingLp || risingLight) && this.characterMoveIds.forwardLight) {
         const move = this.characterMoveWindow(this.characterMoveIds.forwardLight, DEFAULT_MOVE_WINDOWS.lightAttack, 'forwardLight', 'lightAttack');
-        return this.beginAttack((move.clip ?? 'lightAttack') as FighterMotionState, move);
+        return this.beginAttack('lightAttack', move);
       }
       if (forward && (risingRp || risingHeavy) && this.characterMoveIds.forwardHeavy) {
         const move = this.characterMoveWindow(this.characterMoveIds.forwardHeavy, DEFAULT_MOVE_WINDOWS.heavyAttack, 'forwardHeavy', 'heavyAttack');
-        return this.beginAttack((move.clip ?? 'heavyAttack') as FighterMotionState, move);
+        return this.beginAttack('heavyAttack', move);
       }
       if (forward && risingLk && this.characterMoveIds.forwardLowKick) {
         const move = this.characterMoveWindow(this.characterMoveIds.forwardLowKick, DEFAULT_MOVE_WINDOWS.lightKick, 'forwardLowKick', 'lightKick');
-        return this.beginAttack((move.clip ?? 'lightKick') as FighterMotionState, move);
+        return this.beginAttack('lightKick', move);
       }
       if (forward && risingRk && this.characterMoveIds.forwardHighKick) {
         const move = this.characterMoveWindow(this.characterMoveIds.forwardHighKick, DEFAULT_MOVE_WINDOWS.heavyKick, 'forwardHighKick', 'heavyKick');
-        return this.beginAttack((move.clip ?? 'heavyKick') as FighterMotionState, move);
+        return this.beginAttack('heavyKick', move);
       }
       if (back && (risingLp || risingLight) && this.characterMoveIds.backLight) {
         const move = this.characterMoveWindow(this.characterMoveIds.backLight, DEFAULT_MOVE_WINDOWS.lightAttack, 'backLight', 'lightAttack');
-        return this.beginAttack((move.clip ?? 'lightAttack') as FighterMotionState, move);
+        return this.beginAttack('lightAttack', move);
       }
       if (back && (risingRp || risingHeavy) && this.characterMoveIds.backHeavy) {
         const move = this.characterMoveWindow(this.characterMoveIds.backHeavy, DEFAULT_MOVE_WINDOWS.heavyAttack, 'backHeavy', 'heavyAttack');
-        return this.beginAttack((move.clip ?? 'heavyAttack') as FighterMotionState, move);
+        return this.beginAttack('heavyAttack', move);
       }
     }
     const special = hasOwnedDirectionalRosterInput ? null : this.detectSpecialMove(now);
@@ -2372,7 +2376,8 @@ export class FighterStateMachine {
       // renderer reads activeClip(), not only the semantic motion state.
       const ownedClip = this.clipForSpecial(special);
       const ownedMove = { ...special.move, clip: ownedClip };
-      return this.beginAttack(ownedClip as FighterMotionState, ownedMove);
+      // Keep the semantic attack state intact; the clip is presentation data.
+      return this.beginAttack(ownedMove.animation, ownedMove);
     }
 
     // ── DIRECTIONAL CHARACTER MOVES ────────────────────────────────────────
@@ -2408,7 +2413,7 @@ export class FighterStateMachine {
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightAttack, 'forwardLight', 'lightAttack');
-          return this.beginAttack((move.clip ?? 'lightAttack') as FighterMotionState, move);
+          return this.beginAttack('lightAttack', move);
         }
       }
       if (risingRp || (risingHeavy && !risingLk && !risingRk)) {
@@ -2416,7 +2421,7 @@ export class FighterStateMachine {
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyAttack, 'forwardHeavy', 'heavyAttack');
-          return this.beginAttack((move.clip ?? 'heavyAttack') as FighterMotionState, move);
+          return this.beginAttack('heavyAttack', move);
         }
       }
       if (risingLk) {
@@ -2424,7 +2429,7 @@ export class FighterStateMachine {
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightKick, 'forwardLowKick', 'lightKick');
-          return this.beginAttack((move.clip ?? 'lightKick') as FighterMotionState, move);
+          return this.beginAttack('lightKick', move);
         }
       }
       if (risingRk) {
@@ -2432,7 +2437,7 @@ export class FighterStateMachine {
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyKick, 'forwardHighKick', 'heavyKick');
-          return this.beginAttack((move.clip ?? 'heavyKick') as FighterMotionState, move);
+          return this.beginAttack('heavyKick', move);
         }
       }
     }
@@ -2442,7 +2447,7 @@ export class FighterStateMachine {
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightAttack, 'backLight', 'lightAttack');
-          return this.beginAttack((move.clip ?? 'lightAttack') as FighterMotionState, move);
+          return this.beginAttack('lightAttack', move);
         }
       }
       if (risingRp || (risingHeavy && !risingLk && !risingRk)) {
@@ -2450,7 +2455,7 @@ export class FighterStateMachine {
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyAttack, 'backHeavy', 'heavyAttack');
-          return this.beginAttack((move.clip ?? 'heavyAttack') as FighterMotionState, move);
+          return this.beginAttack('heavyAttack', move);
         }
       }
       if (risingLk) {
@@ -2458,7 +2463,7 @@ export class FighterStateMachine {
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightAttack, 'backLowKick', 'lightKick');
-          return this.beginAttack((move.clip ?? 'lightKick') as FighterMotionState, move);
+          return this.beginAttack('lightKick', move);
         }
       }
       if (risingRk) {
@@ -2466,7 +2471,7 @@ export class FighterStateMachine {
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
           const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyKick, 'backHighKick', 'heavyKick');
-          return this.beginAttack((move.clip ?? 'heavyKick') as FighterMotionState, move);
+          return this.beginAttack('heavyKick', move);
         }
       }
     }
