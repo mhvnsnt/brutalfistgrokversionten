@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe,it } from 'node:test';
-import { selectCoreBakedNames } from './BakedMotionBank.ts';
+import { applyStandability, clipAnimates, clipKeepsFacing, selectCoreBakedNames } from './BakedMotionBank.ts';
 
 describe('baked motion startup selection',()=>{
   it('prioritizes combat owners and paired receivers',()=>{
@@ -16,4 +16,31 @@ describe('baked motion startup selection',()=>{
     assert.ok(names.includes('THROW_REC'));
     assert.ok(!names.includes('TAUNT'));
   });
+
+  it('keeps Hurricane Kick as authored rotational motion instead of freezing it',()=>{
+    applyStandability({
+      HURRICANE_KICK:{
+        file:'HURRICANE_KICK.json',
+        bank:'bannon',
+        dur:1.8333,
+        bones:22,
+        boneCount:22,
+        movingBones:1,
+        semantic:'attack_2',
+        airborne:true,
+        travels:0.67,
+        floorGap:0.029,
+        strike:{
+          reach:0.991,
+          reachExtent:0.8046,
+          faceMin:-0.999,
+          startUp:1,
+          endUp:1,
+        },
+      },
+    });
+    assert.equal(clipAnimates('HURRICANE_KICK'),true);
+    assert.equal(clipKeepsFacing('HURRICANE_KICK'),true);
+  });
+});
 });
