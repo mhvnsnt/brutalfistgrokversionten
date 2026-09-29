@@ -817,9 +817,23 @@ function FighterMeshInner({
       onModelReady?.(true);
     });
 
-    // Cleanup: stop all actions when model changes
+    // Cleanup: the normalized result owns a real AnimationMixer. When the
+    // model/scene is replaced, that old mixer must be stopped before the next
+    // normalized clone becomes visible. Otherwise its actions can keep
+    // evaluating the same skeleton in parallel and present as a "double
+    // ghost body" even though the React component itself only renders once.
+    let ownedResult: NormalizedFighter | null = null;
+    // The promise below assigns this only for the live effect instance.
+    normalizeGLB(scene as THREE.Group, animations, gltfUrl, report).then(result => {
+      if (cancelled) return;
+      ownedResult = result;
+    });
     return () => {
       cancelled = true;
+      if (ownedResult) {
+        ownedResult.mixer.stopAllAction();
+        ownedResult.mixer.setTime(0);
+      }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene, gltfUrl]);
