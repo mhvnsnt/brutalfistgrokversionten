@@ -975,6 +975,10 @@ function FighterMeshInner({
       isAttack &&
       attackClip &&
       actions[attackClip] &&
+      // A move-library clip is a request, not visual certification. Only allow
+      // it to override the live baseline after the clip has been promoted to
+      // the runtime-certified lane for this exact combat state.
+      (CERTIFIED_RUNTIME_CLIPS[inputKey]?.some(n => n.toLowerCase() === attackClip.toLowerCase()) ?? false) &&
       !labelRefuses(attackClip) &&
       clipAnimates(attackClip, actions[attackClip]?.getClip()) &&
       clipIsAuthoredPose(attackClip) &&
