@@ -78,7 +78,18 @@ export function diagnoseAnimation(e: AnimationEvidence): AnimationDiagnosis {
   if (e.unresolvedTracks > 0) faults.push('UNRESOLVED_TRACKS');
   if (e.lowerBodyCredible === false) faults.push('LOWER_BODY_UNCREDIBLE');
   if (e.loopable === false && e.semantic && /^(idle|walk|run|dash|crouch)/.test(e.semantic)) faults.push('LOOP_UNSAFE');
+
+  // A missing measurement is not evidence of health. Required fields are
+  // semantic-dependent; optional lower-body/loop reports may remain unknown
+  // without blocking a clip that otherwise has a complete structural audit.
   if (!e.semantic) faults.push('WRONG_SEMANTIC');
+  else if (
+    e.movingBones === null ||
+    e.boneCount === null ||
+    e.spineUp === null ||
+    e.startUp === null ||
+    (/^attack/.test(e.semantic) && e.faceMin === null)
+  ) faults.push('UNKNOWN');
 
   const hasStructuralFault = faults.some(f =>
     f === 'STATIC' || f === 'POSE_STARFISH' || f === 'INVERTED' ||
