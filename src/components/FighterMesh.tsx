@@ -21,7 +21,7 @@ import {
   type AnimationIntegrityReport,
 } from '../engine/combat/AnimationIntegrityGate';
 import { COMBAT_STATE_TO_SEMANTIC, SEMANTIC_STATE_ALIASES, inferSemanticStateFromClipName } from '../engine/retarget/SemanticStateAliases';
-import { clipAnimates, clipIsTeamCapture, clipKeepsFacing, clipStandsUpright, clipStartsStanding, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
+import { clipAnimates, clipIsAuthoredPose, clipIsTeamCapture, clipKeepsFacing, clipStandsUpright, clipStartsStanding, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
 import { clipsLabelledFor, isReceivingClip, labelRefuses } from '../engine/assets/moveLabels';
 import { isThrowVictimClip } from '../engine/combat/GrapplePairing';
 import { AnimationBridge } from '../../animation_bridge/retarget';
@@ -494,6 +494,10 @@ function resolveClipName(
   const usable = (c: string, forAttack = true) =>
     !labelRefuses(c)
     && clipAnimates(c)
+    // A measured T-pose/starfish or rest-pose clip is not a locomotion/combat
+    // answer. The bake already records these as authored-pose failures; keep
+    // them out of runtime resolution instead of making the skeleton contort.
+    && clipIsAuthoredPose(c)
     // A CAPTURE OF THREE WRESTLERS IS NOT A MOVE ONE MAN CAN DO. Twelve of
     // these are in the game, eight of them filling the IDLE slot, and a
     // fighter playing one performs his partner's and his victim's motion at
