@@ -2,6 +2,14 @@
 
 This is the persistent cross-agent checklist. Add new concrete missing work here instead of relying on chat history. Items are promoted only from measured repository/runtime evidence or explicit production requirements.
 
+## P0 — Current animation follow-through
+
+- [ ] Runtime-certify the new wakeup/jump state routing on multiple fighters; code routing is updated but this is not a visual PASS until the PWA is exercised.
+- [ ] Exercise real two-body grapples with different fighter pairs and record deliverer/receiver clip IDs, source, synchronized duration, and contact alignment.
+- [ ] Promote only exact/owner/baked grapple pairs to named moves; keep stand-ins visibly/provenance-marked until the matching receiver is captured.
+- [ ] Audit suspicious low-motion clips such as HURRICANE_KICK instead of assuming static measurements mean the clip is broken; inspect semantic/body-role/runtime evidence together.
+- [ ] Continue repairing isolated limb-axis spikes before joint-limit enforcement, then remeasure chain coherence after the repair.
+
 ## P0 — Runtime certification
 
 - [ ] Run the current PWA runtime certification pass on real fighter pairs and record visual results. Static tests are not visual PASS.
