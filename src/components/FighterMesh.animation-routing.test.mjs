@@ -29,6 +29,12 @@ describe('runtime animation routing', () => {
     assert.match(source, /nextAction\.play\(\);/);
   });
 
+  it('preserves the already-selected attack through the integrity recovery path', () => {
+    assert.match(source, /const recoverClip = clipName;/);
+    assert.match(source, /recoverAction\.setEffectiveTimeScale\(/);
+    assert.match(source, /recoverAction\.reset\(\)\.play\(\);/);
+  });
+
   it('keeps explicit grapple receiver clips authoritative over locomotion routing', () => {
     assert.match(source, /isThrowVictimClip\(inputKey\)/);
     assert.match(source, /if \(state !== 'Walking'\) return requested \|\| state;/);
