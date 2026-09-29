@@ -812,6 +812,12 @@ export function auditBakedAnimationManifest(
     unresolvedTracks: 0,
     lowerBodyCredible: entry.lowerBodyCredible ?? null,
     hasRootTravel: (entry.travels ?? 0) > 0,
+    rotationalAttack:
+      /^attack/.test(entry.semantic ?? '') &&
+      entry.airborne === true &&
+      (entry.travels ?? 0) >= 0.4 &&
+      (entry.strike?.reach ?? 0) >= 0.85 &&
+      (entry.strike?.reachExtent ?? 0) >= 0.7,
     loopable: null,
     owner: Boolean(entry.owns),
   }));
