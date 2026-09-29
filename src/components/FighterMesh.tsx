@@ -356,9 +356,41 @@ const LOCO_RATE_STATES = new Set([
   'run', 'dash', 'dashForward', 'Backdashing', 'crouchWalk',
 ]);
 
+/**
+ * Runtime-safe fallback lane.
+ *
+ * These are NOT global replacements for a fighter's authored move. Resolution
+ * tries the fighter preference, semantic owner, and ordered aliases first.
+ * This table is only the last measured runtime-safe choice when that authored
+ * route is absent/rejected. New clips must earn promotion by PWA certification.
+ */
+const CERTIFIED_RUNTIME_CLIPS: Record<string, string[]> = {
+  walk: ['WALK', 'SHAZWALK', 'WALKFAST', 'LOCO_LIGHT', 'LOCO_STALK'],
+  walkForward: ['WALK', 'SHAZWALK', 'WALKFAST', 'LOCO_LIGHT', 'LOCO_STALK'],
+  walkBackward: ['GINGA_BACKWARD', 'WALKBACK', 'WALK_BACKWARD'],
+  crouch: ['STANCE_CROUCH', 'CROUCHING', 'SHAZLOWRUSH_CROUCH'],
+  crouchWalk: ['CROUCH_WALK_FORWARD', 'SHAZLOWRUSH_CROUCH'],
+  strafeRight: ['SIDESTEPF', 'SIDESTEPFAST', 'SIDESTEP', 'SIDESTEPMEDIUM'],
+  strafeLeft: ['GINGA_SIDEWAYS_2', 'LOCO_PROWL'],
+  lightAttack: ['TIGERQUICKPUNCH', 'GRAFQUICKJAB', 'TIGERDYNAMOPUNCH_FIX', 'TIGERDYNAMOPUNCH', 'HIGHPUNCH'],
+  heavyAttack: ['GYAKUZUKI', 'GRAFSURPRISEPUNCH', 'GRAFSURPRISEPUNCHLONGER'],
+  lightKick: ['QUICKKICK'],
+  heavyKick: ['ROUNDHOUSEKICK', 'TIGER_HEAVYKICK', 'AXEKICK', 'GRAFKNEEASSAULT'],
+  crouchLightAttack: ['GRAFSURPRISEPUNCHLOW', 'GRAFSURPRISEPUNCHLOW2'],
+  crouchHeavyAttack: ['CROUCHINGKICK', 'TIGERKNEEBASHSLOW', 'GRAFPUSHINGKICK'],
+  jumpAttack: ['GRAFJUMPPUNCH', 'JUMPAXEKICK'],
+  WakeupRollForward: ['LAZORFORWARDROLL', 'ROLLOUT', 'ROLLOUTRIGHT'],
+  WakeupRollBack: ['LAZORBACKROLL', 'ROLLOUT'],
+  WakeupRollSide: ['ROLLOUTRIGHT', 'ROLLOUT'],
+  WakeupKipUp: ['WAKEUPANIMATION'],
+  GroundedFaceUp: ['SUPINE'],
+};
+
 const ATTACK_STATES = new Set([
   'lightAttack', 'heavyAttack', 'lightKick', 'heavyKick',
   'light', 'heavy', 'Startup', 'Active', 'CommandThrow',
+  'jumpAttack', 'runAttack', 'crouchLightAttack', 'crouchHeavyAttack',
+  'crouchAttack', 'guardLowAttack',
 ]);
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -567,6 +599,12 @@ function resolveClipName(
     found = pick((c) => c.toLowerCase().includes('idle'));
     if (found) return found;
   }
+
+  // Safety fallback comes LAST. This preserves fighter-specific authored
+  // ownership and semantic routing while still preventing a bind pose or an
+  // arbitrary unverified intake clip from winning when the normal route fails.
+  const certified = byAliasOrder(CERTIFIED_RUNTIME_CLIPS[key] ?? []);
+  if (certified) return certified;
 
   return null;
 }
@@ -888,11 +926,17 @@ function FighterMeshInner({
     // which is the whole difference between a moveset and four swings.
     // Refused clips are still refused: his BROKEN verdict and the team-capture
     // gate both apply, so this can never smuggle one back in.
-    if (attackClip && actions[attackClip] && !labelRefuses(attackClip) && !clipIsTeamCapture(attackClip)) {
+    const isAttack = ATTACK_STATES.has(inputKey);
+    const isGrappleReceiver = isThrowVictimClip(inputKey);
+    if (
+      (isAttack || isGrappleReceiver) &&
+      attackClip &&
+      actions[attackClip] &&
+      !labelRefuses(attackClip) &&
+      !clipIsTeamCapture(attackClip)
+    ) {
       clipName = attackClip;
     }
-
-    const isAttack = ATTACK_STATES.has(inputKey);
     if (isAttack) {
       const profile = ATTACK_ROOT_MOTION_PROFILES[inputKey];
       if (profile?.hasRootMotion) {
@@ -982,11 +1026,7 @@ function FighterMeshInner({
       if (!anyActionRunning) {
         // Mixer was stopped by FIRST_FRAME_DISPLACEMENT — recover ONLY the requested clip.
         // Never silently substitute idle for a missing combat semantic state.
-        const recoverClip = resolveClipName(
-          inputKey,
-          normalized.actions,
-          stanceKit ? stancePreferences(stanceKit, inputKey) : [],
-        );
+        const recoverClip = clipName;
         if (recoverClip && normalized.actions[recoverClip]) {
           const recoverAction = normalized.actions[recoverClip];
           const isRecoverLoop = LOOP_STATES.has(inputKey);
@@ -1127,14 +1167,25 @@ function FighterMeshInner({
       attackLockUntilRef.current = now + attackHoldSeconds(clipDuration, attackWindow);
     }
 
+    const previousKey = inputKeyRef.current;
+    const previousWasLocomotion =
+      LOCO_RATE_STATES.has(previousKey) || LOOP_STATES.has(previousKey);
+    const nextIsLocomotion =
+      LOCO_RATE_STATES.has(inputKey) || LOOP_STATES.has(inputKey);
+    const cleanLocomotionHandoff =
+      (nextIsLocomotion && previousWasLocomotion) ||
+      ((inputKey === 'idle' || inputKey === 'Neutral') && previousWasLocomotion);
+
     const seen = new Set<THREE.AnimationAction>();
     for (const name of availableClips) {
       const a = actions[name];
       if (!a || a === nextAction || seen.has(a)) continue;
       seen.add(a);
-      // Hard-cut idle off whenever a real combat/locomotion clip plays so
-      // breathing-idle cannot win the blend and leave a "living statue".
-      if (isUrgent || (inputKey !== 'idle' && inputKey !== 'Neutral')) {
+      // Locomotion has ONE pose owner. Do not let an old walk/strafe/idle action
+      // remain weighted while the new locomotion clip starts; that is the source
+      // of the visible double/ghost body. Combat transitions retain their normal
+      // measured blend behavior.
+      if (isUrgent || cleanLocomotionHandoff || (inputKey !== 'idle' && inputKey !== 'Neutral')) {
         a.stop();
         a.enabled = false;
         a.setEffectiveWeight(0);
