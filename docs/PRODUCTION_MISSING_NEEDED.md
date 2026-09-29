@@ -11,6 +11,15 @@ This is the persistent cross-agent checklist. Add new concrete missing work here
 - [ ] Certify hit reactions, knockdowns, wakeups, crouch attacks, and recovery transitions on multiple fighters.
 - [ ] Certify camera/framing and fighter contact during attacks and grapples.
 
+## P0 — Animation orientation / joint-frame rehabilitation
+
+- [ ] Audit and repair limb-direction failures where the clip moves but the local joint frame sends the limb through the wrong axis.
+- [ ] Treat source/target joint-axis conventions separately from ordinary animation motion; do not “fix” a real authored pose with a global body rotation.
+- [ ] Reject ambiguous retarget aliases. A Shoulder/UpperArm collapse must never send two source tracks into one target property, because Three.js blends duplicate property tracks.
+- [ ] Use the open-source SkeletonUtils retarget path as the CC0/foreign-rig reference lane where a source skeleton is available, and do not apply the generic bind-relative conversion twice.
+- [ ] Add measured limb-chain gates for upper-arm/forearm/knee/hip orientation and preserve intentional acrobatics/capoeira/uprock poses when their geometry is internally coherent.
+- [ ] Specifically certify GINGA_FORWARD/BACKWARD/SIDEWAYS, CAPOEIRA variants, BROOKLYN_UPROCK, and BREAKDANCE_UPROCK_TO_GROUND after the new orientation path.
+
 ## P0 — Animation corpus rehabilitation
 
 - [ ] Rehabilitate the full baked corpus, not only the currently known-good handful. Each clip needs: finite data, canonical skeleton binding, rest-pose correctness, motion-role classification, body-role classification, strike/contact measurements where applicable, and runtime certification.
