@@ -1038,15 +1038,17 @@ async function loadQuaterniusSources() {
           const clipName = `${name}_${clip.name || `clip_${i + 1}`}`.replace(/[^A-Za-z0-9_-]+/g, '_');
           let reference;
           try {
+            const referenceNames = Object.fromEntries(
+              boneNames.map((targetBone) => {
+                const sourceBone = resolveReferenceSourceBone(targetBone, skinned.skeleton.bones);
+                return [targetBone, sourceBone?.name ?? targetBone];
+              }),
+            );
             reference = referenceRetargetClip(
               skeleton.root,
               skinned.skeleton,
               clip,
-              Object.fromEntries(boneNames.map((targetBone) => {
-                const canonical = resolveToCanonicalBone(targetBone);
-                const sourceBone = skinned.skeleton.bones.find((b) => resolveToCanonicalBone(b.name) === canonical);
-                return [targetBone, sourceBone?.name ?? targetBone];
-              })),
+              referenceNames,
             );
           } catch (e) {
             report.quaterniusReferenceErrors = (report.quaterniusReferenceErrors ?? 0) + 1;
@@ -1056,12 +1058,14 @@ async function loadQuaterniusSources() {
           const source = {
             bank: pack.toLowerCase(),
             name: clipName,
-            clip,
-            sourceRest: new Map([...sourceRest].map(([sourceBone, q]) => {
-              const canonical = resolveToCanonicalBone(sourceBone);
-              const targetBone = canonical ? boneNames.find((name) => resolveToCanonicalBone(name) === canonical) : null;
-              return [targetBone ?? sourceBone, q.clone()];
-            })),
+            // Three.js SkeletonUtils has already converted this clip into the
+            // canonical target skeleton's local frames. Do not run the generic
+            // bind-relative conversion a second time: doing so subtracts the
+            // source rest from an already-retargeted pose and is exactly the
+            // class of axis/limb explosions seen in the CC0 locomotion banks.
+            clip: reference.clip,
+            preRetargeted: true,
+            sourceRest: new Map(),
             targetRest,
             provenance: {
               pack,
@@ -1082,6 +1086,22 @@ async function loadQuaterniusSources() {
   }
   report.quaterniusSources = out.length;
   return out;
+}
+
+function resolveReferenceSourceBone(targetBone, sourceBones) {
+  // Prefer exact identity, then Mixamo namespace equivalence. Canonical aliases
+  // are only the last resort because canonical names intentionally collapse
+  // joints such as Shoulder/UpperArm; using that collapse first can drive a
+  // perfectly good arm track onto the wrong joint and create the loose-doll
+  // / wildly swinging-limb failure mode.
+  const exact = sourceBones.find((b) => b.name === targetBone);
+  if (exact) return exact;
+  const mixKey = mixamoBindKey(targetBone);
+  const mix = sourceBones.find((b) => mixamoBindKey(b.name) === mixKey);
+  if (mix) return mix;
+  const canonical = resolveToCanonicalBone(targetBone);
+  if (!canonical) return null;
+  return sourceBones.find((b) => resolveToCanonicalBone(b.name) === canonical) ?? null;
 }
 
 function readdirRecursive(root) {
@@ -1330,7 +1350,9 @@ for (const src of [...sources(), ...(await loadQuaterniusSources())]) {
   }
   sanitizeMotionClip(bound.clip);
 
-  const relative = makeClipBindRelative(bound.clip, src.targetRest, src.sourceRest);
+  const relative = src.preRetargeted
+    ? bound.clip
+    : makeClipBindRelative(bound.clip, src.targetRest, src.sourceRest);
   if (!relative) {
     report.skipped.push({ name: src.name, why: 'no quaternion tracks survived' });
     continue;
