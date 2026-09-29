@@ -245,7 +245,7 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   // is used when present; otherwise this state remains a grounded recovery.
   WakeupAttack:      ['wakeAttack', 'WakeAttack', 'getUpAttack', 'GetUpAttack', 'risingAttack', 'RisingAttack', 'wakeStrike', 'WakeStrike'],
   GroundedFaceUp:    ['SUPINE', 'supine', 'groundedFaceUp', 'GroundedFaceUp', 'FALLING_FLAT_IMPACT', 'knockdown', 'Knockdown'],
-  GroundedFaceDown:  ['PRONEROTATION', 'PRONE', 'prone', 'groundedFaceDown', 'GroundedFaceDown', 'FALLING_FORWARD_DEATH', 'SUPINE', 'supine'],
+  GroundedFaceDown:  ['PRONE_HOLD', 'PRONEROTATION', 'PRONE', 'prone', 'groundedFaceDown', 'GroundedFaceDown', 'FALLING_FORWARD_DEATH', 'SUPINE', 'supine'],
   GroundedRoll:      ['ROLLOUTRIGHT', 'ROLLOUT', 'rolloutRight', 'rollout', 'LAZORBACKROLL', 'LAZORFORWARDROLL', 'PRONEROTATION', 'roll', 'Roll', 'groundRoll', 'GroundRoll', 'techRoll', 'TechRoll'],
   // `wake` is reachable: MoveLibrary files clips like 'Getting Up', 'bf_wakeup'
   // and 'SBW_wakeup' under it. It had no list here, so one of those resolved
@@ -527,7 +527,7 @@ function resolveClipName(
   // T-pose gate at 0.49 against 0.50, and two taunts that play lying flat
   // passed everything but the eye. Marking a clip BROKEN in the Move
   // Library takes it out of the game.
-  const GROUND_HOLD_CLIPS = new Set(['SUPINE', 'PRONE', 'GROUNDED_IDLE', 'GROUND_IDLE']);
+  const GROUND_HOLD_CLIPS = new Set(['SUPINE', 'PRONE', 'PRONE_HOLD', 'GROUNDED_IDLE', 'GROUND_IDLE']);
   const usable = (c: string, forAttack = true, allowGroundedStart = false) =>
     !labelRefuses(c)
     // SUPINE is intentionally a frozen hold: zero moving bones is correct here,
