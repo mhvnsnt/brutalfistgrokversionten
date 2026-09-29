@@ -43,6 +43,8 @@ export interface AnimationEvidence {
   unresolvedTracks: number;
   lowerBodyCredible: boolean | null;
   hasRootTravel: boolean;
+  /** True when measurements identify an authored rotational attack. */
+  rotationalAttack?: boolean;
   loopable: boolean | null;
   owner: boolean;
 }
@@ -72,7 +74,10 @@ export function diagnoseAnimation(e: AnimationEvidence): AnimationDiagnosis {
       e.spineUp !== null && e.spineUp <= 0) faults.push('INVERTED');
   if (e.semantic && /^(attack|walk|run|dash|idle|grapple)/.test(e.semantic) &&
       e.startUp !== null && e.startUp < 0.6) faults.push('STARTS_DOWN');
-  if (e.semantic && /^attack/.test(e.semantic) && e.faceMin !== null && e.faceMin < 0) {
+  if (
+    e.semantic && /^attack/.test(e.semantic) && e.faceMin !== null && e.faceMin < 0 &&
+    !e.rotationalAttack
+  ) {
     faults.push('TURN_AWAY');
   }
   if (e.unresolvedTracks > 0) faults.push('UNRESOLVED_TRACKS');
