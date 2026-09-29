@@ -131,9 +131,3 @@ The repository currently contains a bulk animation lane:
 `npm run animation:bulk-repair`
 
 It is intended to run CC0 intake, source indexing, measured classification, canonical baking, and continuity gating. Its output still requires the PWA visual certification gate before a clip is considered shipping-quality.
-
-
-## Runtime regression guard — 2026-09-28
-- **Ghost-body / duplicate-mixer investigation:** the Claude runtime path for `FighterMesh.tsx` and `LocomotionSystem.ts` is currently identical on `main`; do not introduce a second global animation authority over it.
-- **Surgical fix applied:** when a fighter scene/GLB is replaced, the previous normalized `AnimationMixer` is now explicitly stopped and reset during effect cleanup. This prevents an obsolete mixer from continuing to evaluate a retired clone alongside the live fighter, which can present as a double/ghost body.
-- **Verification still required:** browser/PWA runtime evidence must confirm one live mixer per fighter, no persistent multi-action owner after settle, and no duplicate visible fighter clone. Static TypeScript/tests are not visual certification.
