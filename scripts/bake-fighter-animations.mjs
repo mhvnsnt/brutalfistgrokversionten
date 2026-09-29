@@ -92,6 +92,55 @@ const round = (v) => +v.toFixed(PRECISION);
  * the test suite silently SKIPPED its 20 bake-gated tests and still reported
  * green. Declaration order is not something to leave to luck.
  */
+const LIMB_CHAIN_SPECS = [
+  { name: 'leftArm', bones: ['mixamorigLeftArm','mixamorigLeftForeArm','mixamorigLeftHand'] },
+  { name: 'rightArm', bones: ['mixamorigRightArm','mixamorigRightForeArm','mixamorigRightHand'] },
+  { name: 'leftLeg', bones: ['mixamorigLeftUpLeg','mixamorigLeftLeg','mixamorigLeftFoot'] },
+  { name: 'rightLeg', bones: ['mixamorigRightUpLeg','mixamorigRightLeg','mixamorigRightFoot'] },
+];
+
+function quaternionTrackMap(clip) {
+  const map = new Map();
+  for (const track of clip.tracks) {
+    if (track.name.endsWith('.quaternion')) map.set(track.name.slice(0, -11), track);
+  }
+  return map;
+}
+
+function measureLimbCoherence(clip) {
+  const tracks = quaternionTrackMap(clip);
+  const findings = [];
+  for (const chain of LIMB_CHAIN_SPECS) {
+    const qs = chain.bones.map((b) => tracks.get(b));
+    if (qs.some((q) => !q)) continue;
+    const frames = Math.min(...qs.map((q) => q.times.length));
+    let reversals = 0;
+    let extreme = 0;
+    for (let i = 1; i < frames; i++) {
+      const deltas = qs.map((q) => {
+        const j = (i - 1) * 4;
+        const k = i * 4;
+        const a = new THREE.Quaternion(q.values[j], q.values[j+1], q.values[j+2], q.values[j+3]);
+        const b = new THREE.Quaternion(q.values[k], q.values[k+1], q.values[k+2], q.values[k+3]);
+        return a.angleTo(b);
+      });
+      const max = Math.max(...deltas);
+      const min = Math.min(...deltas);
+      if (max > THREE.MathUtils.degToRad(80) && min < THREE.MathUtils.degToRad(4)) extreme++;
+      if (max > THREE.MathUtils.degToRad(55)) reversals++;
+    }
+    const ratio = reversals / Math.max(1, frames - 1);
+    // A single huge arm joint while its adjacent joints are effectively frozen
+    // is a classic loose-doll signature. This is a gate against retarget
+    // corruption, not a stylistic judgment: acrobatics can still move rapidly
+    // when the chain moves coherently.
+    if (extreme > 2 || ratio > 0.22) {
+      findings.push({ chain: chain.name, extreme, ratio: +ratio.toFixed(3) });
+    }
+  }
+  return findings;
+}
+
 function ownerFailsMeasurement(name, strike, movingBones, boneCount, claimed) {
   if (!claimed) return null;
   if (strike?.startUp !== undefined && strike.startUp < STANDING_START_MIN
@@ -1185,6 +1234,7 @@ const report = {
   turnRejected: [],
   rejectedOwners: [],
   worst: [],
+  limbCoherence: [],
 };
 
 /**
@@ -1406,6 +1456,10 @@ for (const src of [...sources(), ...(await loadQuaterniusSources())]) {
   // to decide BEFORE the offset is derived — see the note in groundingOffset.
   const semanticForGrounding0 = SLOT_OWNER.get(src.name) ?? inferSemanticFromMotionKey(src.name);
   const ground = groundingOffset(relative, GROUNDED_SEMANTICS.has(semanticForGrounding0));
+  const limbCoherence = measureLimbCoherence(relative);
+  if (limbCoherence.length) {
+    report.limbCoherence.push({ name: src.name, findings: limbCoherence });
+  }
   strikeOf.set(src.name, measureStrikeDirection(relative));
   if (DEBUG_GROUND.has(src.name)) {
     console.log(`  [ground] ${src.name} min=${(ground?.minLift ?? NaN).toFixed(4)} max=${(ground?.maxLift ?? NaN).toFixed(4)} offset=${(ground?.offset ?? 0).toFixed(4)} airborne=${ground?.airborne}`);
