@@ -1083,23 +1083,39 @@ function FighterMeshInner({
       // the mixer was stopped and we must recover.
       const anyActionRunning = Object.values(normalized.actions).some(a => a?.isRunning());
       if (!anyActionRunning) {
-        // Mixer was stopped by FIRST_FRAME_DISPLACEMENT — recover ONLY the requested clip.
-        // Never silently substitute idle for a missing combat semantic state.
-        const recoverClip = resolveClipName(
-          inputKey,
-          normalized.actions,
-          stanceKit ? stancePreferences(stanceKit, inputKey) : [],
-        );
+        // Mixer was stopped by FIRST_FRAME_DISPLACEMENT. Reuse the EXACT clip
+        // already selected above. Re-resolving here used to discard an authored
+        // attackClip after the integrity probe stopped the mixer, so the hitbox
+        // could register a strike while the body visibly played another/default
+        // motion.
+        const recoverClip = clipName;
         if (recoverClip && normalized.actions[recoverClip]) {
           const recoverAction = normalized.actions[recoverClip];
           const isRecoverLoop = LOOP_STATES.has(inputKey);
           recoverAction.setLoop(isRecoverLoop ? THREE.LoopRepeat : THREE.LoopOnce, isRecoverLoop ? Infinity : 1);
           recoverAction.clampWhenFinished = !isRecoverLoop;
+          const recoverDuration = Math.max(0.001, recoverAction.getClip().duration);
+          const recoverAttackWindow = isAttack && attackDurationSeconds && attackDurationSeconds > 0 ? attackDurationSeconds : null;
+          const recoverJumpWindow = ['jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey) ? 0.55
+            : inputKey === 'jumpAttack' ? 0.65 : null;
+          const recoverDownWindow = ['knockdown', 'Knockdown', 'ko', 'KO'].includes(inputKey) ? 1.7 : null;
+          const recoverGrappleWindow = forcedPlaybackDurationSeconds && forcedPlaybackDurationSeconds > 0
+            ? forcedPlaybackDurationSeconds : null;
+          const recoverWakeWindow = inputKey === 'WakeupQuickStand' || inputKey === 'wake' ? 1.15
+            : inputKey === 'WakeupTechRoll' || inputKey === 'WakeupBackrise' ? 0.55 : null;
+          recoverAction.setEffectiveTimeScale(
+            recoverAttackWindow ? attackPlaybackRate(recoverDuration, recoverAttackWindow)
+              : recoverGrappleWindow ? recoverDuration / recoverGrappleWindow
+              : recoverJumpWindow ? jumpPlaybackRate(recoverDuration, recoverJumpWindow)
+              : recoverDownWindow ? knockdownPlaybackRate(recoverDuration, recoverDownWindow)
+              : recoverWakeWindow ? knockdownPlaybackRate(recoverDuration, recoverWakeWindow)
+              : 1,
+          );
           recoverAction.reset().play();
           activeClipRef.current = recoverClip;
           committedClipRef.current = recoverClip;
           lastCrossfadeTimeRef.current = performance.now() / 1000;
-          console.log(`[FighterMesh] 🔄 Mixer recovered after integrity test — playing "${recoverClip}" for "${integrityInput.characterName}"`);
+          console.log(`[FighterMesh] 🔄 Mixer recovered after integrity test — playing selected clip "${recoverClip}" for "${integrityInput.characterName}"`);
         } else if (inputKey !== 'idle' && inputKey !== 'Neutral') {
           console.warn(
             `[FighterMesh] ⚠️ MISSING_CLIP after integrity recovery: combatState="${inputKey}" — not substituting idle`,
