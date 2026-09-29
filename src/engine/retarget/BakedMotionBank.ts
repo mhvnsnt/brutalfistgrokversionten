@@ -376,38 +376,33 @@ const BASE = '/motion/baked/';
  * promoted to PASS: a generated clip must have enough evidence to be a real,
  * solo, upright, forward-facing attack before it can replace a semantic move.
  */
-function sanitizeGeneratedMoveClips(manifest: Record<string, BakedManifestEntry>, raw: Record<string, Array<Record<string, unknown>>>): Record<string, Array<Record<string, unknown>>> {
+function sanitizeGeneratedMoveClips(
+  manifest: Record<string, BakedManifestEntry>,
+  raw: Record<string, Array<Record<string, unknown>>>,
+): Record<string, Array<Record<string, unknown>>> {
   const out: Record<string, Array<Record<string, unknown>>> = {};
   for (const [fighterId, rows] of Object.entries(raw ?? {})) {
     out[fighterId] = (rows ?? []).map((row) => {
       const clip = typeof row.clip === 'string' ? row.clip : '';
       const entry = clip ? manifest[clip] : undefined;
-      if (!entry) return { ...row, clip: '' };
-      const animated = (entry.boneCount ?? entry.bones ?? 0) >= ANIMATED_MIN_BONES && (entry.movingBones ?? 0) >= MIN_MOVING_BONES;
-      const solo = (entry.bodies ?? 1) < TEAM_BODY_MIN;
-      const wantsAir = row.stance === 'Air';
-      const isAir = entry.airborne === true;
-      const stanceMatches = wantsAir ? isAir : !isAir;
-      const groundedSafe = isAir || (entry.floorGap ?? Number.POSITIVE_INFINITY) <= STANDABLE_FLOOR_GAP_M;
-      const buttons = Array.isArray(row.command)
-        ? row.command.flatMap((step) => Array.isArray((step as { buttons?: unknown }).buttons) ? (step as { buttons: unknown[] }).buttons : [])
-        : [];
-      const limb = entry.strike?.limb ?? '';
-      const buttonMatchesLimb =
-        buttons.length === 0 ||
-        (buttons.includes('K') ? !/Hand|Arm/i.test(limb) : true) &&
-        (buttons.includes('P') ? !/Foot|Leg/i.test(limb) : true);
-      const window = Number(row.startup ?? 0) + Number(row.active ?? 0) + Number(row.recovery ?? 0);
-      const durationFits = !(entry.dur > 0 && window > 0) || entry.dur <= window * 1.45;
-      const safe = animated && solo && stanceMatches && groundedSafe && buttonMatchesLimb && durationFits
-        && /^attack(?:_|$)/.test(entry.semantic ?? '')
+
+      // Only promote facts that are actually measured and unambiguous here:
+      // the clip exists in the baked bank, contains real motion, is a solo
+      // capture, and is not explicitly classified as a reaction/receiver or
+      // malformed clip. Do NOT infer punch-vs-kick or Ground-vs-Air from the
+      // strike heuristic: the audit has demonstrated those fields are not
+      // reliable enough to rewrite authored move slots.
+      const measurable =
+        !!entry
+        && (entry.boneCount ?? entry.bones ?? 0) >= ANIMATED_MIN_BONES
+        && (entry.movingBones ?? 0) >= MIN_MOVING_BONES
+        && (entry.bodies ?? 1) < TEAM_BODY_MIN
+        && !entry.receives
         && !notAPose.has(clip)
         && !notAnimated.has(clip)
-        && !inverted.has(clip)
-        && !startsDown.has(clip)
-        && !strikesBackwards.has(clip)
-        && !turnsAway.has(clip);
-      return safe ? row : { ...row, clip: '' };
+        && !inverted.has(clip);
+
+      return measurable ? row : { ...row, clip: '' };
     });
   }
   return out;
