@@ -107,7 +107,7 @@ describe('AnimationRepairPipeline', () => {
     assert.ok(d.faults.includes('LOOP_UNSAFE'));
   });
 
-  it('keeps a measured rotational attack even when the body faces away during the spin', () => {
+  it('rebakes the measured Hurricane Kick because one moving bone is a broken capture', () => {
     const d = diagnoseAnimation({
       clipName: 'HURRICANE_KICK',
       semantic: 'attack_2',
@@ -125,8 +125,9 @@ describe('AnimationRepairPipeline', () => {
       loopable: true,
       owner: false,
     });
-    assert.equal(d.repairClass, 'KEEP');
-    assert.deepEqual(d.faults, []);
+    assert.equal(d.repairClass, 'REBAKE');
+    assert.ok(d.faults.includes('STATIC'));
+    assert.ok(d.faults.includes('TURN_AWAY') === false);
   });
 
 });
