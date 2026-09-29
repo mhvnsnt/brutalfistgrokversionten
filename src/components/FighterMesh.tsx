@@ -372,6 +372,27 @@ const LOCO_RATE_STATES = new Set([
   'run', 'runBackward', 'dash', 'dashForward', 'dashBackward', 'Backdashing', 'crouchWalk',
 ]);
 
+/** Runtime-safe baseline clips. Promote new clips here only after PWA visual certification. */
+const CERTIFIED_RUNTIME_CLIPS: Record<string, string[]> = {
+  walk: ['WALK', 'SHAZWALK', 'WALKFAST', 'LOCO_LIGHT', 'LOCO_STALK'],
+  walkForward: ['WALK', 'SHAZWALK', 'WALKFAST', 'LOCO_LIGHT', 'LOCO_STALK'],
+  crouch: ['STANCE_CROUCH', 'CROUCHING', 'SHAZLOWRUSH_CROUCH'],
+  crouchWalk: ['CROUCH_WALK_FORWARD', 'SHAZLOWRUSH_CROUCH'],
+  strafeRight: ['SIDESTEPF', 'SIDESTEPFAST', 'SIDESTEP', 'SIDESTEPMEDIUM'],
+  strafeLeft: ['GINGA_SIDEWAYS_2', 'LOCO_PROWL'],
+  lightAttack: ['TIGERQUICKPUNCH', 'GRAFQUICKJAB', 'TIGERDYNAMOPUNCH_FIX', 'TIGERDYNAMOPUNCH', 'HIGHPUNCH'],
+  heavyAttack: ['GYAKUZUKI', 'GRAFSURPRISEPUNCH', 'GRAFSURPRISEPUNCHLONGER'],
+  lightKick: ['QUICKKICK'],
+  heavyKick: ['ROUNDHOUSEKICK', 'TIGER_HEAVYKICK', 'AXEKICK', 'GRAFKNEEASSAULT'],
+  crouchLightAttack: ['GRAFSURPRISEPUNCHLOW', 'GRAFSURPRISEPUNCHLOW2'],
+  crouchHeavyAttack: ['CROUCHINGKICK', 'TIGERKNEEBASHSLOW', 'GRAFPUSHINGKICK'],
+  WakeupRollForward: ['LAZORFORWARDROLL', 'ROLLOUT', 'ROLLOUTRIGHT'],
+  WakeupRollBack: ['LAZORBACKROLL', 'ROLLOUT'],
+  WakeupRollSide: ['ROLLOUTRIGHT', 'ROLLOUT'],
+  WakeupKipUp: ['WAKEUPANIMATION'],
+  GroundedFaceUp: ['SUPINE'],
+};
+
 const ATTACK_STATES = new Set([
   'lightAttack', 'heavyAttack', 'lightKick', 'heavyKick', 'jumpAttack',
   'light', 'heavy', 'Startup', 'Active', 'CommandThrow',
@@ -588,6 +609,11 @@ function resolveClipName(
     // receiver, or non-striking attack just because it has a familiar name.
     if (actions[clipName] && usable(clipName, attackSlot, groundedState)) return clipName;
   }
+
+  // Certified runtime baselines outrank unverified style-intake clips.
+  // Static retarget measurements are not visual certification.
+  const certified = byAliasOrder(CERTIFIED_RUNTIME_CLIPS[key] ?? []);
+  if (certified) return certified;
 
   const semanticState = COMBAT_STATE_TO_SEMANTIC[key];
   if (semanticState) {
@@ -945,6 +971,7 @@ function FighterMeshInner({
     // Refused clips are still refused: his BROKEN verdict and the team-capture
     // gate both apply, so this can never smuggle one back in.
     if (
+      isAttack &&
       attackClip &&
       actions[attackClip] &&
       !labelRefuses(attackClip) &&
