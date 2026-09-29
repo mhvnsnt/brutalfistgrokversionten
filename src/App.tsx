@@ -41,7 +41,9 @@ const PreCombatValidationScreen = dynamic(() => import('./components/PreCombatVa
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
   const [screen, setScreen] = useState<AppScreen>(AppScreen.Title);
-  const [introComplete, setIntroComplete] = useState(false);
+  // The intro asset is not shipped in the PWA. Start on the real title screen;
+  // never mount a black media gate when there is nothing to play.
+  const [introComplete, setIntroComplete] = useState(true);
   // A tap must not press the screen it opens — see useTapThroughGuard. Without
   // this, PRESS START's own synthesised click landed on whichever mode button
   // the menu drew at that pixel.
