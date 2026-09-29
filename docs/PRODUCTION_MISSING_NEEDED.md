@@ -4,6 +4,13 @@ This is the persistent cross-agent checklist. Add new concrete missing work here
 
 ## P0 — Current animation follow-through
 
+### Latest verified code gates
+- [x] Production PWA GitHub Actions workflow added on `main` (`.github/workflows/bannon-pwa.yml`).
+- [x] Grapple runtime now distinguishes a real/baked two-body pair from a duration-based stand-in; stand-ins cannot be certified as real pairs.
+- [x] Regression coverage added for certified vs stand-in grapple pairing.
+- [ ] CI execution result still needs to appear for the workflow; until then, no build/test/PWA PASS is claimed.
+
+
 - [ ] Runtime-certify the new wakeup/jump state routing on multiple fighters; code routing is updated but this is not a visual PASS until the PWA is exercised.
 - [ ] Exercise real two-body grapples with different fighter pairs and record deliverer/receiver clip IDs, source, synchronized duration, and contact alignment.
 - [ ] Promote only exact/owner/baked grapple pairs to named moves; keep stand-ins visibly/provenance-marked until the matching receiver is captured.
