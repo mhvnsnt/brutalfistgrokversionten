@@ -23,6 +23,18 @@ describe('runtime animation routing', () => {
     assert.match(source, /heavyKick:\s*\['ROUNDHOUSEKICK'/);
   });
 
+  it('retires every non-current action on urgent combat transitions', () => {
+    assert.match(source, /a\.stop\(\);\s*a\.enabled\s*=\s*false;\s*a\.setEffectiveWeight\(0\)/);
+    assert.match(source, /nextAction\.reset\(\);/);
+    assert.match(source, /nextAction\.play\(\);/);
+  });
+
+  it('keeps explicit grapple receiver clips authoritative over locomotion routing', () => {
+    assert.match(source, /isThrowVictimClip\(inputKey\)/);
+    assert.match(source, /if \(state !== 'Walking'\) return requested \|\| state;/);
+    assert.match(source, /forcedPlaybackDurationSeconds/);
+  });
+
   it('keeps real grounded recovery clips in the certified lane', () => {
     assert.match(source, /WakeupRollForward:\s*\['LAZORFORWARDROLL'/);
     assert.match(source, /WakeupRollBack:\s*\['LAZORBACKROLL'/);
