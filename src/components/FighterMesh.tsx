@@ -21,7 +21,7 @@ import {
   type AnimationIntegrityReport,
 } from '../engine/combat/AnimationIntegrityGate';
 import { COMBAT_STATE_TO_SEMANTIC, SEMANTIC_STATE_ALIASES, inferSemanticStateFromClipName } from '../engine/retarget/SemanticStateAliases';
-import { clipAnimates, clipIsAuthoredPose, clipIsTeamCapture, clipKeepsFacing, clipStandsUpright, clipStartsStanding, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
+import { clipAnimates, clipIsTeamCapture, clipKeepsFacing, clipStandsUpright, clipStartsStanding, clipStrikesForward, slotOwnerFor } from '../engine/retarget/BakedMotionBank';
 import { clipsLabelledFor, isReceivingClip, labelRefuses } from '../engine/assets/moveLabels';
 import { isThrowVictimClip } from '../engine/combat/GrapplePairing';
 import { AnimationBridge } from '../../animation_bridge/retarget';
@@ -78,8 +78,6 @@ export interface FighterMeshProps {
   locomotionVelocity?: { forward: number; strafe: number };
   /** Live metres/second. Lets the walk cycle keep up with a dash. */
   groundSpeedRef?: { current: number };
-  /** Duration in seconds of the current two-body grapple beat. */
-  forcedPlaybackDurationSeconds?: number;
   /**
    * Hit-stop freeze: when true, the animation mixer is paused.
    * Set by GameBattleArena when a heavy attack lands.
@@ -161,9 +159,9 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   idle:              ['idle', 'Idle', 'neutral', 'Neutral', 'standing', 'Standing', 'stance', 'Stance', 'bind', 'T-pose', 'TPose', 'tpose', 'rest', 'Rest', 'combatIdle', 'CombatIdle', 'fightingStance', 'FightingStance', 'readyStance', 'ReadyStance'],
   Neutral:           ['idle', 'Idle', 'neutral', 'Neutral', 'standing', 'Standing', 'stance', 'Stance'],
   // ── Walk Forward ────────────────────────────────────────────────────────────
-  walk:              ['walk', 'Walk', 'walking', 'Walking', 'walkForward', 'WalkForward', 'walk_fwd', 'walk_forward', 'SBW_walk_fwd', 'T_walk_fwd', 'bf_walk_fwd', 'advance', 'approach'],
-  Walking:           ['walk', 'Walk', 'walking', 'Walking', 'walkForward', 'WalkForward'],
-  walkForward:       ['walkForward', 'WalkForward', 'walk', 'Walk', 'walking', 'Walking', 'forward', 'Forward', 'walk_fwd', 'walk_forward', 'SBW_walk_fwd', 'T_walk_fwd', 'bf_walk_fwd', 'advance', 'approach', 'movingForward'],
+  walk:              ['walk', 'Walk', 'walking', 'Walking', 'run', 'Run', 'walkForward', 'WalkForward', 'walk_fwd', 'SBW_walk_fwd', 'T_walk_fwd', 'bf_walk_fwd'],
+  Walking:           ['walk', 'Walk', 'walking', 'Walking', 'run', 'Run', 'walkForward', 'WalkForward'],
+  walkForward:       ['walkForward', 'WalkForward', 'walk', 'Walk', 'walking', 'Walking', 'forward', 'Forward', 'run', 'Run', 'walk_fwd', 'walk_forward', 'SBW_walk_fwd', 'T_walk_fwd', 'bf_walk_fwd', 'advance', 'approach', 'movingForward'],
   // ── Walk Backward ───────────────────────────────────────────────────────────
   walkBackward:      ['walkBack', 'WalkBack', 'walkBackward', 'WalkBackward', 'walk', 'Walk', 'backward', 'Backward', 'retreat', 'Retreat', 'walk_back', 'walk_bwd', 'SBW_walk_back', 'T_walk_back', 'bf_walk_back', 'movingBackward'],
   // ── Strafe ──────────────────────────────────────────────────────────────────
@@ -233,20 +231,9 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   KO:                ['ko', 'KO', 'knockout', 'Knockout', 'death', 'Death', 'fall', 'Fall', 'knockdown', 'Knockdown'],
   Crumple:           ['ko', 'KO', 'knockdown', 'Knockdown', 'fall', 'Fall', 'death', 'Death', 'crumple', 'Crumple'],
   // ── Wakeup ──────────────────────────────────────────────────────────────────
-  // Real Schwarzerblitz recovery clips are preferred over standing fallbacks.
-  WakeupTechRoll:    ['ROLLOUTRIGHT', 'ROLLOUT', 'rolloutRight', 'rollout', 'techRoll', 'TechRoll', 'roll', 'Roll', 'SBW_techroll', 'T_techroll'],
-  WakeupBackrise:    ['LAZORBACKROLL', 'lazorBackroll', 'BACKROLL', 'backrise', 'Backrise', 'getUp', 'GetUp', 'rollBack', 'RollBack', 'T_backrise'],
-  WakeupQuickStand:  ['WAKEUPANIMATION', 'KIP_UP', 'CORKSCREW_KIP_UP', 'getUp', 'GetUp', 'gettingUp', 'GettingUp', 'quickStand', 'QuickStand', 'idle', 'Idle', 'standing', 'Standing', 'T_quickstand'],
-  WakeupRollForward: ['ROLLOUTRIGHT', 'ROLLOUT', 'rolloutRight', 'rollout', 'LAZORFORWARDROLL', 'lazorForwardRoll', 'rollForward', 'RollForward', 'forwardRoll', 'ForwardRoll', 'ROLL_FORWARD', 'SBW_techroll'],
-  WakeupRollBack:    ['LAZORBACKROLL', 'lazorBackroll', 'ROLLOUT', 'rollout', 'backRoll', 'BackRoll', 'backrise', 'Backrise', 'BACKROLL', 'T_backrise'],
-  WakeupRollSide:    ['ROLLOUTRIGHT', 'ROLLOUT', 'rolloutRight', 'rollout', 'PRONEROTATION', 'sideRoll', 'SideRoll', 'rollSide', 'RollSide', 'SIDE_ROLL', 'techRoll', 'TechRoll'],
-  WakeupKipUp:       ['KIP_UP', 'CORKSCREW_KIP_UP', 'WAKEUPANIMATION', 'getUp', 'GettingUp'],
-  // Never fake a grounded attack with a standing jab. A dedicated source clip
-  // is used when present; otherwise this state remains a grounded recovery.
-  WakeupAttack:      ['wakeAttack', 'WakeAttack', 'getUpAttack', 'GetUpAttack', 'risingAttack', 'RisingAttack', 'wakeStrike', 'WakeStrike'],
-  GroundedFaceUp:    ['SUPINE', 'supine', 'groundedFaceUp', 'GroundedFaceUp', 'FALLING_FLAT_IMPACT', 'knockdown', 'Knockdown'],
-  GroundedFaceDown:  ['PRONE_HOLD', 'PRONEROTATION', 'PRONE', 'prone', 'groundedFaceDown', 'GroundedFaceDown', 'FALLING_FORWARD_DEATH', 'SUPINE', 'supine'],
-  GroundedRoll:      ['ROLLOUTRIGHT', 'ROLLOUT', 'rolloutRight', 'rollout', 'LAZORBACKROLL', 'LAZORFORWARDROLL', 'PRONEROTATION', 'roll', 'Roll', 'groundRoll', 'GroundRoll', 'techRoll', 'TechRoll'],
+  WakeupTechRoll:    ['techRoll', 'TechRoll', 'roll', 'Roll', 'rollForward', 'RollForward', 'forwardRoll', 'ForwardRoll', 'walkForward', 'WalkForward', 'walk', 'Walk', 'SBW_techroll', 'T_techroll'],
+  WakeupBackrise:    ['backrise', 'Backrise', 'getUp', 'GetUp', 'rollBack', 'RollBack', 'walkBackward', 'WalkBackward', 'walk', 'Walk', 'T_backrise'],
+  WakeupQuickStand:  ['quickStand', 'QuickStand', 'getUp', 'GetUp', 'gettingUp', 'GettingUp', 'idle', 'Idle', 'standing', 'Standing', 'T_quickstand'],
   // `wake` is reachable: MoveLibrary files clips like 'Getting Up', 'bf_wakeup'
   // and 'SBW_wakeup' under it. It had no list here, so one of those resolved
   // through the default instead of to a get-up.
@@ -257,11 +244,9 @@ const ANIMATION_ALIASES: Record<string, string[]> = {
   taunt:             ['taunt', 'Taunt', 'idle', 'Idle', 'victory', 'Victory'],
   intro:             ['intro', 'Intro', 'entrance', 'Entrance', 'idle', 'Idle'],
   // ── Run / Dash ──────────────────────────────────────────────────────────────
-  run:               ['run', 'Run', 'running', 'Running', 'sprint', 'Sprint', 'DRUNK_RUN_FORWARD', 'dash', 'Dash'],
-  runBackward:       ['runBackward', 'RunBackward', 'runningBackward', 'RunningBackward', 'backwardRun', 'BackwardRun', 'retreatRun', 'RetreatRun', 'runBack', 'RunBack', 'walkBackward', 'WalkBackward', 'walkBack', 'WalkBack'],
-  dash:              ['dash', 'Dash', 'dashForward', 'DashForward', 'run', 'Run', 'running', 'Running', 'sprint', 'Sprint', 'DRUNK_RUN_FORWARD', 'dash_forward'],
-  dashForward:       ['dashForward', 'DashForward', 'dash', 'Dash', 'run', 'Run', 'running', 'Running', 'sprint', 'Sprint', 'DRUNK_RUN_FORWARD', 'dash_forward'],
-  dashBackward:      ['dashBackward', 'DashBackward', 'dashBack', 'DashBack', 'backDash', 'BackDash', 'backdash', 'Backdash', 'runBackward', 'RunBackward', 'walkBackward', 'WalkBackward'],
+  run:               ['run', 'Run', 'running', 'Running', 'sprint', 'Sprint', 'dash', 'Dash', 'walkForward', 'WalkForward', 'walk', 'Walk', 'DRUNK_RUN_FORWARD'],
+  dash:              ['dash', 'Dash', 'dashForward', 'DashForward', 'run', 'Run', 'walkForward', 'WalkForward', 'dash_forward'],
+  dashForward:       ['dashForward', 'DashForward', 'dash', 'Dash', 'run', 'Run', 'walkForward', 'WalkForward', 'dash_forward'],
   // Real authored jump clips first. CROSS_JUMPS is a source clip but reads as
   // a jumping-jack loop, so it is a last-resort fallback rather than the normal
   // jump. World-space forward/back travel comes from LocomotionSystem.
@@ -299,7 +284,6 @@ const FADE_DURATIONS: Record<string, number> = {
   run:               0.060,
   dash:              0.050,
   dashForward:       0.050,
-  dashBackward:      0.050,
   jump:              0.040,
   jumpForward:       0.040,
   jumpBack:          0.040,
@@ -360,7 +344,7 @@ const LOOP_STATES = new Set([
   // knockdown replay its fall instead of holding the final pose.
   'idle', 'Neutral', 'walk', 'walkForward', 'walkBackward', 'Walking',
   'strafeLeft', 'strafeRight', 'sidestepLeft', 'sidestepRight',
-  'run', 'runBackward', 'dash', 'dashForward', 'dashBackward', 'crouch',
+  'run', 'dash', 'dashForward', 'crouch',
   'Backdashing',
 ]);
 
@@ -369,34 +353,12 @@ const WAKE_STATES = new Set(['WakeupTechRoll', 'WakeupBackrise', 'WakeupQuickSta
 const LOCO_RATE_STATES = new Set([
   'walk', 'walkForward', 'walkBackward', 'Walking',
   'strafeLeft', 'strafeRight', 'sidestepLeft', 'sidestepRight',
-  'run', 'runBackward', 'dash', 'dashForward', 'dashBackward', 'Backdashing', 'crouchWalk',
+  'run', 'dash', 'dashForward', 'Backdashing', 'crouchWalk',
 ]);
-
-/** Runtime-safe baseline clips. Promote new clips here only after PWA visual certification. */
-const CERTIFIED_RUNTIME_CLIPS: Record<string, string[]> = {
-  walk: ['WALK', 'SHAZWALK', 'WALKFAST', 'LOCO_LIGHT', 'LOCO_STALK'],
-  walkForward: ['WALK', 'SHAZWALK', 'WALKFAST', 'LOCO_LIGHT', 'LOCO_STALK'],
-  crouch: ['STANCE_CROUCH', 'CROUCHING', 'SHAZLOWRUSH_CROUCH'],
-  crouchWalk: ['CROUCH_WALK_FORWARD', 'SHAZLOWRUSH_CROUCH'],
-  strafeRight: ['SIDESTEPF', 'SIDESTEPFAST', 'SIDESTEP', 'SIDESTEPMEDIUM'],
-  strafeLeft: ['GINGA_SIDEWAYS_2', 'LOCO_PROWL'],
-  lightAttack: ['TIGERQUICKPUNCH', 'GRAFQUICKJAB', 'TIGERDYNAMOPUNCH_FIX', 'TIGERDYNAMOPUNCH', 'HIGHPUNCH'],
-  heavyAttack: ['GYAKUZUKI', 'GRAFSURPRISEPUNCH', 'GRAFSURPRISEPUNCHLONGER'],
-  lightKick: ['QUICKKICK'],
-  heavyKick: ['ROUNDHOUSEKICK', 'TIGER_HEAVYKICK', 'AXEKICK', 'GRAFKNEEASSAULT'],
-  crouchLightAttack: ['GRAFSURPRISEPUNCHLOW', 'GRAFSURPRISEPUNCHLOW2'],
-  crouchHeavyAttack: ['CROUCHINGKICK', 'TIGERKNEEBASHSLOW', 'GRAFPUSHINGKICK'],
-  WakeupRollForward: ['LAZORFORWARDROLL', 'ROLLOUT', 'ROLLOUTRIGHT'],
-  WakeupRollBack: ['LAZORBACKROLL', 'ROLLOUT'],
-  WakeupRollSide: ['ROLLOUTRIGHT', 'ROLLOUT'],
-  WakeupKipUp: ['WAKEUPANIMATION'],
-  GroundedFaceUp: ['SUPINE'],
-};
 
 const ATTACK_STATES = new Set([
   'lightAttack', 'heavyAttack', 'lightKick', 'heavyKick',
-  'crouchLightAttack', 'crouchHeavyAttack', 'jumpAttack', 'runAttack',
-  'light', 'heavy', 'Startup', 'Active', 'CommandThrow', 'grapple', 'overdrive', 'finisher',
+  'light', 'heavy', 'Startup', 'Active', 'CommandThrow',
 ]);
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -477,42 +439,9 @@ function resolveClipName(
    * named after a state would jump the queue and skip every check.
    */
   const isVocabulary = key in COMBAT_STATE_TO_SEMANTIC || key in SEMANTIC_STATE_ALIASES;
-  const clipsByState = buildClipsByState(actions);
+  if (!isVocabulary && actions[key] && !labelRefuses(key)) return key;
 
-  /**
-   * EXPLICIT CLIP NAMES ARE NOT IMMUNE TO A BROKEN CAPTURE.
-   *
-   * A named clip used to return immediately here, bypassing the evidence gates
-   * used by the semantic resolver. That allowed frozen/inverted/team captures
-   * to play simply because a caller knew the filename.
-   *
-   * Real grapple receivers are the intentional exception: starting down or
-   * leaving the floor is part of the victim animation. They still must animate,
-   * be authored, be single-body, and not be labelled broken.
-   *
-   * If a named solo clip fails, fall through to the measured semantic/alias pool
-   * so the move gets healthy motion instead of a frozen or malformed pose.
-   */
-  if (!isVocabulary && actions[key] && !labelRefuses(key)) {
-    const explicitIsReceiver = isThrowVictimClip(key);
-    const inferred = inferSemanticStateFromClipName(key) ?? '';
-    const explicitUsable = explicitIsReceiver
-      ? clipAnimates(key, actions[key].getClip()) &&
-        clipIsAuthoredPose(key) &&
-        !clipIsTeamCapture(key)
-      : clipAnimates(key, actions[key].getClip()) &&
-        clipIsAuthoredPose(key) &&
-        !clipIsTeamCapture(key) &&
-        clipStandsUpright(key) &&
-        clipStartsStanding(key) &&
-        (!/^attack/.test(inferred) ||
-          (!isReceivingClip(key) && clipStrikesForward(key) && clipKeepsFacing(key)));
-    if (explicitUsable) return key;
-    console.warn(
-      '[FighterMesh] Explicit clip "' + key +
-      '" failed live animation gates; routing to a measured healthy alternative.',
-    );
-  }
+  const clipsByState = buildClipsByState(actions);
 
   /**
    * A FROZEN CLIP IS NEVER THE ANSWER IF ANYTHING ELSE MATCHES.
@@ -549,28 +478,25 @@ function resolveClipName(
   // T-pose gate at 0.49 against 0.50, and two taunts that play lying flat
   // passed everything but the eye. Marking a clip BROKEN in the Move
   // Library takes it out of the game.
-  const GROUND_HOLD_CLIPS = new Set(['SUPINE', 'PRONE', 'PRONE_HOLD', 'GROUNDED_IDLE', 'GROUND_IDLE']);
-  const usable = (c: string, forAttack = true, allowGroundedStart = false) =>
+  const usable = (c: string, forAttack = true) =>
     !labelRefuses(c)
-    // SUPINE is intentionally a frozen hold: zero moving bones is correct here,
-    // because "do nothing" must actually leave the fighter lying on the mat.
-    && (clipAnimates(c, actions[c]?.getClip()) || (allowGroundedStart && GROUND_HOLD_CLIPS.has(c.toUpperCase())))
-    && clipIsAuthoredPose(c)
+    && clipAnimates(c)
+    // A CAPTURE OF THREE WRESTLERS IS NOT A MOVE ONE MAN CAN DO. Twelve of
+    // these are in the game, eight of them filling the IDLE slot, and a
+    // fighter playing one performs his partner's and his victim's motion at
+    // the same time. That is the weird twisting, and no rig work fixes it.
     && !clipIsTeamCapture(c)
-    // Grounded recovery is its own evidence lane: a prone hold/roll/get-up
-    // deliberately starts off the feet and must not be rejected by standing gates.
-    && (allowGroundedStart || (clipStandsUpright(c) && clipStartsStanding(c)))
+    && clipStandsUpright(c)
+    && clipStartsStanding(c)
+    // A CLIP HE TAGGED AS A REACTION IS NEVER AN ATTACK. This is the one
+    // question no measurement here can answer — a thrown body extends a
+    // limb forward exactly like a punching one, which is why filtering all
+    // 366 clips on reach, plant, facing and uprightness still returns
+    // SHARKNADO_REACTION and GRAFTHROWREACTION among the "punches".
     && (!forAttack || (!isReceivingClip(c) && clipStrikesForward(c) && clipKeepsFacing(c)));
-  const GROUNDED_ANIMATION_STATES = new Set([
-    'GroundedFaceUp', 'GroundedFaceDown', 'GroundedRoll',
-    'WakeupTechRoll', 'WakeupBackrise', 'WakeupQuickStand',
-    'WakeupRollForward', 'WakeupRollBack', 'WakeupRollSide',
-    'WakeupKipUp', 'WakeupAttack', 'wake',
-  ]);
-  const groundedState = GROUNDED_ANIMATION_STATES.has(key);
   const attackSlot = /^attack|finisher|overdrive/.test(COMBAT_STATE_TO_SEMANTIC[key] ?? key);
   const pick = (test: (c: string) => boolean): string | undefined =>
-    availableClips.find((c) => test(c) && usable(c, attackSlot, groundedState));
+    availableClips.find((c) => test(c) && usable(c, attackSlot)) ?? availableClips.find(test);
 
   /**
    * ALIAS ORDER IS PRIORITY, AND IT WAS BEING IGNORED.
@@ -586,18 +512,20 @@ function resolveClipName(
    * bank. Walking the aliases in order instead is what makes a preference
    * mean anything.
    */
-  const byAliasOrder = (aliases: string[], allowGroundedStart = groundedState): string | undefined => {
-    for (const alias of aliases) {
-      const hit = availableClips.find(
-        (c) => c.toLowerCase() === alias.toLowerCase() && usable(c, attackSlot, allowGroundedStart),
-      );
-      if (hit) return hit;
+  const byAliasOrder = (aliases: string[]): string | undefined => {
+    for (const pass of [true, false]) {
+      for (const alias of aliases) {
+        const hit = availableClips.find(
+          (c) => c.toLowerCase() === alias.toLowerCase() && (!pass || usable(c, attackSlot)),
+        );
+        if (hit) return hit;
+      }
     }
     return undefined;
   };
 
   for (const want of preferred) {
-    if (actions[want] && usable(want, attackSlot, groundedState)) return want;
+    if (actions[want] && usable(want, attackSlot)) return want;
     const ci = pick((c) => c.toLowerCase() === want.toLowerCase());
     if (ci) return ci;
   }
@@ -605,16 +533,8 @@ function resolveClipName(
   const bridged = AnimationBridge.getClipForCombatState(key, clipsByState);
   if (bridged) {
     const clipName = Object.keys(actions).find((n) => actions[n].getClip() === bridged) ?? bridged.name;
-    // The bridge is a routing hint, not a bypass around measured clip safety.
-    // A stale bridge entry must not resurrect a frozen, inverted, team-capture,
-    // receiver, or non-striking attack just because it has a familiar name.
-    if (actions[clipName] && usable(clipName, attackSlot, groundedState)) return clipName;
+    if (actions[clipName]) return clipName;
   }
-
-  // Certified runtime baselines outrank unverified style-intake clips.
-  // Static retarget measurements are not visual certification.
-  const certified = byAliasOrder(CERTIFIED_RUNTIME_CLIPS[key] ?? []);
-  if (certified) return certified;
 
   const semanticState = COMBAT_STATE_TO_SEMANTIC[key];
   if (semanticState) {
@@ -626,14 +546,14 @@ function resolveClipName(
     // clip beats the bake's heuristic, which is the entire reason the Move
     // Library has a "where does it go?" field.
     for (const picked of clipsLabelledFor(semanticState)) {
-      if (actions[picked] && usable(picked, attackSlot, groundedState)) return picked;
+      if (actions[picked] && usable(picked, attackSlot)) return picked;
     }
     // THE BAKE'S PICK STILL HAS TO BE PLAYABLE. This returned the slot
     // owner unchecked, so a clip the gates refuse everywhere else could
     // still reach the screen by owning a slot.
     const owner = slotOwnerFor(semanticState);
-    if (owner && actions[owner] && usable(owner, attackSlot, groundedState)) return owner;
-    if (actions[semanticState] && usable(semanticState, attackSlot, groundedState)) return semanticState;
+    if (owner && actions[owner] && usable(owner, attackSlot)) return owner;
+    if (actions[semanticState] && usable(semanticState, attackSlot)) return semanticState;
     const aliases = SEMANTIC_STATE_ALIASES[semanticState] ?? [semanticState];
     const semanticFound = byAliasOrder(aliases);
     if (semanticFound) return semanticFound;
@@ -737,7 +657,6 @@ function FighterMeshInner({
   attackDurationSeconds,
   locomotionVelocity,
   groundSpeedRef,
-  forcedPlaybackDurationSeconds,
   hitStopActive = false,
   onRigDiagnostic,
   onBoneHitboxReady,
@@ -762,7 +681,6 @@ function FighterMeshInner({
   attackDurationSeconds?: number;
   locomotionVelocity?: { forward: number; strafe: number };
   groundSpeedRef?: { current: number };
-  forcedPlaybackDurationSeconds?: number;
   hitStopActive?: boolean;
   onRigDiagnostic?: (report: RigDiagnosticReport) => void;
   onBoneHitboxReady?: (system: BoneHitboxSystem) => void;
@@ -959,7 +877,6 @@ function FighterMeshInner({
     }
 
     const inputKey = animation ?? state;
-    const isAttack = ATTACK_STATES.has(inputKey);
     let clipName = resolveClipName(
       inputKey,
       actions,
@@ -971,31 +888,11 @@ function FighterMeshInner({
     // which is the whole difference between a moveset and four swings.
     // Refused clips are still refused: his BROKEN verdict and the team-capture
     // gate both apply, so this can never smuggle one back in.
-    if (
-      isAttack &&
-      attackClip &&
-      actions[attackClip] &&
-      // A move-library clip is a request, not visual certification. Only allow
-      // it to override the live baseline after the clip has been promoted to
-      // the runtime-certified lane for this exact combat state.
-      (CERTIFIED_RUNTIME_CLIPS[inputKey]?.some(n => n.toLowerCase() === attackClip.toLowerCase()) ?? false) &&
-      !labelRefuses(attackClip) &&
-      clipAnimates(attackClip, actions[attackClip]?.getClip()) &&
-      clipIsAuthoredPose(attackClip) &&
-      !clipIsTeamCapture(attackClip) &&
-      // The move catalog/state machine already selected this clip as the
-      // command's authored animation. Do not run locomotion-style
-      // "starts standing/upright" gates over a known-good kick or punch:
-      // a real kick can begin with the knee lifted or the torso pitched.
-      // Those gates were the regression that replaced the default strikes
-      // with unrelated fallback clips.
-      (!isAttack || (!isReceivingClip(attackClip) && clipStrikesForward(attackClip) && clipKeepsFacing(attackClip)))
-    ) {
-      // Explicit command clips still have to pass the same measured gates as
-      // aliases. Commands choose a move; they do not certify a broken one.
+    if (attackClip && actions[attackClip] && !labelRefuses(attackClip) && !clipIsTeamCapture(attackClip)) {
       clipName = attackClip;
     }
 
+    const isAttack = ATTACK_STATES.has(inputKey);
     if (isAttack) {
       const profile = ATTACK_ROOT_MOTION_PROFILES[inputKey];
       if (profile?.hasRootMotion) {
@@ -1083,39 +980,23 @@ function FighterMeshInner({
       // the mixer was stopped and we must recover.
       const anyActionRunning = Object.values(normalized.actions).some(a => a?.isRunning());
       if (!anyActionRunning) {
-        // Mixer was stopped by FIRST_FRAME_DISPLACEMENT. Reuse the EXACT clip
-        // already selected above. Re-resolving here used to discard an authored
-        // attackClip after the integrity probe stopped the mixer, so the hitbox
-        // could register a strike while the body visibly played another/default
-        // motion.
-        const recoverClip = clipName;
+        // Mixer was stopped by FIRST_FRAME_DISPLACEMENT — recover ONLY the requested clip.
+        // Never silently substitute idle for a missing combat semantic state.
+        const recoverClip = resolveClipName(
+          inputKey,
+          normalized.actions,
+          stanceKit ? stancePreferences(stanceKit, inputKey) : [],
+        );
         if (recoverClip && normalized.actions[recoverClip]) {
           const recoverAction = normalized.actions[recoverClip];
           const isRecoverLoop = LOOP_STATES.has(inputKey);
           recoverAction.setLoop(isRecoverLoop ? THREE.LoopRepeat : THREE.LoopOnce, isRecoverLoop ? Infinity : 1);
           recoverAction.clampWhenFinished = !isRecoverLoop;
-          const recoverDuration = Math.max(0.001, recoverAction.getClip().duration);
-          const recoverAttackWindow = isAttack && attackDurationSeconds && attackDurationSeconds > 0 ? attackDurationSeconds : null;
-          const recoverJumpWindow = ['jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey) ? 0.55
-            : inputKey === 'jumpAttack' ? 0.65 : null;
-          const recoverDownWindow = ['knockdown', 'Knockdown', 'ko', 'KO'].includes(inputKey) ? 1.7 : null;
-          const recoverGrappleWindow = forcedPlaybackDurationSeconds && forcedPlaybackDurationSeconds > 0
-            ? forcedPlaybackDurationSeconds : null;
-          const recoverWakeWindow = inputKey === 'WakeupQuickStand' || inputKey === 'wake' ? 1.15
-            : inputKey === 'WakeupTechRoll' || inputKey === 'WakeupBackrise' ? 0.55 : null;
-          recoverAction.setEffectiveTimeScale(
-            recoverAttackWindow ? attackPlaybackRate(recoverDuration, recoverAttackWindow)
-              : recoverGrappleWindow ? recoverDuration / recoverGrappleWindow
-              : recoverJumpWindow ? jumpPlaybackRate(recoverDuration, recoverJumpWindow)
-              : recoverDownWindow ? knockdownPlaybackRate(recoverDuration, recoverDownWindow)
-              : recoverWakeWindow ? knockdownPlaybackRate(recoverDuration, recoverWakeWindow)
-              : 1,
-          );
           recoverAction.reset().play();
           activeClipRef.current = recoverClip;
           committedClipRef.current = recoverClip;
           lastCrossfadeTimeRef.current = performance.now() / 1000;
-          console.log(`[FighterMesh] 🔄 Mixer recovered after integrity test — playing selected clip "${recoverClip}" for "${integrityInput.characterName}"`);
+          console.log(`[FighterMesh] 🔄 Mixer recovered after integrity test — playing "${recoverClip}" for "${integrityInput.characterName}"`);
         } else if (inputKey !== 'idle' && inputKey !== 'Neutral') {
           console.warn(
             `[FighterMesh] ⚠️ MISSING_CLIP after integrity recovery: combatState="${inputKey}" — not substituting idle`,
@@ -1222,13 +1103,8 @@ function FighterMeshInner({
     const attackWindow = isAttack && attackDurationSeconds && attackDurationSeconds > 0
       ? attackDurationSeconds
       : null;
-    const jumpWindow = ['jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey) ? 0.55
-      : inputKey === 'jumpAttack' ? 0.65
-      : null;
+    const jumpWindow = ['jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey) ? 0.55 : null;
     const downWindow = ['knockdown', 'Knockdown', 'ko', 'KO'].includes(inputKey) ? 1.7 : null;
-    const grappleWindow = forcedPlaybackDurationSeconds && forcedPlaybackDurationSeconds > 0
-      ? forcedPlaybackDurationSeconds
-      : null;
     const wakeWindow = inputKey === 'WakeupQuickStand' || inputKey === 'wake' ? 1.15
       : inputKey === 'WakeupTechRoll' || inputKey === 'WakeupBackrise' ? 0.55
       : null;
@@ -1238,7 +1114,6 @@ function FighterMeshInner({
     // A knockdown is the exception: the body has to reach the ground.
     nextAction.setEffectiveTimeScale(
       attackWindow ? attackPlaybackRate(clipDuration, attackWindow)
-        : grappleWindow ? clipDuration / grappleWindow
         : jumpWindow ? jumpPlaybackRate(clipDuration, jumpWindow)
         : downWindow ? knockdownPlaybackRate(clipDuration, downWindow)
         : wakeWindow ? knockdownPlaybackRate(clipDuration, wakeWindow)
@@ -1257,19 +1132,9 @@ function FighterMeshInner({
       const a = actions[name];
       if (!a || a === nextAction || seen.has(a)) continue;
       seen.add(a);
-      // Locomotion is a single authoritative pose, not a stack of fading
-      // poses. Rapid walk↔idle/turn state publication used to leave several
-      // old locomotion actions alive at once; their weighted poses visibly
-      // produced the "double/ghost fighter" while the world-space speed was
-      // otherwise correct. Combat can blend; locomotion must hand off cleanly.
-      const previousKey = inputKeyRef.current;
-      const previousWasLocomotion = LOCO_RATE_STATES.has(previousKey) || LOOP_STATES.has(previousKey);
-      const nextIsLocomotion = LOCO_RATE_STATES.has(inputKey) || LOOP_STATES.has(inputKey);
-      if (nextIsLocomotion && previousWasLocomotion) {
-        a.stop();
-        a.enabled = false;
-        a.setEffectiveWeight(0);
-      } else if (isUrgent || (inputKey !== 'idle' && inputKey !== 'Neutral')) {
+      // Hard-cut idle off whenever a real combat/locomotion clip plays so
+      // breathing-idle cannot win the blend and leave a "living statue".
+      if (isUrgent || (inputKey !== 'idle' && inputKey !== 'Neutral')) {
         a.stop();
         a.enabled = false;
         a.setEffectiveWeight(0);
@@ -1434,7 +1299,6 @@ export function FighterMesh({
   attackDurationSeconds,
   locomotionVelocity,
   groundSpeedRef,
-  forcedPlaybackDurationSeconds,
   hitStopActive = false,
   onRigDiagnostic,
   onBoneHitboxReady,
@@ -1467,7 +1331,6 @@ export function FighterMesh({
         fightingStyle={fightingStyle}
         locomotionVelocity={locomotionVelocity}
         groundSpeedRef={groundSpeedRef}
-        forcedPlaybackDurationSeconds={forcedPlaybackDurationSeconds}
         hitStopActive={hitStopActive}
         onRigDiagnostic={onRigDiagnostic}
         onBoneHitboxReady={onBoneHitboxReady}
