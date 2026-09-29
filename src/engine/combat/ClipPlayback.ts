@@ -14,7 +14,7 @@
 import { playbackRateFor, authoredStrideSpeed } from '../motion/DistanceMatching.ts';
 
 /** Fallback pace for any clip whose authored stride has not been measured. */
-export const WALK_PLAYBACK_MPS = 0.90;
+export const WALK_PLAYBACK_MPS = 0.225;
 
 /**
  * A NUDGE IS 12%, NOT 45%.
@@ -117,11 +117,12 @@ export function knockdownPlaybackRate(clipDuration: number, downSeconds = 1.7): 
  * manifest is loaded.
  */
 export function locomotionPlaybackRate(speedMps: number, clipName?: string | null): number {
-  if (!(speedMps > 0.2)) return 1;
+  if (!(speedMps > 0.02)) return 1;
   const measured = authoredStrideSpeed(clipName);
   if (measured !== null) return playbackRateFor(clipName, speedMps);
-  // Unmeasured clips stay authored-speed at the deliberate walk tier. Dash/run
-  // is different: its engine tier is intentionally faster, so an unmeasured
-  // locomotion clip must advance by the same tier ratio or its feet visibly lag.
-  return speedMps > WALK_PLAYBACK_MPS * 1.15 ? speedMps / WALK_PLAYBACK_MPS : 1;
+  // Unmeasured locomotion still has to follow the engine clock. The old fallback
+  // left every unmeasured clip at 1x, so after reducing world speed the feet would
+  // cycle several times too fast. Scale directly from the new authored walk tier;
+  // run/dash naturally lands above it while remaining below 1x at the new 25% tier.
+  return Math.max(0.1, Math.min(1.5, speedMps / WALK_PLAYBACK_MPS));
 }
