@@ -101,8 +101,7 @@ export function diagnoseAnimation(e: AnimationEvidence): AnimationDiagnosis {
     f === 'UNRESOLVED_TRACKS' || f === 'LOWER_BODY_UNCREDIBLE' || f === 'LOOP_UNSAFE'
   );
   const canRoute = faults.every(f =>
-    f === 'WRONG_SEMANTIC' || f === 'TURN_AWAY' || f === 'STARTS_DOWN' ||
-    f === 'TEAM_CAPTURE'
+    f === 'WRONG_SEMANTIC' || f === 'TURN_AWAY' || f === 'STARTS_DOWN'
   );
 
   let repairClass: AnimationDiagnosis['repairClass'] = 'KEEP';
