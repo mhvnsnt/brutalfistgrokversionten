@@ -372,6 +372,36 @@ while ((Date.now() - t0) / 1000 < SECONDS) {
   const [label, fn] = SCRIPT[beat % SCRIPT.length];
   await fn();
   await page.waitForTimeout(320);
+
+  // Read the same mixer-owned animation ledger the runtime exposes. This is
+  // deliberately post-settle: a legitimate crossfade may have two actions
+  // for a few frames, but a persistent second locomotion owner is the visual
+  // double/ghost-body failure we are trying to catch.
+  const routeSample = await page.evaluate(() => {
+    const rigs = window.__BF_ANIM ? Object.entries(window.__BF_ANIM) : [];
+    const samples = rigs.map(([rig, probe]) => {
+      try {
+        const r = probe();
+        return {
+          rig,
+          active: r?.active ?? null,
+          distinctActions: Number(r?.distinctActions ?? 0),
+          totalWeight: Number(r?.totalWeight ?? 0),
+          rows: Array.isArray(r?.rows) ? r.rows.map((x) => x.clip) : [],
+        };
+      } catch { return null; }
+    }).filter(Boolean);
+    return samples;
+  });
+  const routeLedger = (window.__PT = window.__PT || {}).routing || ((window.__PT.routing = {
+    samples: [], byBeat: [], locomotionMultiOwner: 0,
+  }));
+  routeLedger.samples.push(...routeSample);
+  routeLedger.byBeat.push({ beat, label, samples: routeSample });
+  if (routeSample.some((r) => r.distinctActions > 1)) {
+    routeLedger.locomotionMultiOwner++;
+  }
+
   if (beat % SCRIPT.length === 0) await shot(page, `play-${String(beat).padStart(2, '0')}`);
   beat++;
 }
@@ -387,6 +417,18 @@ const ANIM = await page.evaluate(() => {
   return { started: a.started, finished: a.finished, cutCount: a.cut.length, cuts: a.cut.slice(-10), clips: clips.slice(0, 40), hooked: a.hooked };
 });
 const INP = await page.evaluate(() => (window.__bfInputStats ? window.__bfInputStats() : null));
+const ROUTING = await page.evaluate(() => {
+  const r = (window.__PT || {}).routing || {};
+  const samples = Array.isArray(r.samples) ? r.samples : [];
+  const multi = samples.filter((x) => Number(x.distinctActions) > 1);
+  const activeCounts = samples.map((x) => Number(x.distinctActions) || 0);
+  return {
+    samples: samples.length,
+    multiOwnerSamples: multi.length,
+    maxDistinctActions: activeCounts.length ? Math.max(...activeCounts) : 0,
+    recent: samples.slice(-12),
+  };
+});
 const S = await page.evaluate(() => {
   const s = window.__PT || {};
   const h = (s.stepHist || []).slice().sort((a, b) => a - b);
@@ -427,6 +469,15 @@ if (INP) {
   console.log(`\nINPUT LEDGER      : unavailable (never reached the arena)`);
 }
 if (S.instrErr) console.log(`instrument error  : ${S.instrErr}`);
+
+console.log(`\nRUNTIME ROUTING LEDGER`);
+console.log(`  mixer samples    : ${ROUTING.samples}`);
+console.log(`  >1 action samples: ${ROUTING.multiOwnerSamples}`);
+console.log(`  max actions      : ${ROUTING.maxDistinctActions}`);
+for (const r of ROUTING.recent) {
+  console.log(`    ${r.rig}: active=${r.active ?? 'NONE'} actions=${r.distinctActions} weight=${r.totalWeight} [${r.rows.join(', ')}]`);
+}
+
 const uniq = [...new Set(failed)];
 if (ANIM && ANIM.hooked) {
   console.log(`\nDID THE MOVE PLAY ALL THE WAY THROUGH?  (event-based -- frame rate cannot hide this)`);
