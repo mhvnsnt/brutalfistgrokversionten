@@ -887,7 +887,24 @@ function FighterMeshInner({
       stanceKit ? stancePreferences(stanceKit, inputKey) : [],
     ) as string | null;
 
-    // attackClip is applied only after the same measured attack gates used by semantic resolution below.\n    // This prevents generated per-fighter variety from re-introducing a broken, backward,\n    // receiver-side, frozen, or airborne clip into a grounded attack slot.\n    // The authored clip remains preferred when it passes; otherwise the safe semantic owner wins.\n
+    // Explicit per-fighter animation is allowed to add variety, but it must pass
+    // the same live safety contract as a semantic attack. Keep this gate HERE,
+    // where attackClip is in scope; resolveClipName is intentionally pure.
+    const attackSlot = ATTACK_STATES.has(inputKey)
+      || /^(attack|finisher|overdrive)/.test(COMBAT_STATE_TO_SEMANTIC[inputKey] ?? inputKey);
+    const explicitAttackUsable = (clip: string) =>
+      !!actions[clip]
+      && !labelRefuses(clip)
+      && clipAnimates(clip)
+      && !clipIsTeamCapture(clip)
+      && clipStandsUpright(clip)
+      && clipStartsStanding(clip)
+      && (!attackSlot || (!isReceivingClip(clip) && clipStrikesForward(clip) && clipKeepsFacing(clip)));
+
+    if (attackClip && explicitAttackUsable(attackClip)) {
+      clipName = attackClip;
+    }
+
 
     const isAttack = ATTACK_STATES.has(inputKey);
     if (isAttack) {
