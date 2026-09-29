@@ -1894,6 +1894,10 @@ if (report.rejectedOwners.length) {
   console.log('    ' + report.rejectedOwners.join(', '));
 }
 console.log(`  kept airborne        ${report.airborne} clip(s) (peak lift over ${AIRBORNE_PEAK_M * 100} cm)`);
+console.log(`  LIMB COHERENCE       ${report.limbCoherence.length} clip(s) with loose-limb signatures; recorded for repair, not blindly rejected`);
+if (report.limbCoherence.length) {
+  console.log('    ' + report.limbCoherence.slice(0, 12).map((x) => `${x.name}: ${x.findings.map((f) => f.chain).join(',')}`).join(' | '));
+}
 // NAME THE CLIPS THAT STILL HOVER. A clip the offset could not bring down is
 // not a grounding problem, it is a pose authored at the wrong height, and it
 // must not quietly become somebody's stance — the runtime refuses it, and
