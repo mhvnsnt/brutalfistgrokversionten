@@ -6,7 +6,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import {
   markGrapplePairs, receiverClipFor, isThrowVictimClip, resetGrapplePairingForTest, pairPlaybackRate,
 } from './GrapplePairing.ts';
-import { NAMED_GRAPPLE_BINDINGS, pairTiming, namedGrappleBinding } from './NamedGrappleBindings.ts';
+import { NAMED_GRAPPLE_BINDINGS, DELIVERER_ONLY_CAPTURES, pairTiming, namedGrappleBinding } from './NamedGrappleBindings.ts';
 import { BRUTAL_FIST_FULL_CATALOG } from '../BrutalFistMoveCatalog.ts';
 
 /**
@@ -103,15 +103,76 @@ describe('the owner\'s named grapples are bound to real clips, or honestly MISSI
     });
   }
 
-  it('the real pairs are Flying Headbutt, Deadlift German and Chainsnatcher (both stand-ins)', () => {
+  it('the real pairs are Flying Headbutt, Getbackk (exact) and Deadlift German, Chainsnatcher (stand-ins)', () => {
     const real = Object.values(NAMED_GRAPPLE_BINDINGS).filter((b) => b.status === 'REAL_PAIR').map((b) => b.moveKey).sort();
-    assert.deepEqual(real, ['chainsnatcher', 'deadliftGerman', 'flyingHeadbutt']);
+    assert.deepEqual(real, ['chainsnatcher', 'deadliftGerman', 'flyingHeadbutt', 'getbackk']);
     assert.equal(NAMED_GRAPPLE_BINDINGS.deadliftGerman.fidelity, 'stand_in');
     assert.equal(NAMED_GRAPPLE_BINDINGS.chainsnatcher.fidelity, 'stand_in');
     assert.equal(NAMED_GRAPPLE_BINDINGS.flyingHeadbutt.fidelity, 'exact');
+    assert.equal(NAMED_GRAPPLE_BINDINGS.getbackk.fidelity, 'exact');
   });
 
   it('the victim-only halves the bake already knew are still victims', () => {
     assert.equal(isThrowVictimClip('BACKBREAKER_REACTION'), true);
+  });
+});
+
+describe('Getbackk: exact two-body pair from the owner-supplied reference capture', () => {
+  beforeEach(() => { resetGrapplePairingForTest(); markGrapplePairs(BAKED); });
+  const b = NAMED_GRAPPLE_BINDINGS.getbackk;
+
+  it('binds GETBACKK + GETBACKK__RECV, replacing the F5 deliverer-only stand-in', () => {
+    assert.equal(b.status, 'REAL_PAIR');
+    assert.equal(b.deliverer, 'GETBACKK');
+    assert.equal(b.receiver, 'GETBACKK__RECV');
+    assert.notEqual(b.deliverer, 'F5');
+    const pick = receiverClipFor('GETBACKK', { labels });
+    assert.deepEqual([pick?.receiver, pick?.source], ['GETBACKK__RECV', 'baked']);
+    assert.deepEqual(BAKED.GETBACKK.pairedWith, ['GETBACKK__RECV']);
+    assert.equal(BAKED.GETBACKK__RECV.receives, true);
+    assert.equal(isThrowVictimClip('GETBACKK__RECV'), true);
+    assert.equal(isThrowVictimClip('GETBACKK'), false);
+    // the catalog routes the move to the new deliverer before the old F5 fallback
+    const aliases = BRUTAL_FIST_FULL_CATALOG.getbackk.animationAliases;
+    assert.ok(aliases.indexOf('GETBACKK') >= 0 && aliases.indexOf('GETBACKK') < aliases.indexOf('F5'));
+  });
+
+  it('both halves share one take: same duration, same key clock, no NaN', () => {
+    const t = pairTiming(BAKED.GETBACKK.dur, BAKED.GETBACKK__RECV.dur);
+    assert.equal(t.ratio, 1);
+    const a = JSON.parse(readFileSync('public/motion/GETBACKK.json', 'utf8'));
+    const r = JSON.parse(readFileSync('public/motion/GETBACKK__RECV.json', 'utf8'));
+    assert.equal(a.keys.length, r.keys.length);
+    assert.deepEqual(a.keys.map((k: any) => k.t), r.keys.map((k: any) => k.t));
+    for (const c of [a, r]) {
+      assert.ok(c.dur > 6 && c.dur < 7.5, `dur ${c.dur}`);
+      assert.doesNotMatch(JSON.stringify(c), /NaN|Infinity|null/);
+      for (const k of c.keys) assert.ok(Object.keys(k.bones).length >= 12, 'every key drives the body');
+    }
+    for (const c of ['GETBACKK', 'GETBACKK__RECV']) {
+      assert.ok(existsSync(`public/motion/baked/${c}.json`) && existsSync(`public/motion/baked/${c}.json.zst`));
+    }
+  });
+
+  it('records the third-party provenance and every interpolated gap (none longer than 6 frames)', () => {
+    for (const c of ['GETBACKK', 'GETBACKK__RECV']) {
+      const p = SOURCE[c].provenance;
+      assert.equal(p.origin, 'AUTHORED_CAPTURE');
+      assert.equal(p.synthetic, false);
+      assert.equal(p.licenseClass, 'owner-supplied reference capture (third-party footage)');
+      assert.equal(p.sourceVideo.originalFootage, 'third-party TikTok (@mackeymcqui)');
+      assert.match(p.sourceVideo.supplied, /owner-supplied reference video/);
+      for (const g of p.interpolatedGaps) assert.ok(g.frames >= 1 && g.frames <= 6, JSON.stringify(g));
+      assert.ok(SOURCE[c].coverFrac >= 0.9, `${c} coverage ${SOURCE[c].coverFrac}`);
+    }
+    assert.equal(SOURCE.GETBACKK.pairedWith, 'GETBACKK__RECV');
+    assert.match(b.note, /@mackeymcqui/);
+    assert.match(b.note, /owner must confirm/);
+  });
+
+  it('F5 stays a deliverer-only capture and never borrows a stand-in victim', () => {
+    assert.ok(DELIVERER_ONLY_CAPTURES.F5);
+    assert.equal(receiverClipFor('F5', { labels }), null);
+    assert.ok(!BAKED.F5.pairedWith?.length);
   });
 });

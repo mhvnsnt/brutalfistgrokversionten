@@ -47,6 +47,17 @@ export interface NamedGrappleBinding {
 
 const BANNON_CAPTURE = 'mhvnsnt/Bannon assets/moves/clips @ d575dd6 — owner reference video via tools/mocap/video_to_clip.py (MediaPipe, two-body)';
 
+const GETBACKK_CAPTURE = 'owner-supplied reference video (original footage: third-party TikTok @mackeymcqui; license class: owner-supplied reference capture (third-party footage)) via Bannon tools/mocap/video_to_clip.py build_clip with an RTMO + RTMW3D two-body front end (tools/mocap/getbackk)';
+
+/**
+ * Real deliverer captures that have NO receiver and are not the clip a named
+ * move is bound to. They must never borrow a generic duration stand-in victim
+ * (GrapplePairing.receiverClipFor returns null for them).
+ */
+export const DELIVERER_ONLY_CAPTURES: Readonly<Record<string, string>> = {
+  F5: 'Owner F5 capture from the single-body era of video_to_clip (Bannon 94f78a2450); the receiver was never tracked. Getbackk is now bound to the GETBACKK two-body pair instead.',
+};
+
 export const NAMED_GRAPPLE_BINDINGS: Record<string, NamedGrappleBinding> = {
   deadliftGerman: {
     moveKey: 'deadliftGerman', moveId: 'bf_deadlift_german', displayName: 'Deadlift German Suplex',
@@ -73,11 +84,12 @@ export const NAMED_GRAPPLE_BINDINGS: Record<string, NamedGrappleBinding> = {
   getbackk: {
     moveKey: 'getbackk', moveId: 'bf_getbackk', displayName: 'Getbackk',
     technical: 'fireman\'s carry into a spinning facebuster (F-5); canon: fireman\'s carry tornado slam',
-    status: 'DELIVERER_ONLY', deliverer: 'F5', receiver: null,
-    fidelity: 'stand_in',
-    note: 'F5 is a real owner capture (Bannon commit 94f78a2450) but from the single-body era of video_to_clip, so only the attacker was tracked. Receiver is MISSING_CLIP. The source video is not in the Bannon repo, so `video_to_clip.py --two` cannot re-run it.',
+    status: 'REAL_PAIR', deliverer: 'GETBACKK', receiver: 'GETBACKK__RECV',
+    fidelity: 'exact',
+    note: 'Exact real pair: both bodies captured from ONE take of the owner-supplied Getbackk reference (receiver jumps in, fireman\'s carry with the left arm hooking the left thigh, ~180 degree corkscrew toss to the attacker\'s left, impact at 5.3 s, both men down). Same window and clock for both halves (6.97 s, 84 keys, ratio 1.0). Coverage: attacker 207/210 frames, receiver 191/210; every gap is <= 6 frames and linearly interpolated (listed in public/motion/index.json provenance). Original footage is a third-party TikTok (@mackeymcqui), license class "owner-supplied reference capture (third-party footage)": the owner must confirm shipping motion extracted from it. Replaces the F5 deliverer-only stand-in; F5 stays deliverer-only (see DELIVERER_ONLY_CAPTURES).',
     provenance: [
-      { clip: 'F5', origin: 'AUTHORED_CAPTURE', source: 'mhvnsnt/Bannon assets/moves/clips @ d575dd6 — owner video via video_to_clip.py (single-body, commit 94f78a2450)', mixamo: false },
+      { clip: 'GETBACKK', origin: 'AUTHORED_CAPTURE', source: GETBACKK_CAPTURE, mixamo: false },
+      { clip: 'GETBACKK__RECV', origin: 'AUTHORED_CAPTURE', source: GETBACKK_CAPTURE, mixamo: false },
     ],
   },
   chainsnatcher: {

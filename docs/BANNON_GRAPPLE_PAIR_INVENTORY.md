@@ -19,10 +19,18 @@ Source: `mhvnsnt/Bannon` @ `d575dd6766c9585354f70caad23cdd3e37e924af`, assets/mo
 | Flying Headbutt | REAL_PAIR | FLYING_HEADBUTT | FLYING_HEADBUTT__RECV | exact (coverage 0.37) |
 | Deadlift German | REAL_PAIR | PUMPHANDLE_GERMAN_DOUBLE | __RECV | stand-in (pumphandle grip) |
 | Chainsnatcher | REAL_PAIR | KNEETHROW (Schwarzerblitz) | KNEETHROWREACTION | stand-in (knee-bash throw); exact receiver BACKBREAKER_REACTION has no deliverer |
-| Getbackk | DELIVERER_ONLY | F5 | MISSING_CLIP | stand-in |
+| Getbackk | REAL_PAIR | GETBACKK | GETBACKK__RECV | exact (owner-supplied reference, third-party footage; coverage 0.99 / 0.91) |
 | Hall Street Justice | DELIVERER_ONLY | ILLEGAL_KNEE (Mixamo) | MISSING_CLIP | stand-in |
 | Titan Fall | RECEIVER_ONLY | MISSING_CLIP | CHOKESLAM | exact |
 | Cody Buster | MISSING_CLIP | — | — | no technical definition in canon |
+
+## Getbackk owner capture (2026-10-04)
+
+- Source: owner-supplied reference video `GETBACKK_src.mp4`; the original footage is a third-party TikTok (@mackeymcqui). License class **owner-supplied reference capture (third-party footage)**. **The owner should confirm they are OK shipping motion extracted from it.** Footage is not committed.
+- Window 0.0–6.97 s (outro trimmed), 84 keys, both halves on one clock (ratio 1.0): receiver jumps in, fireman's carry, ~180° corkscrew toss to the attacker's left, impact ~5.3 s, both down.
+- Tracking: attacker 207/210 frames, receiver 191/210. Every untracked gap is ≤ 6 frames and linearly interpolated (attacker 3 frames, receiver 19 frames, listed per gap in `public/motion/index.json` provenance). The impact and the roll after it are the least certain part.
+- Made with Bannon's `video_to_clip.build_clip` (unchanged retarget) behind an RTMO + RTMW3D two-body front end: the stock `--two` front end merged both bodies into one detection for the whole carry. Full method: `tools/mocap/getbackk/README.md`. Intake: `scripts/intake-bannon-grapple-pairs.mjs` (`OWNER_CAPTURES`).
+- F5 stays a deliverer-only capture (`DELIVERER_ONLY_CAPTURES`) and never gets a generic stand-in victim; it is kept as the last fallback alias for Getbackk.
 
 ## Animation creator status
 
@@ -33,4 +41,4 @@ Source: `mhvnsnt/Bannon` @ `d575dd6766c9585354f70caad23cdd3e37e924af`, assets/mo
 ## Caveats
 
 - `src/generated/BannonMotionBank.generated.ts` is not regenerated. It is keyed off Bannon's own index.json, which lacks these clips. At runtime the baked bank (`public/motion/baked`) is what GrapplePairing reads.
-- Only the 18 new baked entries were merged. The local bake lacks the vendor Quaternius packs, so a full re-bake would have dropped them.
+- Only the 18 new baked entries (plus GETBACKK and GETBACKK__RECV) were merged. The local bake lacks the vendor Quaternius packs, so a full re-bake would have dropped them.
