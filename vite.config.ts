@@ -185,6 +185,7 @@ export default defineConfig(({ command, isPreview }) => ({
    */
   define: {
     __BF_STATIC_BUILD__: JSON.stringify(rocketPreview),
+    __BF_BUILD_VERSION__: JSON.stringify(process.env.GITHUB_SHA ?? process.env.COMMIT_SHA ?? "dev"),
   },
   // SET EXPLICITLY BECAUSE DEV AND THE BUILD DISAGREED WITHOUT IT.
   // MEASURED against the running dev server: `/motion/baked/index.json`

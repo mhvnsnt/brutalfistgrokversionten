@@ -357,7 +357,7 @@ const LOCO_RATE_STATES = new Set([
 ]);
 
 const ATTACK_STATES = new Set([
-  'lightAttack', 'heavyAttack', 'lightKick', 'heavyKick', 'jumpAttack',
+  'lightAttack', 'heavyAttack', 'lightKick', 'heavyKick',
   'light', 'heavy', 'Startup', 'Active', 'CommandThrow',
 ]);
 
@@ -495,6 +495,10 @@ function resolveClipName(
     // SHARKNADO_REACTION and GRAFTHROWREACTION among the "punches".
     && (!forAttack || (!isReceivingClip(c) && clipStrikesForward(c) && clipKeepsFacing(c)));
   const attackSlot = /^attack|finisher|overdrive/.test(COMBAT_STATE_TO_SEMANTIC[key] ?? key);
+
+  // Explicit per-fighter clips are validated in the render effect below,
+  // where attackClip is actually in scope. This resolver only selects from
+  // semantic/alias candidates and never references caller-only props.
   const pick = (test: (c: string) => boolean): string | undefined =>
     availableClips.find((c) => test(c) && usable(c, attackSlot)) ?? availableClips.find(test);
 
@@ -883,14 +887,24 @@ function FighterMeshInner({
       stanceKit ? stancePreferences(stanceKit, inputKey) : [],
     ) as string | null;
 
-    // THE COMMAND'S OWN ANIMATION WINS. See `attackClip`: the move keeps its
-    // state, its windows and its root motion, and only the clip changes —
-    // which is the whole difference between a moveset and four swings.
-    // Refused clips are still refused: his BROKEN verdict and the team-capture
-    // gate both apply, so this can never smuggle one back in.
-    if (attackClip && actions[attackClip] && !labelRefuses(attackClip) && !clipIsTeamCapture(attackClip)) {
+    // Explicit per-fighter animation is allowed to add variety, but it must pass
+    // the same live safety contract as a semantic attack. Keep this gate HERE,
+    // where attackClip is in scope; resolveClipName is intentionally pure.
+    const attackSlot = ATTACK_STATES.has(inputKey)
+      || /^(attack|finisher|overdrive)/.test(COMBAT_STATE_TO_SEMANTIC[inputKey] ?? inputKey);
+    const explicitAttackUsable = (clip: string) =>
+      !!actions[clip]
+      && !labelRefuses(clip)
+      && clipAnimates(clip)
+      && !clipIsTeamCapture(clip)
+      && clipStandsUpright(clip)
+      && clipStartsStanding(clip)
+      && (!attackSlot || (!isReceivingClip(clip) && clipStrikesForward(clip) && clipKeepsFacing(clip)));
+
+    if (attackClip && explicitAttackUsable(attackClip)) {
       clipName = attackClip;
     }
+
 
     const isAttack = ATTACK_STATES.has(inputKey);
     if (isAttack) {
@@ -1103,9 +1117,7 @@ function FighterMeshInner({
     const attackWindow = isAttack && attackDurationSeconds && attackDurationSeconds > 0
       ? attackDurationSeconds
       : null;
-    const jumpWindow = ['jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey) ? 0.55
-      : inputKey === 'jumpAttack' ? 0.65
-      : null;
+    const jumpWindow = ['jump', 'jumpForward', 'jumpBack', 'Jumping'].includes(inputKey) ? 0.55 : null;
     const downWindow = ['knockdown', 'Knockdown', 'ko', 'KO'].includes(inputKey) ? 1.7 : null;
     const wakeWindow = inputKey === 'WakeupQuickStand' || inputKey === 'wake' ? 1.15
       : inputKey === 'WakeupTechRoll' || inputKey === 'WakeupBackrise' ? 0.55

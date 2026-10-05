@@ -134,6 +134,10 @@ export const THROW_CATALOG: Record<string, ThrowDefinition> = {
     defenderRecoveryFrames: 50,
     breakButton: 'either',
     attackerAnimation: 'GRAFTHROW',
+    // Mirror of side_throw_left: same clips, so the same measured durations.
+    commitAnimation: 'GRAFTHROW',
+    commitDuration: 1.7083,
+    receiverDuration: 1.375,
     defenderAnimation: 'GRAFTHROWREACTION',
     wallCarry: true,
     defenderPositionOffset: { x: 0, y: 0, z: -1.5 },

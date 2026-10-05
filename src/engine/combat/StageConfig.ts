@@ -52,6 +52,16 @@ export interface LevelZone {
   label: string;
 }
 
+export interface DiveLaunchPoint {
+  id: string;
+  /** World-space height relative to the stage level the point belongs to. */
+  yOffset: number;
+  /** Whether the point can be reached by the climb/traversal layer. */
+  climbable: boolean;
+  /** Human-readable source, e.g. ring ropes, catwalk, crane edge. */
+  label: string;
+}
+ 
 export interface StageConfig {
   id: StageId;
   /** Display name */
@@ -74,6 +84,9 @@ export interface StageConfig {
   // ── Multi-level / breakable floor ─────────────────────────────────────────
   /** Ordered array of floor levels (index 0 = top/main, last = lowest pit) */
   levels: LevelZone[];
+  /** Optional high/climbable positions that can originate stage dives. */
+  diveLaunchPoints?: DiveLaunchPoint[];
+
   /**
    * If true, a hard slam / ground-pound sends the opponent crashing through
    * the current floor to the next level down (Tekken-style stage transition).
@@ -223,6 +236,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
   dojo: {
     id: 'dojo',
     name: 'DOJO',
+diveLaunchPoints: [{ id: 'dojo_upper_edge', yOffset: 0, climbable: true, label: 'UPPER DOJO EDGE' }],
     subtitle: 'ANCIENT TRAINING HALL',
     accentColor: '#f97316',
     bgColor: '#1a0800',
@@ -252,6 +266,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
   wrestling_ring: {
     id: 'wrestling_ring',
     name: 'WRESTLING RING',
+diveLaunchPoints: [{ id: 'ring_ropes', yOffset: 1.0, climbable: true, label: 'RING ROPES' }],
     subtitle: 'THE SQUARED CIRCLE',
     accentColor: '#ef4444',
     bgColor: '#1a0000',
@@ -304,6 +319,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
   steel_cage: {
     id: 'steel_cage',
     name: 'STEEL CAGE',
+diveLaunchPoints: [{ id: 'cage_top', yOffset: 2.5, climbable: true, label: 'CAGE TOP' }],
     subtitle: 'NO ESCAPE',
     accentColor: '#94a3b8',
     bgColor: '#0a0a0a',
@@ -330,6 +346,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
   industrial: {
     id: 'industrial',
     name: 'INDUSTRIAL',
+diveLaunchPoints: [{ id: 'industrial_catwalk', yOffset: 1.5, climbable: true, label: 'UPPER CATWALK' }],
     subtitle: 'FACTORY FLOOR',
     accentColor: '#f59e0b',
     bgColor: '#0f0800',
@@ -417,6 +434,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
   sky_crane: {
     id: 'sky_crane',
     name: 'SKY CRANE',
+diveLaunchPoints: [{ id: 'crane_edge', yOffset: 0.8, climbable: true, label: 'CRANE EDGE' }],
     subtitle: 'HIGH ALTITUDE PLATFORM',
     accentColor: '#38bdf8',
     bgColor: '#00080f',

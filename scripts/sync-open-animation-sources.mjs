@@ -5,6 +5,7 @@ import path from 'node:path';
 export const OPEN_ANIMATION_SOURCES = [
   { id:'quaternius-ual-1', root:'vendor/quaternius-ual-1', license:'CC0-1.0', url:'https://quaternius.itch.io/universal-animation-library' },
   { id:'quaternius-ual-2', root:'vendor/quaternius-ual-2', license:'CC0-1.0', url:'https://quaternius.itch.io/universal-animation-library-2' },
+  { id:'kenney-animated-characters-3', root:'vendor/kenney-animated-characters-3', license:'CC0-1.0', url:'https://kenney-assets.itch.io/animated-characters-3' },
 ];
 const supported = new Set(['.glb','.gltf','.fbx','.bvh','.blend','.dae','.anim']);
 const ignored = new Set(['node_modules','.git','dist','.next','.cache']);

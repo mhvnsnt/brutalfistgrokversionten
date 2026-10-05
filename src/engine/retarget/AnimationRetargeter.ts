@@ -712,17 +712,20 @@ export function bindClipTracksToTargetBones(
 ): RetargetedClipResult {
   const exact = new Set(targetBoneNames);
   const mixamoExact = new Map<string, string>();
-  const canonicalToTarget = new Map<CanonicalBone, string>();
+  const canonicalTargets = new Map<CanonicalBone, string[]>();
   for (const name of targetBoneNames) {
     mixamoExact.set(mixamoBindKey(name), name);
     const canonical = resolveToCanonicalBone(name);
-    if (canonical && !canonicalToTarget.has(canonical)) {
-      canonicalToTarget.set(canonical, name);
+    if (canonical) {
+      const list = canonicalTargets.get(canonical) ?? [];
+      list.push(name);
+      canonicalTargets.set(canonical, list);
     }
   }
 
   const retargetedTracks: THREE.KeyframeTrack[] = [];
   const unresolvedTrackNames: string[] = [];
+  const boundProperties = new Set<string>();
   let resolvedTracks = 0;
   let unresolvedTracks = 0;
 
@@ -742,7 +745,12 @@ export function bindClipTracksToTargetBones(
       targetBoneName = mixamoExact.get(mixamoBindKey(sourceBoneName)) ?? null;
     } else {
       const canonical = resolveToCanonicalBone(sourceBoneName);
-      targetBoneName = canonical ? (canonicalToTarget.get(canonical) ?? null) : null;
+      const candidates = canonical ? (canonicalTargets.get(canonical) ?? []) : [];
+      // Canonical aliases deliberately collapse several source names. If the
+      // target also contains more than one joint under that alias, choosing
+      // the first one is destructive: independent source tracks can land on
+      // the same target bone and Three.js will blend them.
+      targetBoneName = candidates.length === 1 ? candidates[0] : null;
     }
 
     if (targetBoneName && property) {
@@ -752,6 +760,14 @@ export function bindClipTracksToTargetBones(
         continue;
       }
       const newTrackName = `${targetBoneName}.${property}`;
+      // Never let two source bones drive one target property. Three.js blends
+      // duplicate tracks; a retarget collision is not an authored layer.
+      if (boundProperties.has(newTrackName)) {
+        unresolvedTracks++;
+        unresolvedTrackNames.push(`${clip.name}::AMBIGUOUS_TARGET:${newTrackName}`);
+        continue;
+      }
+      boundProperties.add(newTrackName);
       const TrackCtor = track.constructor as unknown as new (
         name: string,
         times: ArrayLike<number>,

@@ -99,13 +99,15 @@ jobs:
           fi
 
       - name: Rocket preview smoke test
+        env:
+          ROCKET_PORT: 4174
         run: |
           set -euo pipefail
           npm run rocket:preview > /tmp/brutal-fist-rocket.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           for i in $(seq 1 60); do
-            if curl --fail --silent --show-error --max-time 2 http://127.0.0.1:8080/ -o /tmp/brutal-fist-rocket.html; then
+            if curl --fail --silent --show-error --max-time 2 http://127.0.0.1:4174/ -o /tmp/brutal-fist-rocket.html; then
               grep -q 'id="root"' /tmp/brutal-fist-rocket.html
               grep -Eq '/assets/[^"]+\.js' /tmp/brutal-fist-rocket.html
               if grep -q '/src/rocket-main.tsx' /tmp/brutal-fist-rocket.html; then

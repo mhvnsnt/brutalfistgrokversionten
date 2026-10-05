@@ -745,7 +745,13 @@ export const BRUTAL_FIST_FULL_CATALOG: Record<string, BrutalFistMove> = {
 };
 
 export function getMoveById(id: string): BrutalFistMove | null {
-  return BRUTAL_FIST_FULL_CATALOG[id] ?? null;
+  // Catalog object keys are legacy semantic names for some entries, while
+  // gameplay move IDs live in the move object's id field. Resolve both forms
+  // so roster-authored moves such as bf_uppercut/bf_spin_kick cannot silently
+  // fall back to a generic attack just because the catalog key differs.
+  const direct = BRUTAL_FIST_FULL_CATALOG[id];
+  if (direct) return direct;
+  return Object.values(BRUTAL_FIST_FULL_CATALOG).find(move => move.id === id) ?? null;
 }
 
 export function getMovesByCategory(category: MoveCategory): BrutalFistMove[] {

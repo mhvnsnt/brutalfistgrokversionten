@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import {
   markGrapplePairs, receiverClipFor, bakedGrapplePairs, throwVictimPool,
   isThrowVictimClip, resetGrapplePairingForTest, STANDIN_MAX_DURATION_GAP_S,
+  isCertifiedGrapplePair,
 } from './GrapplePairing.ts';
 import type { MoveLabelMap } from '../assets/moveLabels.ts';
 
@@ -97,5 +98,38 @@ describe('the opponent half of a grapple', () => {
   it('will not name a clip the bank has not got', () => {
     const pick = receiverClipFor('KNEETHROW', { available: (c) => c !== 'KNEETHROWREACTION' });
     assert.notEqual(pick?.receiver, 'KNEETHROWREACTION');
+  });
+
+  it('does not certify a duration stand-in as a real two-body pair', () => {
+    const pick = receiverClipFor('NECKBREAKER');
+    assert.ok(pick);
+    assert.equal(pick.source, 'standin');
+    assert.equal(isCertifiedGrapplePair('NECKBREAKER', pick), false);
+  });
+
+  it('certifies an actual baked pair when both halves have aligned timing', () => {
+    const pick = receiverClipFor('KNEETHROW');
+    assert.ok(pick);
+    assert.equal(pick.source, 'baked');
+    assert.equal(isCertifiedGrapplePair('KNEETHROW', pick), true);
+  });
+
+  it('does not silently stand in for an explicitly incomplete named grapple', () => {
+    const pick = receiverClipFor('F5');
+    assert.equal(pick, null, 'Getbackk/F5 must stay incomplete until its receiver is captured');
+  });
+
+  it('keeps a real named two-body pair on its canonical receiver', () => {
+    markGrapplePairs({
+      PUMPHANDLE_GERMAN_DOUBLE: {
+        dur: 1.0, receives: false, pairedWith: ['PUMPHANDLE_GERMAN_DOUBLE__RECV'],
+      } as any,
+      PUMPHANDLE_GERMAN_DOUBLE__RECV: {
+        dur: 1.0, receives: true, pairedWith: [],
+      } as any,
+    });
+    const pick = receiverClipFor('PUMPHANDLE_GERMAN_DOUBLE');
+    assert.equal(pick?.receiver, 'PUMPHANDLE_GERMAN_DOUBLE__RECV');
+    assert.equal(pick?.source, 'baked');
   });
 });

@@ -27,6 +27,15 @@ const packs = [
     url: 'https://opengameart.org/sites/default/files/universal_animation_library_2standard.zip',
     archive: '.cache/open-animation/ual2.zip',
   },
+  {
+    id: 'kenney-animated-characters-3',
+    root: 'vendor/kenney-animated-characters-3',
+    // OpenGameArt distribution of Kenney's CC0 animated character pack.
+    // It is primarily a reference/compatibility source (idle/jump/run), not a
+    // replacement for Bannon's authored fighters.
+    url: 'https://opengameart.org/sites/default/files/kenney_animated-characters-3.zip',
+    archive: '.cache/open-animation/kenney-animated-characters-3.zip',
+  },
 ];
 
 function command(name, args) {

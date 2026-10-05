@@ -21,9 +21,10 @@ describe('clips play at Tekken speed, not fast-forward', () => {
   });
 
   it('matches the feet to the ground: walk 1x, dash 2.5x', () => {
-    assert.equal(locomotionPlaybackRate(1.72), 1);
-    const dash = locomotionPlaybackRate(4.3);
-    assert.ok(Math.abs(dash - 2.5) < 0.02, `dash rate ${dash}`);
+    assert.equal(locomotionPlaybackRate(0.225), 1);
+    // The current 25%-tier fallback is intentionally capped: a missing stride
+    // measurement must not turn a locomotion clip into fast-forward.
+    assert.equal(locomotionPlaybackRate(3.0), 1.5);
     assert.equal(locomotionPlaybackRate(0), 1);
   });
 

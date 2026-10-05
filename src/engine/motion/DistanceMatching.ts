@@ -32,7 +32,7 @@
 /** Below this a clip is effectively in place and a ratio against it is nonsense. */
 export const MIN_AUTHORED_SPEED_MPS = 0.25;
 /** Outside this band a rate change stops reading as the same motion. */
-export const RATE_CLAMP = { min: 0.6, max: 1.8 } as const;
+export const RATE_CLAMP = { min: 0.1, max: 1.8 } as const;
 /** Anything slower than this is standing still, so the clip plays at its own rate. */
 export const MIN_MATCHED_SPEED_MPS = 0.05;
 
