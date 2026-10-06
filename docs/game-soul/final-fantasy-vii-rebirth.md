@@ -1,0 +1,18 @@
+# Final Fantasy VII Rebirth — Heart and Soul
+- Developer / studio: Square Enix Creative Business Unit I (director Naoki Hamaguchi; producer Yoshinori Kitase; creative director Tetsuya Nomura)
+- Genre / platforms: Action JRPG with open-world exploration; PS5 (2024), PC, Xbox Series X/S, Switch 2 ports later
+- Why players come back (in the devs' view): Freedom of choice — "the objective of providing more freedom of choice to the players" drove four years of design; players pick what to engage in (story, side content, minigames, exploration) and exploration feeds character growth, so "by exploring, it adds to character development along with leveling up." Nostalgia is preserved as essence, not copied: add new details and surprises so "players could come to new realizations," and let iconic scenes keep "the same emotions."
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "It took 4 years to create this volume, and I feel we were able to achieve this because there were no doubts in the design, with the objective of providing more freedom of choice to the players." — Naoki Hamaguchi, Director, One More Game interview, March 2024
+  - "Rather than changing the main storyline, we wanted to add details that we were not able to express before so the players could come to new realizations and find new information." — Naoki Hamaguchi, Director, One More Game interview, March 2024
+  - "We prepared an incredibly diverse range of content as an open-world game for Rebirth, designing the overall game with a philosophy where the players could choose what they wanted to engage in." — Naoki Hamaguchi, Director, Restart.run interview (via Kotaku), 2025 [unverified]
+  - "The aim is to give people the will to live today and tomorrow. If the title that you created allows people to have this feeling, it is great." — Naoki Hamaguchi, Director, One More Game interview, March 2024
+- Why players love/support it: Players control the flow — step off the story anytime ("players can always take a break from the main story... giving them more freedom to control the flow"); beloved characters deepened rather than reset (Hamaguchi deliberately balanced Aerith/Tifa screen time so "a lot of players love Tifa in Rebirth, not just Aerith"); and the world keeps surprising veterans with Zack/Whispers additions that add "excitement" instead of pure retread.
+- Monetization philosophy (devs' words, if any): None on record for Rebirth — it is a full-price single-purchase title; devs speak only of earning the 90+ Metacritic goal ("it was my personal goal" to surpass Remake's score) as the trust currency.
+- Lesson for our games (1-2 lines, concrete): Build the world map as freedom, not travel time — enough area plus enough content that exploration itself powers progression; and when honoring something beloved, add new details that create surprises, never change the essence.
+- Sources: (URLs)
+  - https://onemoregame.ph/2024/03/final-fantasy-vii-rebirth-interview-2-ph/
+  - https://www.ungeek.ph/2024/03/final-fantasy-vii-rebirth-director-was-inspired-by-ghost-of-tsushima-and-the-witcher-3/
+  - https://kotaku.com/final-fantasy-7-rebirth-director-promises-more-enjoyable-trophies-in-part-3-and-i-have-just-one-request-2000698681
+  - https://www.frontlinejp.net/2024/02/28/ffvii-rebirth-interview-1023/
+- Coverage note: Quotes 1, 2, and 4 verified from the fetched One More Game interview text. Quote 3 is from a search snippet summarizing the Restart.run/Kotaku interview — marked [unverified] per rules. (Fixing: the rule says snippet-sourced must be marked [unverified] — I will append it in the file.)

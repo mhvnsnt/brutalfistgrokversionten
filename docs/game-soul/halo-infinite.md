@@ -1,0 +1,17 @@
+# Halo Infinite — Heart and Soul
+- Developer / studio: 343 Industries (now Halo Studios), Xbox Game Studios
+- Genre / platforms: First-person shooter; Xbox One, Xbox Series X|S, PC
+- Why players come back (in the devs' view): A free-to-play multiplayer designed to welcome every player type without punishing casuals — non-expiring battle passes you can switch between, plus a campaign built as a "reset button" that expects zero lore homework. Xbox leadership later admitted the real lesson: retention lives or dies on a regular cadence of post-launch content, which Infinite initially lacked.
+- Key quotes:
+  - "We wanted to be able to say, 'Hey, look, when you put 10 bucks in, you keep that 10 bucks'." — Jerry Hook, Head of Design, 343 Industries, IGN (2021) [unverified]
+  - "It doesn't require homework, it doesn't actually expect you to know anything." — Paul Crocker, Associate Creative Director, 343 Industries, TheGamer (2021) [unverified]
+  - "The burden is on us" — the team fell short on delivering "regular continuing engagement," which caused the initial playerbase to fade. — Matt Booty, Head of Xbox Game Studios, via GameRant (2022) [unverified]
+- Why players love/support it: The tight, sandbox-y multiplayer gunplay and the classic Halo feel; fans stayed loyal to the fantasy of Master Chief even when content was thin. Community feedback repeatedly centered on tight responsive mechanics and balanced weapons rather than cosmetics.
+- Monetization philosophy (devs' words, if any): Player-first battle passes — bought passes never expire and players can switch between passes at will, so paid content is never lost. ~25% of each pass held a legendary cosmetic. Multiplayer is free-to-play, campaign is paid.
+- Lesson for our games (1-2 lines, concrete): Keep every dollar a player spends permanent and player-controlled (no-expiry passes, switch at will) — respect for money spent buys more loyalty than FOMO mechanics. And ship a live content cadence BEFORE launch hype fades, or retention dies regardless of quality.
+- Sources: (URLs)
+  - https://gamezon.net/343-industries-details-halo-infinite-battle-pass-system-including-how-switching-between-them-will-work/
+  - https://gamerant.com/microsoft-studios-head-halo-infinite-post-launch-problems/
+  - https://www.thegamer.com/halo-infinite-interview-343-industries-campaign-interview/
+  - https://steamcommunity.com/app/1240440/discussions/0/599650845622019610
+- Coverage note: Quotes sourced from search snippets, marked [unverified]; full page fetch not performed in this pass. Matt Booty statement is Xbox leadership on 343's post-launch, reported via press.

@@ -1,0 +1,22 @@
+# Bloodborne — Heart and Soul
+- Developer / studio: FromSoftware (published by Sony Interactive Entertainment)
+- Genre / platforms: Gothic action RPG / PS4 (PS5 via backward compatibility)
+- Why players come back (in the devs' view):
+  - The core fun is comprehension after effort: "Yes, I get it now!" — mastery earned through repeated failure is what keeps players returning, not spectacle.
+  - Difficulty is designed to encourage overcoming adversity, never to force difficulty for its own sake. The game must always feel winnable — "there's a chance to win a difficult encounter and make progress."
+  - Level design is the secret weapon: Miyazaki personally laid out Bloodborne's maps (minus chalice dungeons) because well-designed spaces make players feel like winners and build a mental map — "that experience really creates and raises the floor of what players are going to feel."
+- Key quotes:
+  - "I think being able to comprehend something contains an innate fun factor. See, being able to comprehend something after putting in the required effort is conducive to a fun 'Yes, I get it now!' kind of effect. If you didn't have to work for it, the experience would be far less stimulating." — Hidetaka Miyazaki, Director, Edge via Bleeding Cool, 2015 [unverified]
+  - "We don't try to force difficulty or make things hard for the sake of it. We want players to use their cunning, study the game, memorize what's happening, and learn from their mistakes. We don't want players to feel like the game is unfairly punishing, but rather that there's a chance to win a difficult encounter and make progress." — Hidetaka Miyazaki, PlayStation Blog, 2022 [unverified]
+  - "If I had to give one aspect in particular, though, it'd be the map design. Outside of the chalice dungeons, I personally laid out all the maps in Bloodborne, something I like doing a lot." — Hidetaka Miyazaki, The New Yorker / FandomWire summary, 2024 [unverified]
+  - "This is true with Elden Ring and true with Dark Souls as well... the level design is one of them because I think that experience really creates and raises the floor of what players are going to feel and experience through the game design." — Hidetaka Miyazaki, Game Informer, 2024 [unverified]
+- Why players love/support it:
+  - Players feel like winners because the game respects them: every death is legible, every shortcut a revelation, every victory earned. The community's lore-hunting and no-hit runs are the natural output of a game that treats comprehension as the reward.
+- Monetization philosophy (devs' words, if any): None on record. Premium game + The Old Hunters expansion. No dev commentary on monetization philosophy found.
+- Lesson for our games (1-2 lines, concrete): Make difficulty legible and fair — Concrete Dragon bosses should feel killable every attempt, with each death teaching one clear lesson. "Earned comprehension" beats spectacle: a player who figures it out comes back forever.
+- Sources:
+  - https://bleedingcool.com/movies/bloodborne-director-thinks-the-challenge-of-the-game-is-where-the-fun-lies/
+  - https://fandomwire.com/id-like-gamers-to-challenge-themselves-what-hidetaka-miyazaki-said-will-force-you-to-reinstall-bloodborne-for-new-game/
+  - https://fandomwire.com/?p=587169
+  - https://gameinformer.com/interview/2024/06/18/hidetaka-miyazaki-talks-why-bloodborne-is-special-to-him-and-how-it-led-to?amp
+- Coverage note: Quotes are from search snippets (not fetched full pages), marked [unverified] per protocol. No invented statements included.

@@ -1,0 +1,15 @@
+# Pokémon Scarlet/Violet — Heart and Soul
+- Developer / studio: Game Freak (Director: Shigeru Ohmori)
+- Genre / platforms: Open-world RPG; Nintendo Switch (2022)
+- Why players come back (in the devs' view): The design bet was player-directed freedom — "a new style of adventure, with a world that you're free to explore at your leisure and not in an order dictated by the story." Three concurrent storylines (Victory Road, Path of Legends, Starfall Street) can be tackled in any order so every player authors their own journey, and 4-player co-op exploration makes the adventure social — "discover new Pokémon and explore unfamiliar areas with your friends and family, opening the door to an adventure more precious and fun than ever" (official site messaging).
+- Key quotes:
+  - "You can experience a new style of adventure, with a world that you're free to explore at your leisure and not in an order dictated by the story." — Official Pokémon Scarlet/Violet site, Game Freak, 2022 (dev-written design statement, not attributed to an individual)
+  - "You'll be able to experience the true joy of the Pokémon series... now in an open-world game that players of any age can enjoy." — Official Pokémon Scarlet/Violet site, Game Freak, 2022 (dev-written design statement, not attributed to an individual)
+- Why players love/support it: First truly open-world mainline Pokémon; "choose your own adventure" freedom after decades of linear gym routes; new creatures and the three-story structure gave completionists multiple deep systems (Pokedex, raids, shiny hunting); co-op exploration with friends; post-launch patches and DLC (The Teal Mask, The Indigo Disk) kept the tail alive.
+- Monetization philosophy (devs' words, if any): No on-record monetization philosophy found. The game follows the series model: full-price boxed release, no microtransactions; paid DLC expansions released ~a year after launch added new areas and stories.
+- Lesson for our games (1-2 lines, concrete): Give players a "Treasure Hunt" frame — multiple concurrent goal tracks (fight, explore, collect) with no dictated order — so every session feels self-authored; add friends-in-the-world co-op early, because shared discovery multiplies retention.
+- Sources:
+  - https://www.gamesradar.com/pokemon-scarlet-and-violet-gives-you-an-open-world-not-dictated-by-the-story/
+  - https://www.videogameschronicle.com/news/pokemon-scarlet-and-violet-let-up-to-4-players-explore-freely-in-an-open-world/
+  - https://www.nintendolife.com/news/2022/06/pokemon-scarlet-and-violet-described-as-the-first-open-world-rpgs-in-the-series
+- Coverage note: No on-record developer interviews with named Game Freak staff (Ohmori/Masuda) about Scarlet/Violet's retention philosophy were found in search or fetch; Game Freak is historically tight-lipped. The design statements above are official dev-written site copy, not individual quotes, and are labeled accordingly — no individual developer quotes claimed.

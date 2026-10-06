@@ -1,0 +1,13 @@
+# Travel Town — Heart and Soul
+- Developer / studio: Magmatic Games (original developer, UK); now operated by Moon Active (acquired/integrated, parent of Coin Master)
+- Genre / platforms: Merge-2 puzzle (grid merge) with town-rebuilding meta; iOS, Android
+- Why players come back (in the devs' view): ANALYSIS — no on-record developer statements found (see coverage note). Industry analysis points to: always-overlapping quest progress ("the next quest 60–90% complete by the time you're done with the current one" — players always feel one more session will finish something); straightforward-but-deep merge mechanics; vibrant cartoon visuals; economy design with secondary currency and multi-stage building upgrades
+- Key quotes: none found — no developer interviews located. (See coverage note.)
+- Why players love/support it: quest chains that never fully resolve — constant "just a little bit more" pull (press deconstruction, PocketGamer.biz, 2023); grid merge feels less frustrating than camp merge since resources keep moving; steady live-ops event cadence under Moon Active
+- Monetization philosophy (devs' words, if any): none on record. ANALYSIS: economy-balanced merge with secondary currency; level-based progression across a large board; AppMagic cited ~$320M player spending in 2024 alone (PocketGamer.biz, 2025).
+- Lesson for our games (1-2 lines, concrete): Never let the player's to-do list hit zero — keep the next goal 60–90% complete when they finish the current one so quitting always feels premature. Board friction is the silent killer: less clutter, more tapping.
+- Sources:
+  - https://www.PocketGamer.biz/deconstructing-magmatic-games-travel-town/
+  - https://foxadvert.com/en/digital-marketing-blog/the-secrets-of-mobile-merge-mastery-learn-from-travel-towns-success/
+  - https://www.pocketgamer.biz/moon-active-reportedly-lays-off-dozens-of-staff/
+- Coverage note: No on-record developer interviews found for Travel Town in English-language press. All of the above is press/industry ANALYSIS (notably Belka Games lead designer Olga Semykina's PocketGamer.biz deconstruction, 2023) — labeled accordingly and never presented as dev quotes.

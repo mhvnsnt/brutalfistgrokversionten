@@ -1,0 +1,18 @@
+# Total War: Warhammer III — Heart and Soul
+- Developer / studio: Creative Assembly (Sega)
+- Genre / platforms: Real-time-tactics + turn-based campaign strategy (fantasy); PC (Windows/Mac/Linux)
+- Why players come back (in the devs' view): Narrative is a design pillar since day one — seeded lore, story quests, and rituals give a reason to start, continue, and finish each campaign "with a bang rather than a whimper" — but the campaign itself must stay a sandbox where the player is the storyteller. Never put the player on rails; emergent alternate-history moments carry the long tail. Immortal Empires doubles down on player agency: empower players to do what they want, where they want, whenever they want.
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "We wanted to seed the game with as much lore as possible and really immerse the player... But with that comes a caveat: how you play Total War can't be interfered with. It has to be a sandbox experience, and you have to be the story." — Andy Hall, Lead Writer, PCGamesN, 2017
+  - "It's there to enhance the campaign rather than get in the way." — Andy Hall, Lead Writer, on story nodal points, PCGamesN, 2017
+  - "The [realm of Chaos] mechanic gives a reason for a player to start a campaign, to continue, and to finish it in this epic final battle." — Mark Sinclair, Lead Campaign Designer, NME, 2022 [unverified]
+  - "Our philosophy for this sandbox mode has been to empower player agency wherever we can... We plan to support this enormous game for years to come." — CA team, on Immortal Empires, GameReactor, 2022 [unverified]
+- Why players love/support it: The biggest official sandbox campaign in Total War history (Immortal Empires), an enormous playable faction roster, long-tail DLC/updates, and deep Warhammer fantasy identity. Players get both spectacle battles and emergent alternate-history storytelling.
+- Monetization philosophy (devs' words, if any): No explicit on-record statement found in this pass; long-term paid faction DLC plus free updates, with "we plan to support this enormous game for years to come" framing. Coverage note: not deeply researched here.
+- Lesson for our games (1-2 lines, concrete): Give players a narrative backbone that provides high points and a reason to finish — but never put them on rails; the player must remain the storyteller in a sandbox.
+- Sources: (URLs)
+  - https://www.pcgamesn.com/total-war-warhammer-ii/total-war-warhammer-2-story
+  - https://www.nme.com/features/gaming-features/creative-assembly-on-the-past-present-and-future-of-total-war-warhammer-3-3141607
+  - https://www.gamereactor.eu/total-war-warhammer-iii-champions-of-chaos-chatting-inspiration-and-aims-with-creative-assembly-1195663/
+  - https://geekculture.co/geek-interview-total-war-warhammer-iii/
+- Coverage note: Andy Hall quotes verified from fetched PCGamesN page (2017, Warhammer II era; applies to the trilogy's design philosophy). Sinclair/GameReactor quotes are snippet-sourced and marked [unverified].

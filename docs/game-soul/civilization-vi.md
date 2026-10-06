@@ -1,0 +1,18 @@
+# Civilization VI — Heart and Soul
+- Developer / studio: Firaxis Games (2K)
+- Genre / platforms: Turn-based 4X strategy; PC, Mac, Linux, Switch, PlayStation, Xbox, mobile
+- Why players come back (in the devs' view): No two games should play the same. Firaxis broke up veteran "routines" (same wonder, same tech path every game) with two design pillars — unstacked cities and active research — so terrain, neighbors, and random bonuses force players to think on their feet every campaign. The map itself is "the star": memorable city configurations stick with players months later.
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "Depending on what's around you on the map from the very start, you're going to have different things encouraging you to go in different directions than you might be used to... there's not going to be a golden formula every time." — Anton Strenger, Senior Gameplay Designer, GameSpot, 2016
+  - "That's actually not far off from a phrase we use internally which is, 'The map is the star.'... I still think back on games I played six months ago and I remember, 'Oh yeah, there was this city where I had it on this weird peninsula.'" — Anton Strenger, Senior Gameplay Designer, GameSpot, 2016
+  - "It's very fun for a lot of people once they get to that point where they're seeing the 'one more turn' feeling, and they understand how things are fitting together." — Anton Strenger, Senior Gameplay Designer, GameSpot, 2016
+  - On Civ 6's low completion data (fewer than 40% of players ever finish a single game): "4X games in particular are arguably most fun at the outset while the world is still a mystery." — Ed Beach, Creative Director, via NYT (reported by Rock Paper Shotgun), 2024 [unverified]
+- Why players love/support it: "One more turn" pull — the game is most fun at the outset while the world is still a mystery; players return to start new worlds more than to finish old ones. Vibrant leader personalities, agendas, and diplomacy give a "rich cross section of history." Layered teaching keeps depth accessible to newcomers.
+- Monetization philosophy (devs' words, if any): No on-record statement found on monetization philosophy for Civ VI specifically (expansions Rise and Fall / Gathering Storm followed the classic 2K expansion-pack model). Coverage note: not researched as part of this pass.
+- Lesson for our games (1-2 lines, concrete): Design against the "golden formula" — force fresh decisions every run via terrain/start-condition variety so players can't autopilot; and remember players may love starting more than finishing, so front-load mystery and discovery.
+- Sources: (URLs)
+  - http://www.gamespot.com/articles/how-civilization-6-aims-to-leave-its-own-legacy/1100-6442279/
+  - https://www.rockpapershotgun.com/most-civilization-players-dont-finish-a-single-game-going-by-civ-6-data-and-perhaps-thats-the-best-way-to-play
+  - https://www.pcgamer.com/civilization-6-everything-you-need-to-know/
+  - https://www.pcgamesn.com/civilization-vi/making-of-civilization-6
+- Coverage note: Dev quotes above are from fetched pages (GameSpot 2016). The Ed Beach completion-data statement comes from a search snippet citing the NYT and is marked [unverified].

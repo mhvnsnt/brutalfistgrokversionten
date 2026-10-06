@@ -1,6 +1,7 @@
-# GAME SOUL TOP-100 — Combined Summary
-*What the 100 most profitable/successful games' developers say keeps players coming back, playing, paying, and supporting. Distilled into design laws for our games. (2026-10-06)*
-*Per-game docs: `docs/game-soul/<game-slug>.md` (100 files). Sourced quotes only; snippet-sourced quotes marked [unverified]; gaps honestly labeled.*
+# GAME SOUL TOP-200 — Combined Summary
+*What the 200 most profitable/successful games' developers say keeps players coming back, playing, paying, and supporting. Distilled into design laws for our games. (2026-10-06)*
+*Per-game docs: `docs/game-soul/<game-slug>.md` (200 files). Sourced quotes only; snippet-sourced quotes marked [unverified]; gaps honestly labeled.*
+*Note: this file grew from the top-100 version into the top-200 synthesis. The original 10 design laws held across all 200; the "Second Hundred" section adds what the expansion taught us.*
 
 ---
 
@@ -48,6 +49,38 @@ Supercell shut down Squad Busters (Oct 2026) rather than let it limp — the kil
 
 ---
 
+## What the second hundred added (new patterns from games 101–200)
+
+### A. PLAN FOR CHURN, DON'T FIGHT IT
+The biggest surprise of the expansion. TFT's game director Peter Whalen (GDC 2025): "And that's the heart of cyclical reengagement. It's a strategy around planning for players to churn, and going all in on creating big moments for them to come back. Players can't feel bad about the time that they missed." Short battle passes and limited daily quests deliberately trade short-term engagement for long-term trust. Riot's Alex Cole wants TFT to be players' "favorite second game" — "They just know TFT is always there for them."
+**Law:** Make the game easy to LEAVE and exciting to RETURN to. No FOMO tax on lapsed players; never-behind accounts.
+
+### B. SURPRISE DENSITY IS THE RETENTION ENGINE
+Super Mario Odyssey's Koizumi literally set "surprise" as the development keyword. Astro Bot's Nicolas Doucet: ship a tight, focused game that ends while players want more — love is built by leaving them hungry. Aonuma (TotK): "encourage creativity, never require it." Insomniac gates every feature on one question: "is this charming?" Marvel Snap's Brode designs locations as "rough edges" that create emotional variance and player stories.
+**Law:** Surprise per minute is the metric. Charm-gate everything; engineer variance players retell.
+
+### C. EMERGENT STORIES > WRITTEN STORIES
+Crusader Kings 3's devs: "player stories > developer stories" — the game is a "medieval soap opera" players write themselves. RimWorld's Tynan Sylvester: elastic failure and embraced tragedy; "players extract more story meaning than the mechanics encode." Yoko Taro (NieR: Automata) writes *backward* from the emotional endpoint he wants players to carry. Nomura: "the players themselves are the reason it survives." Total War: "you have to be the story."
+**Law:** Build systems that manufacture stories, not cutscenes players skip. Failure and moral weight are retention features.
+
+### D. FUN-FIRST BALANCING
+Guilty Gear's Ishiwatari: "wild balance." Granblue's Okubo: balance is LAST. Every fighting studio in the expansion says the same thing: players return for *excitement*, not parity. Design mechanics to be readable by spectators — watchability is marketing. Retain new players with simple inputs and skill-matched competition, never by dumbing the game down.
+**Law:** Excitement beats parity. Make the game fun to WATCH and the players will do your marketing.
+
+### E. EARNED COMPREHENSION
+Bloodborne's retention engine, per its devs: the moment a player says "Yes, I get it now!" after effort. DOOM Eternal's loop: teach → learn (through death) → reward. Difficulty must always feel *winnable*. Titanfall 2: feel-first, interruptible animations, readable deaths.
+**Law:** Mastery must be earned, never handed — earned players become evangelists. (Pairs with Law 5: trust the player, but demand their growth.)
+
+### F. IMMERSION-FIRST, STRIP THE HUD
+Ghost of Tsushima: let the WORLD guide (the wind), not the UI. Horizon Forbidden West filters every encounter through ACE (Amaze, Challenge, Engage) — three pillars: exploration, "feel clever" combat, emotional stories. Death Stranding: positive-only asynchronous connection players carry into real life — trust divisive-but-meaningful over bland-but-liked.
+**Law:** Guide with the world, not the widgets. Aim to move people, not to please them.
+
+### G. HONESTY AS OPERATING SYSTEM
+Factorio's Wube: never discount ("honest with our customers"), no investors — "once you have enough, you don't really need more." Cities: Skylines: never charge for what "should be in the game" (tunnels free). Hunt: Showdown: kill features that fight the core loop, whatever they cost. Remedy (Alan Wake 2): honest fan communication across 13 years of waiting. AoE2:DE's World's Edge: "we're stewards, it belongs to the community" — never touch the sacred core.
+**Law:** Fairness is trust currency. Be honest about what the game is, charge honestly, and cut anything that fights the core loop.
+
+---
+
 ## Monetization Doctrine (what the 100 agree on)
 - **Cosmetics only.** Power is never for sale. (Fortnite, TF2, Brawl Stars, GW2, Genshin "paying for love")
 - **No loot boxes / no hidden odds.** Deterministic rewards. (Brawl Stars 2022, Sweeney's rejection)
@@ -55,6 +88,9 @@ Supercell shut down Squad Busters (Oct 2026) rather than let it limp — the kil
 - **One fair price is a superpower** for premium-feel games. (Balatro, Minecraft, Stardew Valley)
 - **Earn the right first.** Ship the full game, then ask. (Helldivers 2, Lethal Company $10 no DLC)
 - **Never fracture the audience** with paid gates. (GTA Online's free-update doctrine)
+- **Weaken the short-term levers on purpose.** TFT deliberately keeps battle passes short and daily quests limited — trading short-term revenue for long-term trust. (Whalen, GDC 2025)
+- **Never charge for what should be in the game.** (Cities: Skylines' tunnels-free doctrine)
+- **Honest pricing as identity.** Factorio never discounts; GT7's Yamauchi: enjoy lots of cars "even without microtransactions."
 
 ## What keeps people COMING BACK (the retention core)
 Across genres, the same five: **(1)** friends/social ritual (Honor of Kings 5v5, Monopoly GO sticker trading, WoW's community); **(2)** self-expression (Minecraft, Roblox, character skins); **(3)** mastery with no ceiling (Tekken, Celeste, Dead Cells); **(4)** surprise/novelty inside familiarity (Fortnite events, Slay the Spire drafts, Vampire Survivors builds); **(5)** a world that respects their time (Brawl Stars 3-min sessions, Vampire Survivors auto-attacks, ZZZ anti-FOMO).

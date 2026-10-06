@@ -1,0 +1,19 @@
+# Hi-Fi Rush — Heart and Soul
+- Developer / studio: Tango Gameworks, Bethesda/Xbox Game Studios
+- Genre / platforms: Rhythm-action brawler; Xbox Series X|S, PC, PS5
+- Why players come back (in the devs' view): Accessibility was "at the top of the list" from the first concept — the game secretly syncs your actions to the beat so anyone can play, and "it makes you feel like you know what you're doing, even if you don't." On top of that: charm baked into every asset (the whole world pulses to the music) and Game Pass acting as a frictionless demo that got people past the "I'm not a rhythm player" hurdle.
+- Key quotes:
+  - "It's very accessible. It makes you feel like you know what you're doing, even if you don't. It's almost like an entry point if you then want to go into other rhythm games." — John Johanas, Game Director, Tango Gameworks, GamesRadar+ (2023) [unverified]
+  - "Accessibility was at the top of the list when making the game. The early concept revolved around creating a system internally that syncs up your actions to the rhythm for you." — John Johanas, Press Start (2023) [unverified]
+  - "If you have Game Pass it's basically a demo that you can try. That allows you to get over that hurdle of 'I don't play rhythm games, this isn't for me.'" — John Johanas, Lords of Gaming (2023) [unverified]
+  - "Internally we knew we had something so special. The team was constantly playing and polishing things to the end, trying to put charm into every aspect of the game." — John Johanas, Press Start (2023) [unverified]
+- Why players love/support it: A genuine passion project (five years in the making, shadow-dropped with zero marketing) that feels handmade — hand-drawn animation, cel shading, a score the whole world dances to. The surprise launch made discovery itself feel like a gift.
+- Monetization philosophy (devs' words, if any): None stated by devs; sold as a premium Game Pass day-one title. No microtransactions — the value pitch was the complete game, all charm included.
+- Lesson for our games (1-2 lines, concrete): Kill the skill-fear barrier on purpose — hidden assistance that makes everyone feel competent widens your audience beyond the genre's core. And sweat the charm: a game where every asset pulses with life feels worth more than any marketing budget.
+- Sources: (URLs)
+  - https://www.gamesradar.com/hi-fi-rush-director-talks-shadow-dropping-a-bethesda-hit-five-years-in-the-making/
+  - https://press-start.com.au/features/2023/02/19/hi-fi-rush-interview-striking-a-new-rhythm/
+  - https://lordsofgaming.net/2023/02/a-glimpse-into-hi-fi-rush-with-john-johanas-from-tango-gameworks/
+  - https://geekculture.co/geek-interview-tango-gameworks-leaps-from-horror-to-rhythm-action-with-critically-acclaimed-hi-fi-rush/
+  - https://www.windowscentral.com/gaming/despite-tangos-shadow-dropping-anxieties-hi-fi-rush-succeeds-with-over-3-million-players
+- Coverage note: All quotes sourced from search snippets, marked [unverified]; full page fetch not performed in this pass.

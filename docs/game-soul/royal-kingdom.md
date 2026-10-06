@@ -1,0 +1,16 @@
+# Royal Kingdom — Heart and Soul
+- Developer / studio: Dream Games (Istanbul; former Peak Games developers)
+- Genre / platforms: Match-3 puzzle with kingdom-building meta and PvP layers; iOS, Android
+- Why players come back (in the devs' view): user needs over business and designer ego; cinematic polish and strong characters that build emotional attachment; gameplay mechanics as "the most important part" of a lasting IP; a single long-standing game played for years instead of churn-and-burn titles
+- Key quotes: (4)
+  - "Quality wins." — Soner Aydemir, Co-founder and CEO of Dream Games, Index Gaming Summit (via PocketGamer.biz), 2022
+  - "We have never focused on monetisation. We strongly believe that if we have a high-quality experience people will pay." — Soner Aydemir, Co-founder and CEO of Dream Games, Index Gaming Summit (via PocketGamer.biz), 2022
+  - "Royal Match was born out of our desire to create IPs that are loved and enjoyed for years and years." — Soner Aydemir, Co-founder and CEO of Dream Games, PocketGamer.biz, 2023
+  - "Our biggest differentiator is our player-centric approach and desire to create the best quality product for our players. We are focused on creating a magical experience that will delight players for years to come." — Soner Aydemir, Co-founder and CEO of Dream Games, PocketGamer.biz, 2023
+- Why players love/support it: Pixar-grade character animation and humor (King Robert, then the Royal Kingdom cast — King Richard, Princess Bella, the Wizard); puzzle-RPG twists (Attack levels, ranked PvP) on top of the familiar match-3 loop; social team competition
+- Monetization philosophy (devs' words, if any): "We have never focused on monetisation" — Aydemir explicitly rejects ad-heavy, pay-to-win mobile conventions; the bet is that a high-quality, character-driven experience converts players on its own.
+- Lesson for our games (1-2 lines, concrete): Don't design around monetization — design a world players love for years and payment follows; study FAILED games in your genre to learn what not to do before shipping a single feature.
+- Sources:
+  - https://www.pocketgamer.biz/dream-games-thatgamecompany-building-iconic-ip/
+  - https://Www.pocketgamer.biz/dream-games-ceo-soner-aydemir-on-the-companys-expansion-into-new-markets/
+- Coverage note: Quotes are from Dream Games leadership speaking about the studio's Royal titles broadly (Royal Match primarily); no Royal Kingdom-specific designer interview found.

@@ -1,0 +1,18 @@
+# Starfield — Heart and Soul
+- Developer / studio: Bethesda Game Studios, Xbox Game Studios
+- Genre / platforms: Open-world space RPG; Xbox Series X|S, PC
+- Why players come back (in the devs' view): Bethesda's design philosophy is curiosity over loot-grind — exploration motivated by wonder ("land on a strange planet... listening to the wind go and watching the sunset"), not chasing the next stat bump, to avoid burnout. The New Game+ "Unity" system asks a deep question about leaving everything behind, and post-launch updates (Free Lanes) were designed to "affect the next 100 hours," not just add two hours of quests.
+- Key quotes:
+  - "It was us asking you this weird, deep question that I actually think got lost on a lot of people. It asks if you are just this power gamer who wants to get everything, or are you willing to leave this world behind?" — Todd Howard, Executive Producer / Game Director, Bethesda, GamesRadar+ (2026) [unverified]
+  - "We want to do more things that update the game in a way that affects the next 100 hours." — Todd Howard, via TheGeek (2026) [unverified]
+  - "Once you land in your ship, [and now] you're on foot, it lets us really, for the players, make it an experience where we know how fast they're seeing things." — Todd Howard, Bloomberg via Kotaku (2023) [unverified]
+  - "Players were so attached to the items they had collected up to that point that they didn't want to part with them. It was a bridge too far, too much of a sacrifice." — Tim Lamb, Lead Creative Producer, Bethesda, via TheGeek/GamingBolt (2026) [unverified]
+- Why players love/support it: The Bethesda sandbox contract — go anywhere, build anything (ships, outposts), thousands of handcrafted quests — plus the studio's long track record of decade-scale games (Skyrim, Fallout) that communities keep modding and replaying.
+- Monetization philosophy (devs' words, if any): Premium purchase, no dev-sourced microtransaction philosophy found. Creations (paid mods/creations marketplace) exist post-launch but no developer retention statement tied to them was found in this pass.
+- Lesson for our games (1-2 lines, concrete): Design the long loop around curiosity and wonder, not the next loot bump — grind burns players out permanently. When players get deeply attached to what they earned, never take it away without a path to keep it (the Free Lanes lesson).
+- Sources: (URLs)
+  - https://gamingbolt.com/starfields-unity-ending-new-game-was-a-weird-deep-question-todd-howard-wanted-to-ask-players
+  - https://thegeek.games/2026/04/14/starfield-todd-howard-says-we-misunderstood-new-game/
+  - https://kotaku.com/starfield-ground-vehicles-todd-howard-bethesda-xbox-pc-1850813842
+  - https://fandomwire.com/we-have-a-ways-to-go-todd-howard-has-a-design-philosophy-that-stops-starfield-from-devolving-into-a-loot-grind/
+- Coverage note: All quotes sourced from search snippets, marked [unverified]; full page fetch not performed in this pass. The "avoid the loot grind" framing is partly press ANALYSIS (FandomWire) summarizing Howard's design philosophy.

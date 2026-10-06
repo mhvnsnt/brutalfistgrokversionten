@@ -1,0 +1,14 @@
+# DOOM Eternal — Heart and Soul
+- Developer / studio: id Software (Bethesda)
+- Genre / platforms: Fast arena FPS; PC, PS4/PS5, Xbox, Switch, Stadia (2020)
+- Why players come back (in the devs' view): The studio's stated north star was "increasing player engagement" — every decision designed to keep the whole campaign as compelling in act three as act one; a deliberate teach → learn (through death) → reward loop where mastery of combat and levels feels *earned*, not handed over; multiplayer rebuilt from the ground up ("lead, don't follow") so skill expression comes from teamwork and strategy, not raw twitch aim.
+- Key quotes:
+  - "That was pretty much the primary goal of every decision we've made, how we get people engaged from beginning to end." — Hugo Martin, Game Director, id Software, GamesIndustry.biz (E3 2019)
+  - "We wanted to make sure the level design and the combat really gave you something to have to master. You master and conquer the levels just as much as you conquer the combat and encounters, and that's what feels really empowering to the player, something that is earned." — Hugo Martin, Game Director, id Software, GamesIndustry.biz (E3 2019)
+  - "One of our mantras is lead, don't follow." — Marty Stratton, Executive Producer, id Software, GamesIndustry.biz (E3 2019)
+  - "You've practiced, you learned, now you can go out and dominate. That's so rewarding, because I took the journey to get there. The game didn't give it to me." [unverified] — Marty Stratton, Executive Producer, id Software, Game Developer (search snippet only)
+- Why players love/support it: The most demanding, most exhilarating shooter loop in mainstream gaming — aggressive combat chess that never lets you hide; the empowerment is real because it's earned; players who master it evangelize it relentlessly; the secret-hunting and lore layers reward exploration on top of the combat.
+- Monetization philosophy (devs' words, if any): No on-record developer statement on monetization philosophy found. ANALYSIS: premium buy-to-play; cosmetics-only microtransactions in later updates.
+- Lesson for our games (1-2 lines, concrete): Set one north star — "increasing player engagement" — and filter every design decision through it. Build the teach-learn-reward loop: make mastery visible and earned (through death, not handouts), because an overpowered player who *earned* their dominance markets your game for you.
+- Sources: https://www.gamesindustry.biz/where-do-you-go-from-doom, https://www.gamedeveloper.com/design/the-aggressive-resource-management-of-i-doom-eternal-i-, https://www.gamereactor.eu/doom-eternal-its-just-a-straight-arrow-up-of-excitement/
+- Coverage note: Three quotes verified from the fetched GamesIndustry.biz E3 2019 interview; the fourth Stratton quote is snippet-sourced and marked [unverified]. No dev monetization statements located.

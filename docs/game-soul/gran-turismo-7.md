@@ -1,0 +1,22 @@
+# Gran Turismo 7 — Heart and Soul
+- Developer / studio: Polyphony Digital (Sony Interactive Entertainment)
+- Genre / platforms: Racing simulator / PS4, PS5
+- Why players come back (in the devs' view):
+  - The goal isn't racing — it's car culture. Yamauchi sees the car as "one of the most beautiful industrial products," and GT7 was built to keep car culture moving forward for a new generation that doesn't know a Porsche 356 from a 911.
+  - The GT Café is the retention engine: a place where you meet the designers and engineers who actually created the cars you collect — culture through people, not spec sheets.
+  - Low-pressure modes (Music Rally, Scapes photography, collecting) exist so players can love their cars without the stress of ever-decreasing lap times.
+- Key quotes:
+  - "In GT7 I would like to have users enjoy lots of cars and races even without microtransactions. At the same time the pricing of cars is an important element that conveys their value and rarity, so I do think it's important for it to be linked with the real world prices." — Kazunori Yamauchi, Series Creator/Director, official blog post, 2022 [unverified]
+  - "The cafe's a place where you may meet some of the designers or the engineers that were actually involved, or actually created these cars that you've collected." — Kazunori Yamauchi, roundtable interview via GameSpot, 2022 [unverified]
+  - "I think the car is one of the most beautiful industrial products. The appreciation for the beauty of their shapes is car culture." — Kazunori Yamauchi, behind-the-scenes video via NME, 2021 [unverified]
+  - "We need to convey this information to new potential fans in order to keep car culture moving forward. That's not to say we won't be tackling the depth and realism we've always focused on, but we do have a big focus on accessibility." — Kazunori Yamauchi, TheGamer interview, 2021 [unverified]
+- Why players love/support it:
+  - GT players collect, tune, and photograph hundreds of cars because the game teaches them to love the objects themselves — the Café's designer stories, Scapes photo mode, the Daily Races community. The car is the character.
+- Monetization philosophy (devs' words, if any): Yamauchi directly addressed the economy backlash: he wants players to enjoy the game "even without microtransactions," while pricing cars against real-world prices to "convey their value and rarity," and to avoid "a situation where a player must mechanically keep replaying certain events over and over again." (Official blog post, 2022.)
+- Lesson for our games (1-2 lines, concrete): Build a "Café" for your roster — give each Concrete Dragon fighter lore, a creator/neighborhood story, and non-combat ways to enjoy them (customization, photo mode) so players collect and love characters, not just punch with them. Culture around the roster = infinite retention.
+- Sources:
+  - https://www.playstationlifestyle.net/2022/03/18/gran-turismo-7-director-kazunori-yamauchi-blog-issues/
+  - https://www.gamespot.com/articles/gran-turismo-7-wants-you-to-love-car-culture-again/1100-6500238/
+  - https://www.thegamer.com/kazunori-yamauchi-gran-turismo-7-interview/
+  - https://www.nme.com/news/gran-turismo-7-director-kazunori-yamauchi-talks-car-culture-in-new-video-3077175
+- Coverage note: Quotes are from search snippets (not fetched full pages), marked [unverified] per protocol. The 2022 blog-post quote is from Yamauchi's official PlayStation blog post as reported by PlayStation LifeStyle. No invented statements included.

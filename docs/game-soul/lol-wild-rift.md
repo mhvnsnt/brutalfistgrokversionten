@@ -1,0 +1,17 @@
+# League of Legends: Wild Rift — Heart and Soul
+- Developer / studio: Riot Games; launched Oct 2020; ~20M+ average monthly players (2022)
+- Genre / platforms: Mobile/console MOBA / iOS, Android (not a 1:1 port — rebuilt for mobile with refreshed models, systems, 15-20 min matches)
+- Why players come back (in the devs' view): A fulfilling mobile-native MOBA, not a port — the team "didn't want to just port League on PC 1:1" but made Wild Rift "designed for new platforms." Core philosophy: "doing things better is a lot more important than doing things first." Match stress and fatigue are tuned down for mobile (pacing, decision points, communication/ping systems). Exclusively-mobile players are rewarded with Wild-Rift-unique thematics, and the global esports vision — "the first truly global mobile sport" — gives competitive aspiration. Player feedback directly drives balance and role agency (e.g., support role reworks from player feedback).
+- Key quotes:
+  - "When you go into a space where there is established players... you need to give your audience a reason to even consider playing your game. Our whole philosophy revolves around one very important aspect: doing things better is a lot more important than doing things first." — Leo Faria, global head of Wild Rift Esports, Riot Games, Upcomer, 2022
+  - "We have a lot of players that choose to stick with us [exclusively] on Wild Rift, and we want to reward that investment with our time with really cool, new thematics they can enjoy." — Jared Berbach, game director, Wild Rift, GameSpot roundtable, 2022
+  - "We really wanted to tune [the] Elemental Rift to help players get better agency over their games, and feel better overall when it comes to pacing and how much game stress there was." — Adnan Mirza, gameplay producer, Wild Rift, GameSpot roundtable, 2022
+  - "One of our biggest goals is to create the first truly global mobile sport." — Leo Faria, global head of Wild Rift Esports, Riot Games, Upcomer, 2022
+- Why players love/support it: PC-League depth in 15-20 minute mobile sessions; favorite champions represented authentically; Wild-Rift-exclusive content treats mobile players as first-class, not second-class; champion roster growth targets players' "top three" favorites (all champions earnable free — cosmetics only for purchase).
+- Monetization philosophy (devs' words, if any): Champions all earnable free; monetization through cosmetic skins (Riot's PC-proven model). Design Director Brian Feeney emphasized making Wild Rift "feel like it was designed for new platforms" rather than monetizing a port. No on-record Wild Rift dev statement on monetization philosophy beyond the cosmetics model.
+- Lesson for our games (1-2 lines, concrete): Rebuild for the platform, don't port — strip complexity that causes fatigue on the target device and tune pacing/agency for its sessions. "Doing things better is more important than doing things first" — being late is fine if the quality earns the player's reaction: "holy s***, this game is actually good."
+- Sources:
+  - http://upcomer.com/wild-rift-esports-is-bringing-riot-into-the-world-of-mobile-gaming/
+  - https://www.gamespot.com/articles/riot-discusses-its-diversity-efforts-for-wild-rift-and-the-power-spike-update/1100-6507800/
+  - https://www.inverse.com/gaming/league-of-legends-wild-rift-gameplay-reveal
+- Coverage note: Quotes verified via fetched pages (Upcomer, GameSpot). No on-record dev monetization philosophy found — stated as such.
