@@ -1,0 +1,25 @@
+# Palworld — Heart and Soul
+- Developer / studio: Pocketpair (CEO Takuro Mizobe)
+- Genre / platforms: Monster-taming survival crafting with guns — PC, Xbox, PS5 (Early Access 2024)
+- Why players come back (in the devs' view):
+  - Player agency over scripted story: "We want players to create their own interpretation of the world through the environment and game mechanics... Player agency will be key in Palworld, which is why players can be good or bad. We want players to build their own story, and the gameplay mechanics are our way of facilitating that." — Mizobe, NME, 2021
+  - Built to be watched, not just played: Mizobe describes the current era as one where "a game must be fun to watch as well as play" — meme-bait design (dead Pal bodies left in the world, guns in monster-taming) generates the social chatter that sells the game.
+  - Multiplayer as default: "a game without a multiplayer mode just doesn't feel right in the era we live today" — the game is a shared sandbox, not a solo quest.
+  - Deliberately imperfect world: "We don't want Palworld to be beautiful and perfect. We want to inject elements of darker themes, including exploitation and violence, alongside the intelligent animals." — the friction (Pals as free labor, guns, chaos) is the identity, not a bug.
+- Key quotes:
+  - "In Palworld, the bodies of defeated Pals remain in the game, meaninglessly. Typically, when you kill monsters or enemies, they either disappear or linger to be looted. Colleagues were against leaving useless bodies in the game, but I pushed it through because I thought players would find a way to play with and talk about it." — Takuro Mizobe, CEO, Bloomberg / PC Gamer, 2024
+  - "We don't want Palworld to be beautiful and perfect. We want to inject elements of darker themes, including exploitation and violence, alongside the intelligent animals." — Takuro Mizobe, CEO, NME, 2021
+  - "We are and will remain a small studio. I want to make multiple small games. Big-budget triple-A games are not for us." — Takuro Mizobe, CEO, Bloomberg, 2024 [unverified]
+- Why players love/support it:
+  - The mashup nobody asked for but everyone watched: Pokemon-shaped creature collecting + ARK survival + guns + slave-labor factories — the reveal trailer sold a fantasy AAA won't touch, and players rewarded the audacity (25M+ players in weeks on a ~$6.7M budget).
+  - Small-studio underdog narrative: Mizobe staying small and refusing AAA keeps the community rooting for the team, and keeps Pocketpair's risk-taking alive.
+  - Emergent story engine: bases, Pal labor automation, and darkly funny systems give streamers and friend groups infinite content without scripted quests.
+- Monetization philosophy (devs' words, if any):
+  - No on-record monetization manifesto from Mizobe. The model is Early Access buy-to-play with no microtransactions at launch; ongoing revenue comes from platform expansion (PlayStation release) and content updates rather than in-game spending.
+- Lesson for our games (1-2 lines, concrete):
+  - Design for the stream, not just the player: ship one or two meme-generating, "you won't believe this" systems (dead bodies stay, Pals do labor) and players market the game for you. Player agency over scripted narrative — let them be good or bad.
+- Sources:
+  - https://www.nme.com/features/palworld-a-tale-of-adorable-monsters-friends-late-stage-capitalism-labour-exploitation-2985030
+  - https://www.pcgamer.com/games/survival-crafting/palworld-dev-says-a-game-without-a-multiplayer-mode-just-doesnt-feel-right-in-the-era-we-live-today/
+  - https://www.keengamer.com/articles/news/pocketpair-ceo-takuro-mizobe-details-how-palworld-took-the-world-by-storm-report/
+- Coverage note: NME and PC Gamer quotes fetched and verified. The "small studio" Bloomberg quote is from a search snippet (marked [unverified]). No on-record dev statement found on Palworld's monetization philosophy.

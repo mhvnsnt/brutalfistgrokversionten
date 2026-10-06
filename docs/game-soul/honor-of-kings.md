@@ -1,0 +1,15 @@
+# Honor of Kings — Heart and Soul
+- Developer / studio: TiMi Studio Group / Tencent
+- Genre / platforms: 5v5 MOBA; mobile
+- Why players come back (in the devs' view): Emotional resonance and social connection — the game fills a social function, giving ways to socialize and meet people; players bond with heroes drawn from familiar Chinese history and culture, building long-term emotional connections.
+- Key quotes:
+  - "We want to create heroes with their own personalities, so that players can establish a genuine emotional connection with them." — Honor of Kings team, TiMi Studios, Tencent Perspectives interview, 2020
+  - "We realized that we have the opportunity and obligation to express and show the traditional Chinese culture in a young and contemporary way... Great IP doesn't happen overnight. It's the outcome of a long process whereby players build strong emotional connections and resonance." — Honor of Kings team, Tencent Perspectives, 2020
+  - "First, we have to provide players with a good emotional experience by shaping resonance with the game's world. Second, we have to gather a team who share the same vision and interests, and let them continuously grow and excel in the areas of their expertise." — Honor of Kings team, Tencent Perspectives, 2020
+  - "We don't think about game design as something divided by boundaries. The games market is globalized and a good game will transcend borders." — Vincent Gao, International Director, TiMi Studios, GamesIndustry.biz [unverified — via secondary quote]
+- Why players love/support it: Cultural pride (heroes from their own history), plus 5v5 with friends as a daily social ritual.
+- Monetization philosophy (devs' words): No on-record statement found on pricing/fairness. The team frames success as earned through long-term emotional connection rather than extraction: "When people think of Honor of Kings in the future, we hope they think of more than just the game – we hope they think of the powerful emotional connections they associate with playing."
+- Lesson for our games: Root your roster in a culture people claim. Heroes with personality beat stat blocks.
+- Sources:
+  - https://www.tencent.com/en-us/articles/2201106.html
+- Coverage note: No direct dev quotes on monetization fairness/pricing found in reviewed sources.

@@ -1,0 +1,18 @@
+# Cyberpunk 2077 — Heart and Soul
+- Developer / studio: CD Projekt Red
+- Genre / platforms: Open-world action RPG / PC, PlayStation, Xbox
+- Why players come back (in the devs' view): Trust and persistence. CDPR's post-2020 arc is built on admitting failure publicly, shipping years of patches (Update 2.0) and a major expansion (Phantom Liberty), and letting the game's Night City world prove itself over time. Players return because the experience genuinely improved and the studio kept working.
+- Key quotes:
+  - "I have incredible gratitude. After the release of Cyberpunk, it was tough, it was heartbreaking but we kept going." — Paweł Sasko, Quest Director, TheNeonArcade interview via PCGamesN, 2023
+  - "I'm so glad that we kept going, fuelled by the passion of a fraction of the community at the beginning, and then slowly we gained more and more throughout the patches." — Paweł Sasko, Quest Director, TheNeonArcade interview via PCGamesN, 2023
+  - "In a way, if you fail the only thing that matters is how you'll be remembered afterwards. Will you just get up and keep going? We kept going, and we managed to make it and I'm honestly so proud of this team and community." — Paweł Sasko, Quest Director, TheNeonArcade interview via PCGamesN, 2023
+  - "I'm not 100 per cent convinced we went through the full redemption arc... But I do hope we will be able to make it back – if not with The Witcher 4, then with whatever comes next." — Michał Nowakowski, co-CEO, Edge in Person at DevGAMM Gdańsk (reported by VGC), 2026 [unverified]
+- Why players love/support it: Night City's dense, cinematic world; strong story and characters; free major updates and the Phantom Liberty expansion felt like genuine commitment rather than repair marketing; the Edgerunners anime crossover revived interest organically.
+- Monetization philosophy (devs' words, if any): Premium game + full expansion model (no pay-to-win mechanics in the RPG); on record CDPR has historically positioned itself against exploitative monetization — for this game specifically, devs frame value as: the game itself must earn the price through quality. No on-record statement found on live-service monetization philosophy for Cyberpunk specifically.
+- Lesson for our games (1-2 lines, concrete): Ship and fix visibly: a public roadmap, honest communication, and updates players can *feel* convert betrayal into loyalty. For Concrete Dragon: keep a changelog players can see and celebrate fixes as releases.
+- Sources:
+  - https://www.pcgamesn.com/cyberpunk-2077/reception
+  - https://www.videogameschronicle.com/news/cdprojekt-red-ceo-says-cyberpunk-didnt-finish-its-redemption-arc-hopes-the-witcher-4-will-win-over-those-who-lost-faith/
+  - https://gameranx.com/?p=511854
+  - https://Www.thegamer.com/cyberpunk-2077-phantom-liberty-interview-quest-designer-maria-mazur-cd-projekt-red/
+- Coverage note: Quotes from Sasko verified via fetched PCGamesN page (Nov 2023). Nowakowski quote sourced from VGC search snippet — [unverified]. No on-record dev statement found on a specific monetization philosophy for Cyberpunk 2077.

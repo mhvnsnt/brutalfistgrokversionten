@@ -1,0 +1,16 @@
+# Grand Theft Auto Online — Heart and Soul
+- Developer / studio: Rockstar Games (Rockstar North)
+- Genre / platforms: Open-world online action; PC, console
+- Why players come back (in the devs' view): Player-created moments inside a living world — emergent role-play, community-led events, stunt communities, movies made with the Rockstar Editor; "the idea of everyone coming together and pulling in the same direction to complete a shared goal."
+- Key quotes:
+  - "The community's contribution to the overall design of the game has only increased over time – our vision remains, but it's in a beautiful partnership with the community." — Scott Butchard, Design Director, Rockstar North, GamesRadar, 2023 (10th anniversary interview)
+  - "It's super important to us that players find new ways to connect with each other – whether through events we create or by us providing the tools for them to create their own moments." — Scott Butchard, GamesRadar, 2023
+  - "We love checking out the latest crazy videos when people discover some new way to play in the world." — Imran Sarwar, Director of Design, Rockstar North, Game Informer, October 2017
+  - "With GTA Online, we decided to give our players access to all updates for free, because it kept our players together... Everyone has access to everything and no one is forced to pay a lump sum for items they may not want or need." — Imran Sarwar, Game Informer, 2017
+- Why players love/support it: The fantasy of the living street — your crew, your cars, your chaos, in a city that never sleeps. A decade of free updates kept everyone together.
+- Monetization philosophy (devs' words): Paid DLC "fractured the audience and helped to kill the games much faster than they deserved" (GTA IV, Red Dead Redemption) — so all GTA Online updates are free. "People can happily play and never spend a dollar." Take-Two CEO Strauss Zelnick: the company is "focused on players, not payers" — get engagement right and "the monetization will take care of itself." [unverified — via DualShockers]
+- Lesson for our games: Directly our genre's king — the street has to feel alive and YOURS. Free updates keep the community together; never fracture the audience with paid gates.
+- Sources:
+  - https://www.gamesradar.com/gta-online-design-director-couldnt-have-ever-dreamed-itd-still-be-going-10-years-on/
+  - https://www.gameinformer.com/b/features/archive/2017/10/23/exclusive-interview-rockstar-discusses-past-present-and-future-of-grand-theft-auto-online.aspx
+- Coverage note: Zelnick quote via secondary reporting; marked unverified.

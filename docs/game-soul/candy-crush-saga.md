@@ -1,0 +1,17 @@
+# Candy Crush Saga — Heart and Soul
+- Developer / studio: King (Microsoft)
+- Genre / platforms: Match-3 puzzle / iOS, Android, web, Windows
+- Why players come back (in the devs' view): Retention beats everything — King continuously prunes the least-fun levels (out of 20,000+) using "time to abandon" and "time to pass" metrics that separate fun from difficulty, because players who don't churn compound over time.
+- Key quotes:
+  - "Retention always wins." — Jan Wedekind, Head of Central Insights, King, GDC talk (via MobileGamer.biz), 2024
+  - "Make a level easier and you will make less conversions, and that's not ideal. But in exchange for that, you're saving players from churning… and those players, like compound interest, will start growing and in subsequent levels they may start spending." — Xavier Guardiola, Senior Director of Data Science, King, GDC talk (via MobileGamer.biz), 2024
+  - "Crazy hard levels never pay off, at least in the long term. Designing for averages is not a good idea." — Jan Wedekind, Head of Central Insights, King, GDC talk (via MobileGamer.biz), 2024
+  - "Instead of designing strictly for competitive or casual players, we focus on creating systems that can support these different motivations within the same experience." — Mick Heijkens, Candy Crush designer, King, PocketGamer.biz, 2025 [unverified]
+- Why players love/support it: It fits into the cracks of the day (commute, waiting for the bus), offers both calm relaxation and competitive mastery, and live-ops events (tournaments, All Stars with in-person finals) give long-term goals on top of the puzzle loop.
+- Monetization philosophy (devs' words, if any): Long-term over short-term: saving players from churning matters more than squeezing conversions out of one hard level — retained players compound like interest and spend later.
+- Lesson for our games (1-2 lines, concrete): Separate fun from difficulty with real metrics, keep hard moments SHORT, and never trade player goodwill for a single level's conversions — retention is the revenue strategy.
+- Sources:
+  - http://mobilegamer.biz/how-king-defines-a-good-candy-crush-saga-level-and-why-it-constantly-prunes-the-bad-ones/
+  - https://www.pocketgamer.biz/competitive-or-casual-designing-candy-crush-with-a-spectrum-of-flavours/
+  - https://onlinetechguru.co.uk/reddit-posts-can-be-more-important-than-data-and-other-lessons-from-maintaining-candy-crush-as-a-forever-game/
+- Coverage note: The Heijkens quote is from a search snippet, marked [unverified]. Player motivations (relaxation, commute play) are ANALYSIS from press interviews, not standalone dev philosophy statements.

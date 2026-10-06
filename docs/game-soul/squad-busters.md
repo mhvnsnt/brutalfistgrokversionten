@@ -1,0 +1,17 @@
+# Squad Busters — Heart and Soul
+- Developer / studio: Supercell (CEO Ilkka Paananen; game lead Eino Joas) — 10-minute party action game, iOS/Android
+- Genre / platforms: Party action / MOBA-lite squad battler — iOS, Android
+- Why players come back (in the devs' view): STATUS NOTE (Oct 2026): Squad Busters is the first live Supercell game to be SHUT DOWN. It never solved retention, and Supercell's own postmortem is the "heart and soul" record — a lesson in why fun alone doesn't retain. The team tried: Heroes update, 2.0 reboot with direct dual-stick control ("hearing that players wanted more agency"), but "too few players connected with it deeply enough to find the fun and stay for the long-term."
+- Key quotes:
+  - "We had 40 million pre-registrations, 75 million installs, but not a lot of those players stuck around. They came in and didn't find what they were looking for. We were blind to that." — Eino Joas, Game Lead, via PocketGamer.biz (Supercell blog), 2026
+  - "We all felt that our risk appetite was getting too constrained, and we weren't being bold enough." — Eino Joas, Game Lead, via PocketGamer.biz (Supercell blog), 2026
+  - "We want every update to push the game forward in a meaningful way and keep it fun for years. When we realised we couldn't keep improving Squad to the level we expect and that our players deserve, we decided it was better to stop than to stretch it just to keep it alive." — Squad Busters team, PocketGamer.biz, 2026 [unverified — from search snippet]
+  - "The journey really was hearing that players wanted more agency throughout the game, so making sure they had more ability to impact the core gameplay and progress their own journeys." — Johnathan Rowlands, Squad Busters dev, PocketGamer.biz (2.0 interview), 2025 [unverified — from search snippet]
+- Why players love/support it: (Historical — the game is shutting down.) Short 10-minute matches, beloved Supercell IP mashup roster, accessible party chaos. Players liked it for a few days but the core never developed long-term depth — "lacks the ability to retain players for extended periods of time" (MobileGamer analysis).
+- Monetization philosophy (devs' words, if any): No on-record monetization philosophy found. The postmortem notes the one-month soft launch "didn't allow for testing of the meta and long-term retention and monetisation beyond D7" — i.e., the failure to validate monetization durability pre-launch was a named lesson.
+- Lesson for our games (1-2 lines, concrete): Beta retention doesn't predict global retention — validate long-term (D30+) meta, retention, and monetization before a marketing push, and never be ashamed to kill a game that can't reach "fun for years" quality ("better to stop than to stretch it just to keep it alive").
+- Sources:
+  - https://www.pocketgamer.biz/pressure-to-launch-a-new-game-led-to-squad-busters-global-release/
+  - https://www.pocketgamer.biz/level-of-squad-busters-rework-would-have-made-it-almost-a-completely-new-game/
+  - https://www.pocketgamer.biz/squad-busters-20-id-say-this-is-the-biggest-change-to-a-game-of-this-scale-from-supercell-and-possibly-ever/
+- Coverage note: This is a shutdown postmortem, not a success story — included because the owners' stated reason (killing vs. stretching) is itself a dev philosophy statement. Two quotes from fetched page (Joas), two from search snippets marked [unverified].

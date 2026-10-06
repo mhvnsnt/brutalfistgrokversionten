@@ -1,0 +1,19 @@
+# DayZ — Heart and Soul
+- Developer / studio: Bohemia Interactive (created by Dean Hall, who left in 2014; current creative lead Eugen Harton)
+- Genre / platforms: Open-world multiplayer survival, PC / PS / Xbox
+- Why players come back (in the devs' view): Character permanence — your life persists across servers, so loss stings and every encounter matters. "Hell is other people": the zombies are just weather; the essential loop is emergent, unscripted human interaction. Plus a weekly update cadence (Hall: "Every week since we launched we're doing updates, no matter what") as learned content maintenance.
+- Key quotes:
+  - "That's what the DayZ experience was... one of the reasons why he thinks it resonated so deeply with players was the fact that your character and that character's life was persistent. You could be on any server and play as you. 'That's quite addictive because we innately understand the concept of permanence. You have a sense of loss when you lose it.'" — Dean Hall, Creator, NME, 2022
+  - "DayZ is not primarily a zombie shoot-em-all action spectacle... DayZ is really a much quieter, tactical multiplayer survival game where emergent player interaction (with all the blood pumping moments connected with it) is the essential part of the core gameplay loop. Zombies are merely one of the environmental threats." — Bohemia Interactive (Creative Lead Eugen Harton via GamingBolt interview), 2018
+  - "It sounds so PR-ish but you can't design this. You cannot force the kind of emergent gameplay you get when you put 50 people in Chernarus and give them the tools to do whatever the hell they want." — Brian Hicks, Producer, PCGamesN, 2014 [unverified]
+  - "When I play a game, I want to be moved... games, now more than any medium, now offer you the ability to actually create your own story rather than follow someone else's." — Dean Hall, Creator, PC Gamer, 2012 [unverified]
+- Why players love/support it: It's the "best story machine in gaming" — unscripted betrayals, rescues, and alliances that players still retell years later; the emotional weight of permanent loss; streamers and YouTubers (Hicks: "Youtube and Twitch are the entire force behind DayZ's success," built on a "nearly $0 marketing budget"); and a decade of continued Bohemia support that outlasted its own creator's tenure.
+- Monetization philosophy (devs' words, if any): No on-record statement found about monetization philosophy. DayZ has been a buy-once title with no microtransactions; a paid expansion (Livonia) arrived years post-launch.
+- Lesson for our games (1-2 lines, concrete): Make the character/life persistent so loss is real — permanence is the emotional engine that turns random encounters into stories players retell. Then give streamers a story machine and let their footage be the marketing.
+- Sources: (URLs)
+  - https://www.nme.com/features/dean-hall-on-redefining-the-survival-genre-dayz-at-10-3155300
+  - https://gamingbolt.com/dayz-interview-we-certainly-did-not-take-the-money-and-ran-off
+  - https://www.pcgamer.com/day-z-interview-how-zombies-arma-2-created-gamings-best-story-machine/
+  - https://www.pcgamesn.com/dayz/dayz-producer-youtube-and-twitch-are-the-entire-force-behind-dayzs-success
+  - https://www.fastcompany.com/3025201/dayz-a-murder-simulator-psychology-study-and-zombie-game-tests-your-emo
+- Coverage note: No on-record dev statements found on monetization philosophy. The Brian Hicks and 2012 Hall quotes were taken from search snippets (marked [unverified]); the NME and GamingBolt quotes were verified from fetched pages. Press analysis (Fast Company, gamereactor) used only for player-side color, labeled ANALYSIS where applicable.

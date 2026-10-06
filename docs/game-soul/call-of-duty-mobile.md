@@ -1,0 +1,15 @@
+# Call of Duty: Mobile — Heart and Soul
+- Developer / studio: TiMi Studios (Tencent) — developer; Activision — publisher
+- Genre / platforms: First-person shooter / battle royale; iOS + Android
+- Why players come back (in the devs' view): Monthly seasonal cadence with a light narrative theme each season, constant fresh modes/maps/rewards, classic Call of Duty nostalgia (iconic maps like Nuketown, iconic operators), and live response to community feedback shaping the Battle Pass.
+- Key quotes:
+  - "Ensuring that players have a fair and even playing field was of utmost importance during development and continues to this day. We wanted to be sure that all players will have the same opportunities to win." — Chris Plummer, VP Mobile, Activision, GameSpot interview, 2020
+  - "Currently we are focused on continuously keeping Call of Duty: Mobile fresh and interesting so our players will always have something fun to do in-game. As we mentioned early, the new monthly seasonal content should provide many reasons to keep coming back to the game." — Chris Plummer, VP Mobile, Activision, GameSpot interview, 2020
+  - "We wanted it to be easy for our players to know when a season would begin and end. And then add to that, we wanted to add a light narrative to each season." — Chris Plummer, VP Mobile, Activision, GameSpot interview, 2020
+- Why players love/support it: console-grade visceral gunplay on a phone, ranked and Battle Royale modes, cosmetic progression with no pay-to-win, community that feels heard (devs reshape the Battle Pass on feedback).
+- Monetization philosophy (devs' words, if any): "We wanted to be sure that all players will have the same opportunities to win" — fair, even playing field as the founding rule; Battle Pass revised to be "more thematic and less of a time grind" per fan feedback. (ANALYSIS: cosmetic-only, urgency via limited-time bundles.)
+- Lesson for our games (1-2 lines, concrete): Run a predictable monthly season with a light narrative theme and keep everything earnable-but-fun — and never let money buy power: players accept heavy monetization when the playing field stays visibly fair.
+- Sources:
+  - https://www.gamespot.com/articles/as-call-of-duty-mobile-reaches-new-milestone-vp-di/1100-6475546/
+  - https://www.pocketgamer.com/call-of-duty-mobile/jeffrey-gullett-interview/
+- Coverage note: On-record dev statements from the GameSpot interview with Activision's mobile VP verified via fetched page. Additional monetization analysis (LinkedIn business analysis) is ANALYSIS, not dev quotes.

@@ -1,0 +1,19 @@
+# Team Fortress 2 — Heart and Soul
+- Developer / studio: Valve (project lead Robin Walker)
+- Genre / platforms: Class-based multiplayer hero shooter, PC / Mac / Linux (free-to-play since 2011)
+- Why players come back (in the devs' view): Massive class updates that each became a multi-part story — "big updates gave the press and community a reason to talk about it, which got more people to try it for the first time"; a community that votes on the update content itself (players "indirectly voting on the content of the update"); and a hats/status economy — "customers being able to make themselves stand out... Status has value to people." Post-F2P, "in multiplayer games, the more people actually playing it creates more value for each consumer."
+- Key quotes:
+  - "When you're a AAA box game, the only people who can earn you new revenue are the people who haven't bought your game... There's a fundamental tension between building the game to satisfy existing players and attract new players." — Joe Ludwig, Programmer, GDC 2012 (via Game Developer)
+  - "Customers being able to make themselves stand out in any way has value. Status has value to people." — Robin Walker, Project Lead, PC Gamer, 2010 [unverified]
+  - "The only items we sell exclusive to the store are cosmetic or items optional to gameplay... no-one can buy an in-game advantage over someone who's choosing to find their items." — Robin Walker (GDC)/PC Gamer, 2010-2012; Ludwig at GDC: "all the items that change the game [are] free" (via Game Developer, GDC 2012)
+  - "At this point, more than half of the items in TF2 are contributed by the community. Pretty much every place you give the community a chance to change the game, they'll do it, and they'll probably do a better job than you would." — Joe Ludwig, Programmer, GDC 2012 (via Game Developer)
+- Why players love/support it: Nine endlessly memeable classes with genuine personality (the "Meet the Team" shorts); humor baked into the design, not bolted on; a community that literally builds half the game (items, 19+ shipped community maps, top creators earning $500k/year); and a hat economy that became real barter — so real it "broke PayPal" and created its own currencies.
+- Monetization philosophy (devs' words, if any): All gameplay-affecting items are earnable free via drops/crafting; store-exclusive items are cosmetic-only; weapons/items are designed as tradeoffs "so there's no clear winner between two items"; no intermediary virtual currency (Steam Wallet, exact-amount loading); paid players got a "Proof of Purchase" hat, but "we didn't include any restriction on how you could play the game itself." Results Valve disclosed: item-store revenue was 4x the game's boxed sales; after the F2P switch, overall revenue was up 12x — and the concurrent player base grew 400%.
+- Lesson for our games (1-2 lines, concrete): Make status sellable and power free — hats fund the game, never advantage. And let players vote on update content with their reactions; the community will market the update for you.
+- Sources: (URLs)
+  - https://www.gamedeveloper.com/business/gdc-2012-how-valve-made-em-team-fortress-2-em-free-to-play
+  - https://www.pcgamer.com/interview-valve-on-why-theyre-selling-team-fortress-2-items-for-real-money/
+  - https://www.pcgamer.com/valve-on-the-future-of-team-fortress-2-part-two/
+  - https://www.engadget.com/2011/06/23/valve-relaunching-team-fortress-2-as-free-to-play-title/
+  - https://www.rockpapershotgun.com/rps-team-fortress-2-interview-part-2
+- Coverage note: GDC 2012 quotes verified from the fetched Game Developer write-up of Joe Ludwig's talk. The "status has value" Robin Walker quote and the Gabe Newell "$500k item makers" figures came from search snippets (marked [unverified]). Years given are for the underlying interviews/talks, not snippet recency.

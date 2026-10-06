@@ -1,0 +1,18 @@
+# Zenless Zone Zero — Heart and Soul
+- Developer / studio: HoYoverse (miHoYo); producer Zhenyu Li
+- Genre / platforms: Urban-fantasy action RPG gacha — iOS/Android, PC, PS5
+- Why players come back (in the devs' view): ZZZ deliberately does NOT punish breaks. Producer Zhenyu Li's retention philosophy is inverted from the usual gacha grind: there is no "ultimate goal" to force dailies; the game courts lapsed players back by making the return itself joyful — chill urban life, coffee, Bangboo — and combat built on Street Fighter-style duel feel with simplicity-first design.
+- Key quotes:
+  - "I don't want to make players feel like there's an ultimate goal they have to achieve... When they're back, I want to create something to better facilitate them — to bring back the joy again and to get them back into the mood of enjoying this game." — Zhenyu Li, Producer, Pocket Tactics interview, 2024 [unverified — from search snippet]
+  - "To me, complexity doesn't determine what is interesting. For example, just because the Super Mario games use simple run or jump buttons, it doesn't mean that they aren't fun... using fewer buttons to bring out more joy in players." — Zhenyu Li, Producer, Geek Culture roundtable interview, Singapore, 2024
+  - "I'm sure player retention isn't just crucial to ZZZ, but to every game with long-term operations... We will never retreat to any ivory tower. ZZZ's continual growth is intimately connected to player support — and player criticism, of course." — Zhenyu Li, Producer, Push Square interview, 2025 [unverified — from search snippet]
+  - "We hope players can feel that we're not only listening to their voices but also that they're seeing it reflected in-game through the constant optimizations... a large part of our team's motivation comes from the passion of the player community." — Zhenyu Li, Producer, Push Square interview, 2025 [unverified — from search snippet]
+- Why players love/support it: Flashy-but-readable combat (dodge/parry/chain attacks, Bangboo companions), stylish urban-punk world of New Eridu, light daily load framed as "urban living," and a dev team publicly responsive to feedback (the much-publicized v1.4 TV-mode rework).
+- Monetization philosophy (devs' words, if any): No on-record monetization quote found. On-record philosophy: anti-FOMO retention and "quality not quantity" character design ("we strive to make the movements more delicate... as original as possible") — spend follows care, not coercion. [unverified — Pocket Tactics snippet]
+- Lesson for our games (1-2 lines, concrete): Make coming BACK feel good, not guilty: remove break-punishing friction and give returners a joyful re-entry. And remember Li's law — simplicity (fewer buttons, more joy) beats complexity for mass appeal.
+- Sources:
+  - https://geekculture.co/geek-interview-hoyoverse-zenless-zone-zero-street-fighter/
+  - https://www.pockettactics.com/zenless-zone-zero/interview-2
+  - https://www.pushsquare.com/features/interview-how-zenless-zone-zeros-devs-have-leveraged-fan-feedback-to-level-up-the-ps5-gacha-game
+  - https://www.vg247.com/zenless-zone-zero-devs-speak-on-huge-version-14-changes-where-the-game-stands-among-the-hoyoverse-catalogue-and-being-a-dev-team-who-actually-listens
+- Coverage note: Two quotes verified from a fetched page (Geek Culture, 2024); the Pocket Tactics and Push Square quotes come from search snippets and are marked [unverified].

@@ -1,0 +1,15 @@
+# Whiteout Survival — Heart and Soul
+- Developer / studio: Century Games (Singapore)
+- Genre / platforms: 4X survival strategy (frozen post-apocalyptic) — iOS, Android
+- Why players come back (in the devs' view): ANALYSIS (no on-record dev statements found). By design evidence: the game wraps a hardcore 4X core inside a cozy settlement-survival onboarding (borrowed from Century's Frozen City), then retains through alliance social obligation — territory expansion, coordinated defense against blizzard cycles, and event cadence. An academic study of the game (arXiv, 2026) found alliance cultures — egalitarian or hierarchical — are the primary retention engine, shaping even how whales spend and socialize.
+- Key quotes:
+  - (No on-record developer quotes found.) ANALYSIS: "The whole onboarding experience... smoothly transitions into actual gameplay... while the game still keeps the illusion that it is actually a game from the creatives... UA directly overlaps with product design" — Jakub Remiar, product/game-design consultant, PocketGamer.biz guest analysis (2024), on the new-wave 4X onboarding playbook that Whiteout Survival pioneered alongside Top War.
+- Why players love/support it: Atmospheric slow-burn settlement building, heroes with real backstories tied to the frozen world, alliance teamwork (F2P and whales in symbiosis — "in a successful state there is no 'us vs them', there is only Together" — WSCO community), and the weather/blizzard system adding a strategic-patience layer no pure war game has.
+- Monetization philosophy (devs' words, if any): No on-record statements found. ANALYSIS: aggressive-but-layered — hero gacha, season passes, event-driven offer cadence, massive UA spend funded by high ARPPU; keeps F2P masses engaged so whales have a world worth ruling (the symbiosis documented by the community and the arXiv study).
+- Lesson for our games (1-2 lines, concrete): Mask complexity behind a cozy onboarding (build the mini-game players see in ads INTO the real game, not just the funnel), and treat social structures — alliances, shared rituals — as the retention layer, not a feature.
+- Sources:
+  - https://www.pocketgamer.biz/game-analysis-exploring-rivergames-last-war-ua-scaling-strategy/
+  - https://markets.financialcontent.com/gatehouse.rrstar/article/worldnewswire-2026-6-15-last-war-vs-whiteout-survival-a-battle-of-strategy-and-survival
+  - https://export.arxiv.org/pdf/2607.25574
+  - https://www.whiteoutsurvival-community.com/tools/blog.html
+- Coverage note: No on-record developer interviews found — Century Games does not do English press. All "dev view" content above is ANALYSIS from industry consultants, press, and an academic paper, labeled accordingly. No quotes presented as dev statements.
