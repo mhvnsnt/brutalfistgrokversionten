@@ -140,3 +140,15 @@ Important: these are implementation corrections, not a claim that all animation 
 - Expanded docs/OPEN_SOURCE_ANIMATION_INTAKE.md with KayKit Character Animations as a CC0 candidate source and with the larger per-character move-graph target.
 - Main implementation sequence: 6241232f (directional slots), 1075d7d9 (slot library), 1644acfe (catalog frame-data resolution), 1092e552 (directional kick slots), 85ff8149 (directional input routing), cbd013ff (fighter-specific synthesized defaults), fd216f68 (separate move IDs from clips), e7dc4f36 (initial-match binding cleanup), 42054a30 (reset binding), c68b7584 + 17667bac (tests), 389cf2c1 (open-source intake update), a0192d18 (persistent gaps).
 - CI/browser runtime certification is still UNKNOWN; no GitHub Actions workflow run was attached to the latest test commits when checked.
+
+
+### Intro FMV treatment v2: owner decisions, round 2 (docs only) — 2026-09-28
+
+- Added the intro-movie production docs under `docs/intro-movie/`: `DIRECTOR_BLUEPRINT.md` (owner source), `TREATMENT.md` (v2, 1800 frames / 60s at 30fps), `TREATMENT_v1.1.md` (archived), `GOD_WITHIN_RESEARCH.md`, and `CANON_NOTES.md`.
+- Stick-Up: Cyborg attire only in the Banyan Tree scenes (C1–C3), and the normal `STICKUP.glb` look everywhere else, including I1–I2. The Cyborg model is MODEL_MISSING (the owner is building a Terminator-style model). The stand-in is the default model plus a post/VFX metal half-face and red eye, clearly flagged.
+- "Beast Mode" is struck as a named state. The I3 Bannon roar stays as a plain power moment.
+- God Within is reframed as an alternate-universe, ontological reference (the Devil Within counterpart), not a power-up mode. Grounded visuals are limited to the Bannon Reality Check distortion and the God Within attire GLBs. Eye glow is UNKNOWN, and any fallback is a flagged placeholder.
+- B5 Golden Bull: `PABLO_goldenbull.glb` is a humanoid attire (58-joint Mixamo rig, no emissive), not a bull form. Options (a) through (c) are documented, with (a) recommended: a flash-frame swap to the existing GLB. Pablo's `bf_bull_rush` has no catalog entry and no clip.
+- Music: a generated placeholder is pending the owner's approval or rejection.
+- Every repo GLB checked is decimated to about 18k tris. The un-decimated sources are UNKNOWN until the owner supplies them.
+- No code or assets changed. Every FMV shot remains RUNTIME_PENDING until it's rendered, reopened, and SHA-256 logged.

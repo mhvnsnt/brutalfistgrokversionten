@@ -1,5 +1,24 @@
 # Brutal Fist — dev conversation
 
+## 2026-09-28 — intro FMV treatment v2: owner decisions, round 2 (docs only)
+
+The owner's intro-movie production docs are now in the repo under `docs/intro-movie/`:
+[`DIRECTOR_BLUEPRINT.md`](docs/intro-movie/DIRECTOR_BLUEPRINT.md) (owner source),
+[`TREATMENT.md`](docs/intro-movie/TREATMENT.md) (v2, the 60s / 1800-frame cut),
+[`TREATMENT_v1.1.md`](docs/intro-movie/TREATMENT_v1.1.md) (archived),
+[`GOD_WITHIN_RESEARCH.md`](docs/intro-movie/GOD_WITHIN_RESEARCH.md), and
+[`CANON_NOTES.md`](docs/intro-movie/CANON_NOTES.md).
+
+Owner decisions in round 2:
+- **Stick-Up** wears Cyborg attire only in the Great Banyan Tree scenes (C1–C3). He uses his normal `STICKUP.glb` look everywhere else, including I1–I2. The owner will build the Terminator-style cyborg model himself, so it's MODEL_MISSING for now. The stand-in is the default model plus a post/VFX metal half-face and red eye, flagged as a stand-in.
+- **"Beast Mode" is struck.** It isn't an owner term. The I3 Bannon roar stays as a plain power moment (red push, chromatic fringe).
+- **God Within** is an alternate-universe, ontological reference, the counterpart to Devil Within. It isn't a power-up mode, and it will come to Brutal Fist later as a separate mode. The Bannon repo grounds only the Reality Check screen distortion and the God Within attire GLBs. Eye glow is UNKNOWN, and any eye-glow fallback is a flagged placeholder.
+- **Golden Bull (B5):** `PABLO_goldenbull.glb` is a humanoid Pablo attire on the same 58-joint Mixamo rig, not a bull shape. The treatment lists options (a) flash-frame swap, (b) gold VFX/grade, and (c) an owner-built transform, and recommends (a).
+- **Music:** a generated placeholder is pending the owner's approval or rejection.
+- **Canon (owner-stated):** Onyx's chaos faction (Onyx, Static, Hollow, Cipher, Echo) sits outside AWE and Corporate/JPCW. Finxsse is the flip-flopper opposite Bannon. Theory (Onyx's future partner) has no in-game model and is excluded from the FMV.
+
+Flag: every repo GLB checked is decimated to about 18k tris, so the "high-poly, un-decimated" target needs the owner's source files. No code, assets, or runtime behavior changed in this entry.
+
 ## 2026-09-18 — the infinite "Generating preview" was a Turbopack panic on the NEXT surface
 
 Owner: the Rocket preview "still infinitely says generating the preview ... and never shows or loads".
