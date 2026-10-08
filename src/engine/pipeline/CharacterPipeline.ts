@@ -88,6 +88,7 @@ import {
 } from '../retarget/BannonClipJsonAdapter';
 import { loadBakedMotionBank } from '../retarget/BakedMotionBank';
 import { isCollapsedAnimationClip, recoverBannonEulerClip } from '../retarget/UniversalAnimationRecovery.ts';
+import { retargetBakedClipsForTarget } from '../retarget/RuntimeUniversalRetarget.ts';
 import {
   buildSchwarzerblitzMotionClips,
   schwarzerblitzSourceRest,
@@ -853,6 +854,9 @@ export async function extractAndRetargetAnimations(
       bakedBound++;
     }
     if (bakedBound > 0) {
+      // Universal retarget: only acts when this fighter's rig is NOT the
+      // canonical bind the bake was authored on. See RuntimeUniversalRetarget.
+      await retargetBakedClipsForTarget(processedClips, targetScene, modelName).catch(() => undefined);
       retargetApplied = true;
       retargetVerdict = 'PASS';
       bridgeClipCount = bakedBound;

@@ -1,15 +1,17 @@
 import * as THREE from 'three';
 import { bindClipTracksToTargetBones, resolveToCanonicalBone } from './AnimationRetargeter.ts';
 import { makeClipBindRelative } from './BindRelativeMotion.ts';
+import { universalIntakeResult } from './UniversalIntakeGate.ts';
 
-export type UniversalAnimationVerdict = 'PASS' | 'PARTIAL' | 'REJECTED_MULTI_BODY' | 'REJECTED_NO_SKELETON' | 'REJECTED_NO_MOTION' | 'REJECTED_NONFINITE';
-export interface UniversalAnimationInput { clip: THREE.AnimationClip; sourceRest?: Map<string, THREE.Quaternion>; bodies?: number; receives?: boolean; }
+export type UniversalAnimationVerdict = 'PASS' | 'PARTIAL' | 'REJECTED_MULTI_BODY' | 'REJECTED_NO_SKELETON' | 'REJECTED_NO_MOTION' | 'REJECTED_NONFINITE' | 'REJECTED_UNMAPPABLE' | 'REJECTED_RETARGET_VALIDATION';
+export interface UniversalAnimationInput { clip: THREE.AnimationClip; sourceRest?: Map<string, THREE.Quaternion>; bodies?: number; receives?: boolean; /** The clip's own skeleton. When given, the universal retarget gate (UniversalIntakeGate) decides. */ sourceSkeleton?: THREE.Object3D; }
 export interface UniversalAnimationResult { clip: THREE.AnimationClip | null; verdict: UniversalAnimationVerdict; mappedTracks: number; unresolvedTracks: number; targetCoverage: number; missingBones: string[]; movingBones: number; bodyCount: number; receives: boolean; }
 
 export function normalizeUniversalAnimation(input: UniversalAnimationInput, targetRoot: THREE.Object3D): UniversalAnimationResult {
   const bodyCount = Math.max(1, input.bodies ?? 1);
   const receives = Boolean(input.receives);
   if (bodyCount > 1) return { clip:null, verdict:'REJECTED_MULTI_BODY', mappedTracks:0, unresolvedTracks:input.clip.tracks.length, targetCoverage:0, missingBones:[], movingBones:0, bodyCount, receives };
+  if (input.sourceSkeleton) return universalIntakeResult(input.clip, input.sourceSkeleton, targetRoot, bodyCount, receives);
   const targetBones: THREE.Bone[] = [];
   targetRoot.traverse(o => { if ((o as THREE.Bone).isBone) targetBones.push(o as THREE.Bone); });
   if (!targetBones.length) return { clip:null, verdict:'REJECTED_NO_SKELETON', mappedTracks:0, unresolvedTracks:input.clip.tracks.length, targetCoverage:0, missingBones:[], movingBones:0, bodyCount, receives };

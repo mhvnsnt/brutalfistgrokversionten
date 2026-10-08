@@ -29,7 +29,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "pwa:verify": "node scripts/verify-pwa-build.mjs dist",
-    "bake": "node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs scripts/bake-fighter-animations.mjs --gate"
+    "bake": "node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs scripts/bake-fighter-animations.mjs --gate",
+    "retarget:matrix": "node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs scripts/retarget-matrix.mjs",
+    "retarget:proof": "node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs scripts/retarget/render-proof.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.4",
