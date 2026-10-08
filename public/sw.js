@@ -75,6 +75,11 @@ function isCacheFirst(url) {
   );
 }
 
+/** public/intro/*.mp4|webm — bypassed entirely, see the fetch handler. */
+function isIntroMedia(url) {
+  return /\/intro\/[^/]+\.(mp4|webm|m4a|ogg|mov)$/.test(url.pathname);
+}
+
 /**
  * Cache-first, but REVALIDATE IN THE BACKGROUND.
  *
@@ -141,6 +146,11 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin && !isCacheFirst(url)) return;
+  // THE INTRO FMV IS NEVER CACHED BY THE WORKER. It is watched once, it is
+  // megabytes, and a cached copy would outlive a re-render at the same path.
+  // The browser's own HTTP cache and range requests handle it. Its small
+  // manifest (intro/intro.json) still goes through the normal rules.
+  if (isIntroMedia(url)) return;
 
   if (request.mode === 'navigate') {
     event.respondWith(networkFirst(request, SHELL_CACHE));

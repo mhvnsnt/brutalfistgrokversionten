@@ -1,5 +1,7 @@
 import './engine/assets/installAssetStream';
 import { TitleScreen } from './components/TitleScreen';
+import { IntroMovie } from './components/IntroMovie';
+import { decideIntroFromBrowser } from './lib/introMovie';
 import { useState } from 'react';
 import { useTapThroughGuard } from './pwa/useTapThroughGuard';
 import { AppScreen } from './types';
@@ -40,10 +42,13 @@ const PreCombatValidationScreen = dynamic(() => import('./components/PreCombatVa
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
   const [screen, setScreen] = useState<AppScreen>(AppScreen.Title);
+  // Intro FMV in front of the title screen (see src/components/IntroMovie.tsx).
+  // Decided once per launch; false = the title screen exactly as before.
+  const [introActive, setIntroActive] = useState(() => decideIntroFromBrowser().play);
   // A tap must not press the screen it opens — see useTapThroughGuard. Without
   // this, PRESS START's own synthesised click landed on whichever mode button
-  // the menu drew at that pixel.
-  useTapThroughGuard(screen);
+  // the menu drew at that pixel. The intro -> title handoff re-arms it too.
+  useTapThroughGuard(introActive ? 'intro' : screen);
   const [p1BannonFighter, setP1BannonFighter] = useState<BannonFighterProfile | null>(null);
   const [p2BannonFighter, setP2BannonFighter] = useState<BannonFighterProfile | null>(null);
   const [matchWinner, setMatchWinner] = useState<'p1' | 'p2' | 'draw' | null>(null);
@@ -85,6 +90,7 @@ export default function App() {
 
   // ── Title ──
   if (screen === AppScreen?.Title) {
+    if (introActive) return <IntroMovie onDone={() => setIntroActive(false)} />;
     return <TitleScreen onStart={() => setScreen(AppScreen?.MainMenu)} />;
   }
 
