@@ -1,0 +1,16 @@
+# Royal Match — Heart and Soul
+- Developer / studio: Dream Games (Istanbul) — CEO/co-founder Soner Aydemir
+- Genre / platforms: Match-3 puzzle; iOS + Android
+- Why players come back (in the devs' view): Quality-first polish, gameplay mechanics as "the most important part", emotional attachment to characters/IP (King Robert, King Richard, the Dark King), and deepening social design layered into the core loop. Dream Games studied unsuccessful games to learn what NOT to do, and prioritized user needs over business/designer-centric goals.
+- Key quotes:
+  - "Quality wins." — Soner Aydemir, Co-founder and CEO, Dream Games, Index Gaming Summit via PocketGamer.biz, 2022
+  - "We have never focused on monetisation. We strongly believe that if we have a high-quality experience people will pay." — Soner Aydemir, Co-founder and CEO, Dream Games, Index Gaming Summit via PocketGamer.biz, 2022
+  - "We will see more social design in games. Right now you can see so many casual puzzle games in the market use the same social layer. I believe we will figure out deeper social elements and integrate them into gameplay." — Soner Aydemir, Co-founder and CEO, Dream Games, Index Gaming Summit via PocketGamer.biz, 2022
+- Why players love/support it: best-in-class match-3 polish, ad-free experience, satisfying king/kingdom progression fantasy, team competitions and leaderboards, characters players develop emotional attachment to.
+- Monetization philosophy (devs' words, if any): Never focused on monetization — "if we have a high-quality experience people will pay." (ANALYSIS: offers timed at the point of failure, evolving price ladders per player willingness-to-pay.)
+- Lesson for our games (1-2 lines, concrete): "Quality wins" is an operational doctrine, not a slogan — polish and character IP first, monetization as a consequence; build a royal-universe-style character IP so spending feels like attachment, not toll-paying.
+- Sources:
+  - https://www.pocketgamer.biz/dream-games-thatgamecompany-building-iconic-ip/
+  - https://www.gamigion.com/royal-match-monetization-at-the-point-of-failure/
+  - https://www.gamigion.com/the-secret-behind-royal-matchs-4m-a-day/
+- Coverage note: CEO quotes verified via fetched PocketGamer.biz Index Gaming Summit report. Point-of-failure and offer-segmentation coverage from Gamigion is ANALYSIS, not dev quotes.

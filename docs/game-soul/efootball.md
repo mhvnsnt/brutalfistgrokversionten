@@ -1,0 +1,18 @@
+# eFootball — Heart and Soul
+- Developer / studio: Konami (successor to Pro Evolution Soccer; free-to-play since Sept 2021; ~950M downloads across PC/console/mobile)
+- Genre / platforms: Free-to-play football simulation / PC, PlayStation, Xbox, iOS, Android, Switch
+- Why players come back (in the devs' view): Pure human-vs-human competition is the core thrill — Konami deliberately re-centered gameplay on 1v1 offense and defense because "this provides a greater thrill than what AI can provide." Free-to-play plus cross-platform keeps the population massive; Dream Team (team-building) mode is the live-service flagship; a global online tournament scene (eFootball Championship) gives casual players the "pro" feeling.
+- Key quotes:
+  - "We're making it so that people can enjoy playing against other players, as this provides a greater thrill than what AI can provide. We believe that the 1v1 offense and defense realized in this way is the most important innovation of eFootball." — Seitaro Kimura, series producer, IGN interview, July 2021 (via PureXbox)
+  - "I wanted to lower the hurdles for participation as much as possible in order to create an environment where anyone can easily play if they want to play a soccer game... That's why I made a big turn to 'get all soccer fans to play.'" — Seitaro Kimura, eFootball producer, Asahi interview, 2021 (via Operation Sports)
+  - "Create a big cross-platform esports scene in response to changes in the game engine and business." — Seitaro Kimura on the rebrand rationale, Asahi interview, 2021 (via Operation Sports)
+  - "I think that the interesting part of soccer is still one-on-one, and we are proceeding with development focusing on the bargaining there." — Seitaro Kimura, Asahi interview, 2021 (via Operation Sports)
+- Why players love/support it: Realism-oriented gameplay vs. arcade rivals; free entry means zero excuse not to try; massive download base feeds instant matchmaking; competitive aspiration through the Championship; free-coin campaigns make the economy generous for F2P grinders.
+- Monetization philosophy (devs' words, if any): "You attract them with the price and hope that they enjoy the product enough to pay for add-ons." — Seitaro Kimura, Asahi interview, 2021 (via Operation Sports). Free base game, add-ons (Dream Team cards/packs) carry revenue; a-la-carte paid modes originally planned, pivoted to live-service packs.
+- Lesson for our games (1-2 lines, concrete): Human opposition beats AI spectacle — design for player-vs-player as the retention engine. Lower every participation hurdle (price, device) to reach all fans, then monetize the add-ons they choose.
+- Sources:
+  - https://www.operationsports.com/konami-hints-at-what-the-lead-platform-will-be-for-efootball/
+  - https://www.purexbox.com/news/2021/07/pes_replacement_efootball_will_be_tailored_for_pvp_gameplay_rather_than_player_versus_ai
+  - https://www.gamereactor.eu/konami-reiterates-that-there-is-no-scripting-in-efootball-and-announces-the-master-league-event-for-april-1674973/
+  - https://ingamenews.com/2026/01/950-million-downloads-how-konami.html
+- Coverage note: Core quotes are from Kimura's 2021 relaunch interviews (IGN/Asahi, surfaced via PureXbox/Operation Sports) — verified via fetched pages. No newer on-record English dev interviews on retention philosophy found; milestone-campaign coverage (900M/950M downloads) is ANALYSIS.

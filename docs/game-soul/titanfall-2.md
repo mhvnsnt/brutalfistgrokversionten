@@ -1,0 +1,14 @@
+# Titanfall 2 — Heart and Soul
+- Developer / studio: Respawn Entertainment (Electronic Arts)
+- Genre / platforms: Sci-fi FPS (parkour pilots + mechs); PC, PS4, Xbox One (2016)
+- Why players come back (in the devs' view): Feel-first design above all else — interruptible animations, 60+ fps, movement that never feels like "playing in molasses"; multiplayer redesigned around fairness and readability so dying teaches you something and you can climb the skill ladder; a fan-demanded single-player campaign with one new mechanical idea per level; every DLC pack free to keep the community together.
+- Key quotes:
+  - "We're spending years of our lives pouring everything we can into this — we want it to appeal to as many people as possible." — Vince Zampella, CEO, Respawn Entertainment, Eurogamer (E3 2016)
+  - "We put a lot of thought and experimentation into getting more anticipation into the multiplayer. Things are a little clearer, so you can learn from what's going on." — Mackey McCandlish, Lead Single-Player Designer, Respawn Entertainment, Eurogamer (E3 2016)
+  - "I would sacrifice visual fidelity for gameplay experience. It has to feel good. It has to play right. It has to be fun." [unverified] — Vince Zampella, CEO, Respawn Entertainment, Glixel (via Wccftech, 2016; search snippet only)
+  - "Our animations are interruptible by movement. Some games have animations that you have to wait for them to finish before the next movement that you're doing... It feels like you're playing in molasses." [unverified] — Vince Zampella, CEO, Respawn Entertainment, Glixel (via Wccftech, 2016; search snippet only)
+- Why players love/support it: Widely called the best-feeling shooter ever made; the BT-7274 pilot/Titan campaign bond is one of the most beloved stories in FPS history; free DLC maps/modes meant no playerbase fragmentation; players campaigned for years to keep the servers alive because the game earned genuine affection.
+- Monetization philosophy (devs' words, if any): No on-record developer statement on monetization philosophy found. ANALYSIS: all post-launch DLC free; premium buy-to-play.
+- Lesson for our games (1-2 lines, concrete): Feel is the product — ship 60fps, interruptible animations, zero input molasses before anything cosmetic. And when you lose, teach: every death should leave the player knowing *why* it happened, because a game you can learn is a game you keep playing.
+- Sources: https://www.eurogamer.net/respawn-talks-titanfall-2-and-that-call-of-duty-remaster, https://wccftech.com/respawn-ceo-explains-games-feel-good/, https://www.vg247.com/titanfall-2-interview-respawn-talks-the-challenges-of-creating-a-campaign
+- Coverage note: Two quotes verified from the fetched Eurogamer E3 2016 interview; the two Zampella "feel" quotes are snippet-sourced and marked [unverified]. No dev monetization statements located.

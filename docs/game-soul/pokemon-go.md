@@ -1,0 +1,16 @@
+# Pokémon GO — Heart and Soul
+- Developer / studio: Niantic (now Scopely-owned, 2025)
+- Genre / platforms: AR location-based / iOS, Android
+- Why players come back (in the devs' view): Niantic's founding mission is to get people outside exploring real places together. AR features are deliberately optional — the hook is movement and shared real-world experience, not the camera gimmick.
+- Key quotes:
+  - "Even from the start, our mission [was] to build games that promote people to go outside and explore fascinating places." — John Hanke, CEO, Niantic, Recode interview, 2016 [unverified]
+  - "The way we've always approached our AR features in Pokémon Go is more of an optional approach, right? … We see thousands of players around the world who really love that feature, and their Pokémon GO experiences going to their local park or the downtown area and setting up a fun AR multiplayer photoshoot." — Michael Sterenka, Niantic, Eurogamer interview (via MassivelyOP), 2021
+  - "The future of technology will be one where it accompanies us everywhere and is there to enhance, enrich, and sometimes transform our lives on demand. Games and entertainment will be at the center of that." — John Hanke, CEO, Niantic (academic sourcing of public statement) [unverified]
+- Why players love/support it: ANALYSIS — The game turned walking the real world into gameplay (eggs, Pokéstops, gyms as neighborhood points of contention); rare spawns and community days create face-to-face social moments no couch game can replicate; nostalgia for the Pokémon IP plus the collector instinct (Pokédex completion) drive the daily loop.
+- Monetization philosophy (devs' words, if any): No on-record statement found.
+- Lesson for our games (1-2 lines, concrete): Tie the game to the player's real life — walking, their neighborhood, real meetups — and that physical-world layer becomes a retention moat no clone can copy; keep tech-showcase features optional rather than forcing them.
+- Sources:
+  - https://massivelyop.com/2021/10/15/massively-on-the-go-pokemon-gos-latest-interview-is-light-on-answers-and-heavy-on-spin/
+  - http://www.digitaltrends.com/gaming/pokmon-go-where-does-it-go-from-here/
+  - https://pokemongohub.net/post/news/panel-interview-raza-ahmad-niantic-creative-team/
+- Coverage note: Hanke quotes are snippet-sourced, marked [unverified]; Niantic rarely gives candid on-record interviews on design. The "why players love" section is ANALYSIS from press coverage, not dev statements. Monetization: no on-record dev statement found.

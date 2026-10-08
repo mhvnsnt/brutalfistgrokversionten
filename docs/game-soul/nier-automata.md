@@ -1,0 +1,18 @@
+# NieR: Automata — Heart and Soul
+- Developer / studio: PlatinumGames (combat/game design) with Square Enix; directed/written by Yoko Taro, produced by Yosuke Saito, composed by Keiichi Okabe
+- Genre / platforms: Action RPG; PS4 (2017), PC, Xbox One, Switch
+- Why players come back (in the devs' view): The game asks questions the player must answer for themselves — Taro's method is "backward scripting": decide the emotional endpoint first, then work back. Ending E's sacrifice-of-save-data design exists because "nowadays you see a lot of people who have gameplay videos up on YouTube... I thought I needed to add something of value to the people who paid 6,000-7,000 yen for this game, and give them a kind of experience that you can't get just by watching on YouTube." Each route (A→E) peels a new layer, and beyond the final ending players "come up with their own ideas" — the game is "a mirror that reflects the player," not a lecture.
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "I thought I needed to add something of value to the people who paid 6,000-7,000 yen for this game, and give them a kind of experience that you can't get just by watching on YouTube." — Yoko Taro, Director, Game Informer, 2017
+  - "The important thing is simply having the choice and making that decision. Obviously, it's your life, it's up to you to make that kind of decision, and that's where the meaning in that decision comes." — Yoko Taro, Director, Game Informer, 2017
+  - "What I actually try and do when I'm writing a story and creating a game is to design an experience [that] the player's going to have from that... finish with the final goal of where you want them to be emotionally and then work back from that." — Yoko Taro, Director, Game Informer, 2017
+  - "NieR is a game much like a mirror that reflects the player. Nier does not depict 'justice as intended by the creator,' but instead is structured so that it poses the question to the player." — Yoko Taro, Director, interview via TheGamer, 2022 [unverified]
+- Why players love/support it: Players report the game "cured" their depression (Taro still receives such DMs years later); the sacrifice-ending turns buying the game into a personal moral act; Platinum's kinetic combat made the package genuinely fun to play, so the philosophy lands inside a great action game, not despite a bad one.
+- Monetization philosophy (devs' words, if any): Full-price single purchase; Taro frames value as something YouTube can't replicate — a choice that only exists because you own the game. No DLC of note at launch; the "Game of the YoRHa Edition" bundled existing content.
+- Lesson for our games (1-2 lines, concrete): Design the emotional endpoint first, then work backward — and give players an experience they can't get from watching someone else play, something that only exists because THEY pressed the button.
+- Sources: (URLs)
+  - https://gameinformer.com/b/features/archive/2017/11/24/yoko-taro-nier-automata-interview-game-informer?PostPageIndex=1
+  - https://thegamer.com/nier-automata-yoko-taro-cured-fan-depression/
+  - https://www.vg247.com/it-felt-more-like-hell-than-success-a-nier-automata-postmortem
+  - https://gameinformer.com/2019/01/01/talking-to-yoko-taro-platinumgames-takahisa-taura-and-composer-keiichi-okabe-about-life
+- Coverage note: Three quotes verified from the fetched Game Informer 2017 interview. The "mirror" quote is from a TheGamer summary of Taro remarks — snippet-sourced, marked [unverified] per rules.

@@ -1,0 +1,24 @@
+# Forza Horizon 5 — Heart and Soul
+- Developer / studio: Playground Games (Xbox Game Studios)
+- Genre / platforms: Open-world arcade racing — Xbox One/Series X|S, PC (2021)
+- Why players come back (in the devs' view):
+  - Designed as a Game Pass game: "we got very good at being a Game Pass game" — the studio designs for players who "could potentially return after several months." Low re-entry friction is the retention strategy.
+  - Social play drives return: success on Game Pass depends on the social element — "when someone in your friendship group plays the title, then all of your friends that are on Game Pass have that title" — co-op features that get friends to invite each other.
+  - Weekly Festival Playlists: "snackable and manageable amount of stuff that's new that you can jump into right now and, in a few days, there'll be some more" — bite-size rotating rewards blend with how people play Game Pass games.
+  - The campaign philosophy: "complete freedom in how you want to approach the game, but at the same time always having them feel like there's a thing you should be doing... a thing you can work towards" — structured direction without killing freedom.
+- Key quotes:
+  - "We got very good at being a Game Pass game... You do have to look at things differently. No one ever trades you in and they might not install it, but they always own it. You're always gonna be a little thumbnail on the dash and that means the friction to get you back in the game is very low." — Mike Brown, Creative Director, Press-Start (via GamingBolt), 2021
+  - "When someone in your friendship group plays the title, then all of your friends that are on Game Pass have that title. If you can have social features or features that encourage you to say: 'Hey, can we do this thing in co-op?' then your game is going to do better on Game Pass." — Mike Brown, Creative Director, Press-Start (via GamingBolt), 2021
+  - "It feels like a snackable and manageable amount of stuff that's new that you can jump into right now and, in a few days, there'll be some more. I think, again, that really helps blend with the way people play games on Game Pass." — Mike Brown, Creative Director, on Festival Playlists, Press-Start (via GamingBolt), 2021
+- Why players love/support it:
+  - Accessibility as core design: Tourist difficulty, game-speed modification, sign-language interpreters — the team made accessibility "a core piece of the game," widening the audience.
+  - ANALYSIS: best-in-class driving feel (improved braking/suspension, three-year dev cycle), Mexico's variety, and the festival-vibe social racing make it a comfort return every week.
+- Monetization philosophy (devs' words, if any):
+  - No on-record statement found. Model: paid game + Game Pass day one + paid expansions (Hot Wheels, Rally Adventure). Monetization discussion in the Game Pass article is about design for the service, not monetization philosophy.
+- Lesson for our games (1-2 lines, concrete):
+  - Design for low re-entry friction: weekly snackable content drops and co-op hooks mean players return because their friends did — a "little thumbnail on the dash" strategy beats one big content dump. Always give the player a thing to work toward without ever boxing them in.
+- Sources:
+  - https://gamingbolt.com/forza-horizon-5-developer-talks-xbox-game-pass-influence-on-design
+  - https://www.jalopnik.com/forza-horizon-5-will-handle-better-have-a-more-engagin-1847526912/
+  - https://www.gamesradar.com/with-forza-horizon-5-playground-wanted-accessibility-to-be-a-core-piece-of-the-game/
+- Coverage note: Quotes verified on the fetched GamingBolt page. No on-record dev statements found on monetization philosophy.

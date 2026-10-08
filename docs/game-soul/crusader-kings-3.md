@@ -1,0 +1,18 @@
+# Crusader Kings III — Heart and Soul
+- Developer / studio: Paradox Development Studio (Paradox Interactive)
+- Genre / platforms: Grand strategy RPG; PC (Windows/Mac/Linux), consoles
+- Why players come back (in the devs' view): CK is about individual characters, not nations — "a medieval soap opera" built for memorable emergent stories. Every event and mechanic is designed so players perceive and remember their OWN stories, not the developers' stories. Player freedom is sacrosanct: let players shape ruler, heirs, dynasty, even religion to fit their fantasies, and don't demand min-maxing — "let go a little bit, and just enjoy the experience."
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "Our other games feature things like nations, their people, economics and so on, but CK really is a medieval soap opera." — Henrik Fåhraeus, Game Director, Polygon, 2020
+  - "One of the secrets to playing Crusader Kings is to sort of not worry so much about min-maxing and optimizing your game, to be honest. Try to let go a little bit, and just enjoy the experience." — Henrik Fåhraeus, Game Director, Polygon, 2020
+  - "There is a big aspect of gardening to the game, especially when it comes to your dynasty... really enjoy managing a big family and seeing it grow." — Alex Oltner, Designer, Polygon, 2020
+  - Official design vision: "Player Stories: All events and scripted content should feel relevant, impactful and immersive in relation to the underlying simulation. That way, players will perceive and remember stories - their own stories, not the developers' stories." — Paradox vision statement, reported by GameReactor, 2019 [unverified]
+- Why players love/support it: Infinite emergent dynastic drama — marriages, betrayals, bastards, and scheming uncles that are stranger than fiction; players retell their stories like gossip. Paradox's decade-plus CK2 support (15 expansions) built deep trust in long-term commitment.
+- Monetization philosophy (devs' words, if any): No direct quote found in this pass; Paradox's model is expansion/DLC packs that deepen (not replace) the base game, with CK2 made permanently free. Coverage note: dev-on-record statements on CK3 monetization philosophy not found.
+- Lesson for our games (1-2 lines, concrete): Put characters — not systems — at the center: when mechanics are character-focused, players generate and retell their own stories, which is the most powerful retention loop there is.
+- Sources: (URLs)
+  - https://www.polygon.com/2020/5/14/21257382/crusader-kings-3-preview-paradox-interactive-interview/
+  - https://www.gamereactor.eu/paradox-explores-the-vision-behind-crusader-kings-iii/
+  - https://www.vg247.com/how-crusader-kings-3-plans-to-attract-fans-of-rpgs-sandbox-games-and-the-sims
+  - http://eurogamer.net/crusader-kings-3-preview
+- Coverage note: Fåhraeus/Oltner quotes verified from fetched Polygon page. GameReactor vision statement is snippet-sourced, marked [unverified].

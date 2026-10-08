@@ -1,0 +1,25 @@
+# DRAGON BALL: Sparking! ZERO — Heart and Soul
+- Developer / studio: Spike Chunsoft / Bandai Namco (producer Jun Furutani)
+- Genre / platforms: 3D arena fighting game — PS5, Xbox Series X|S, PC (2024)
+- Why players come back (in the devs' view):
+  - "Be the characters themselves": the core design philosophy is "to make players be in the shoes of the characters" — everything is tuned from the character's perspective, so you feel Goku's power, not just press Goku's buttons.
+  - Canon-faithful power, not esports balance: "it's definitely not an esports game like FighterZ" — characters are as strong as they are in the anime, with a team-cost system (30 points, e.g. Goku expensive, Yajirobe cheap) handling online fairness instead of nerfing power fantasies.
+  - Player imagination, made playable: Custom Battle mode exists so players can "create a situation that didn't exist in the anime franchise or other Dragon Ball games" — Furutani's childhood daydreams (Goku beating Frieza, Buu, everyone) are a shipped feature, not a side mode.
+  - Built for a global community: the single worldwide "Sparking!" title was chosen so players "could discuss it using the same words" — community and shared conversation is a design target, not an accident.
+- Key quotes:
+  - "One of the most important things that we were focusing on when designing the game is to make players be in the shoes of the characters or to make players feel like the characters themselves. We were always thinking from the character's perspective as well as the situation's perspective and making sure that this game is as realistic and true to the characters." — Jun Furutani, Producer, UnGeek roundtable interview, 2024
+  - "It's definitely not an esports game like FighterZ, but we still want to bring balance to the fights." — Jun Furutani, Producer, GamesRadar, 2024 [unverified]
+  - "The whole point of the custom battle is to create a situation that didn't exist in the anime franchise or other Dragon Ball games." — Jun Furutani, Producer, UnGeek roundtable interview, 2024
+- Why players love/support it:
+  - It revives Budokai Tenkaichi 3 (2007) — the fan-beloved arena fighter dormant for 17 years — with the biggest Dragon Ball roster ever, satisfying a nostalgia wave Bandai Namco let build for a generation.
+  - What-if Episode Battles (Sparking Episodes) let players rewrite iconic anime fights — "what if this guy defeated him, instead of losing to him" — turning the anime's sacred canon into the player's sandbox.
+  - ANALYSIS: the game sold 3 million copies in its first day — proof the "not esports, just feel like Goku" bet landed; fans want power fantasy and roster size over tournament purity.
+- Monetization philosophy (devs' words, if any):
+  - No on-record statement found on monetization philosophy. Model is premium game + paid DLC packs (new characters/sagas added post-launch) — characters are the content, bought by fans who want to play them.
+- Lesson for our games (1-2 lines, concrete):
+  - Make the player feel LIKE the character — canon-faithful power beats tournament balance for fan games. And ship the imagination tool: a custom-battle/scenario creator turns one playthrough into infinite "what if" content at zero ongoing dev cost.
+- Sources:
+  - http://ungeek.ph/2024/09/interview-dragon-ball-sparking-zero-producer-jun-furutani-explains-their-design-philosophy-for-the-game/
+  - https://www.levelup.com/en/news/dragon-ball-sparking-zero-will-respect-the-canonical-power-of-characters-heres-how-the-online-mode-will-be-balanced/
+  - https://automaton-media.com/en/interviews/interview-dragon-ball-sparking-zero-is-less-about-balance-and-more-about-feeling-as-overpowered-as-you-should-playing-gogeta/
+- Coverage note: UnGeek design-philosophy interview fetched and verified. The "not an esports game" GamesRadar line is from a search snippet (marked [unverified]). No on-record dev statement found on Sparking! ZERO's monetization philosophy.

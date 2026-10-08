@@ -1,0 +1,18 @@
+# EA Sports FC 24 — Heart and Soul
+- Developer / studio: EA Sports (EA Canada), published by Electronic Arts
+- Genre / platforms: Sports simulation (association football) / PlayStation, Xbox, PC, Nintendo Switch
+- Why players come back (in the devs' view): Continuity and familiarity — players know the game they've loved for 30 years is still there, even under a new brand. Inside Ultimate Team, the year-long progression curve keeps players on a journey: Evolutions let fans grow favorite players through objectives so beloved cards stay viable all season, matching the game's balance each season.
+- Key quotes:
+  - "There was a bit of a counterbalance between signaling the change and delivering the experience we knew our players loved." — John Shepherd, Executive Producer, Dexerto interview, 2023
+  - "A bad thing could be, we just totally change everything just to change stuff and then it's not clear that it still has the same fundamentals." — John Shepherd, Executive Producer, Dexerto interview, 2023
+  - "Ultimate Team starts at launch and goes on a journey through the year in terms of that progression curve... We want to make sure that Evolutions also fits into that so that we can match the balance each season as we go forward." — Gareth Reeder, Ultimate Team Senior Producer, Dexerto interview, 2023
+  - "How can we give Ultimate Team fans more customization and personalization of what their Ultimate Team could be?" — Gareth Reeder, Ultimate Team Senior Producer, Dexerto interview, 2023 [unverified]
+- Why players love/support it: The mode they know and love survived the FIFA-to-FC rebrand intact; Ultimate Team's evolutions and personalization keep the meta fresh year-round; men and women footballers on the same pitch for the first time; licensed realism.
+- Monetization philosophy (devs' words, if any): No direct on-record dev quote found on monetization philosophy. ANALYSIS: premium annual release plus year-long live service in Ultimate Team (packs, FC Points); the retention engine is seasonal progression — Evolutions tie player investment to specific favorite players across the year rather than pure pack-chasing.
+- Lesson for our games (1-2 lines, concrete): When you rebrand or rename, don't rewrite the fundamentals — signal the new era while keeping the experience players already love. Build progression around players' favorite existing content (their chosen fighters/cards) rather than always demanding they chase new ones.
+- Sources:
+  - https://www.dexerto.com/ea-sports-fc/ea-fc-24-devs-admit-nerves-over-fifa-rebrand-confusing-players-2335509/
+  - https://www.dexerto.com/ea-sports-fc/ea-fc-24-developer-explains-how-evolutions-will-impact-fut-meta-2214147/
+  - https://www.businesswire.com/news/home/20230713426786/en/5487850/Electronic-Arts-Sets-out-Vision-for-EA-SPORTS-FC™-and-Reveals-First-Look-at-EA-SPORTS-FC™-24-Gameplay
+  - https://www.dexerto.com/ea-sports-fc/ea-fc-24-devs-tease-how-next-level-evolutions-will-shake-up-ultimate-team-meta-2322426/
+- Coverage note: Shepherd and Reeder Evolutions-progression quotes verified via fetched Dexerto pages (Sep 2023). The Reeder "customization and personalization" quote is from a Dexerto snippet — [unverified]. No on-record dev statement found on monetization philosophy; labeled ANALYSIS.

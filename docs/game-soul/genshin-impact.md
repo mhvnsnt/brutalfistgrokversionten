@@ -1,0 +1,15 @@
+# Genshin Impact — Heart and Soul
+- Developer / studio: miHoYo / HoYoverse
+- Genre / platforms: Open-world action RPG; PC, console, mobile
+- Why players come back (in the devs' view): Characters players genuinely like, inside a beautiful shared world built for freedom and curiosity — a love letter to games the founders themselves loved. Long-term enjoyment matters more than short-term performance.
+- Key quotes:
+  - "We didn't see many anime-style games that really intrigued us, so we decided to create a company to make anime games that were exciting for us." — Cai Haoyu, co-founder of miHoYo, PC Gamer magazine (issue 356, April 2021)
+  - "Rather than focusing on our short-term performance in the game market since release, I pay more attention to whether or not players will be able to continue enjoying our game in the future." — Cai Haoyu, PC Gamer, April 2021
+  - "We hope that as technology continues to develop, we can create a virtual world for our players and users where infinite unknowns and possibilities await, a world that can bring them more joy. I suppose this is what can be considered as our mission." — Cai Haoyu, PC Gamer, April 2021
+  - "Tech otakus save the world" — studio slogan (Cai Haoyu, Liu Wei, Luo Yuhao): games made by people who love anime, for people who love anime.
+- Why players love/support it: A beautiful world that respects wonder — music, landscapes, exploration. Characters designed through relentless iteration on one question: "how do we create a character that players will like?"
+- Monetization philosophy (devs' words): Liu Wei (co-founder) described the approach as "paying for love" — monetize players' affection for characters, not power to climb ranks; a deliberate break from "flagrantly pay-to-win" norms. Microtransactions are "paying for things that you want as opposed to paying for things that you need."
+- Lesson for our games: Monetize love, not power — the exact twin of style-not-power. Beauty is retention: make the world worth walking through slowly.
+- Sources:
+  - https://www.pcgamer.com/how-chinese-free-to-play-rpg-genshin-impact-conquered-the-world/
+- Coverage note: All quotes verified via fetched page.

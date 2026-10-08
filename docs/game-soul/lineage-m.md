@@ -1,0 +1,17 @@
+# Lineage M — Heart and Soul
+- Developer / studio: NCSOFT
+- Genre / platforms: MMORPG; iOS, Android
+- Why players come back (in the devs' view): trust and continuity — the studio's stated #1 goal is earning players' trust through communication and less aggressive pay-to-win; relentless live cadence (quarterly class reboots, weekly patches, new servers, reboot world transfers) so a new reason to log in always arrives before the last one fades
+- Key quotes: (3)
+  - "Earning the trust of players is the most important goal for a game company." — Park Byung-moo, Co-CEO of NCSOFT, TweakTown, 2026
+  - "We have been thoroughly communicating with our users over the past one to two years and the games we are preparing will not rely heavily on pay-to-win elements." — Park Byung-moo, Co-CEO of NCSOFT, TweakTown, 2026
+  - "We will make sure that all players will be able to enjoy the game, regardless of how much money they spend." — Lee (line producer, on Lineage W), Korea JoongAng Daily, 2021 [unverified]
+- Why players love/support it: player-to-player trading economy (the trading system "encourages players to continue playing the game in the long term" — analyst Hwang Sung-jin, The Investor, 2017 [unverified]); siege warfare that decides server hegemony; decade-long community bonds — IP stays alive because it is maintained, not the reverse
+- Monetization philosophy (devs' words, if any): Post-2024 the studio publicly pledges to "ease the pay-to-win microtransactions" and to earn back trust via updates rather than harder monetization (TweakTown, 2026). Low-commission player-to-player trading ("so low that they won't even realize it's there" — Lee, Korea JoongAng, 2021 [unverified]) is the franchise's answer to RMT pressure.
+- Lesson for our games (1-2 lines, concrete): Retention is a schedule, not a miracle — quarterly overhauls and weekly patches mean there's always a next festival before the current one ends. And a strong IP is a result of maintenance, not the cause of survival.
+- Sources:
+  - https://www.tweaktown.com/news/110443/lineage-guild-wars-dev-ncsoft-promises-to-ease-pay-to-win-microtransactions-while-investing-big-into-casual-mobile-games/index.html
+  - https://www.invenglobal.com/articles/24110/lineage-proving-itself-again-1-there-is-no-luck
+  - https://koreajoongangdaily.joins.com/2021/09/30/business/tech/Lineage-W-NCSoft-Blade--Soul/20210930170124173.html
+- Coverage note: No on-record Lineage M designer interview found in English-language press; the cadence/analysis above (Inven Global, 2026) is labeled ANALYSIS below, and executive statements cover the franchise-level philosophy.
+  - ANALYSIS (Inven Global, 2026): Lineage M overhauled six classes over two years with quarterly reboots, weekly patches, new servers, and reboot world transfers; "just as the reason to log in began to fade, a new reason arrived." The piece argues Lineage "did not survive because the IP was strong. The IP remained alive because there was a constant plan to keep users engaged."

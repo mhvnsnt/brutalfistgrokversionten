@@ -1,0 +1,21 @@
+# Horizon Forbidden West — Heart and Soul
+- Developer / studio: Guerrilla Games (Sony Interactive Entertainment)
+- Genre / platforms: Open-world action RPG / PS4, PS5, PC
+- Why players come back (in the devs' view):
+  - Three fixed pillars from Zero Dawn carried the whole series: exploration of majestic overgrown nature, combat where you "feel clever" hunting machines with traps and smarts, and memorable characters with emotional stories.
+  - For Forbidden West the studio applied an "ACE" filter to every encounter: Amaze, Challenge, Engage — each environment, fight, and story beat had to heighten one of those.
+  - The world rewards players who engage deeply with everything (progression ecosystems, living settlements) while staying friendly to players focused on the core narrative — two audience speeds, one game.
+- Key quotes:
+  - "The first one talked about the overgrown cities, the ruins, the majestic nature, and this basically covers the exploration part. The second part is about the combat; using your smarts and feeling clever, laying traps and feeling like a hunter against these awesome machines. The third part is about these memorable characters, and emotional and relevant stories. Those are still the key building blocks of any Horizon game we make." — Jan-Bart van Beek, Studio Director, GamesIndustry.biz, 2023 [unverified]
+  - "The philosophy that came up was an acronym, ACE: Amaze, Challenge, Engage. So for every encounter, every environment and every story, we would need to do something with those elements to heighten the experience over everything people had had before." — Jan-Bart van Beek, Studio Director, GamesIndustry.biz, 2023 [unverified]
+  - "We've built an ecosystem that rewards the player for engaging deeply with the whole world of Horizon Forbidden West, while remaining friendly for those who want to stay focused on the core narrative." — Steven Lumpkin, Senior Designer, PlayStation Blog, 2021 [unverified]
+  - "I don't think the cross-generation development was limiting in any way... we just wanted to design a really nice, unique experience for the player. An awesome adventure." — Mathijs de Jonge, Game Director, Hardware Zone interview, 2021 [unverified]
+- Why players love/support it:
+  - The machine-hunting loop — studying a Thunderjaw's weak points, laying traps, feeling like the clever hunter — never stops feeling earned. Players also attach to Aloy and the tribes; the world keeps teaching long after the story ends, which is why fans returned for Burning Shores.
+- Monetization philosophy (devs' words, if any): None on record. Premium game; paid Burning Shores expansion. No dev commentary on monetization philosophy found.
+- Lesson for our games (1-2 lines, concrete): Steal the ACE filter: every boss, turf, and mission in Concrete Dragon should Amaze, Challenge, or Engage — run each content beat through that gate. And name the pillars (exploration / clever combat / emotional stories) so the team never forgets what the game is.
+- Sources:
+  - https://www.gamesindustry.biz/guerrilla-games-and-the-road-to-horizon-forbidden-west
+  - https://blog.playstation.com/2021/11/22/horizon-forbidden-west-an-authentic-world
+  - https://thegeek.games/2021/06/07/horizon-forbidden-west-the-cross-gen-development-wasnt-limiting/
+- Coverage note: Quotes are from search snippets (not fetched full pages), marked [unverified] per protocol. No invented statements included.

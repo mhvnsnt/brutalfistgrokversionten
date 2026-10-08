@@ -1,0 +1,17 @@
+# Arknights — Heart and Soul
+- Developer / studio: Hypergryph (Shanghai); global publishing by Yostar; global publishing brand GRYPHLINE (CEO Huang Yifeng)
+- Genre / platforms: Tower-defense strategy RPG gacha — iOS, Android, PC (2026)
+- Why players come back (in the devs' view): ANALYSIS + on-record producer statements. Hypergryph's retention engine is character/world depth and tactical difficulty with a player-first conscience: producer Hai Mao's stated design choices include leaving the protagonist (the Doctor) faceless so "each player can imagine what they could look like" — self-insertion as philosophy — and designing the game's hardest content (Contingency Contract) so it grants "no in-game revenue reward, only a number to prove it," letting casuals enjoy the fun while hardcore players chase mastery.
+- Key quotes:
+  - "Hai Mao also most notably confirmed the Doctor will be left without a design so each player can imagine what they could look like. This is a typical element in social games so players can self-insert as the protagonist if they wish to." — producer Hai Mao, reported by DualShockers on the 2nd-anniversary interview, 2022
+  - "He'd mainly like to make an Arknights RPG one day. This would be the best way to interact with the Operators and live in the world of Terra." — producer Hai Mao, DualShockers on the 2nd-anniversary interview, 2022
+  - "We strive to win the love and trust of global players through continuous innovation and better game quality." — Huang Yifeng, GRYPHLINE CEO, Final Weapon, 2023 [unverified — from search snippet]
+- Why players love/support it: Distinct gritty (non-fanservice) art direction, story that commits to morally gray political narrative, tower defense that "respects your intelligence" (low-rarity operators stay viable with good tactics), event archive so latecomers never miss story, concerts/orchestral performances, and a dev team that commissions full theme songs for characters (fans joke Hypergryph is "a record company disguised as a game company").
+- Monetization philosophy (devs' words, if any): No on-record monetization statement found. By design evidence (ANALYSIS): player-friendly balance — generous recruitment, welfare operators in events, event archives, and hardest content rewarding prestige not power, so spending never gates mastery.
+- Lesson for our games (1-2 lines, concrete): Let the hardest content reward prestige, not power — difficulty as a badge keeps hardcore players while F2P stay competitive. And build a world dense enough to "live in," not just roll in.
+- Sources:
+  - https://www.dualshockers.com/arknights-2nd-anniversary-interview-teases-possible-rpg-spinoff/
+  - https://finalweapon.net/2023/12/05/hypergryph-announces-global-publishing-brand-gryphline/
+  - https://pandayoo.com/2020/08/17/why-is-the-chinese-game-arknights-successful/comment-page-1/
+  - https://www.yomiqo.com/en/arknights-7th-anniversary-2026/
+- Coverage note: On-record Hypergryph interviews in English are scarce; two producer statements above are verified via DualShockers' reporting of the official anniversary interview; the CEO line is snippet-sourced and marked [unverified]. The rest is press analysis labeled ANALYSIS.

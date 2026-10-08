@@ -1,0 +1,16 @@
+# Monopoly GO! — Heart and Soul
+- Developer / studio: Scopely
+- Genre / platforms: Casual board-game adaptation; mobile
+- Why players come back (in the devs' view): Sharing moments with the people you love — "the magic of Monopoly Go is not just collecting, building, or competing, it is sharing those moments with other people." Siblings trading stickers across countries, couples playing at day's end, parents and adult children staying present in each other's lives.
+- Key quotes:
+  - "The fantasy of Monopoly was actually that you get richer by having money." — Massimo Maietti, GM of Monopoly GO & VP of Product at Scopely, on scrapping the skill-based synchronous PvP prototype because it "felt a lot like labor," GamesIndustry.biz, 2023
+  - "Remove as much skill from the game as possible, to allow everyone to play" — because "your brother might install the game after you, or your mother might play much more than you." — Massimo Maietti, MobileGamer.biz talk write-up [unverified — via talk write-up]
+  - "Community features matter most when they create reasons for players to participate in one another's progress." — Beth Nations, VP of Product at Scopely, PocketGamer.biz guest article, 2026
+  - "I think there needs to be greater attention to communities, to make sure your communities are large and that what players tell each other is healthy and interesting, and the game team is embedded in the community and pleases the community constantly." — Massimo Maietti, GamesIndustry.biz, 2023
+- Why players love/support it: Nostalgia weaponized kindly — the board game everyone grew up with — plus sticker trading that made strangers cooperate. Deliberately a small-group affair: "play with the meaningful people in your life."
+- Monetization philosophy (devs' words): No on-record statement found on pricing/fairness. Stated philosophy centers on reciprocity: "Reciprocity makes an interaction feel consequential... What matters is that players can see how they are helping one another." (Nations, 2026). Avoids indiscriminate viral invites.
+- Lesson for our games: Accessibility is respect — remove barriers so everyone can play together. Nostalgia + cooperation beats novelty + competition for broad love.
+- Sources:
+  - https://www.gamesindustry.biz/making-the-most-of-monopoly-gos-false-start
+  - https://www.pocketgamer.biz/what-monopoly-go-can-teach-developers-about-building-lasting-player-communities/
+- Coverage note: No direct dev quotes on pricing/fairness found in reviewed sources.

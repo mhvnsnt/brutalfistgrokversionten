@@ -1,0 +1,16 @@
+# Pokémon UNITE — Heart and Soul
+- Developer / studio: TiMi Studio Group (Tencent), The Pokémon Company
+- Genre / platforms: 5v5 MOBA (team arena battler); Nintendo Switch, iOS, Android
+- Why players come back (in the devs' view): 10-minute matches that fit anywhere in a day; comeback mechanics that keep every match alive to the final second; a sportsmanship system that keeps the community fun; low friction so sessions chain ("many players seem to play for hours at a time")
+- Key quotes: (3)
+  - "The matches last 10 minutes and players have the possibility of making a comeback, so we wanted people to play without giving up to the very end." — Masaaki Hoshino, Producer, Kotaku (via Dexerto/Nintendo Everything), 2021
+  - "A time limit means the game will always finish after 10 minutes. This allows players to sneak in a casual match where they can, be it before bed or whenever they've got a few minutes." — Masaaki Hoshino, Producer, Famitsu (via Nintendo Everything), 2021
+  - "It was less about punishing players for doing the wrong thing but informing and incentivizing new players to do things that keep things fun for everyone." — Masaaki Hoshino, Producer, on the fair-play points system, Famitsu (via Nintendo Everything), 2021
+- Why players love/support it: matches never overstay; Zapdos swing means you're never out of it; no scoreboard removes surrender shame; Pokémon IP attachment per character (each Pokémon is someone's favorite)
+- Monetization philosophy (devs' words, if any): No on-record monetization philosophy found from the devs. Hoshino told Kotaku they added held-item enhancer tickets and trial tickets after fan feedback to make picking held items "a more-enjoyable and rewarding experience" (Nintendo Everything, 2021) — a player-experience framing of a monetized system.
+- Lesson for our games (1-2 lines, concrete): Short, fixed session length is a retention superpower — players sneak in one match, then chain several. And removing defeat signals (hidden scoreboard) keeps losers playing instead of quitting the game entirely.
+- Sources:
+  - https://nintendoeverything.com/pokemon-unite-dev-on-time-limit-fair-play-points-more/
+  - https://www.polygon.com/22747442/pokemon-unite-moba-developers-timi-studios-score-hidden/
+  - https://www.dexerto.com/pokemon/pokemon-unite-devs-reveal-why-hide-game-scores-1683678/
+- Coverage note: On-record producer interviews located (Famitsu, Kotaku). No developer statement on monetization philosophy found; coverage note stands.

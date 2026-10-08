@@ -1,0 +1,19 @@
+# Black Desert Online — Heart and Soul
+- Developer / studio: Pearl Abyss (executive producer Jaehee Kim; head of gaming design Jesse Joo; CEO Jeonghee Jin)
+- Genre / platforms: Sandbox action MMORPG, PC / consoles / mobile
+- Why players come back (in the devs' view): Expansions that include everyone, not just end-game veterans — "a new region that doesn't exclude anyone"; the motto "a game that's enjoyable even if you play alone" (solo and co-op kept as separate, equally respected paths); daily/weekly content updates growing the community around the game; and treating the game as community infrastructure — "we pursue games as a community... Games have the function to bring players together to form community around the content."
+- Key quotes:
+  - "Our biggest goal was 'to create a new region that doesn't exclude anyone.' ... This kind of advertising is aimed at all users, but realistically, only existing or returning players can experience the new content." — Jesse Joo, Head of Gaming Design Division, Wccftech, 2022
+  - "We really pursue games as a community, whether it's single player, multiplayer, or a big MMO... Games have the function to bring players together to form community around the content." — Jeonghee Jin, CEO Pearl Abyss America, GamesIndustry.biz, 2023
+  - "One of Black Desert's mottos is 'a game that's enjoyable even if you play alone.'" — Jesse Joo, Head of Gaming Design Division, Wccftech, 2022
+  - "Thanks to the faith our Adventurers instilled in us, we persevered. For these eight long years, we were able to adventure onward together. Not simply passing the time, but building lasting memories together." — Jaehee Kim, Executive Producer, Massively OP (official console message), 2022
+- Why players love/support it: The genre's most elaborate life-sim sandbox (trading, farming, sailing, housing alongside elite action combat); best-in-class character creator; weekly content and class drops for a decade; Pearl Abyss funding EVE Online's CCP acquisition off its $1.7B+ revenue — the community literally bankrolled a bigger empire.
+- Monetization philosophy (devs' words, if any): West was buy-to-play, Korea free-to-play; cash shop sells convenience/cosmetics. Publisher Kakao's on-record stance (Massively OP, 2016): an MMO is "Time2Win by definition," and "we believe that the constant influx of new players will enrich Black Desert and all the players in the long run." Player-side criticism of P2W edges exists (no clean dev philosophy quote found). Note Crimson Desert (2026) is going premium with zero microtransactions — Pearl Abyss calling it a "premium experience... not based on microtransactions."
+- Lesson for our games (1-2 lines, concrete): Make expansions that level-1 players can enter — content gates that exclude new players waste your marketing. And name the motto explicitly ("enjoyable even if you play alone") so every system serves a stated player promise.
+- Sources: (URLs)
+  - https://wccftech.com/black-desert-qa-pearl-abyss-producer-talks-eternal-winter-and-beyond/?beta=1
+  - https://www.gamesindustry.biz/pearl-abyss-exploring-beyond-black-desert
+  - https://massivelyop.com/2022/07/01/black-desert-console-celebrates-worldwide-service-with-events-a-coupon-code-and-a-message/
+  - https://screenrant.com/black-desert-online-land-morning-light-interview/
+  - https://massivelyop.com/2016/07/06/kakao-argues-that-black-desert-is-not-pay-to-win/
+- Coverage note: Quotes verified from fetched pages. No on-record Pearl Abyss monetization PHILOSOPHY statement found; the Kakao quote is publisher-side and labeled accordingly. Crimson Desert microtransaction stance is press coverage of a marketing-director podcast appearance (ANALYSIS context).

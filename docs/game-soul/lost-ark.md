@@ -1,0 +1,19 @@
+# Lost Ark — Heart and Soul
+- Developer / studio: Smilegate RPG (global director Keum "Gold River" Kang-sun); published in the West by Amazon Games
+- Genre / platforms: Free-to-play isometric action MMO, PC
+- Why players come back (in the devs' view): A service built on responsiveness — the devs' stated covenant is continuous improvement driven by player feedback ("we are always ready to listen"), pacing content so the journey never feels rushed, and a steady pipeline of raids, classes, and skins. Gold River's framing: the goal is to make the game "fit for such love and support in return."
+- Key quotes:
+  - "I promise to make the game better today than yesterday, tomorrow than today. Please keep an eye on us and give us more feedback. We are always ready to listen." — Keum "Gold River" Kang-sun, Global Director, Inven Global, 2022
+  - "Our goal now is to make the game fit for such love and support in return. As we grew with the Korean users' feedback, I am eager to establish a good relationship with the global users. Large numbers may be important, but what matters more to us is providing our best to the remaining users who continue to enjoy the game." — Keum "Gold River" Kang-sun, Global Director, Inven Global, 2022
+  - "We never wanted players to feel rushed in their quest to hit item level 1370." — Amazon Games & Smilegate RPG (joint dev statement), Eurogamer/Inven Global, 2022
+  - "Delivering the contents quickly is not necessarily providing the best experience to the players. We need to constantly check how much the players have leveled and see if the progression for the prepared contents is being made properly." — Keum "Gold River" Kang-sun, Global Director, Inven Global, 2022
+- Why players love/support it: A lavishly produced ARPG-MMO with constant content (Legion Raids, new classes, cosmetics); devs who publicly apologize and correct pacing mistakes (the Argos incident); and Korean service-culture discipline — years of accumulated polish before the global launch.
+- Monetization philosophy (devs' words, if any): No clean on-record monetization philosophy found; the free-to-play model centers on cosmetics and convenience. The Argos incident (March 2022) shows the tension: devs admitted they "made a mistake releasing the March game update too quickly after launch" and conceded that progression economics (honing materials, bots/RMT scarcity) made the game feel pay-to-win — and promised to pace content by actual player data. (ANALYSIS from coverage: their philosophy appears to be content-pacing over price-gating.)
+- Lesson for our games (1-2 lines, concrete): Promise improvement on a daily cadence and keep it — "better today than yesterday" is a retention engine when players believe it. And never rush players past content just to unlock the next spend tier; pacing mistakes read as pay-to-win.
+- Sources: (URLs)
+  - https://www.invenglobal.com/articles/16897/lost-ark-global-director-gold-river-i-promise-to-make-the-game-better-today-than-yesterday-tomorrow-than-today
+  - https://www.eurogamer.net/lost-ark-devs-address-growing-concerns-of-pay-to-win-gameplay
+  - https://www.invenglobal.com/articles/16754/amazon-games-smilegate-rpg-message-from-the-team-gifts-to-come-on-mar-21
+  - https://massivelyop.com/2022/04/11/interview-lost-arks-regional-parity-genderlocking-and-the-amazon-smilegate-collaboration/
+  - http://pcgamer.com/games/following-massive-player-fall-off-amazons-mmo-lost-ark-is-getting-an-update-to-make-levelling-faster-and-address-a-known-progression-pain-point/
+- Coverage note: Dev quotes verified from the fetched Inven Global interview. No standalone on-record monetization philosophy found; the Argos statement and PC Gamer retention coverage are press/dev-statement context labeled accordingly.

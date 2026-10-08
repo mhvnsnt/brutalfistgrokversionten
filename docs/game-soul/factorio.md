@@ -1,0 +1,18 @@
+# Factorio — Heart and Soul
+- Developer / studio: Wube Software (Czech indie)
+- Genre / platforms: Automation/construction sandbox; PC (Windows/Mac/Linux), Switch
+- Why players come back (in the devs' view): kovarex built the game he himself wanted to play — a bottomless optimization rabbit hole. The retention engine is emergent mastery: quality-of-life polish everywhere, endless ways to do everything, and total-conversion mod support baked in. The studio treats development like a factory: build, measure, find the bottleneck, redesign, repeat — "Wube develops Factorio like Factorio players build factories."
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "I wanted to play this kind of game deeply, but there weren't any games like that so far, so I started doing it myself, and quit my job to do it full time." — Michal "kovarex" Kovařík, Founder/Lead Designer, Niche Gamer interview, ~2021 [unverified]
+  - "We don't plan any Factorio sale. I'm aware, that the sale can make a lot of money in a short period of time, but I believe that it is not worth it in the long run, and since we are not in financial pressure we can afford to think in the long run. We want to be honest with our customers." — kovarex, Factorio Friday Facts #140 (quoted in Steam forums), 2016 [unverified]
+  - "Once you have enough to live comfortably, and enough to financially support the ongoing (and future) projects you want to do, you don't really need more... we have no investors and shareholders pressuring us." — kovarex, Reddit, ~2024 [unverified]
+- Why players love/support it: ANALYSIS — Obsessive polish and QOL, an honest fixed price, a free demo, weekly transparent dev blogs (Friday Facts) for 400+ weeks, and a mod ecosystem so deep that player creations get folded into the base game. Fans defend the no-sale policy as pro-consumer honesty.
+- Monetization philosophy (devs' words, if any): Never discount: a sale "is basically saying that someone who doesn't want to waste his time by searching for sales or special offers has to pay more." Price honestly once, then raise it over time instead. No investors; "enough" money is enough.
+- Lesson for our games (1-2 lines, concrete): Radical player trust is monetization: one fair price, no sales theater, no investors to satisfy — and infinite retention comes from making mastery itself bottomless, not from content drips.
+- Sources: (URLs)
+  - https://nichegamer.com/factorio-founder-kovarex-interview-cancel-culture-and-secret-support/
+  - https://steamcommunity.com/app/427520/discussions/0/2592234299545022370/
+  - https://www.factorio.com/blog/post/fff-62
+  - https://technologyblog.co.za/wube-software-factorio-developer-profile/
+  - https://www.rockpapershotgun.com/have-you-played-factorio-1
+- Coverage note: Dev quotes are snippet-sourced and marked [unverified]; Wube gives few press interviews — most philosophy lives in Friday Facts blog posts. Why-players-love section is labeled ANALYSIS.

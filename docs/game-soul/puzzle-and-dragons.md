@@ -1,0 +1,18 @@
+# Puzzle & Dragons — Heart and Soul
+- Developer / studio: GungHo Online Entertainment (CEO Kazuki Morishita; producer Daisuke Yamamoto; initial team of ~4, later ~20).
+- Genre / platforms: Match-3 puzzle + monster-collecting RPG; iOS + Android (2012; first mobile game to gross $1B+; briefly made GungHo worth more than Nintendo).
+- Why players come back (in the devs' view): The core hook is "chance" built into gameplay itself — skyfall combos mean even a mediocre player can be saved by luck, so skill gaps never gate progress or fun. The genre mashup (RPG + hack 'n slash + pure puzzle) pulls in both hardcore and casual audiences. Magic-stone continues were designed around a simple belief: if people like the game enough, they'll want to keep playing after they die. Players return for the easy-to-start loop and the ever-rotating collaborations/events.
+- Key quotes:
+  - "We really focused on 'chance' as a gameplay mechanic when you're playing Puzzle & Dragons... You are able to practice and become better at the puzzle element. However, some people are good at it and some people are not. For players that don't get past that level, they can progress with the help of chance." — Kazuki Morishita, CEO (GungHo), Siliconera interview, 2013
+  - "I figured if people like the game enough they will want to continue after they die to keep playing the game. These ideas were random ideas that came by chance." — Kazuki Morishita, on the magic-stone continue design, Siliconera interview, 2013
+  - "We didn't really do anything special with Puzzle & Dragons during development. We took the same exact steps we took with our other titles... It's just that it hit a very high success rate." — Kazuki Morishita, Siliconera interview, 2013
+  - "Listen to your wife." — Daisuke Yamamoto, producer (GungHo), on the game's secret sauce (wife's feedback shaped the concept), TechCrunch, 2013
+- Why players love/support it: Easy to start (early levels teach everything; stamina refills via leveling early), skill ceiling is self-paced, and luck smooths failure. Constant collaboration events (Final Fantasy, Sanrio, Mario) give fresh monsters and reasons to log in. ANALYSIS (press): generous early progression converts players before the mid-game monetization squeeze, so spend feels like supporting a habit already formed.
+- Monetization philosophy (devs' words, if any): Morishita's design logic — players pay for magic stones to continue because they like the game enough to keep playing after they die; no special monetization scheming, "random ideas that came by chance." No on-record statement found on gacha rates or spend ethics.
+- Lesson for our games (1-2 lines, concrete): Bake luck into the combat loop so bad players get saved by chance sometimes — skyfall-style forgiveness keeps strugglers playing instead of quitting. And: make the early game generous so the habit forms before any paywall appears.
+- Sources:
+  - https://www.siliconera.com/the-secret-to-puzzle-dragons-massive-success-millions-of-dollars-is-luck/
+  - https://techcrunch.com/?p=837263
+  - https://www.pocketgamer.biz/our-teams-increased-from-4-people-to-20-says-puzzle-and-dragons-producer/
+  - https://www.nintendolife.com/news/2015/05/interview_gunghos_daisuke_yamamoto_talks_puzzle_and_dragons_super_mario_bros_edition
+- Coverage note: The 2013 Siliconera interview is with CEO Kazuki Morishita, not producer Yamamoto (a search snippet misattributed it); quotes above are correctly attributed to Morishita. No on-record dev statement found on gacha fairness/rate philosophy.

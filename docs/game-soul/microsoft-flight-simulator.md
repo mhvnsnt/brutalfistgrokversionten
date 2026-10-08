@@ -1,0 +1,19 @@
+# Microsoft Flight Simulator — Heart and Soul
+- Developer / studio: Asobo Studio, published by Xbox Game Studios (headed by Jorg Neumann)
+- Genre / platforms: Flight simulation; PC, Xbox Series X|S, Xbox Cloud Gaming
+- Why players come back (in the devs' view): "Wish fulfillment of the community" — Asobo runs formal listening systems and a community wishlist that literally prioritizes the roadmap for them. Players return because the sim keeps absorbing their requests (World Updates, helicopters, Top Gun expansion), and core simmers "love the sandbox, they play every day."
+- Key quotes:
+  - "Wish fulfillment of the community... We have all kinds of listening systems. What do they want? What is missing? So we listen really carefully and we try to prioritize. They actually prioritize for us." — Jorg Neumann, Head of Microsoft Flight Simulator, Xbox Game Studios, Windows Central (2024) [unverified]
+  - "I always said we made this for core simmers. That was the most important thing. Those are the people who love [Flight Simulator] and have been loyal for decades." — Jorg Neumann, Eurogamer (2021) [unverified]
+  - "We are not a game. So we're not making game-y type missions at all. What we're doing is accurate aviation activities." — Jorg Neumann, PC Gamer / FlightSimExpo (2023) [unverified]
+  - "We want to get it right. To make sure the people that are coming in feel welcome. And ideally, stay and become a simmer down the road." — Jorg Neumann, AusGamers via Pure Xbox (2021) [unverified]
+- Why players love/support it: The living planet — real-time weather, Bing Maps earth, constant world updates — plus a team visibly serving a decades-loyal community. Game Pass turned millions of curious newcomers into daily flyers.
+- Monetization philosophy (devs' words, if any): Premium title + Game Pass inclusion; expansions (e.g., Top Gun, Reno Air Races) are optional DLC. No dev-sourced statement on microtransactions found; the ethos is "serve the simmers," not squeeze them.
+- Lesson for our games (1-2 lines, concrete): Build a public wishlist and let the community literally prioritize the roadmap — players who see their asks shipped become daily players. Newcomers who "feel welcome" convert into loyalists.
+- Sources: (URLs)
+  - https://www.windowscentral.com/gaming/xbox/microsoft-flight-simulator-2024-preview
+  - https://www.eurogamer.net/asobo-talks-bringing-flight-simulators-breathtaking-world-to-everyone-via-xbox-cloud-gaming
+  - https://www.pcgamer.com/head-of-microsoft-flight-simulator-says-were-not-a-game-what-were-doing-is-accurate-aviation-activities/
+  - https://www.purexbox.com/news/2021/02/microsoft_flight_simulator_dev_really_wants_project_xcloud_version
+  - https://gamingbolt.com/microsoft-flight-simulator-interview-tech-post-launch-plans-development-and-more
+- Coverage note: All quotes sourced from search snippets, marked [unverified]; full page fetch not performed in this pass.

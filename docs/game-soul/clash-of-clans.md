@@ -1,0 +1,17 @@
+# Clash of Clans — Heart and Soul
+- Developer / studio: Supercell
+- Genre / platforms: Strategy / village-builder with clan warfare / iOS, Android
+- Why players come back (in the devs' view): The clan — players stay for each other as much as for the gameplay. Paananen asks long-term players why they keep playing after 5–8 years, and the answer is consistently the other players. The goal from day one was to make the game part of everyday life.
+- Key quotes:
+  - "One of our goals when we started was to create something that would be so meaningful to the players that it would become a part of their everyday life." — Ilkka Paananen, CEO and co-founder, Supercell, Fast Company (10th-anniversary interview), 2022
+  - "Oftentimes, they'll talk about how they love the game and the humor and the characters and the gameplay, but as often — if not more often — they also refer to the other players. It really is the clan." — Ilkka Paananen, CEO and co-founder, Supercell, Fast Company, 2022
+  - "Games make the planet a bit smaller; they bring people together from all kinds of different backgrounds, different cultures, and different parts of the world." — Ilkka Paananen, CEO and co-founder, Supercell, Fast Company, 2022
+  - "The key thing is long-term retention. We really want to make games that are played for years. And remembered forever." — Marika Appel, Clash of Clans team, PocketGamer.biz (Clash Fest interview), 2022 [unverified]
+- Why players love/support it: Clan Wars made the game social in a way solo raiding never was; returning players get a playful re-entry (a villager takes over their base while they're gone); Supercell's extreme quality bar and willingness to kill weak games signals that shipped games are kept alive with care.
+- Monetization philosophy (devs' words, if any): No on-record statement found.
+- Lesson for our games (1-2 lines, concrete): Make players need each other — the social structure (clan, faction) is the real retention engine, and designing a joyful return experience for lapsed players turns churn into comeback.
+- Sources:
+  - https://www.fastcompany.com/90777774/exclusive-supercell-ceo-ilkka-paananen-clash-of-clans-10th-anniversary?utm_source=postup&utm_medium=email&utm_campaign=mobile-gaming&position=2&partner=newsletter&campaign_date=04302024
+  - https://www.pocketgamer.com/clash-of-clans/interview-ten-year-anniversary/
+  - https://www.PocketGamer.biz/marika-appel-has-been-at-supercell-for-over-ten-years-and-is-still-as-passionate-as-ever/
+- Coverage note: Monetization philosophy: no on-record dev statement found. The Appel quote is snippet-sourced, marked [unverified].

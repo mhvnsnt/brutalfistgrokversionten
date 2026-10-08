@@ -3,6 +3,7 @@ import { TitleScreen } from './components/TitleScreen';
 import { IntroMovie } from './components/IntroMovie';
 import { decideIntroFromBrowser } from './lib/introMovie';
 import { useState } from 'react';
+import IntroVideoGate from './components/IntroVideoGate';
 import { useTapThroughGuard } from './pwa/useTapThroughGuard';
 import { AppScreen } from './types';
 import { BANNON_GLB_PLAYABLE_MODELS } from './data/bannonGlbRoster';
@@ -42,6 +43,9 @@ const PreCombatValidationScreen = dynamic(() => import('./components/PreCombatVa
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth();
   const [screen, setScreen] = useState<AppScreen>(AppScreen.Title);
+  // The intro asset is not shipped in the PWA. Start on the real title screen;
+  // never mount a black media gate when there is nothing to play.
+  const [introComplete, setIntroComplete] = useState(true);
   // Intro FMV in front of the title screen (see src/components/IntroMovie.tsx).
   // Decided once per launch; false = the title screen exactly as before.
   const [introActive, setIntroActive] = useState(() => decideIntroFromBrowser().play);
@@ -56,6 +60,14 @@ export default function App() {
   const [tournamentEndData, setTournamentEndData] = useState<TournamentEndData | null>(null);
   const [tournamentSettings, setTournamentSettings] = useState<TournamentSettings>(DEFAULT_TOURNAMENT_SETTINGS);
   const [selectedStageId, setSelectedStageId] = useState<StageId>('urban_night');
+
+  // The cinematic intro is deliberately before TitleScreen. The media component
+  // owns autoplay permission, skip, completion, and missing-file fallback; when
+  // the rough cut is absent it calls onComplete from the media error handler and
+  // the existing start screen appears normally.
+  if (!introComplete) {
+    return <IntroVideoGate onComplete={() => setIntroComplete(true)} />;
+  }
 
   if (!BANNON_GLB_PLAYABLE_MODELS?.length) {
     return (

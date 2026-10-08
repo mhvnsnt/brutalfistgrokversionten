@@ -1,0 +1,16 @@
+# Slay the Spire — Heart and Soul
+- Developer / studio: Mega Crit Games (Anthony Giovannetti, design lead; Casey Yano, co-founder).
+- Genre / platforms: Roguelike deckbuilder; PC + consoles + mobile (2019), Slay the Spire 2 in early access.
+- Why players come back (in the devs' view): Every run is a fresh draft — constraints force you to explore and be creative, so no two runs are ever the same. The intent system gives perfect information, expanding strategic depth. The devs designed for replayability explicitly, then refined it through weekly early-access updates driven by player feedback.
+- Key quotes:
+  - "The constraints of the game force you to explore and be creative, and that's good." — Anthony Giovannetti, Design Lead, Rock Paper Shotgun, 2023
+  - "My favourite thing in Magic was drafting... The roguelike framework gives you an excuse to always be drafting. It's a good mechanical justification for why you don't always have the same deck." — Anthony Giovannetti, Design Lead, Rock Paper Shotgun, 2023
+  - "There are so many different permutations of decks that you can build in Slay the Spire that our replayability, even early in playtesting, was off the charts. The important thing is to quickly allow the player to start carving out new strategies or experimenting with new things." — Mega Crit, Game Developer (Road to the IGF), 2018 [unverified]
+- Why players love/support it: Weekly updates in early access made players feel like co-designers; anti-microtransaction stance built trust; deep mod support and four wildly different character playstyles give it endless legs — many fans still play daily years later.
+- Monetization philosophy (devs' words, if any): No microtransactions ever; the studio publicly stood against them. Premium single-sale model with free content updates; a free character (The Watcher) added post-launch. Revenue came from selling millions of copies of a complete game.
+- Lesson for our games (1-2 lines, concrete): Constraints CREATE replayability — don't let players pick everything they want, force them to improvise with what they're given. Ship updates often and visibly; players who draft the dream deck with you become lifelong supporters.
+- Sources: (URLs)
+  - https://www.rockpapershotgun.com/how-slay-the-spire-saved-digital-card-games-from-stagnation
+  - https://www.rockpapershotgun.com/why-revealing-all-is-the-secret-of-slay-the-spires-success
+  - https://www.gamedeveloper.com/game-platforms/road-to-the-igf-mega-crit-games-i-slay-the-spire-i-
+- Coverage note: The Game Developer (Road to the IGF) quote is snippet-sourced, marked [unverified]. No direct dev quote on anti-microtransaction stance located in this wave — ANALYSIS based on their public position around Slay the Spire 2.

@@ -1,0 +1,19 @@
+# Ludo King — Heart and Soul
+- Developer / studio: Gametion Global (Navi Mumbai, India; founded by Vikash Jaiswal; launched Feb 2016)
+- Genre / platforms: Classic board game (Ludo) / iOS, Android; offline, pass-and-play, online multiplayer with friends
+- Why players come back (in the devs' view): Familiarity + togetherness. Ludo is a universally known family game (luck-based, so anyone can win), rules simplified for quick pickup, and the social draw is strongest — online multiplayer added within six months of launch at players' request. During lockdown it became a family-connection staple ("family WhatsApp groups share Ludo King plans"). The team actively mines user feedback for new features.
+- Key quotes:
+  - "I feel happy about the fact that during the most difficult times, our game Ludo King brought the family and friends closer." — Vikash Jaiswal, founder/CEO, G2G News, 2022
+  - "If you play other Ludo games, you will see classic rules. For instance, you need to roll the dice if you get six. We, instead, added the ability to let you simply move your token once you get a six." — Vikash Jaiswal, founder/CEO, Gadgets 360, 2020
+  - "Ludo has different rules in different places, but I wanted to be easy and quick." — Vikash Jaiswal, founder/CEO, MensXP, 2020
+  - "We don't want users to get frustrated because of ads. They get a clean experience." — Vikash Jaiswal, founder/CEO, YourStory, 2017 (on ad monetization restraint)
+- Why players love/support it: Zero learning curve (everyone knows Ludo), low-data offline mode, free, 15 languages, playable across ages and devices; online multiplayer with friends recreates the family table. 50M+ DAU at peak; first Indian game to cross 100M installs on Google Play.
+- Monetization philosophy (devs' words, if any): Mostly ad-driven with IAPs; ads shown only after games, never during — "We don't want users to get frustrated because of ads. They get a clean experience." (Jaiswal, YourStory, 2017). Gametion is bootstrapped and has been "profitable since the beginning" (Jaiswal, MensXP, 2020).
+- Lesson for our games (1-2 lines, concrete): Bet on familiar mechanics with a social hook, not novelty — luck-based, anyone-can-win games have the widest possible funnel. Keep the in-game experience clean (never interrupt play with ads/friction) and add multiplayer at the first sign players want it.
+- Sources:
+  - https://www.gadgets360.com/games/features/ludo-king-creator-vikash-jaiswal-total-users-downloads-india-success-2232634
+  - https://yourstory.com/2017/10/ludo-king-mobile-gaming
+  - https://g2g.news/gaming/viskash-jaiswal-and-soni-kumari-on-ludo-king-success-and-future-investments/
+  - https://www.mensxp.com/amp/special-features/features/76219-meet-vikash-jaiswal-who-developed-ludo-king-which-is-keeping-us-entertained-during-lockdown.html
+  - https://www.afaqs.com/news/mktg/ludo-king-vikash-jaiswal-on-how-ludo-became-indias-no-1-lockdown-game
+- Coverage note: All quotes verified via fetched pages / search results from direct founder interviews. No invented statements.

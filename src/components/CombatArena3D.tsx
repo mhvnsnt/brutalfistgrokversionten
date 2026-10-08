@@ -25,6 +25,71 @@ const P1_X = -1.8;
 const P2_X = 1.8;
 const Z_RANGE = 2.0;
 
+/**
+ * Pick locomotion presentation from the FSM's semantic state plus the live
+ * signed velocity. Combat states remain authoritative; only locomotion states
+ * are redirected here. This keeps a grapple receiver/hit reaction from being
+ * accidentally replaced by a walk cycle while still giving forward/backward
+ * walk, run and dash their own visual lanes.
+ */
+function resolveLocomotionPresentation(
+  state: string,
+  velocity: { forward: number; strafe: number } | undefined,
+  requested: string,
+  airborneY = 0,
+): string {
+  // Explicit stance requests outrank the generic Idle label. Crouch is
+  // intentionally an Idle action in the FSM, so letting the generic Idle
+  // fallback win here silently replaced crouch with the standing idle clip.
+  if (requested === 'crouch' || requested === 'guardLow' || requested === 'crouchWalk') {
+    return requested;
+  }
+  if (!velocity) return state === 'Walking' ? (requested || 'idle') : (requested || state);
+  const f = velocity.forward ?? 0;
+  const s = velocity.strafe ?? 0;
+  const af = Math.abs(f);
+  const as = Math.abs(s);
+  const moving = Math.hypot(f, s) > 0.12;
+
+  // Jump input may be released before the 0.55s FSM presentation window ends.
+  // The locomotion arc is the authoritative world-space Y, so keep the jump
+  // clip alive for the whole airborne interval instead of snapping to idle in
+  // mid-flight. This is also what makes the visual lift/fall match the actual
+  // capsule height.
+  if (airborneY > 0.02 && state !== 'Knockdown' && state !== 'Juggled') {
+    return f < -0.12 ? 'jumpBack' : f > 0.12 ? 'jumpForward' : 'jump';
+  }
+  // The world-space Y arc is authoritative. A frame of React/state latency must
+  // not turn an airborne fighter back into a standing locomotion clip.
+  if (state === 'Jumping' && airborneY > 0) {
+    return f < -0.12 ? 'jumpBack' : f > 0.12 ? 'jumpForward' : 'jump';
+  }
+
+  if (state === 'Backdashing') return 'Backdashing';
+  // Explicit combat/throw/wakeup clips come from the caller and must survive
+  // this locomotion selector. Grapple receiver clips are deliberately not FSM
+  // state names, so returning `state` here would silently replace them.
+  if (state !== 'Walking') return requested || state;
+  if (!moving) return 'idle';
+
+  // The FSM already distinguishes run/dash from walk. Preserve that request,
+  // but choose the signed variant so holding dash backwards does not play a
+  // forward run while the capsule travels backwards.
+  if (requested === 'dash' || requested === 'dashForward') {
+    return f < -0.12 ? 'dashBackward' : 'dashForward';
+  }
+  if (requested === 'run') {
+    return f < -0.12 ? 'runBackward' : 'run';
+  }
+  // Once we are in the generic Walking state, the signed live velocity is
+  // the source of truth. Do not let a stale motion label make a right strafe
+  // look like a left strafe (or a retreat look like an advance).
+  if (as > af * 1.15) return s < 0 ? 'strafeLeft' : 'strafeRight';
+  if (f < -0.12) return 'walkBackward';
+  if (f > 0.12) return 'walkForward';
+  return requested || 'idle';
+}
+
 // ── Cinematic phases ──────────────────────────────────────────────────────────
 export type CinematicPhase = 'sweep' | 'intro' | 'fight' | 'victory';
 
@@ -676,6 +741,9 @@ export interface CombatArena3DProps {
   /** Metres/second, written by the match loop. Drives foot playback rate. */
   p1GroundSpeedRef?: { current: number };
   p2GroundSpeedRef?: { current: number };
+  /** When a grapple receiver is playing, match its authored clip to the deliverer's clock. */
+  p1GrappleDurationSeconds?: number;
+  p2GrappleDurationSeconds?: number;
   /** Callbacks to receive bone hitbox system references from FighterMesh */
   onP1BoneHitboxReady?: (system: import('../engine/locomotion/BoneHitboxSystem').BoneHitboxSystem) => void;
   onP2BoneHitboxReady?: (system: import('../engine/locomotion/BoneHitboxSystem').BoneHitboxSystem) => void;
@@ -743,6 +811,8 @@ export default function CombatArena3D({
   p2LocomotionVelocity,
   p1GroundSpeedRef,
   p2GroundSpeedRef,
+  p1GrappleDurationSeconds,
+  p2GrappleDurationSeconds,
   onP1BoneHitboxReady,
   onP2BoneHitboxReady,
   wallSplatEvent,
@@ -1067,7 +1137,7 @@ export default function CombatArena3D({
         {/* Combat: P1 yaw 0 (face +X / P2), P2 yaw π (face −X / P1). Not ±90 — that was back-to-cam / face-to-cam. */}
         <FighterMesh
           state={p1State}
-          animation={p1Animation}
+          animation={resolveLocomotionPresentation(p1State, p1LocomotionVelocity, p1Animation, p1YProp)}
           modelUrl={getFighterGlbUrl(p1Fighter.id, p1Fighter.model) ?? p1Fighter.portraitUrl}
           position={[p1FinalX, COMBAT_FIGHTER_Y + p1YProp, p1FinalZ]}
           facing={1}
@@ -1078,7 +1148,8 @@ export default function CombatArena3D({
           animationTrigger={p1AnimTrigger}
           attackDurationSeconds={p1AttackDurationSeconds}
           locomotionVelocity={p1LocomotionVelocity}
-          groundSpeedRef={p1GroundSpeedRef}
+          groundSpeedRef={p1GroundSpeedRef ?? { current: Math.hypot(p1LocomotionVelocity?.forward ?? 0, p1LocomotionVelocity?.strafe ?? 0) }}
+          forcedPlaybackDurationSeconds={p1GrappleDurationSeconds}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP1BoneHitboxReady}
           attackClip={p1AttackClip}
@@ -1097,7 +1168,7 @@ export default function CombatArena3D({
         {/* P2 faces P1 */}
         <FighterMesh
           state={p2State}
-          animation={p2Animation}
+          animation={resolveLocomotionPresentation(p2State, p2LocomotionVelocity, p2Animation, p2YProp)}
           modelUrl={getFighterGlbUrl(p2Fighter.id, p2Fighter.model) ?? p2Fighter.portraitUrl}
           position={[p2FinalX, COMBAT_FIGHTER_Y + p2YProp, p2FinalZ]}
           facing={-1}
@@ -1108,7 +1179,8 @@ export default function CombatArena3D({
           animationTrigger={p2AnimTrigger}
           attackDurationSeconds={p2AttackDurationSeconds}
           locomotionVelocity={p2LocomotionVelocity}
-          groundSpeedRef={p2GroundSpeedRef}
+          groundSpeedRef={p2GroundSpeedRef ?? { current: Math.hypot(p2LocomotionVelocity?.forward ?? 0, p2LocomotionVelocity?.strafe ?? 0) }}
+          forcedPlaybackDurationSeconds={p2GrappleDurationSeconds}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP2BoneHitboxReady}
           attackClip={p2AttackClip}

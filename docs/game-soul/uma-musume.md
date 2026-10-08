@@ -1,0 +1,22 @@
+# Uma Musume Pretty Derby — Heart and Soul
+- Developer / studio: Cygames (Japan, 2021; global/PC+Steam release June 2025; $2.5B+ lifetime by 2025; Japan's most lucrative game of 2021 and 2022).
+- Genre / platforms: Training-simulation / roguelite raising game with gacha; iOS / Android / PC / Steam.
+- Why players come back (in the devs' view):
+  - The team's origin idea was "the dramatic stories behind each racehorse" — reimagining not just the races and records but the stories behind each horse as entertainment. Respect for the real world of horse racing, combined with dedication to making the game fun, is what they believe "resonated with many people and contributed to its popularity."
+  - The training-simulation loop itself is the draw: watching how races unfold as a direct result of the player's training decisions. "No other run feels the same, even when you're playing with the same character as before" — countless strategies emerge from a simple, consistent system, so both beginners and veterans stay engaged without mechanically complex gameplay.
+  - Character attachment: every Uma Musume references her real-world thoroughbred counterpart, which turns players into genuine horse-racing fans (some even watch real races and buy real racehorses).
+- Key quotes:
+  - "We believe that our commitment to respecting the world of horse racing, combined with our dedication to making the game fun, resonated with many people and contributed to its popularity." — Anonymous Cygames developer, PocketGamer.biz interview, 2025
+  - "What really inspired us were the dramatic stories behind each racehorse, and we wanted to find a way to share those stories with a broader audience... That's how the idea for the project first took shape." — Anonymous Cygames developer, PocketGamer.biz interview, 2025
+  - "In the Japanese game market, the training simulation genre is already well established, so we believed that seeing how the races unfold as a direct result of the player's training could itself be an enjoyable gameplay element... by having a simple system, the game would be accessible to beginners while still allowing players to explore different training strategies and approaches as they become more experienced." — Cygames developers, Dexerto interview on the global launch, 2025 [unverified]
+- Why players love/support it:
+  - The training sim creates a trainer/horse-girl bond ("she's our daughter") — every career is a roguelite story from zero to hero, ending in an idol-style victory concert. Real-world grounding (actual racehorse histories, owners cooperating) gives every character a true story to discover, and the game demonstrably converted players into real horse-racing fans.
+- Monetization philosophy (devs' words, if any):
+  - No on-record statement found. ANALYSIS: spending concentrates mid-game on Support cards and the breeding/legacy system — "an intense player-to-single-horse-girl repeatable campaign experience" rather than pure character collecting (MobileGamer.biz / DeNA analyst Eric Black). Players report never hitting a hard "pay or stop progressing" wall.
+- Lesson for our games (1-2 lines, concrete):
+  - Anchor characters in real-world stories/history so players bond with the person, not the sprite — and make the gameplay loop the emotional engine (training decisions → payoff), so replayability comes from strategy variety, not new content alone.
+- Sources:
+  - https://www.pocketgamer.biz/umamusume-to-be-honest-we-werent-sure-how-a-game-inspired-by-japanese-horse-racing-culture-would-be-received-overseas/
+  - https://www.dexerto.com/gaming/umamusume-devs-arent-worried-about-competing-with-gacha-games-like-genshin-impact-3244885/
+  - http://mobilegamer.biz/cult-horse-girl-game-umamusume-pretty-derby-is-galloping-up-the-charts/
+- Coverage note: Cygames devs spoke anonymously for the PocketGamer.biz piece; the Dexerto interview quotes are [unverified] (search snippet only). No on-record developer statement on monetization philosophy was found — the monetization section is press analysis, labeled as such.

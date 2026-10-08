@@ -1,0 +1,18 @@
+# Top Eleven — Heart and Soul
+- Developer / studio: Nordeus (Belgrade, Serbia; founded 2010; first and flagship game; José Mourinho as brand face since 2013)
+- Genre / platforms: Football management simulation / iOS, Android, web (started Facebook browser, mobile 2011; 42 languages; 220M+ registered users)
+- Why players come back (in the devs' view): Core loops engineered to keep players engaged for years — daily habits (check in, tweak, wait for the match), evergreen football, live-service persistence instead of annual resets (players build squads over years and refuse restarts), social bonds with rivals, and community-driven feature updates. Stability of the core (match times, leagues, auctions, squad building) lets a loyal base grow.
+- Key quotes:
+  - "It always made sense to be an ongoing live service rather than yearly iterations. Players are building their squads over years, and they don't want to have to restart that every 12 months. So the decision was based around the user's needs and motivations, to encourage longevity and loyalty. Just like real-world football." — Branko Milutinovic, CEO, Pocket Gamer (10th anniversary interview), 2020
+  - "What we have looked to do is keep the core fundamentals of the game... That stability enabled us to build out a committed and loyal user base, and we could build on that throughout the years to keep it evolving." — Branko Milutinovic, CEO, Pocket Gamer, 2020
+  - "You cannot keep a game going for 10 years without strong player support and communities around you - they are the lifeblood of any long-standing game." — Branko Milutinovic, CEO, PocketGamer.biz, 2020
+  - "Football is evergreen, so Top Eleven should be as well." — Branko Milutinovic, CEO, Pocket Gamer, 2020
+- Why players love/support it: It's "part of their life in a very subtle enriching way... a hobby. It's positive" (Milutinovic describing player routine: wake up, check app, two minutes, wait for the match). Player voice shapes the game: Friendly Championships and the Special Sponsor battle-pass-style system came from community requests. Low-acquisition growth — popularity built largely without huge UA spend.
+- Monetization philosophy (devs' words, if any): "We're not in your face about monetisation. We want you to play, and if you like it, you can give something back to the developers." — Nikola Cavic, head of business development, GamesIndustry.biz, 2013. High-LTV design: "The core game loops are built in a way that keep our players engaged for years" (Milutinovic, PocketGamer.biz) — years of engagement beats aggressive early monetization.
+- Lesson for our games (1-2 lines, concrete): Never force a restart on the player — persistent squads/progress over years creates loyalty no annual sequel can match. Keep the core fundamentals stable; build new features ON TOP of what loyal players already love, with the community's voice driving the roadmap.
+- Sources:
+  - https://www.pocketgamer.com/top-eleven/top-eleven-10th-anniversary-interview-from-humble-beginnings-to-mobile-gamings-b/
+  - https://Www.pocketgamer.biz/live-and-kicking-nordeus-top-eleven-ten-years-on/
+  - https://Www.pocketgamer.biz/growing-top-eleven-into-a-global-franchise/
+  - https://www.gamesindustry.biz/nordeus-sets-sights-on-global-success-with-top-eleven
+- Coverage note: Strong on-record material from CEO Branko Milutinovic and BD head Nikola Cavic across multiple fetched/crawled interviews. No invented statements.

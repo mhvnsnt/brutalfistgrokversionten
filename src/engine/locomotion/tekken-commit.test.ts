@@ -14,7 +14,7 @@ describe('a Tekken commit kills the walk on the same frame', () => {
     const loco = new LocomotionSystem(0, 0, 1);
     for (let i = 0; i < 30; i++) loco.update(-1, 0, 1 / 60, false, false);
     const started = loco.position.x;
-    assert.ok(started < -0.2, `never got up to a walk (x ${started.toFixed(3)})`);
+    assert.ok(started < -0.05, `never got up to a walk (x ${started.toFixed(3)})`);
 
     loco.update(0, 0, 1 / 60, false, false, undefined, false);
     const drifted = Math.abs(loco.position.x - started);
@@ -24,6 +24,6 @@ describe('a Tekken commit kills the walk on the same frame', () => {
   it('still walks while the stick is live', () => {
     const loco = new LocomotionSystem(0, 0, 1);
     for (let i = 0; i < 30; i++) loco.update(1, 0, 1 / 60, false, false);
-    assert.ok(loco.position.x > 0.2, `a live stick did not walk (x ${loco.position.x.toFixed(3)})`);
+    assert.ok(loco.position.x > 0.05, `a live stick did not walk (x ${loco.position.x.toFixed(3)})`);
   });
 });

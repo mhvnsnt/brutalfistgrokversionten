@@ -1,0 +1,26 @@
+# Blue Archive — Heart and Soul
+- Developer / studio: NEXON Games (developed by NEXON Games, published by Nexon / Yostar). Executive Producer: Kim Yong-ha (Yongha Kim); Studio Producer: Gyeong Seop An.
+- Genre / platforms: Real-time tactical RPG gacha; iOS / Android / PC (Steam, Aug 2025); launched KR/JP 2021.
+- Why players come back (in the devs' view):
+  - Story first, always: "The story always comes first. We begin by deciding what kind of story we want to tell, which student appears in it, and how that student shapes the narrative." Character design follows the scenario; scenario and character teams co-create students that are "both appealing and memorable."
+  - A cultural moment built on two halves: the dev team "constantly considers how to make the students and stories more beloved," and players "actively enjoy and expand on those stories" — the combination is "what has brought us this far."
+  - The team measures resonance through player creation: "an enormous amount of fan art online... helped us understand how much interest and affection players had for our story and characters."
+  - Player feedback is the operating system: "we remain humble and always listen carefully to our community's voices... we believe that truly listening to our players' stories is what matters most." Returning players are explicitly designed for: "we are preparing so that you can enjoy it anew whenever you return and build relationships with new students."
+  - Music as emotional engine: "Sound is a crucial element that deeply immerses players in the game... setting the mood of the story, heightening emotions, and leaving a lasting impression."
+- Key quotes:
+  - "The story always comes first. We begin by deciding what kind of story we want to tell, which student appears in it, and how that student shapes the narrative." — Yongha Kim and Gyeong Seop An, Executive/Studio Producers, Anime Trending interview, Aug 2025
+  - "We believe that Blue Archive has become a cultural moment because the development team constantly considers how to make the students and stories more beloved, and many players actively enjoy and expand on those stories. It's this combination that has brought us this far." — Yongha Kim and Gyeong Seop An, Anime Trending interview, Aug 2025
+  - "More than anything, we saw an enormous amount of fan art online. Seeing those illustrations and fan creations helped us understand how much interest and affection players had for our story and characters." — Blue Archive development team, Noisy Pixel interview on the 5th anniversary, 2026 [unverified]
+  - "When I hear such stories [players writing that the game became a comfort in life, or that it inspired their career path], I feel more responsible. I also think I should continue to make games that can have a good influence." — Kim Yong-ha, Executive Producer, InvenGlobal interview with Kim Ji-hoon, ~June 2026 [unverified]
+- Why players love/support it:
+  - The teacher/student bond: daily-life character content outside combat (MomoTalk, Cafe) — players return for affection with the cast, not just progression. The game's stories have moved players to write that the game "became the strength to endure" hard times (per developer Kim Ji-hoon on fan letters). A thriving doujin/secondary-creation culture (Comiket presence) proves attachment.
+- Monetization philosophy (devs' words, if any):
+  - No on-record statement found. ANALYSIS: the game's retention design centers affection and story over power pressure; the 4.5th anniversary messaging is about welcoming returning players rather than urgency mechanics.
+- Lesson for our games (1-2 lines, concrete):
+  - Story first, then characters, then design — and build daily-life systems (chat, hangouts) so players form affection with the cast outside combat; measure success by fan creation volume, not just downloads.
+- Sources:
+  - https://anitrendz.net/news/2025/08/28/blue-archive-interview-nexon-on-the-rpgs-cultural-moment-status-and-steam-release/
+  - https://noisypixel.net/blue-archive-five-years-characters-story/
+  - https://www.invenglobal.com/articles/22852/kim-yong-ha-kim-ji-hoon-life-is-ultimately-a-gachayou-just-have-to-keep-pulling
+  - https://www.invenglobal.com/articles/22489/a-story-of-healthy-youth-with-players-blue-archives-45th-anniversary
+- Coverage note: The Noisy Pixel and InvenGlobal (Kim Yong-ha/Kim Ji-hoon) quotes are [unverified] (search snippets only; pages not fetched in full). No on-record developer statement on monetization philosophy was found.

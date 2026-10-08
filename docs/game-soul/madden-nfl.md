@@ -1,0 +1,18 @@
+# Madden NFL — Heart and Soul
+- Developer / studio: EA Tiburon, published by Electronic Arts
+- Genre / platforms: Sports simulation (American football) / PlayStation, Xbox, PC
+- Why players come back (in the devs' view): Community feedback IS the retention engine — at least half of each year's changes come directly from player requests across Reddit, Twitch, Discord, and YouTube. The 30+ year legacy is the identity: heritage, tradition, and what makes Madden "Madden" to its audience, refreshed each year by innovations designed to surprise and delight beyond expectations.
+- Key quotes:
+  - "Oh, geez. Well, the immediate answer is high. It's certainly at least half, if not more... We really do listen because we want to overdeliver on player expectations." — Mike Mahar, Executive Producer, GameRant interview, 2025
+  - "I have always believed, having played sports, that all feedback is a gift... You sift through it all, read everything, read the rants, read the most visceral posts, and see what the truth is in it." — Mike Mahar, Executive Producer, GameRant interview, 2025
+  - "We are trying to not just overdeliver on expectations but truly innovate in ways that surprise players... you can't do that unless you surprise, delight, and innovate in a space beyond player expectations, especially when you've been around for 30+ years." — Mike Mahar, Executive Producer, GameRant interview, 2025
+  - "The goal here is to push the right buttons with your player personalities." — Josh Looman, Designer, ReadWrite, 2024 [unverified]
+- Why players love/support it: The only NFL sim license; Franchise storylines and player personalities that change week to week; Superstar "play your way" freedom; presentation (broadcast teams, weekly recaps) that mirrors real NFL broadcasts; annual roster/drama tied to the real season.
+- Monetization philosophy (devs' words, if any): No direct on-record dev quote found. ANALYSIS: premium annual release + Ultimate Team live service (packs for team-building) + Superstar microtransactions to speed player development — which even reviewers note are "not necessary" to enjoy the mode.
+- Lesson for our games (1-2 lines, concrete): Live inside your community's spaces (Discord, Reddit, comments) and ship a visible share of their requests — players stay when they see themselves in the game. Leverage legacy/heritage as identity, then deliberately surprise beyond expectations so a long-running game never feels rote.
+- Sources:
+  - https://gamerant.com/madden-nfl-26-interview/
+  - https://readwrite.com/madden-nfl-25-preview-franchise-superstar-new-features-announcers/
+  - https://www.usatoday.com/story/sports/nfl/2026/08/12/madden-nfl-27-launch-developers/91260986007/
+  - https://www.sportsgamersonline.com/news/madden-27-updates-brings-major-improvements-to-franchise-mode/amp/
+- Coverage note: Mahar quotes verified via fetched GameRant transcript (Jun 2025). Looman quote from ReadWrite snippet — [unverified]. No on-record dev statement found on monetization philosophy; labeled ANALYSIS.

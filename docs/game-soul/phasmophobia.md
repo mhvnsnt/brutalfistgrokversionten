@@ -1,0 +1,17 @@
+# Phasmophobia — Heart and Soul
+- Developer / studio: Kinetic Games (Daniel "Dknighter" Knight, CEO/creator; Corey Dixon, art director).
+- Genre / platforms: Co-op paranormal investigation horror (1–4 players); PC + consoles, VR support, early access (2020), 1.0/Horror 2.0 overhaul incoming.
+- Why players come back (in the devs' view): The progression is knowledge, not gear — dozens of ghost types with unique behaviors to learn, higher difficulties removing evidence, custom difficulty for hardcore players. Players return because mastery is real expertise, not a treadmill: "you want to play the game because it's fun, not because you're on a treadmill."
+- Key quotes:
+  - "There's so much to learn about the game, so, yes, you can get to a max level, but the progression for us is knowledge. There are so many different things to learn about all the ghosts... That side of the game is where the hardcore players will be, rather than, you know, maxing." — Daniel Knight, CEO, PCGamesN, 2025
+  - "We'll never call ourselves a live service. We don't want to go down that route... We don't have microtransactions or DLCs or anything like that. We only have the initial sale." — Daniel Knight, CEO, PCGamesN, 2025
+  - "People play Phasmo because they love it... You want to just make it a fun game that people want to play because it's fun." — Corey Dixon, Art Director, PCGamesN, 2025
+  - "I was planning for the server capacity hitting a maximum of 500 players on launch day and it to drop off from there, as well as only aiming to make enough money to keep making more games." — Daniel "Dknighter" Knight, Developer, IGN via PC Gamer, 2020 [unverified]
+- Why players love/support it: Co-op ghost hunting with proximity voice is peak social horror; public dev Trello board keeps the community in the loop; the team releases updates "when they're ready" rather than crunching; 25M+ copies sold on trust alone.
+- Monetization philosophy (devs' words, if any): Initial sale only — no microtransactions, no DLC, no battle pass: "We only have the initial sale. We don't want to go down that microtransaction route." Self-funded and self-published so they set their own milestones and never crunch.
+- Lesson for our games (1-2 lines, concrete): Make the skill ceiling knowledge, not grind — when mastery IS the progression, players never feel cheated by a reset. Reject every treadmill mechanic; a fair, complete game at one price earns 25 million supporters.
+- Sources: (URLs)
+  - https://www.pcgamesn.com/phasmophobia/live-service-interview
+  - https://www.eurogamer.net/next-years-phasmophobia-overhaul-will-be-so-significant-it-will-feel-like-playing-a-new-game
+  - https://www.pcgamer.com/phasmophobia-will-linger-in-early-access-longer-than-planned/
+- Coverage note: The Dknighter IGN 2020 quote is snippet-sourced, marked [unverified]. Dev statements on monetization are direct from a fetched page.

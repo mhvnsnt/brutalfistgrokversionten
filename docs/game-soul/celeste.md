@@ -1,0 +1,16 @@
+# Celeste — Heart and Soul
+- Developer / studio: Extremely OK Games (Maddy Thorson, design; Noel Berry, design/engineering; Lena Raine, music).
+- Genre / platforms: Precision platformer; PC + consoles (2018), Farewell DLC (2019).
+- Why players come back (in the devs' view): The game is brutally hard but deliberately kind — no lives, instant respawns in every room, mechanics secretly "fudged in the player's favor" so it always feels like it wants you to succeed. Players return because the difficulty is honest and the story gives failure meaning; the thriving speedrunning scene keeps mastery alive years later.
+- Key quotes:
+  - "If you're making a game about anxiety and depression, it felt like to us that we needed to show the same kindness to the player that we want to show ourselves." — Maddy Thorson, Designer, Kotaku, 2018
+  - "Everything is fudged a tiny bit in the player's favor. I think this is a big reason why Celeste can feel kind even though it's very difficult — it wants you to succeed." — Maddy Thorson, Designer, Polygon (from her game-feel Twitter thread), 2020
+  - "Many understand fixes for casual players. Some don't want us to design the speedrun. They want an adversarial relationship." — Maddy Thorson, Designer, MIGW in-conversation event, 2025 [unverified]
+- Why players love/support it: A personal, unvarnished story about anxiety and self-acceptance written from the devs' real experience (no consultant filter); Assist Mode that never punishes or locks content; a movement system so precise it became a speedrun staple; a community that treats the game as genuinely helpful to people's lives.
+- Monetization philosophy (devs' words, if any): No on-record statement found on monetization. Studio shipped one premium game plus a free DLC expansion (Farewell); no DLC pricing or microtransaction model ever used.
+- Lesson for our games (1-2 lines, concrete): Build assist/accessibility that never shames — completion counts fully regardless of settings. Make the game secretly rigged in the player's favor (coyote time, input buffering, corner correction) so even failure feels fair.
+- Sources: (URLs)
+  - https://kotaku.com/celeste-taught-fans-and-its-own-creator-to-take-better-1825305692
+  - https://www.polygon.com/2020/3/13/21178378/celeste-jumping-mechanics-secrets-development-maddy-thorson-platformer
+  - https://explosionnetwork.com/celeste-in-conversation-with-maddy-thorson-noel-berry-migw-2025/
+- Coverage note: The MIGW 2025 quote is from a search snippet, marked [unverified]. No dev statements on monetization found.

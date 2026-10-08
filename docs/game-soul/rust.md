@@ -1,0 +1,17 @@
+# Rust — Heart and Soul
+- Developer / studio: Facepunch Studios (studio head Garry Newman; original project lead Maurino "Helk" Berry)
+- Genre / platforms: Multiplayer survival sandbox; PC, PlayStation, Xbox
+- Why players come back (in the devs' view): Player freedom above all — the game deliberately refuses to police behavior, so every server becomes a social experiment. Players build the world themselves (bases, towns, raiding, politics), and the monthly forced wipe gives everyone a fresh start on a regular rhythm, pulling lapsed players back in. Newman says the team especially values player-generated stories, videos, screenshots and paintings as the sign the game is alive.
+- Key quotes:
+  - "One of our main aims with Rust is to not control how people behave directly. For example some people want us to implement something to discourage people killing each other. Some kind of rating. Or turn killers red to warn you they can't be trusted. I hate that. It's not giving the players freedom. The players should decide how they play the game." — Garry Newman, Studio Head, Facepunch blog via VG247, 2013 [unverified]
+  - "If you're sick of getting killed – start a town. Build town walls. Give all the town members red clothes. Put warning signs up outside the town. Set up trip wires and alarms. Watch each others back. Our job is to give you the tools to allow you to protect yourself." — Garry Newman, Studio Head, Facepunch blog via VG247, 2013 [unverified]
+  - "We want to avoid changing what we're doing, because what we're doing is what got us where we are." — Garry Newman, Studio Head, Eurogamer "The Story of Rust", 2014 [unverified]
+  - "We especially love hearing your stories, watching your videos, seeing your screenshots and paintings." — Garry Newman, Studio Head, Reddit post via PC Gamer, 2016 [unverified]
+- Why players love/support it: emergent betrayal-and-alliance stories; the monthly wipe cycle means no permanent losers — everyone restarts equal; builder creativity (elaborate bases, player-run towns/shops); deep crafting/raiding loop; a massive streamer/content ecosystem that constantly re-seeds the player base.
+- Monetization philosophy (devs' words, if any): No on-record statement found. ANALYSIS: one-time buy-to-play purchase, optional cosmetic DLC packs (instruments, sunburn, voice props), no pay-to-win, items tradable on Steam market — the store sells expression, never power.
+- Lesson for our games (1-2 lines, concrete): A forced fresh-start rhythm (monthly wipes) is a retention engine — lapsed players return when everyone is equal again. Give players tools, not rules: the stories they create ARE the marketing.
+- Sources:
+  - https://www.vg247.com/players-should-decide-how-to-play-rust-says-newman
+  - https://www.eurogamer.net/the-story-of-rust
+  - https://www.pcgamer.com/garry-newman-asks-bored-rust-players-to-just-stop-playing/
+- Coverage note: All dev quotes above come from reputable press search snippets; marked [unverified] pending fetched-page confirmation. No on-record dev statement found on Rust's monetization philosophy; monetization section is ANALYSIS.

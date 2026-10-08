@@ -1,0 +1,77 @@
+name: Bannon PWA Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bannon-pwa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Install Chromium for runtime smoke
+        run: npx playwright install --with-deps chromium
+
+      - name: Build production PWA
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: npm run rocket:build
+
+      - name: Verify installable PWA
+        run: npm run pwa:verify -- dist
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Animation/combat tests
+        run: npm test
+
+      - name: Start production PWA server
+        run: |
+          npm run rocket:preview -- --host 127.0.0.1 --port 4173 > /tmp/bannon-pwa-preview.log 2>&1 &
+          echo $! > /tmp/bannon-pwa-preview.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4173/ >/dev/null
+
+      - name: Browser runtime smoke
+        run: node scripts/verify-pwa-runtime.mjs http://127.0.0.1:4173
+
+      - name: Dump PWA preview log on failure
+        if: failure()
+        run: cat /tmp/bannon-pwa-preview.log || true
+
+      - name: Upload production bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bannon-pwa-${{ github.sha }}
+          path: dist
+          if-no-files-found: warn
+          retention-days: 7

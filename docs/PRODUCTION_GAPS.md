@@ -54,3 +54,21 @@ This is the persistent backlog for the fighting-game production pass. New animat
 ## Current status law
 
 Static routing/tests prove code paths. They do not prove that a clip visually reads correctly on the actual GLB in the PWA. Runtime certification remains UNKNOWN until observed and measured.
+
+- P0 locomotion feel/runtime: deliberate walk must be materially slower than run/backdash; eliminate arena-wide skating, distinguish player movement from AI pursuit, and prevent the AI from continuously translating with a retreating player.
+- P0 knockdown/reaction: at least one ordinary canonical heavy attack must demonstrably produce a grounded knockdown, with a real fall clip and wakeup path; distinguish hitstun, crumple, launch/juggle, smackdown, knockdown and wakeup rather than collapsing them into one flinch.
+
+
+## P0 — Grounded / wakeup system expansion (2026-09-28)
+
+- [x] Stop forcing every knockdown into an automatic quick-stand.
+- [x] Preserve a grounded face-up / face-down presentation state.
+- [x] Allow deliberate stay-down after the minimum forced-down duration.
+- [x] Add distinct forward roll, backward roll, side roll, kip-up and wake-attack inputs/states.
+- [x] Delay successful grapple damage/grounding until the attacker's authored grapple animation finishes.
+- [x] Give AI grapple attempts an explicit cooldown so held/repeated input cannot rapid-fire throws.
+- [ ] Expand grounded orientation to four canonical stances: face-up/feet-toward, face-up/feet-away, face-down/feet-toward, face-down/feet-away.
+- [ ] Add position-specific grounded attacks: rising low, rising mid, spring kick, cross-chop / character-authored wake attacks.
+- [ ] Add grounded hit/OTG rules so a downed fighter can be hit without being incorrectly reset to a standing hit reaction.
+- [ ] Add invulnerability/guard windows for each roll and wake action based on measured frame data.
+- [ ] Runtime-certify every grounded option on real PWA GLBs; code-path coverage is not visual PASS.

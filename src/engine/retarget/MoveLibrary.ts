@@ -17,6 +17,7 @@
  */
 
 import type { FighterMotionState } from '../retarget/AnimationController';
+import { CLIP_MOTION_STATES } from '../../generated/ClipMotionStates.generated.ts';
 
 // ── Frame-data metadata per move ─────────────────────────────────────────────
 
@@ -337,6 +338,14 @@ const DEFAULT_FRAME_DATA: Record<FighterMotionState, Omit<MoveFrameData, 'motion
   WakeupTechRoll:     { startupFrames: 0, activeFrames: 0, recoveryFrames: 27, totalFrames: 27, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.45 },
   WakeupBackrise:     { startupFrames: 0, activeFrames: 0, recoveryFrames: 33, totalFrames: 33, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.55 },
   WakeupQuickStand:   { startupFrames: 0, activeFrames: 0, recoveryFrames: 18, totalFrames: 18, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.30 },
+  WakeupRollForward:  { startupFrames: 0, activeFrames: 0, recoveryFrames: 29, totalFrames: 29, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.48 },
+  WakeupRollBack:     { startupFrames: 0, activeFrames: 0, recoveryFrames: 29, totalFrames: 29, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.48 },
+  WakeupRollSide:     { startupFrames: 0, activeFrames: 0, recoveryFrames: 25, totalFrames: 25, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.42 },
+  WakeupKipUp:        { startupFrames: 0, activeFrames: 0, recoveryFrames: 31, totalFrames: 31, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.52 },
+  WakeupAttack:       { startupFrames: 8, activeFrames: 6, recoveryFrames: 11, totalFrames: 25, hitboxStartFrame: 8, hitboxEndFrame: 14, damage: 90, isSpecial: false, durationSeconds: 0.42 },
+  GroundedFaceUp:     { startupFrames: 0, activeFrames: 0, recoveryFrames: 60, totalFrames: 60, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 1.0 },
+  GroundedFaceDown:   { startupFrames: 0, activeFrames: 0, recoveryFrames: 60, totalFrames: 60, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 1.0 },
+  GroundedRoll:       { startupFrames: 0, activeFrames: 0, recoveryFrames: 24, totalFrames: 24, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.40 },
   HitStun:            { startupFrames: 0, activeFrames: 0, recoveryFrames: 15, totalFrames: 15, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.25 },
   Stunned:            { startupFrames: 0, activeFrames: 0, recoveryFrames: 20, totalFrames: 20, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 0.33 },
   Crumple:            { startupFrames: 0, activeFrames: 0, recoveryFrames: 60, totalFrames: 60, hitboxStartFrame: 0, hitboxEndFrame: 0, damage: 0, isSpecial: false, durationSeconds: 1.0 },
@@ -402,6 +411,17 @@ export function resolveClipAlias(clipName: string): { motionState: FighterMotion
   if (lower.includes('defeat') || lower.includes('lose')) return { motionState: 'defeat', source: 'generic' };
   if (lower.includes('taunt')) return { motionState: 'taunt', source: 'generic' };
   if (lower.includes('intro') || lower.includes('entrance')) return { motionState: 'intro', source: 'generic' };
+
+  // ── MEASURED MOTION FALLBACK ───────────────────────────────────────────
+  // If neither the canonical/fuzzy vocabulary nor the extended move-name
+  // rules know this clip, use the batch classifier generated from the actual
+  // keyframes. This is deliberately LAST: it can never override a known-good
+  // authored alias. The classifier is the bulk path for the hundreds of clips
+  // whose names are character/move titles rather than semantic labels.
+  const measured = CLIP_MOTION_STATES[clipName];
+  if (measured) {
+    return { motionState: measured.state as FighterMotionState, source: 'generic', matched: `measured:${measured.confidence}` };
+  }
 
   // ── EXTENDED VOCABULARY ────────────────────────────────────────────────
   // MEASURED: 210 of the 367 synced clips resolved to NOTHING here, so more

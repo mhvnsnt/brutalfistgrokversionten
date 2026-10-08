@@ -1,0 +1,17 @@
+# Hollow Knight — Heart and Soul
+- Developer / studio: Team Cherry (Ari Gibson, designer/co-director; William Pellen, animator/co-director; Dave Kazi, technical director; Chris Larkin, composer) — tiny Australian indie, born from game jams.
+- Genre / platforms: Metroidvania/action-adventure; PC + consoles (2017).
+- Why players come back (in the devs' view): A world that feels real because of relentless internal consistency — every detail generates the next (a black damage-flash became the Shade mechanic became the lore). Players return to get lost in a world where "anything can happen," where breaking a wall can reveal a two-hour hidden area. The journey is different for every player — Gibson says his favorite feedback is players detailing their own unique path, feeling "that the journey they had was their own, had its own shape."
+- Key quotes:
+  - "It changes you from being just a few animations to being a present actor inside this world." — Ari Gibson, Co-director, Rock Paper Shotgun, 2018 (on why even tiny details like a weapon impact matter)
+  - "People feel that the journey they had was their own, had its own shape, and that is one of the things that we were really conscious to try and give people. So I'm happy that we did that." — Ari Gibson, Co-director, MCV/Develop "When We Made... Hollow Knight", 2018
+  - "We didn't want to make a game so much as a world in which players are free to explore and feel that anything can happen, where players can wander, lost, for 20 minutes and not find a save bench, and also where if they happen to break a wall they might find an entire two-hour long new area behind it. It's breaking that feeling of feeling artificial." — Ari Gibson, Co-director, Rock Paper Shotgun, 2018
+  - "People recognised it, that they'd defeat this character and all they'd get was some currency, which is not what interests people. It's clearly not as engaging as story. They felt angry." — Ari Gibson, Co-director, Rock Paper Shotgun, 2018 (on the one Hidden Dreams boss shipped without narrative, which players rejected — lesson learned: story over mechanical payout)
+- Why players love/support it: Four massive content packs (Hidden Dreams, Grimm Troupe, Lifeblood, Godmaster) released free; a hand-crafted world dense with secrets; a studio that refused to rush Silksong rather than break promises. Players trust Team Cherry's artistic integrity.
+- Monetization philosophy (devs' words, if any): No on-record statement found on monetization philosophy directly. Observable practice: all post-launch content packs were free (including unmet Kickstarter stretch goals they made anyway); single premium purchase.
+- Lesson for our games (1-2 lines, concrete): Story beats loot — when a reward was just currency with no narrative, players rejected it, so wrap every reward in story/world. Build a world consistent enough that exploration feels like discovery, not design; secrets and hidden areas make every player feel their run was uniquely theirs.
+- Sources: (URLs)
+  - https://www.rockpapershotgun.com/hollow-knight-and-the-art-of-consistency
+  - https://mcvuk.com/development-news/when-we-made-hollow-knight/
+  - https://www.pcgamer.com/with-each-free-add-on-hollow-knight-gets-bigger-and-better/
+- Coverage note: The PC Gamer piece confirms free add-on strategy via direct Pellen/Gibson quotes from a fetched-accessible article (snippet-reviewed; treat those specific quotes as [unverified] unless opened). No on-record statement found on community-management philosophy beyond the design interviews above.

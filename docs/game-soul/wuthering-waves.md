@@ -1,0 +1,17 @@
+# Wuthering Waves — Heart and Soul
+- Developer / studio: Kuro Games (Chairman Liu Sheng; lead producer Solon; makers of Punishing Gray Raven)
+- Genre / platforms: Open-world action RPG gacha — iOS/Android, PC, PS5
+- Why players come back (in the devs' view): Kuro frames Wuthering Waves as a trust pact, not a dopamine loop. The devs keep players by listening hard, iterating visibly, and shipping polished updates on a "wave-like rhythm" — and by aiming for a few 100–120-point experiences rather than fixing every 60-point flaw.
+- Key quotes:
+  - "Wuthering Waves is a long-term live service game, which means that instead of us spoon-feeding the content to our players, we're actually writing the game's history with them. The stronger our mutual understanding, the further we can go together." — Kuro Games dev team, PocketGamer.biz interview, 2026
+  - "I believe the issues encountered during the initial launch are a genuine part of the game's history... Rather than getting stuck on a 60-65 point experience in one aspect, it's better to focus on creating a 100-120 point experience in the future." — Solon, Lead Producer, GamesRadar interview, 2024
+  - "If Wuthering Waves makes another mistake in the future... our players will have trust and more patience with the team and the game because their trust and recognition have already been established." — Solon, Lead Producer, GamesRadar interview, 2024
+  - "We don't push out content solely to meet specific marketing windows. Instead, we stick to a consistent, long-term rhythm of development... Every addition requires months or longer to meet our quality standards." — Kuro Games dev team, PocketGamer.biz interview, 2026
+  - "The most important lesson we've learned is to persist in doing what should be done. A simple concept, but it requires tremendous determination to execute." — Kuro Games dev team, PocketGamer.biz interview, 2026
+- Why players love/support it: Best-in-class action combat (PGR pedigree) with swap-cancel skill, fluid traversal and flight, generous free pulls/standard-selector, open, apologetic communication after a rough launch, and characters tied to the world rather than floating above it.
+- Monetization philosophy (devs' words, if any): No on-record quote explicitly on monetization. On-record philosophy: quality-first pacing and player trust ("the team... persist in doing what should be done") — spending follows retained, happy players, not pressure windows.
+- Lesson for our games (1-2 lines, concrete): Build a trust loop: admit shortcomings openly, fix the highest-value strengths first, and ship on a player-digestible rhythm. Don't chase a fix for every flaw — aim for a few 100-point experiences per update.
+- Sources:
+  - https://www.pocketgamer.biz/developing-wuthering-waves-every-addition-requires-months-or-longer-to-meet-our-quality-standards/
+  - https://www.gamesradar.com/games/action-rpg/issues-encountered-during-the-initial-launch-are-a-genuine-part-of-the-games-history-wuthering-waves-producer-on-the-road-to-2-0-and-the-open-world-action-rpgs-biggest-update-yet/
+- Coverage note: Quotes above are from on-record Kuro Games team/producer interviews. Community-trust "loop" framing is my ANALYSIS synthesis, not a dev quote.

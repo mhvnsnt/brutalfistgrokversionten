@@ -1,0 +1,19 @@
+# Psychonauts 2 — Heart and Soul
+- Developer / studio: Double Fine Productions, Xbox Game Studios
+- Genre / platforms: 3D psychic platformer; Xbox One, Xbox Series X|S, PS4, PC
+- Why players come back (in the devs' view): Players stay because each mind-level is built on healing and empathy — empathy is "built into the game mechanic" since you literally enter people's heads — and because Schafer refuses to give fans "the same song again": surprise, challenge, and delight over nostalgia repetition. It's a word-of-mouth game; "when people love it, they evangelize it."
+- Key quotes:
+  - "If you make something and they like it, they'll say 'give me more of that'. And sometimes that's the worst thing you can do — give them exactly the same thing... You just can't play the same song again and have them like it just as much." — Tim Schafer, CEO/Creative Director, Double Fine, PCGamesN (2019) [unverified]
+  - "Deep down, each level in Psychonauts is still about healing and still about empathy, and still about fun on top of all that." — Tim Schafer, GameRant (2021) [unverified]
+  - "It is the kind of game that took a while to find its audience... It's a word-of-mouth type game where it's very hard to compare it to other games. When people love it, they evangelize it." — Tim Schafer, Inverse (2021) [unverified]
+  - "That's what I wanted. I wanted to be able to share royalties with people." — Tim Schafer, on crowdfunding Psychonauts 2 on Fig (equity for backers), GamesBeat via SiliconANGLE (2015) [unverified]
+- Why players love/support it: The sequel was literally demanded into existence — $3.8M Fig crowdfunding from fans after a 15-year wait. Players support it because it was made FOR them (backer royalties, backer feedback) and because its kindness-first philosophy ("always be kind") stands out in the industry.
+- Monetization philosophy (devs' words, if any): Crowd-funded by design — Schafer chose Fig specifically so unaccredited backers could share in success ("I wanted to be able to share royalties with people"), a direct rejection of publisher-controlled funding. Premium purchase at launch.
+- Lesson for our games (1-2 lines, concrete): Don't serve nostalgia on a platter — re-create the FEELING (surprise, delight) instead of repeating content. And when your community funds you, give them a real stake (profit share, named credit), not just a Discord role.
+- Sources: (URLs)
+  - https://www.pcgamesn.com/psychonauts-2/gameplay
+  - https://gamerant.com/psychonauts-2-interview-double-fine-mental-health-empathy-brand/
+  - https://www.inverse.com/gaming/psychonauts-2-tim-schafer-interview
+  - http://siliconangle.com/blog/2015/12/07/tim-schafer-on-why-he-chose-fig-to-crowdfund-psychonauts-2/
+  - https://www.gamesradar.com/its-a-miracle-that-psychonauts-2-exists/
+- Coverage note: All quotes sourced from search snippets, marked [unverified]; full page fetch not performed in this pass.
