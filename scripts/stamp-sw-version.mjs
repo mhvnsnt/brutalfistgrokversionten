@@ -41,6 +41,15 @@ function version() {
 const PLACEHOLDER = '__BF_SW_VERSION__';
 const src = readFileSync(swPath, 'utf8');
 if (!src.includes(PLACEHOLDER)) {
+  // `npm run build` stamps the worker itself, and a deploy workflow may stamp
+  // the same dist again. A worker that already carries a real `bf-<version>`
+  // key is fine; only one that has neither the placeholder nor a stamped key
+  // would ship with a stale cache key.
+  const stamped = src.match(/const VERSION = '(bf-[^']+)'/);
+  if (stamped) {
+    console.log(`✅ ${swPath} already stamped (cache version = ${stamped[1]})`);
+    process.exit(0);
+  }
   console.error(`REFUSED: ${swPath} has no ${PLACEHOLDER} — it would ship with a stale cache key.`);
   process.exit(1);
 }

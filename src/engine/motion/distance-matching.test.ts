@@ -54,7 +54,7 @@ describe('distance matching', () => {
   it('speeds the dash up instead of slowing it down', () => {
     setAuthoredStrideSpeeds(MEASURED);
     const rate = playbackRateFor('DRUNK_RUN_FORWARD', DASH_SPEED);
-    assert.ok(rate > 0.2 && rate < 0.25, `the measured run must slow to the current dash tier without fast-forwarding, got ${rate}`);
+    assert.ok(rate > 0.9 && rate < 1.1, `the measured run is already close to the new dash tier, so only a small correction is expected, got ${rate}`);
     assert.ok(residualSlideMps('DRUNK_RUN_FORWARD', DASH_SPEED) < 0.4);
   });
 
