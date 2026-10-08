@@ -1,0 +1,18 @@
+# Overwatch 2 — Heart and Soul
+- Developer / studio: Blizzard Entertainment
+- Genre / platforms: Hero shooter (FPS) / PC, PlayStation, Xbox, Nintendo Switch
+- Why players come back (in the devs' view): Deliberate freshness — Blizzard calls it "resetting the mastery curve." Competitive games eventually get solved into rigid, rock-paper-scissors metas, so the team interrupts that with a new hero every season, forcing players to relearn parts of the game. In 2026 this drove a comeback (Steam concurrent record, returning players): serve the core players who never left, make each season a coherent, exciting package rather than "a single new hero surrounded by filler." Keller frames development as a three-way conversation — player feedback, player data, and the team's own design experience — with the developer responsible for interpretation, not just obeying the loudest complaint.
+- Key quotes:
+  - "We do talk a lot internally about this idea of what we call 'resetting the mastery curve.' We want to have these moments where players kind of have to relearn parts of the game." — Aaron Keller, Game Director (BlizzCon 2026, via Prima Games)
+  - "At the end of the day, when we announce a season, we do want people to sit up and take notice of what we're doing." — Aaron Keller, Game Director (TheGamer interview, 2026)
+  - "We love this game as much as they do. We want to see it improve." — Aaron Keller, Game Director (TheGamer interview, 2026)
+  - "By losing [loot boxes] and moving over to a Shop for Overwatch 2 it gives players the actual agency and the choice to go after what it is they want to have in the game." — Aaron Keller, Game Director (GameSpot interview, 2022)
+- Why players love/support it: Hero roster depth, handcrafted world and characters, the new-hero cadence keeping matchups perpetually unsolved; the team publicly positions the game as a handcrafted universe rather than AI-generated content.
+- Monetization philosophy (devs' words, if any): Replace loot boxes with a shop + battle pass to give players "actual agency" over what they earn; redesign the battle pass so it "is more exciting for a broader set of our players" instead of a predetermined hallway — choice over randomness.
+- Lesson for our games (1-2 lines, concrete): Keep the mastery curve in motion — schedule roster/meta shakeups so veteran players periodically re-learn the game instead of coasting on solved knowledge; make seasons feel like one coherent exciting package, not a drip of filler; give spenders direct choice (agency) over what they get.
+- Sources:
+  - https://www.thegamer.com/overwatch-director-aaron-keller-blizzcon-rumors-interview/
+  - https://primagames.com/news/overwatch-devs-actually-want-new-heroes-to-make-you-relearn-the-game
+  - https://www.dexerto.com/overwatch/overwatch-2-director-promises-agency-instead-of-loot-boxes-1851183/
+  - https://kotaku.com/overwatch-blizzard-genai-aaron-keller-president-faries-2000666079
+- Coverage note: All quotes verified from fetched pages.

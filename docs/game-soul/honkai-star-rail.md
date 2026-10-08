@@ -1,0 +1,17 @@
+# Honkai: Star Rail — Heart and Soul
+- Developer / studio: HoYoverse (miHoYo)
+- Genre / platforms: Turn-based space-fantasy RPG (gacha); iOS + Android + PC + PS5
+- Why players come back (in the devs' view): Character-first design — every character must "strike a chord with someone, somewhere"; combat style as an extension of personality; constant new experiences each version while adjusting staple modes "very moderate and very careful"; comprehensive experiences beyond rewards so players "stay passionate"; fighting burnout by tracking which proportions of players care about story vs gameplay vs combat and tuning accordingly.
+- Key quotes:
+  - "If we're just thinking about the combat system when we're designing characters, then we ran out of inspo really, really fast." — Chengnan An, Lead Game Designer, Polygon GDC interview, 2025
+  - "We want to create this comprehensive experience for the players so that they can stay passionate." — Chengnan An, Lead Game Designer, Polygon GDC interview, 2025
+  - "There is no cookie-cutter solution to [burnout]. We constantly follow our players to see what proportion of the players are interested in a story, what proportions are interested in gameplay, combat, et cetera. So we would adjust our game based on our research and try to make the game attractive to the whole player community." — Chengnan An, Lead Game Designer, Polygon GDC interview, 2025
+  - "We believe the free-to-play mode is more suitable for our playable fiction to reach a broader audience, or to reach more players." — Chengnan An, Lead Game Designer, Polygon GDC interview, 2025
+- Why players love/support it: characters players fall in love with (not mechanics) — each release designed so "a combat style is an extension of the character"; galaxy-hopping story worlds; F2P-friendly enough to play free while whales chase five-star favorites.
+- Monetization philosophy (devs' words, if any): Free-to-play gacha to reach the broadest audience for their "playable fiction"; monetization follows character desire, not power gates — "we didn't waste time" on characters that don't pop, and keep building the next one.
+- Lesson for our games (1-2 lines, concrete): Build characters first, mechanics second — players spend on characters they love, not on systems; make each fighter's moveset an extension of personality ("that's exactly how this character should fight") and the roster itself becomes the revenue engine.
+- Sources:
+  - https://www.polygon.com/features/549920/honkai-star-rail-lead-designer-interview/
+  - https://www.polygon.com/honkai-star-rail-hsr-character-design-interview-planarcadia/
+  - https://www.mmorpg.com/interviews/honkai-star-rail-interview-hoyoverse-on-villain-design-combat-pacing-and-what-defines-star-rails-soul-2000137912
+- Coverage note: Lead designer quotes verified via fetched Polygon GDC 2025 interview. Producer David Jiang's "playable animated series" vision is reported second-hand (Wikipedia summary) and excluded as [unverified] per policy.

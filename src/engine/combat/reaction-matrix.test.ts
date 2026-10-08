@@ -11,6 +11,7 @@
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import type { MoveWindow } from './FighterStateMachine.ts';
 import { readFileSync } from 'node:fs';
 import {
   resolveReaction, distinctOutcomes, VICTIM_STATES, REACTION_KINDS,
@@ -102,6 +103,25 @@ describe('the reaction matrix', () => {
     assert.ok(distinctOutcomes() >= 40, `only ${distinctOutcomes()} distinct outcomes`);
     assert.equal(VICTIM_STATES.length, 11);
     assert.equal(REACTION_KINDS.length, 5);
+  });
+
+  it('Smackdown is a real grounded knockdown, not a standing flinch', () => {
+    const victim = new FighterStateMachine();
+    const move: MoveWindow = {
+      startup: 0.1,
+      active: 0.1,
+      recovery: 0.2,
+      animation: 'heavyKick',
+      totalFrames: 24,
+      hitboxStartFrame: 7,
+      hitboxEndFrame: 12,
+      damage: 300,
+      reaction: 'Smackdown',
+    };
+    victim.applyReaction('Smackdown', move);
+    assert.equal(victim.isKnockedDown, true);
+    assert.equal(victim.current, 'GroundedFaceUp');
+    assert.equal(victim.activeClip(), null, 'Smackdown must hand presentation to the grounded knockdown state');
   });
 
   it('the state machine derives the victim state and routes the hit through it', () => {

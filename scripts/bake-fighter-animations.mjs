@@ -92,6 +92,91 @@ const round = (v) => +v.toFixed(PRECISION);
  * the test suite silently SKIPPED its 20 bake-gated tests and still reported
  * green. Declaration order is not something to leave to luck.
  */
+const LIMB_CHAIN_SPECS = [
+  { name: 'leftArm', bones: ['mixamorigLeftArm','mixamorigLeftForeArm','mixamorigLeftHand'] },
+  { name: 'rightArm', bones: ['mixamorigRightArm','mixamorigRightForeArm','mixamorigRightHand'] },
+  { name: 'leftLeg', bones: ['mixamorigLeftUpLeg','mixamorigLeftLeg','mixamorigLeftFoot'] },
+  { name: 'rightLeg', bones: ['mixamorigRightUpLeg','mixamorigRightLeg','mixamorigRightFoot'] },
+];
+
+function quaternionTrackMap(clip) {
+  const map = new Map();
+  for (const track of clip.tracks) {
+    if (track.name.endsWith('.quaternion')) map.set(track.name.slice(0, -11), track);
+  }
+  return map;
+}
+
+function repairIsolatedLimbSpikes(clip) {
+  // Repair only the high-confidence loose-doll signature: one joint in a
+  // three-joint chain snaps >80° while both neighbouring chain joints move
+  // <4° in the same sample. Do NOT smooth ordinary fast chains; capoeira,
+  // uprock and other acrobatics are allowed to move quickly when the chain
+  // itself is coherent.
+  const tracks = quaternionTrackMap(clip);
+  let repaired = 0;
+  for (const chain of LIMB_CHAIN_SPECS) {
+    const qs = chain.bones.map((b) => tracks.get(b));
+    if (qs.some((q) => !q)) continue;
+    const frames = Math.min(...qs.map((q) => q.times.length));
+    for (let i = 1; i < frames - 1; i++) {
+      const deltas = qs.map((q) => {
+        const j = (i - 1) * 4, k = i * 4;
+        const a = new THREE.Quaternion(q.values[j], q.values[j+1], q.values[j+2], q.values[j+3]);
+        const b = new THREE.Quaternion(q.values[k], q.values[k+1], q.values[k+2], q.values[k+3]);
+        return a.angleTo(b);
+      });
+      const max = Math.max(...deltas);
+      const min = Math.min(...deltas);
+      if (max <= THREE.MathUtils.degToRad(80) || min >= THREE.MathUtils.degToRad(4)) continue;
+      const joint = deltas.indexOf(max);
+      const q = qs[joint];
+      const k = i * 4;
+      const prev = new THREE.Quaternion(q.values[k-4], q.values[k-3], q.values[k-2], q.values[k-1]);
+      const next = new THREE.Quaternion(q.values[k+4], q.values[k+5], q.values[k+6], q.values[k+7]);
+      const blended = prev.clone().slerp(next, 0.5).normalize();
+      q.values[k] = blended.x; q.values[k+1] = blended.y;
+      q.values[k+2] = blended.z; q.values[k+3] = blended.w;
+      repaired++;
+    }
+  }
+  return repaired;
+}
+
+function measureLimbCoherence(clip) {
+  const tracks = quaternionTrackMap(clip);
+  const findings = [];
+  for (const chain of LIMB_CHAIN_SPECS) {
+    const qs = chain.bones.map((b) => tracks.get(b));
+    if (qs.some((q) => !q)) continue;
+    const frames = Math.min(...qs.map((q) => q.times.length));
+    let reversals = 0;
+    let extreme = 0;
+    for (let i = 1; i < frames; i++) {
+      const deltas = qs.map((q) => {
+        const j = (i - 1) * 4;
+        const k = i * 4;
+        const a = new THREE.Quaternion(q.values[j], q.values[j+1], q.values[j+2], q.values[j+3]);
+        const b = new THREE.Quaternion(q.values[k], q.values[k+1], q.values[k+2], q.values[k+3]);
+        return a.angleTo(b);
+      });
+      const max = Math.max(...deltas);
+      const min = Math.min(...deltas);
+      if (max > THREE.MathUtils.degToRad(80) && min < THREE.MathUtils.degToRad(4)) extreme++;
+      if (max > THREE.MathUtils.degToRad(55)) reversals++;
+    }
+    const ratio = reversals / Math.max(1, frames - 1);
+    // A single huge arm joint while its adjacent joints are effectively frozen
+    // is a classic loose-doll signature. This is a gate against retarget
+    // corruption, not a stylistic judgment: acrobatics can still move rapidly
+    // when the chain moves coherently.
+    if (extreme > 2 || ratio > 0.22) {
+      findings.push({ chain: chain.name, extreme, ratio: +ratio.toFixed(3) });
+    }
+  }
+  return findings;
+}
+
 function ownerFailsMeasurement(name, strike, movingBones, boneCount, claimed) {
   if (!claimed) return null;
   if (strike?.startUp !== undefined && strike.startUp < STANDING_START_MIN
@@ -1038,15 +1123,17 @@ async function loadQuaterniusSources() {
           const clipName = `${name}_${clip.name || `clip_${i + 1}`}`.replace(/[^A-Za-z0-9_-]+/g, '_');
           let reference;
           try {
+            const referenceNames = Object.fromEntries(
+              boneNames.map((targetBone) => {
+                const sourceBone = resolveReferenceSourceBone(targetBone, skinned.skeleton.bones);
+                return [targetBone, sourceBone?.name ?? targetBone];
+              }),
+            );
             reference = referenceRetargetClip(
               skeleton.root,
               skinned.skeleton,
               clip,
-              Object.fromEntries(boneNames.map((targetBone) => {
-                const canonical = resolveToCanonicalBone(targetBone);
-                const sourceBone = skinned.skeleton.bones.find((b) => resolveToCanonicalBone(b.name) === canonical);
-                return [targetBone, sourceBone?.name ?? targetBone];
-              })),
+              referenceNames,
             );
           } catch (e) {
             report.quaterniusReferenceErrors = (report.quaterniusReferenceErrors ?? 0) + 1;
@@ -1056,12 +1143,14 @@ async function loadQuaterniusSources() {
           const source = {
             bank: pack.toLowerCase(),
             name: clipName,
-            clip,
-            sourceRest: new Map([...sourceRest].map(([sourceBone, q]) => {
-              const canonical = resolveToCanonicalBone(sourceBone);
-              const targetBone = canonical ? boneNames.find((name) => resolveToCanonicalBone(name) === canonical) : null;
-              return [targetBone ?? sourceBone, q.clone()];
-            })),
+            // Three.js SkeletonUtils has already converted this clip into the
+            // canonical target skeleton's local frames. Do not run the generic
+            // bind-relative conversion a second time: doing so subtracts the
+            // source rest from an already-retargeted pose and is exactly the
+            // class of axis/limb explosions seen in the CC0 locomotion banks.
+            clip: reference.clip,
+            preRetargeted: true,
+            sourceRest: new Map(),
             targetRest,
             provenance: {
               pack,
@@ -1082,6 +1171,22 @@ async function loadQuaterniusSources() {
   }
   report.quaterniusSources = out.length;
   return out;
+}
+
+function resolveReferenceSourceBone(targetBone, sourceBones) {
+  // Prefer exact identity, then Mixamo namespace equivalence. Canonical aliases
+  // are only the last resort because canonical names intentionally collapse
+  // joints such as Shoulder/UpperArm; using that collapse first can drive a
+  // perfectly good arm track onto the wrong joint and create the loose-doll
+  // / wildly swinging-limb failure mode.
+  const exact = sourceBones.find((b) => b.name === targetBone);
+  if (exact) return exact;
+  const mixKey = mixamoBindKey(targetBone);
+  const mix = sourceBones.find((b) => mixamoBindKey(b.name) === mixKey);
+  if (mix) return mix;
+  const canonical = resolveToCanonicalBone(targetBone);
+  if (!canonical) return null;
+  return sourceBones.find((b) => resolveToCanonicalBone(b.name) === canonical) ?? null;
 }
 
 function readdirRecursive(root) {
@@ -1165,6 +1270,8 @@ const report = {
   turnRejected: [],
   rejectedOwners: [],
   worst: [],
+  limbCoherence: [],
+  limbCoherenceRepairs: 0,
 };
 
 /**
@@ -1330,7 +1437,9 @@ for (const src of [...sources(), ...(await loadQuaterniusSources())]) {
   }
   sanitizeMotionClip(bound.clip);
 
-  const relative = makeClipBindRelative(bound.clip, src.targetRest, src.sourceRest);
+  const relative = src.preRetargeted
+    ? bound.clip
+    : makeClipBindRelative(bound.clip, src.targetRest, src.sourceRest);
   if (!relative) {
     report.skipped.push({ name: src.name, why: 'no quaternion tracks survived' });
     continue;
@@ -1342,6 +1451,15 @@ for (const src of [...sources(), ...(await loadQuaterniusSources())]) {
   // thighs sideways; normalize the convention first, then constrain true motion.
   const conventionTwists = removeConstantConventionTwist(relative, bind);
   report.conventionTwistCorrections += conventionTwists.length;
+
+  // Fix only measured single-joint spikes before anatomical constraints. The
+  // correction is deliberately conservative and reversible: coherent fast
+  // chains are untouched, while isolated retarget snaps are replaced by the
+  // midpoint between their surrounding poses.
+  const isolatedLimbRepairs = repairIsolatedLimbSpikes(relative);
+  if (isolatedLimbRepairs) {
+    report.limbCoherenceRepairs = (report.limbCoherenceRepairs ?? 0) + isolatedLimbRepairs;
+  }
 
   // PUT THE LEGS BACK UNDER THE BODY — a convention fix, so it belongs here
   // beside the twist and BEFORE the anatomical limits.
@@ -1384,6 +1502,10 @@ for (const src of [...sources(), ...(await loadQuaterniusSources())]) {
   // to decide BEFORE the offset is derived — see the note in groundingOffset.
   const semanticForGrounding0 = SLOT_OWNER.get(src.name) ?? inferSemanticFromMotionKey(src.name);
   const ground = groundingOffset(relative, GROUNDED_SEMANTICS.has(semanticForGrounding0));
+  const limbCoherence = measureLimbCoherence(relative);
+  if (limbCoherence.length) {
+    report.limbCoherence.push({ name: src.name, findings: limbCoherence });
+  }
   strikeOf.set(src.name, measureStrikeDirection(relative));
   if (DEBUG_GROUND.has(src.name)) {
     console.log(`  [ground] ${src.name} min=${(ground?.minLift ?? NaN).toFixed(4)} max=${(ground?.maxLift ?? NaN).toFixed(4)} offset=${(ground?.offset ?? 0).toFixed(4)} airborne=${ground?.airborne}`);
@@ -1818,6 +1940,10 @@ if (report.rejectedOwners.length) {
   console.log('    ' + report.rejectedOwners.join(', '));
 }
 console.log(`  kept airborne        ${report.airborne} clip(s) (peak lift over ${AIRBORNE_PEAK_M * 100} cm)`);
+console.log(`  LIMB COHERENCE       ${report.limbCoherence.length} clip(s) with loose-limb signatures; recorded for repair, not blindly rejected`);
+if (report.limbCoherence.length) {
+  console.log('    ' + report.limbCoherence.slice(0, 12).map((x) => `${x.name}: ${x.findings.map((f) => f.chain).join(',')}`).join(' | '));
+}
 // NAME THE CLIPS THAT STILL HOVER. A clip the offset could not bring down is
 // not a grounding problem, it is a pose authored at the wrong height, and it
 // must not quietly become somebody's stance — the runtime refuses it, and

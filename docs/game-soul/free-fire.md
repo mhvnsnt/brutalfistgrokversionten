@@ -1,0 +1,15 @@
+# Free Fire — Heart and Soul
+- Developer / studio: Garena
+- Genre / platforms: Mobile battle royale; mobile-first
+- Why players come back (in the devs' view): Radical accessibility and cultural respect — a battle royale that runs on low-spec devices, celebrating players' own cultures (Day of the Dead events in Mexico, local DJ and celebrity collaborations), making each region feel seen rather than served a global template.
+- Key quotes:
+  - "Free Fire has always been designed with our players in mind." — Harold Teo, Producer at Garena, PocketGamer.biz ("Live and Kicking"), 2022
+  - "Localisation remains at the heart of what we do... There is no one-size-fits-all approach." — Harold Teo, PocketGamer.biz, 2022
+  - "Our goal is to understand what our players' other passion points are outside of gaming." — Harold Teo, PocketGamer.biz, 2022
+  - "There's still much to learn about our players and communities all over the world... Many of us are gamers ourselves, so we understand what are things that our players would enjoy." — Harold Teo, PocketGamer.biz, 2022
+- Why players love/support it: It runs on the phones people actually own. Garena's bet: in fast-growing regions, gamers leapfrog PCs and consoles — meet them where they are, in their culture.
+- Monetization philosophy (devs' words): No on-record statement found on monetization fairness/pricing in reviewed sources. Stated principles are accessibility and community-first design.
+- Lesson for our games: Accessibility IS humanity — build for the devices players actually have, and localize with respect, not templates.
+- Sources:
+  - https://www.pocketgamer.biz/how-localised-experiences-keeps-free-fire-alive-four-years-on/
+- Coverage note: No direct dev quotes on monetization fairness found.

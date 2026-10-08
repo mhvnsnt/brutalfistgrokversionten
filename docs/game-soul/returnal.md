@@ -1,0 +1,22 @@
+# Returnal — Heart and Soul
+- Developer / studio: Housemarque (Sony Interactive Entertainment)
+- Genre / platforms: Roguelike bullet-hell third-person shooter / PS5, PC
+- Why players come back (in the devs' view):
+  - The death loop isn't a punishment — it's the narrative. Gameplay and story were designed as inseparable from day one: Selene's descent into madness IS the player's cycle of dying and retrying.
+  - Difficulty is non-negotiable because removing friction creates dissonance: if you could power through bosses without challenge, you'd miss the point of the game — and miss story beats only unlocked by dying and replaying.
+  - The narrative is designed to haunt you: "questions lingering inside your mind, hopefully even after the credits roll" — players come back to interpret, not just to win.
+- Key quotes:
+  - "From the get-go, we envisioned Returnal as a game where the gameplay and the story are inseparable. So, we have the rogue-like nature of the game, we're embracing that from every perspective to strengthen the narrative and not combat against it." — Harry Krueger, Game Director, Push Square, 2021 [unverified]
+  - "The narrative itself has been designed around haunting the player. We want questions to be lingering inside your mind, hopefully even after the credits roll, where you'll be wondering certain things, and interpreting them in different ways. It's definitely a game designed around mystery." — Harry Krueger (via interviewer quote attribution), Push Square, 2021 [unverified]
+  - "There's this descent into madness that is happening purely because of the challenges that she's facing, and her challenges are the players' challenges as well. If you were just allowed to power through a boss without any challenge... it almost feels like that would create a bit of dissonance." — Harry Krueger, Game Director, Kinda Funny Games via PlayStation LifeStyle, 2022 [unverified]
+  - "With Returnal we intended to create a challenging but rewarding experience, and dying is part of it... As Selene dies over and over on Atropos, we wanted players to also connect with this. By the end players through this challenge ideally feel every gut-wrenching death with Selene and eventually overcome this challenge to reach the conclusion." — Gregory Louden, Narrative Director, GamingTrend, 2025 [unverified]
+- Why players love/support it:
+  - Players return because each run feels like progress in two dimensions — skill AND story. The bullet-hell combat is Housemarque arcade DNA, but the time-loop mystery gives failure meaning, so losing a 90-minute run still felt like unlocking something.
+- Monetization philosophy (devs' words, if any): None on record. Premium game; the Ascension expansion (Tower of Sisyphus, co-op) shipped free. No dev commentary on monetization philosophy found.
+- Lesson for our games (1-2 lines, concrete): Make the core loop's fiction explain its difficulty — if Concrete Dragon has a hard mode, infinite missions, or repeatable bosses, give them an in-world reason (rival crews, rematches, escalating stakes) so repetition feels like story, not grind.
+- Sources:
+  - https://www.pushsquare.com/news/2021/02/interview_returnal_ps5_developer_housemarque_talks_story_replayability_and_value
+  - http://www.playstationlifestyle.net/2022/04/18/returnal-difficulty-part-of-story/
+  - https://gamingtrend.com/back-to-atropos-an-interview-with-returnal-narrative-director-gregory-louden-of-housemarque/
+  - https://www.thesixthaxis.com/2021/02/25/returnal-housemarque-ps5-interview-bullet-hell-roguelike-third-person/?cmpscreen
+- Coverage note: Quotes are from search snippets (not fetched full pages), marked [unverified] per protocol. The Push Square "haunting the player" quote appears under interviewer attribution (HK = interviewer); the dev-authored statement is the "inseparable" one. No invented statements included.

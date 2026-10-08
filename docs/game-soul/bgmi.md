@@ -1,0 +1,18 @@
+# Battlegrounds Mobile India (BGMI) — Heart and Soul
+- Developer / studio: KRAFTON, Inc. (localized India version of PUBG Mobile; launched 2021)
+- Genre / platforms: Battle royale shooter / Android, iOS (India)
+- Why players come back (in the devs' view): Localized identity + participatory community. KRAFTON's stated ambition is to evolve BGMI from a battle-royale title into "more of a platform for creation and interaction" — creators build maps (World of Wonder) their communities play, ranked ladders and grassroots esports give aspiration, and India-specific content (festival skins, Indian-market characters like Kiaraa, Mahindra BE6 / Royal Enfield integrations, anime collabs) makes the game culturally Indian. The product team plays BGMI with voice chat on to hear players' real reactions directly.
+- Key quotes:
+  - "The company's broader ambition is to make BGMI more of a platform for creation and interaction rather than a game that players only enter for battle royale matches." — Krafton India strategy (Srinjoy Das, Director Marketing & Product Management, Storyboard18), 2026
+  - "They are not only streaming on YouTube. They are creating maps that their micro-communities can actually play on BGMI." — Srinjoy Das, Director Marketing & Product Management, KRAFTON, Storyboard18, 2026
+  - "There is a huge gap in Indian content in PC, console and mobile gaming." — Srinjoy Das, Director Marketing & Product Management, KRAFTON, Storyboard18, 2026 (on the localization gap BGMI fills)
+  - "Honestly speaking, it's really awesome. The love and support of the Indian esports community have helped us outperform ourselves following each tournament." — Karan Pathak, Associate Director of Esports, KRAFTON India, EsportsBetting.com, 2025
+- Why players love/support it: Social squad play, identity expression through localized cosmetics, the dream of pro esports (grassroots path from ranked to professional competition), and brand integrations that "add to gameplay" instead of interrupting. Sunk investment keeps players returning ("how much people invested and spent time in the game" — Rooter CEO, YourStory, 2023).
+- Monetization philosophy (devs' words, if any): Cosmetics-only IAP (skins, outfits, season passes), no in-game ads; paying users up 27% YoY in 2025. "If something becomes intrusive, we don't want to do it." — Srinjoy Das, on brand integrations, Storyboard18, 2026. Monetization comes from cultural resonance: Indian festival skins and celeb collabs drive emotional connection that converts to spend.
+- Lesson for our games (1-2 lines, concrete): Localize the soul, not just the language — culturally specific content (characters, brands, festivals) makes a global format feel like it belongs to the player. Build a participation ladder: creator tools (World of Wonder) + grassroots tournaments turn players into stakeholders.
+- Sources:
+  - https://www.storyboard18.com/gaming-news/kraftons-bgmi-creators-build-in-game-experiences-not-just-audiences-ws-l-111174.htm
+  - http://esportsbetting.com/karan-pathak-krafton-bgmi-india-interview/
+  - https://aitechtonic.com/bgmi-paying-users-jump-27-as-krafton-hits-record-revenue/
+  - https://yourstory.com/2023/05/battlegrounds-mobile-india-bgmi-unbanned-esports-streaming-krafton
+- Coverage note: Quotes verified via fetched pages — Srinjoy Das (Storyboard18, Sept 2026), Karan Pathak (EsportsBetting.com, 2025). Financial/context data from Aitechtonic/YoursStory is press coverage, not dev quotes.

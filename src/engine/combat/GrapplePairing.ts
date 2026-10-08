@@ -1,6 +1,7 @@
 // `.ts` extensions on purpose — the repo's runner resolves them literally.
 import type { BakedManifestEntry } from '../retarget/BakedMotionBank.ts';
 import { loadMoveLabels, type MoveLabelMap } from '../assets/moveLabels.ts';
+import { namedGrappleBinding } from './NamedGrappleBindings.ts';
 
 /**
  * A GRAPPLE IS TWO PERFORMANCES. THIS IS THE OTHER ONE.
@@ -34,6 +35,17 @@ import { loadMoveLabels, type MoveLabelMap } from '../assets/moveLabels.ts';
  *     a body thrown for about the right length of time is enormously closer
  *     to right than a stock knockdown. It is marked as a stand-in wherever it
  *     is reported so it is never mistaken for a real pair.
+ *
+ * BANNON TWO-BODY CAPTURES (intake: scripts/intake-bannon-grapple-pairs.mjs).
+ * Eight more real pairs came in from mhvnsnt/Bannon, each written as <NAME>
+ * and <NAME>__RECV from ONE owner video by video_to_clip.py --two:
+ * FLYING_HEADBUTT, PUMPHANDLE_GERMAN_DOUBLE, BACKDROP_360_FACE,
+ * FALCON_ARROW_STANDING, FALCON_ARROW_GROUNDED, SOMERSAULT_TORNADO_DDT,
+ * STALLING_SUPLEX_STEPS, TAG_POWERBOMB_GERMAN. The bake pairs them on the
+ * suffix like every other pair. The capture trims each body to where it was
+ * tracked, so the halves differ slightly in length; `pairPlaybackRate` puts
+ * the victim on the deliverer's clock. Named moves (Getbackk, Chainsnatcher,
+ * Titan Fall, ...) are bound in NamedGrappleBindings.ts.
  *
  * WHAT THIS DELIBERATELY DOES NOT DO: invent a pairing from a name. That is
  * the failure this project keeps repeating and the owner has made law —
@@ -123,6 +135,17 @@ export function receiverClipFor(
   const can = opts.available ?? (() => true);
   const usable = (c: string) => Boolean(c) && labels[c]?.verdict !== 'broken' && can(c);
 
+  // Named owner moves are a hard boundary. A deliverer-only capture such as
+  // Getbackk/F5 must NOT fall through to the generic duration stand-in pool:
+  // that would put a plausible-looking victim on screen and silently turn an
+  // explicitly incomplete grapple into a fake PASS. Real named pairs are
+  // allowed through the same live integrity gate as every other clip.
+  const named = namedGrappleBinding(deliverer);
+  if (named?.status === 'DELIVERER_ONLY' || named?.status === 'MISSING_CLIP') return null;
+  if (named?.status === 'REAL_PAIR' && named.receiver && usable(named.receiver)) {
+    return { receiver: named.receiver, source: 'baked', dur: durOf.get(named.receiver) ?? 0 };
+  }
+
   const said = labels[deliverer]?.pairedWith;
   if (said && usable(said)) {
     return { receiver: said, source: 'owner', dur: durOf.get(said) ?? 0 };
@@ -141,6 +164,36 @@ export function receiverClipFor(
   }
   if (!best || Math.abs(best.dur - want) > STANDIN_MAX_DURATION_GAP_S) return null;
   return { receiver: best.name, source: 'standin', dur: best.dur };
+}
+
+/**
+ * Rate to play the receiver's half at so it ends on the deliverer's last
+ * frame (receiver dur / deliverer dur). 1 when either length is unknown.
+ */
+export function pairPlaybackRate(deliverer: string, receiver: string): number {
+  const d = durOf.get(deliverer) ?? 0;
+  const r = durOf.get(receiver) ?? 0;
+  return d > 0 && r > 0 ? r / d : 1;
+}
+
+/**
+ * Runtime ownership gate for two-body playback.
+ *
+ * A stand-in is useful for development coverage, but it must never be reported
+ * as a certified grapple pair. The PWA can use it only as an explicitly
+ * labelled fallback while the exact receiver is still missing.
+ */
+export function isCertifiedGrapplePair(
+  deliverer: string,
+  choice: GrapplePairChoice | null,
+): boolean {
+  if (!choice) return false;
+  if (choice.source === 'standin') return false;
+  const d = durOf.get(deliverer) ?? 0;
+  const r = durOf.get(choice.receiver) ?? choice.dur;
+  if (!(d > 0) || !(r > 0)) return false;
+  const timing = r / d;
+  return timing >= 1 / 1.25 && timing <= 1.25;
 }
 
 /** For the probes: what every grapple in the bank resolves to right now. */

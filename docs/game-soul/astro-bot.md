@@ -1,0 +1,18 @@
+# Astro Bot — Heart and Soul
+- Developer / studio: Team Asobi (Studio Director / Creative Director: Nicolas Doucet); Sony Interactive Entertainment
+- Genre / platforms: 3D platformer; PlayStation 5 (2024)
+- Why players come back (in the devs' view): The core design philosophy is "the joy of just playing with a toy" — every object in the world reacts to being poked, hit, or spun, and the DualSense makes players *feel* it. Doucet's other key belief: "OK to make a small game." Team Asobi deliberately refused to overload players — the buffet analogy: a tight, focused game leaves a warm memory and makes players want more, while an overloaded one leaves them fed up. Story always comes second to interactions: they prototype tactile mechanics first, and only then decide what game to make.
+- Key quotes:
+  - "We think about the joy of just playing with a toy." — Nicolas Doucet, Creative Director, Team Asobi, Digital Trends interview, 2024
+  - "We use the analogy of food. When you're really hungry, if I propose to go to a buffet... maybe by the end of it you've eaten too much and you almost regret it and you don't necessarily appreciate what's left. Whereas if we go to a place where it's going to be just enough, you're going to keep a good memory and maybe you want more. The way we think of it is to not overload the player so that in the end they feel fed up." — Nicolas Doucet, Creative Director, Eurogamer (via The Game Business), 2025
+  - "A lot of choices we made with Astro Bot could be labelled as AA... like the size of the team, the size of the game, there's no voice, it's not open world, but that doesn't really matter. We could still make something that gets people really happy." — Nicolas Doucet, Creative Director, GDC 2025 talk (reported by Eurogamer), 2025
+  - "With the SSD... when you die, you used to have to wait a long time before you get a second try. With the SSD, that becomes really, really fast. So, in terms of just the pleasure of play, that's really increased." — Nicolas Doucet, Creative Director, Eurogamer (via The Game Business), 2025
+- Why players love/support it: Every level is a ride packed with new tactile surprises — DualSense-driven interactions make even idle poking fun; it's a loving celebration of PlayStation history (cameo bots as collectibles); players praise it as joyful, warm, and "for the players" — Team Asobi's culture of playing together and thanking the team publicly (GDC/NeoGAF writeup) resonates. Won Game of the Year awards without a microtransaction or bloat.
+- Monetization philosophy (devs' words, if any): No on-record monetization philosophy found beyond the design thesis: a complete, focused, single-purchase game. The team's stated goal is "quality experience after quality experience" that makes a character grow organically into a mascot (One More Game interview, 2024).
+- Lesson for our games (1-2 lines, concrete): Prototype the *feel* first — tactile, surprising interactions beat content volume. A tight, focused game that ends while players want more builds love and awards; don't overload. "A good idea is one that solves multiple problems" — prototype cheap, promote only what players actually find fun.
+- Sources:
+  - https://www.digitaltrends.com/gaming/astro-bot-summer-game-fest-preview/
+  - https://www.eurogamer.net/astro-bot-director-believes-ps5-has-really-brought-something-special-despite-criticism-of-incremental-improvements-over-ps4
+  - https://onemoregame.ph/2024/09/astro-bot-director-nicolas-doucet-interview/
+  - https://www.iphoneincanada.ca/2024/06/21/astro-bots-nicolas-doucet-playstation-legacy/
+- Coverage note: Quotes verified from fetched Eurogamer and Digital Trends interview pages. No monetization commentary on record.

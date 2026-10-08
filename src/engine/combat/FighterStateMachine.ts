@@ -20,9 +20,11 @@ export type ActionState =
   | 'Juggled';
 
 // ── Wakeup option buffered during knockdown recovery ─────────────────────────
-export type WakeupOption = 'techRoll' | 'backrise' | 'quickStand' | null;
+export type GroundedPosture = 'faceUp' | 'faceDown';
+export type WakeupOption = 'techRoll' | 'backrise' | 'quickStand' | 'rollForward' | 'rollBack' | 'rollSide' | 'kipUp' | 'wakeAttack' | 'stayDown' | null;
 
-type CharacterMoveClipSlot =
+export type CharacterMoveClipSlot =
+  | 'crouchLight' | 'crouchKick'
   | 'idle' | 'walkForward' | 'walkBackward' | 'crouch' | 'guard'
   | 'lightAttack' | 'heavyAttack'
   | 'forwardLight' | 'forwardHeavy' | 'forwardLowKick' | 'forwardHighKick'
@@ -167,6 +169,10 @@ export interface MoveWindow {
   damage?: number;
   /** Measured strike-limb reach in metres; drives the move-specific contact envelope. */
   contactReach?: number;
+  hitstun?: number;
+  pushback?: number;
+  launch?: number;
+  stringFollowups?: StringFollowup[];
   isSpecial?: boolean;
   specialName?: string;
   /** If true, this move is a throw — cannot be blocked by guard */
@@ -196,6 +202,7 @@ import {
 } from './ThrowChains.ts';
 import { THROW_CATALOG, type ThrowDirection } from './DirectionalThrowSystem.ts';
 import { getMoveById } from '../BrutalFistMoveCatalog.ts';
+import { resolveAirborneDive } from './AirborneDiveSystem.ts';
 
 export interface SpecialMoveDefinition {
   id: string;
@@ -287,6 +294,7 @@ export const DEFAULT_MOVE_WINDOWS: Record<'lightAttack' | 'heavyAttack' | 'light
     animation: 'heavyKick',
     hitboxStartFrame: 16, hitboxEndFrame: 20, totalFrames: 42,
     damage: 170, attackLevel: 'mid', onBlock: -10,
+    reaction: 'Smackdown',
     specialName: 'Right Kick',
   },
 };
@@ -743,6 +751,10 @@ const WAKEUP_BUFFER_WINDOW = 0.8;
 const TECH_ROLL_DURATION = 0.45;
 const BACKRISE_DURATION = 0.55;
 const QUICKSTAND_DURATION = 0.30;
+const ROLL_WAKE_DURATION = 0.48;
+const SIDE_ROLL_WAKE_DURATION = 0.42;
+const KIP_UP_DURATION = 0.52;
+const WAKE_ATTACK_DURATION = 0.42;
 
 // ── HitStun constants ─────────────────────────────────────────────────────────
 /** HitStun duration = active frames of the attack that landed (in seconds) */
@@ -786,9 +798,9 @@ const HITSTUN_MIN = 0.18;
 const HITSTUN_MAX = 0.65;
 
 // ── Walking acceleration constants ───────────────────────────────────────────
-const WALK_ACCEL = 8.0;
-const WALK_DECEL = 14.0;
-const WALK_MAX_SPEED = 1.0;
+const WALK_ACCEL = 6.0;
+const WALK_DECEL = 10.0;
+const WALK_MAX_SPEED = 1.15;
 const BACKDASH_VELOCITY = -1.0;
 const BACKDASH_DURATION = 0.28;
 const BACKDASH_DECEL = 6.0;
@@ -844,6 +856,7 @@ export class FighterStateMachine {
   private motionState: FighterMotionState = 'idle';
   /** Character-specific authored animation slots. Generic semantic aliases are only fallback. */
   private characterMoveClips: Partial<Record<CharacterMoveClipSlot, string>> = {};
+  private characterMoveWindows: Partial<Record<CharacterMoveClipSlot, MoveWindow>> = {};
   private characterMoveIds: Partial<Record<CharacterMoveClipSlot, string>> = {};
 
   private currentMove: MoveWindow | null = null;
@@ -913,6 +926,10 @@ export class FighterStateMachine {
   private wakeupBuffered: WakeupOption = null;
   private wakeupActionTimer = 0;
   private wakeupActionState: WakeupOption = null;
+  /** The body stays on the mat after the forced fall; no automatic stand-up. */
+  private groundedPosture: GroundedPosture = 'faceUp';
+  private groundedRollDirection: 'forward' | 'back' | 'side' | null = null;
+  private wakeAttackKind: 'light' | 'heavy' | null = null;
 
   // ── Walking velocity ──────────────────────────────────────────────────────
   private walkVelocity: WalkVelocity = { forward: 0, strafe: 0 };
@@ -1006,6 +1023,21 @@ export class FighterStateMachine {
   /** Install the fighter's canonical moveset animation choices. */
   setCharacterMoveClips(clips: Partial<Record<string, string>>): void {
     this.characterMoveClips = { ...clips };
+  }
+
+  /** Install the fighter's fully resolved style-profile move windows. */
+  setCharacterMoveWindows(windows: Partial<Record<string, MoveWindow>>): void {
+    this.characterMoveWindows = { ...windows } as Partial<Record<CharacterMoveClipSlot, MoveWindow>>;
+  }
+
+  characterWindowFor(slot: CharacterMoveClipSlot): MoveWindow | null {
+    return this.characterMoveWindows[slot] ?? null;
+  }
+
+  private slotWindow(slot: CharacterMoveClipSlot, fallback: MoveWindow, clipSlot: CharacterMoveClipSlot = slot): MoveWindow {
+    const own = this.characterMoveWindows[slot];
+    if (own) return own.clip || !this.characterMoveClips[clipSlot] ? own : { ...own, clip: this.characterMoveClips[clipSlot] };
+    return this.withCharacterClip(fallback, clipSlot);
   }
 
   /** Install the fighter's canonical catalog move IDs separately from clip names. */
@@ -1143,6 +1175,8 @@ export class FighterStateMachine {
   }
 
   getBufferedWakeup(): WakeupOption { return this.wakeupBuffered; }
+  getGroundedPosture(): GroundedPosture { return this.groundedPosture; }
+  isGrounded(): boolean { return this.actionState === 'Knockdown' && this.knockdownTimer <= 0; }
   getWalkVelocity(): WalkVelocity { return { ...this.walkVelocity }; }
 
   /** Returns throw combo progress info for HUD */
@@ -1230,6 +1264,12 @@ export class FighterStateMachine {
   /** Human-readable move identity for deterministic combat probes and HUD diagnostics. */
   activeMoveName(): string | null {
     return this.currentMove?.specialName ?? (this.currentMove ? this.currentMove.animation : null);
+  }
+
+  /** Remaining authored time on the current move; throws use this to delay the
+   * receiver commit until the attacker's actual grapple animation has finished. */
+  currentMoveRemainingSeconds(): number {
+    return Math.max(0, this.moveTimer);
   }
 
   registerSpecialMoves(moves: SpecialMoveDefinition[]) {
@@ -1476,9 +1516,12 @@ export class FighterStateMachine {
     return landed;
   }
 
-  applyKnockdown() {
+  applyKnockdown(posture: GroundedPosture = this.motionState === 'hitBack' ? 'faceDown' : 'faceUp') {
     this.actionState = 'Knockdown';
-    this.motionState = 'knockdown';
+    this.motionState = posture === 'faceDown' ? 'GroundedFaceDown' : 'GroundedFaceUp';
+    this.groundedPosture = posture;
+    this.groundedRollDirection = null;
+    this.wakeAttackKind = null;
     this.blockStunTimer = 0;
     this.knockdownTimer = KNOCKDOWN_DURATION;
     this.wakeupBuffered = null;
@@ -1842,6 +1885,7 @@ export class FighterStateMachine {
     const risingForwardPos = resolvedInput.forward > 0.5 && this.prevInput.forward <= 0.5;
     const risingForwardNeg = resolvedInput.forward < -0.5 && this.prevInput.forward >= -0.5;
     const risingStrafe = Math.abs(resolvedInput.strafe) > 0.5 && Math.abs(this.prevInput.strafe) <= 0.5;
+    const risingJump = !!resolvedInput.jump && !this.prevInput.jump;
 
     // Track forward press time for command throw detection
     if (risingForwardPos) {
@@ -1990,21 +2034,36 @@ export class FighterStateMachine {
       this.knockdownTimer = Math.max(0, this.knockdownTimer - dt);
       const inBufferWindow = this.knockdownTimer <= WAKEUP_BUFFER_WINDOW;
 
-      if (inBufferWindow && this.wakeupBuffered === null) {
-        if (risingForwardPos) {
-          this.wakeupBuffered = 'quickStand';
-          console.log('[FSM] ⬆️ Wakeup buffered: quickStand');
-        } else if (risingForwardNeg || risingStrafe) {
-          this.wakeupBuffered = 'techRoll';
-          console.log('[FSM] 🔄 Wakeup buffered: techRoll');
+      if (this.wakeupBuffered === null) {
+        if (risingLight || risingHeavy) {
+          this.wakeupBuffered = 'wakeAttack';
+          this.wakeAttackKind = risingHeavy ? 'heavy' : 'light';
+          console.log('[FSM] ⚔️ Wake attack buffered:', this.wakeAttackKind);
+        } else if (risingForwardPos) {
+          this.wakeupBuffered = 'rollForward';
+          console.log('[FSM] 🔄 Wakeup buffered: rollForward');
+        } else if (risingForwardNeg) {
+          this.wakeupBuffered = 'rollBack';
+          console.log('[FSM] 🔄 Wakeup buffered: rollBack');
+        } else if (risingStrafe) {
+          this.wakeupBuffered = 'rollSide';
+          console.log('[FSM] 🔄 Wakeup buffered: rollSide');
         } else if (risingGuard) {
           this.wakeupBuffered = 'backrise';
           console.log('[FSM] ↩️ Wakeup buffered: backrise');
+        } else if (risingJump) {
+          this.wakeupBuffered = 'kipUp';
+          console.log('[FSM] 🥋 Wakeup buffered: kipUp');
         }
       }
 
+      // Once the minimum fall duration has elapsed, a fighter may remain prone
+      // indefinitely. No input means STAY DOWN; there is no forced quick-stand.
+      if (this.knockdownTimer <= 0 && this.wakeupBuffered && this.wakeupBuffered !== 'stayDown') {
+        return this.executeWakeup(this.wakeupBuffered);
+      }
       if (this.knockdownTimer <= 0) {
-        return this.executeWakeup(this.wakeupBuffered ?? 'quickStand');
+        this.motionState = this.groundedPosture === 'faceDown' ? 'GroundedFaceDown' : 'GroundedFaceUp';
       }
       return this.motionState;
     }
@@ -2016,6 +2075,8 @@ export class FighterStateMachine {
         this.wakeupActionState = null;
         this.actionState = 'Idle';
         this.motionState = 'idle';
+        this.groundedRollDirection = null;
+        this.wakeAttackKind = null;
         console.log('[FSM] ✅ Wakeup action complete → Idle');
       }
       return this.motionState;
@@ -2132,8 +2193,17 @@ export class FighterStateMachine {
         // as a jab. So a completed special replaces a queued plain attack; it
         // still cannot replace another special.
         const buffered = this.detectSpecialMove(now);
-        if (buffered && (!this.queuedAction || !this.queuedAction.special)) {
-          this.queuedAction = { type: 'light', special: buffered, at: this.moveElapsed };
+        if (buffered) {
+          // A completed explicit special sequence is a deliberate cancel/transition,
+          // not another buffered jab. Enter it immediately so the authored special
+          // clip is actually what the player sees on the confirming input.
+          const ownedClip = this.clipForSpecial(buffered);
+          const ownedMove = { ...buffered.move, clip: ownedClip };
+          // The semantic motion state owns combat timing/locks. The authored
+          // clip rides on MoveWindow.clip. Passing the clip name as the motion
+          // state makes ATTACK_STATES miss and turns a real attack into a
+          // non-attack animation transition.
+          return this.beginAttack(ownedMove.animation, ownedMove);
         }
         if (risingLight && !this.queuedAction) this.queuedAction = { type: 'light', at: this.moveElapsed };
         if (risingHeavy && !this.queuedAction) this.queuedAction = { type: 'heavy', at: this.moveElapsed };
@@ -2232,23 +2302,82 @@ export class FighterStateMachine {
       }
     }
 
-    const special = this.detectSpecialMove(now);
-    if (special) {
-      this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack(this.clipForSpecial(special), special.move);
-    }
-
     // ── AIR ATTACKS: jump + limb is an aerial move, not a grounded strike.
     // The locomotion arc is already armed from the same jump input above. Keep
     // the combat state as jumpAttack so FighterMesh uses the real aerial slot,
     // while the fighter-owned light/heavy clip still gives each roster member
     // distinct visual ownership. A rising limb press must win over the grounded
     // attack checks below.
-    if (resolvedInput.jump && (risingLp || risingLk || risingLight || risingRk || risingRp || risingHeavy)) {
+    if (this.jumpAirTimer > 0 && (risingLp || risingLk || risingLight || risingRk || risingRp || risingHeavy)) {
       this.walkVelocity.forward = 0;
-      const airMove = (risingLk || risingRk) ? AIR_HEAVY_MOVE : AIR_LIGHT_MOVE;
-      const airSlot: CharacterMoveClipSlot = (risingLk || risingRk) ? 'highKick' : 'lightAttack';
-      return this.beginAttack('jumpAttack', this.withCharacterClip(airMove, airSlot));
+      const dive = resolveAirborneDive({
+        airborne: true,
+        source: 'JUMP',
+        forward: resolvedInput.forward,
+        falling: this.jumpAirTimer < 0.22,
+        attackPressed: true,
+        kickPressed: risingLk || risingRk,
+      });
+      if (dive) {
+        const airMove = (risingLk || risingRk) ? AIR_HEAVY_MOVE : AIR_LIGHT_MOVE;
+        const airSlot: CharacterMoveClipSlot = (risingLk || risingRk) ? 'highKick' : 'lightAttack';
+        return this.beginAttack('jumpAttack', this.withCharacterClip(airMove, airSlot));
+      }
+    }
+
+    // A simple direction + limb is owned by the fighter's roster move table.
+    // Do not let the generated command matrix steal Forward+LP/RP/LK/RK before
+    // the roster-specific branch below gets a chance to resolve it.
+    const hasOwnedDirectionalRosterInput =
+      ((resolvedInput.forward > 0.45 || resolvedInput.forward < -0.45) &&
+        ((risingLp || risingLight) && !!this.characterMoveIds.forwardLight ||
+         (risingRp || risingHeavy) && !!this.characterMoveIds.forwardHeavy ||
+         risingLk && !!this.characterMoveIds.forwardLowKick ||
+         risingRk && !!this.characterMoveIds.forwardHighKick ||
+         (risingLp || risingLight) && !!this.characterMoveIds.backLight ||
+         (risingRp || risingHeavy) && !!this.characterMoveIds.backHeavy ||
+         risingLk && !!this.characterMoveIds.backLowKick ||
+         risingRk && !!this.characterMoveIds.backHighKick));
+    // Resolve an authored directional roster move before the generated command
+    // matcher. This is deliberately explicit: ownership must be decided by the
+    // fighter's move table, not by whichever generic command happens to match first.
+    if (hasOwnedDirectionalRosterInput) {
+      const forward = resolvedInput.forward > 0.45;
+      const back = resolvedInput.forward < -0.45;
+      if (forward && (risingLp || risingLight) && this.characterMoveIds.forwardLight) {
+        const move = this.characterMoveWindow(this.characterMoveIds.forwardLight, DEFAULT_MOVE_WINDOWS.lightAttack, 'forwardLight', 'lightAttack');
+        return this.beginAttack('lightAttack', move);
+      }
+      if (forward && (risingRp || risingHeavy) && this.characterMoveIds.forwardHeavy) {
+        const move = this.characterMoveWindow(this.characterMoveIds.forwardHeavy, DEFAULT_MOVE_WINDOWS.heavyAttack, 'forwardHeavy', 'heavyAttack');
+        return this.beginAttack('heavyAttack', move);
+      }
+      if (forward && risingLk && this.characterMoveIds.forwardLowKick) {
+        const move = this.characterMoveWindow(this.characterMoveIds.forwardLowKick, DEFAULT_MOVE_WINDOWS.lightKick, 'forwardLowKick', 'lightKick');
+        return this.beginAttack('lightKick', move);
+      }
+      if (forward && risingRk && this.characterMoveIds.forwardHighKick) {
+        const move = this.characterMoveWindow(this.characterMoveIds.forwardHighKick, DEFAULT_MOVE_WINDOWS.heavyKick, 'forwardHighKick', 'heavyKick');
+        return this.beginAttack('heavyKick', move);
+      }
+      if (back && (risingLp || risingLight) && this.characterMoveIds.backLight) {
+        const move = this.characterMoveWindow(this.characterMoveIds.backLight, DEFAULT_MOVE_WINDOWS.lightAttack, 'backLight', 'lightAttack');
+        return this.beginAttack('lightAttack', move);
+      }
+      if (back && (risingRp || risingHeavy) && this.characterMoveIds.backHeavy) {
+        const move = this.characterMoveWindow(this.characterMoveIds.backHeavy, DEFAULT_MOVE_WINDOWS.heavyAttack, 'backHeavy', 'heavyAttack');
+        return this.beginAttack('heavyAttack', move);
+      }
+    }
+    const special = hasOwnedDirectionalRosterInput ? null : this.detectSpecialMove(now);
+    if (special) {
+      this.walkVelocity = { forward: 0, strafe: 0 };
+      // Preserve the fighter-owned presentation on the move itself. The
+      // renderer reads activeClip(), not only the semantic motion state.
+      const ownedClip = this.clipForSpecial(special);
+      const ownedMove = { ...special.move, clip: ownedClip };
+      // Keep the semantic attack state intact; the clip is presentation data.
+      return this.beginAttack(ownedMove.animation, ownedMove);
     }
 
     // ── DIRECTIONAL CHARACTER MOVES ────────────────────────────────────────
@@ -2283,28 +2412,32 @@ export class FighterStateMachine {
         const moveId = this.characterMoveIds.forwardLight;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
-          return this.beginAttack('lightAttack', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightAttack, 'forwardLight', 'lightAttack'));
+          const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightAttack, 'forwardLight', 'lightAttack');
+          return this.beginAttack('lightAttack', move);
         }
       }
       if (risingRp || (risingHeavy && !risingLk && !risingRk)) {
         const moveId = this.characterMoveIds.forwardHeavy;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
-          return this.beginAttack('heavyAttack', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyAttack, 'forwardHeavy', 'heavyAttack'));
+          const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyAttack, 'forwardHeavy', 'heavyAttack');
+          return this.beginAttack('heavyAttack', move);
         }
       }
       if (risingLk) {
         const moveId = this.characterMoveIds.forwardLowKick;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
-          return this.beginAttack('lightKick', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightKick, 'forwardLowKick', 'lightKick'));
+          const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightKick, 'forwardLowKick', 'lightKick');
+          return this.beginAttack('lightKick', move);
         }
       }
       if (risingRk) {
         const moveId = this.characterMoveIds.forwardHighKick;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
-          return this.beginAttack('heavyKick', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyKick, 'forwardHighKick', 'heavyKick'));
+          const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyKick, 'forwardHighKick', 'heavyKick');
+          return this.beginAttack('heavyKick', move);
         }
       }
     }
@@ -2313,28 +2446,32 @@ export class FighterStateMachine {
         const moveId = this.characterMoveIds.backLight;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
-          return this.beginAttack('lightAttack', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightAttack, 'backLight', 'lightAttack'));
+          const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightAttack, 'backLight', 'lightAttack');
+          return this.beginAttack('lightAttack', move);
         }
       }
       if (risingRp || (risingHeavy && !risingLk && !risingRk)) {
         const moveId = this.characterMoveIds.backHeavy;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
-          return this.beginAttack('heavyAttack', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyAttack, 'backHeavy', 'heavyAttack'));
+          const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyAttack, 'backHeavy', 'heavyAttack');
+          return this.beginAttack('heavyAttack', move);
         }
       }
       if (risingLk) {
         const moveId = this.characterMoveIds.backLowKick;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
-          return this.beginAttack('lightKick', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightKick, 'backLowKick', 'lightKick'));
+          const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.lightAttack, 'backLowKick', 'lightKick');
+          return this.beginAttack('lightKick', move);
         }
       }
       if (risingRk) {
         const moveId = this.characterMoveIds.backHighKick;
         if (moveId) {
           this.walkVelocity = { forward: 0, strafe: 0 };
-          return this.beginAttack('heavyKick', this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyKick, 'backHighKick', 'heavyKick'));
+          const move = this.characterMoveWindow(moveId, DEFAULT_MOVE_WINDOWS.heavyKick, 'backHighKick', 'heavyKick');
+          return this.beginAttack('heavyKick', move);
         }
       }
     }
@@ -2349,28 +2486,28 @@ export class FighterStateMachine {
       && Math.abs(resolvedInput.strafe) < 0.2;
     if (crouchingNow && (risingLk || risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('crouchHeavyAttack', this.withCharacterClip(CROUCH_MOVE_WINDOWS.crouchHeavyAttack, 'lowKick'));
+      return this.beginAttack('crouchHeavyAttack', this.slotWindow('crouchKick', CROUCH_MOVE_WINDOWS.crouchHeavyAttack, 'lowKick'));
     }
     if (crouchingNow && (risingLp || risingRp || risingLight || risingHeavy)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('crouchLightAttack', this.withCharacterClip(CROUCH_MOVE_WINDOWS.crouchLightAttack, 'lightAttack'));
+      return this.beginAttack('crouchLightAttack', this.slotWindow('crouchLight', CROUCH_MOVE_WINDOWS.crouchLightAttack, 'lightAttack'));
     }
 
     if (risingLk && !risingLp) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('lightKick', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.lightKick, 'lowKick'));
+      return this.beginAttack('lightKick', this.slotWindow('lowKick', DEFAULT_MOVE_WINDOWS.lightKick));
     }
     if (risingRk && !risingRp) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('heavyKick', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.heavyKick, 'highKick'));
+      return this.beginAttack('heavyKick', this.slotWindow('highKick', DEFAULT_MOVE_WINDOWS.heavyKick));
     }
     if (risingLp || (risingLight && !risingLk && !risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('lightAttack', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.lightAttack, 'lightAttack'));
+      return this.beginAttack('lightAttack', this.slotWindow('lightAttack', DEFAULT_MOVE_WINDOWS.lightAttack));
     }
     if (risingRp || (risingHeavy && !risingLk && !risingRk)) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack('heavyAttack', this.withCharacterClip(DEFAULT_MOVE_WINDOWS.heavyAttack, 'heavyAttack'));
+      return this.beginAttack('heavyAttack', this.slotWindow('heavyAttack', DEFAULT_MOVE_WINDOWS.heavyAttack));
     }
 
     if (resolvedInput.guard) {
@@ -2517,6 +2654,7 @@ export class FighterStateMachine {
 
   // ── Compute HitStun duration from active frames of the source move ─────────
   private computeHitStunDuration(move: MoveWindow): number {
+    if (move.hitstun !== undefined) return Math.max(HITSTUN_MIN, Math.min(HITSTUN_MAX, move.hitstun));
     const activeSeconds = move.active * HITSTUN_ACTIVE_FRAME_MULTIPLIER;
     return Math.max(HITSTUN_MIN, Math.min(HITSTUN_MAX, activeSeconds));
   }
@@ -2639,7 +2777,9 @@ export class FighterStateMachine {
       const directional = this.directionalThrowId ? THROW_CATALOG[this.directionalThrowId] : null;
       this.currentMove = directional
         ? {
-            ...this.currentMove,
+            // A directional throw always set currentMove when it began; fall
+            // back to the commit window (startup 0) rather than spreading null.
+            ...(this.currentMove ?? THROW_COMMIT_MOVE),
             clip: directional.commitAnimation,
             animation: 'grapple',
             damage: directional.damage,
@@ -2775,20 +2915,55 @@ export class FighterStateMachine {
     switch (option) {
       case 'techRoll':
         this.actionState = 'WakeupTechRoll';
-        this.motionState = 'walkForward';
+        this.motionState = 'WakeupRollForward';
+        this.groundedRollDirection = 'forward';
         this.wakeupActionTimer = TECH_ROLL_DURATION;
         console.log('[FSM] 🔄 Wakeup: techRoll');
         break;
       case 'backrise':
         this.actionState = 'WakeupBackrise';
-        this.motionState = 'walkBackward';
+        this.motionState = 'WakeupBackrise';
+        this.groundedRollDirection = null;
         this.wakeupActionTimer = BACKRISE_DURATION;
         console.log('[FSM] ↩️ Wakeup: backrise');
+        break;
+      case 'rollForward':
+        this.actionState = 'WakeupTechRoll';
+        this.motionState = 'WakeupRollForward';
+        this.groundedRollDirection = 'forward';
+        this.wakeupActionTimer = ROLL_WAKE_DURATION;
+        console.log('[FSM] 🔄 Wakeup: forward roll');
+        break;
+      case 'rollBack':
+        this.actionState = 'WakeupBackrise';
+        this.motionState = 'WakeupRollBack';
+        this.groundedRollDirection = 'back';
+        this.wakeupActionTimer = ROLL_WAKE_DURATION;
+        console.log('[FSM] 🔄 Wakeup: backward roll');
+        break;
+      case 'rollSide':
+        this.actionState = 'WakeupTechRoll';
+        this.motionState = 'WakeupRollSide';
+        this.groundedRollDirection = 'side';
+        this.wakeupActionTimer = SIDE_ROLL_WAKE_DURATION;
+        console.log('[FSM] 🔄 Wakeup: side roll');
+        break;
+      case 'kipUp':
+        this.actionState = 'WakeupQuickStand';
+        this.motionState = 'WakeupKipUp';
+        this.wakeupActionTimer = KIP_UP_DURATION;
+        console.log('[FSM] 🥋 Wakeup: kip-up');
+        break;
+      case 'wakeAttack':
+        this.actionState = 'WakeupQuickStand';
+        this.motionState = 'WakeupAttack';
+        this.wakeupActionTimer = WAKE_ATTACK_DURATION;
+        console.log('[FSM] ⚔️ Wakeup: attack');
         break;
       case 'quickStand':
       default:
         this.actionState = 'WakeupQuickStand';
-        this.motionState = 'idle';
+        this.motionState = 'WakeupQuickStand';
         this.wakeupActionTimer = QUICKSTAND_DURATION;
         console.log('[FSM] ⬆️ Wakeup: quickStand');
         break;
@@ -2802,12 +2977,21 @@ export class FighterStateMachine {
     // again", and the caller was deriving one by comparing motion-state
     // STRINGS — which cannot tell two identical jabs apart. See
     // attackStarts.
+    //
+    // Fighter-owned clips are also valid attack triggers. This is what keeps a
+    // directional roster move from being reported as the generic lightAttack
+    // state even though its actual authored clip is different. Aerial attacks
+    // deliberately retain jumpAttack as their semantic state because FighterMesh
+    // uses that state to hold the airborne presentation window.
+    const resolvedMotion = motion === 'jumpAttack'
+      ? motion
+      : ((move.clip ?? motion) as FighterMotionState);
     this.attackStartCount++;
     const prevState = this.motionState;
     this.walkVelocity = { forward: 0, strafe: 0 };
-    this.beginCrossfade(this.motionState, motion, CROSSFADE_ATTACK_FRAMES / this.FPS);
+    this.beginCrossfade(this.motionState, resolvedMotion, CROSSFADE_ATTACK_FRAMES / this.FPS);
     this.actionState = 'Attacking';
-    this.motionState = motion;
+    this.motionState = resolvedMotion;
     this.currentMove = move;
     this.moveTimer = move.startup + move.active + move.recovery;
     this.moveElapsed = 0;
@@ -2827,7 +3011,9 @@ export class FighterStateMachine {
     // generic jab here is what made every combo end in the same punch.
     if (queued.special) {
       this.walkVelocity = { forward: 0, strafe: 0 };
-      return this.beginAttack(queued.special.move.animation, queued.special.move);
+      const ownedClip = this.clipForSpecial(queued.special);
+      const ownedMove = { ...queued.special.move, clip: ownedClip };
+      return this.beginAttack(ownedClip as FighterMotionState, ownedMove);
     }
     switch (queued.type) {
       case 'light':

@@ -1,0 +1,19 @@
+# Path of Exile — Heart and Soul
+- Developer / studio: Grinding Gear Games (co-founders Chris Wilson, Jonathan Rogers; Wilson left in 2025)
+- Genre / platforms: Free-to-play dark ARPG, PC / PS / Xbox / Mac
+- Why players come back (in the devs' view): A service-game rhythm — players play until they have their fill, leave, and get pulled back in by every fresh release/league; Rogers says "a new release pulls them back in again." And a covenant: they will keep making content "forever" — "as long as there's a player base, then we're creating content for them."
+- Key quotes:
+  - "We would never want to compromise the game... gouging and persistent monetization policies generally hide game mechanics that are built around profits. The only way to win with a non-intrusive approach is to 'make a really good game that people love to play.'" — Chris Wilson, Co-founder/then-Lead Designer, Polygon, 2014
+  - "There comes a point when you play a game a lot that it ceases to be a game and it becomes a hobby, and laying down extra money for a hobby is not so strange. It changes the relationship with the game, makes it more personal." — Jonathan Rogers, Co-founder/then-Lead Programmer, Polygon, 2014
+  - "I don't like how some people are so accepting of it [pay-to-win]. It's bad. It influences the game design in a negative way. As soon as you tie your game design to your monetization, it affects it." — Jonathan Rogers, Co-founder/then-Lead Programmer, Polygon, 2014
+  - "As long as there's a player base, then we're creating content for them." — Jonathan Rogers, Co-founder/Managing Director, VideoGamer, 2025
+- Why players love/support it: The famous "ethical free-to-play" — no XP boosts, no power for sale, cosmetic-only MTX; the goodwill buys loyalty so deep that players voluntarily buy $1,000 supporter packs (half a million dollars from those packs by 2014). Players pay because the game never asks.
+- Monetization philosophy (devs' words, if any): "We've purposefully divorced any game mechanics from the monetization." (Chris Wilson, Gamasutra via Engadget, 2014); "Our philosophy is to not allow microtransactions to affect game systems... the game development team don't really need to think about the business case for how the game is monetised and can focus on just making it fun." (Chris Wilson, GameSpot via AltChar) [unverified]
+- Lesson for our games (1-2 lines, concrete): Never tie game design to monetization — sell cosmetics and let goodwill convert players into paying supporters; the trust IS the business model. Ship on a league/season rhythm so players who leave always have a reason to return.
+- Sources: (URLs)
+  - https://www.polygon.com/2014/2/28/5451410/how-is-ethical-free-to-play-path-of-exile-faring/
+  - https://www.engadget.com/2014-03-03-grinding-gears-wilson-talks-f2p-ethics-in-path-of-exile.html
+  - https://www.videogamer.com/news/og-path-of-exile-devs-want-to-keep-making-expansions-forever/
+  - https://www.iheart.com/podcast/24837692/episode/287813999/?embed=true&pname=newstalkzb_web&sc=podcast_episode_embed
+  - https://www.altchar.com/game-news/path-of-exile-philosophy-is-keeping-mtx-and-main-game-separate-a7eiu8A4opq0/amp
+- Coverage note: The GameSpot "keep MTX and main game separate" quote came from a search snippet (marked [unverified]); the rest were verified from fetched pages. Roles dated as they were in 2014 (lead designer/lead programmer); both are now co-founders at senior level, Wilson having left GGG in 2025.

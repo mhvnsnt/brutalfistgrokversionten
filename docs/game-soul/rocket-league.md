@@ -1,0 +1,18 @@
+# Rocket League — Heart and Soul
+- Developer / studio: Psyonix (Epic Games since 2020)
+- Genre / platforms: Vehicular soccer / PC, PlayStation, Xbox, Switch
+- Why players come back (in the devs' view): Easy to play, deep to master — hitting a ball into a net is instantly understandable, but flying cars, wall play, and team tactics reveal layers over years; plus aggressive, free post-launch support so players never pay for gameplay content. Psyonix treats Rocket League as one ever-growing platform, not a franchise to sequel off.
+- Key quotes:
+  - "Why do you think people keep coming back? ... I think it's a combination of factors, not just one element. Number 1, I think that it's an easy to play game, there's not a lot of complication to how it's played... And once you start getting good, you figure out you can fly. And once you've mastered those mechanics, then you realize just how much of a team sport it is... regardless of your skill level, you realize that the game is more than just a simple reenactment of football, it's quite a deep and complex game to play." — Jeremy Dunham, VP, Psyonix, GamingBolt interview, 2016
+  - "We've continued to update the game for free, and we've got no paid DLC outside of cosmetic and optional stuff — and that's how we'll keep it, we don't plan on introducing anything new to the game that will separate the audience or force them to pay money." — Jeremy Dunham, VP, Psyonix, GamingBolt interview, 2016
+  - "We look at Rocket League as a platform, and not as a franchise for us to make very different versions of... We don't want to exploit the brand. We want to reward the players." — Jeremy Dunham, VP, Psyonix, GamesIndustry.biz, 2017 [unverified]
+  - "One of the key elements in keeping a community healthy and going is not trying to create exclusive clubs where only certain people can play." — Jeremy Dunham, VP, Psyonix, alistdaily, 2016 [unverified]
+- Why players love/support it: Physics-driven skill ceiling that keeps improving for years; free content keeps the whole player base together; esports (RLCS); simple 5-minute matches; positive/preset quick chat culture.
+- Monetization philosophy (devs' words, if any): Cosmetics only, never paid gameplay — Dunham said paid DLC outside cosmetics would "separate the audience or force them to pay money," which the studio rejects. Licensed cosmetic DLC (Batmobile, DeLorean) sells "like crazy" without splitting players.
+- Lesson for our games (1-2 lines, concrete): Easy to learn, deep to master — design one simple core interaction (punch/land/block) with layers that unfold over months. Never sell gameplay power or split the player base; monetize cosmetics and licensed extras while keeping every player in the same match pool.
+- Sources:
+  - https://gamingbolt.com/an-interview-with-psyonix-the-makers-of-rocket-league-the-defining-indie-game-of-this-console-generation
+  - https://www.gamesindustry.biz/psyonix-we-see-rocket-league-as-a-platform-not-as-a-franchise
+  - https://www.alistdaily.com/media/rocket-league-scores-big-success/amp/
+  - http://www.pushsquare.com/news/2015/05/interview_topping_the_ps4_rocket_league_with_developer_psyonix
+- Coverage note: GamingBolt interview quotes (why players come back; free-update philosophy) verified via fetched page (2016). GI.biz "platform not franchise" and alistdaily quotes from search snippets — [unverified].

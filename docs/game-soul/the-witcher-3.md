@@ -1,0 +1,18 @@
+# The Witcher 3: Wild Hunt — Heart and Soul
+- Developer / studio: CD Projekt Red
+- Genre / platforms: Open-world action RPG (PC, PS4/PS5, Xbox One/Series, Switch)
+- Why players come back (in the devs' view): Empathy-driven quests with visible choice and consequence. CDPR's standing rule is "no fetch quests" — every quest, even a 10-minute optional one, must feel like time well spent. Quest design follows "play, show, then tell": drama lives in gameplay first, cinematics second, exposition last. Developers are given ownership of their quests so they "truly care about the art we're making," which the team believes players can feel.
+- Key quotes:
+  - "A quest has to be something interesting. I have to feel, as a player, that if I played that quest, my time was well spent and not just spent." — Philipp Weber, Narrative Director (former quest designer on The Witcher 3), GamesRadar+, 2025
+  - "Choice and consequence is one of the standards that we have and want to uphold, and I think The Witcher 3 did it perfectly." — Philipp Weber, Narrative Director, GamesRadar+, 2025
+  - "Show is about trying to talk to your empathy and trying to show things that can move you. For me, it's almost like a secret sauce for making really good quests." — Paweł Sasko, Quest Designer (The Witcher 3; lead quest designer on its DLCs), Gamescom LATAM / GameRant, 2024
+  - "You get what you paid for, plus we are always trying our best to overdeliver. There is no better PR than a happy gamer recommending your title to their friends." — Marcin Iwiński, Co-founder, PC Gamer / GameRant, 2018
+- Why players love/support it: Characters and stories that hit emotionally (Bloody Baron remains the signature example — Sasko still gets letters from players about it), a huge open world where side content rivals the main story, and a studio that visibly respects players (free DLC program, DRM-free, expansions "like add-ons way back in the Baldur's Gate era").
+- Monetization philosophy (devs' words, if any): Anti-microtransaction and explicitly pro-player. Iwiński: a full-priced game should deliver "50-60+ hours of the main story-line, with up to a couple of hundred of hours of side activities"; small DLCs "should be available for free"; big expansions should be meaningful multi-hour content. Official CDPR line during the 2017 loot-box backlash: "no hidden catch, you get what you pay for... we leave greed to others" (CD Projekt Red, Twitter/X, 2017). Revenue comes from premium sales + expansions, and player trust is treated as the marketing engine ("no better PR than a happy gamer recommending your title").
+- Lesson for our games (1-2 lines, concrete): Apply "play, show, then tell" to missions — put the drama in the gameplay first, and make every side mission a real story with visible consequences. And copy the trust economics: overdeliver for free, let word-of-mouth do the marketing.
+- Sources: (URLs)
+  - https://www.gamesradar.com/games/the-witcher/the-witcher-4-is-learning-lessons-from-cdprs-past-no-fetch-quests-an-eye-on-cyberpunk-2077s-fan-favorite-characters-and-devs-who-care-about-the-art-were-making/
+  - https://GameRant.com/witcher-3-cyberpunk-2077-quests-empathy/
+  - https://gamerant.com/witcher-cd-projekt-red-loot-boxes/
+  - https://www.eurogamer.net/what-worked-in-the-witcher-3-and-what-didnt-looking-back-on-a-landmark-rpg-with-cd-projekt-red
+- Coverage note: All topics had on-record dev statements. The "we leave greed to others" line is an official CDPR corporate statement on Twitter/X, not a named developer interview.

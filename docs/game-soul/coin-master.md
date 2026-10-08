@@ -1,0 +1,16 @@
+# Coin Master — Heart and Soul
+- Developer / studio: Moon Active (Tel Aviv, Israel) — CEO/founder Samuel Albin
+- Genre / platforms: Social casino / slot + village-builder / raiding; iOS + Android
+- Why players come back (in the devs' view): No on-record statement found. (ANALYSIS: the hook is a social revenge loop — spin the slot, raid and attack real friends' villages, defend your own; layered milestones in village completion, card collections and pets; context-specific push notifications when attacked or when friends complete milestones.)
+- Key quotes:
+  - "Looking ahead to the coming years we see potential for endless growth and this is only the beginning. We took significant steps this year in our goal to become the world's most successful mobile gaming company." — Samuel Albin, CEO and founder, Moon Active, via Calcalist/PocketGamer.biz, 2021 (company statement, not a player-retention philosophy)
+  - "They say that human capital is the most important factor in the success of a company. That isn't true. Human capital is the only important factor in the success of a company and that is the secret to our success." — Samuel Albin, CEO and founder, Moon Active, via Calcalist/PocketGamer.biz, 2021
+- Why players love/support it: raiding friends' villages creates a real social rivalry loop (ANALYSIS); casual one-tap slot play with always-on themed events; village-building progression with hundreds of stages.
+- Monetization philosophy (devs' words, if any): No on-record statement found. (ANALYSIS: slot-driven monetization via spin refills and event participation; a 2019 German regulator review over gambling-like mechanics concluded without a ban.)
+- Lesson for our games (1-2 lines, concrete): The social loop does the retaining — attacking/raiding REAL friends (not anonymous players) generates revenge-driven reopens; pair any idle-ish progression with friend-visible stakes.
+- Sources:
+  - https://www.pocketgamer.biz/moon-active-raises-300-million-5-billion-valuation/
+  - https://gamesindustry.biz/moon-active-lands-usd300m-in-funding
+  - https://medium.com/@lancesmith7890/designing-for-retention-lessons-from-coin-masters-engagement-and-ux-strategy-a040b89404bf
+  - https://lloydmelnick.com/tag/moon-active/
+- Coverage note: No on-record Moon Active statement about design philosophy or player retention was found; CEO quotes on record are about company growth, not game design. All design analysis (social revenge loop, push notifications, milestones) is labeled ANALYSIS.

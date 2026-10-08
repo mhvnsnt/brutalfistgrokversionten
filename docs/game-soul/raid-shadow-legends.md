@@ -1,0 +1,24 @@
+# RAID: Shadow Legends — Heart and Soul
+
+- Developer / studio: Plarium Global Ltd
+- Genre / platforms: Turn-based gacha RPG (PvE/PvP, champion collection); iOS, Android, PC (2019)
+- Why players come back (in the devs' view):
+  - Steady rollout of live ops, feature updates, and new collectible Champions — a deliberate cadence split across three goals: bringing in new players, rewarding long-term players, and re-engaging lapsed ones.
+  - Character attachment: players form bonds with specific champions (the CEO cites Deathknight by name); the roster passed 500+, each requiring unique appearance and skill design.
+  - Community as the engine: the community is treated as a vehicle for new ideas, with every update green-lit only after checking three areas — community, data, market.
+- Key quotes:
+  - "It's more than just a well-developed game, it's a masterclass in consistently adding new players through a steady rollout of live ops, feature updates, and new collectible Champions while also being careful to nurture, engage and reward the loyal players that we already have." — Aviram Steinhart, CEO, Plarium, PocketGamer.biz, 2022
+  - "The community is a vehicle for new ideas." — Aviram Steinhart, CEO, Plarium, PocketGamer.biz, 2022
+  - "We tend to observe three key areas before green-lighting any new update: the community, the data, and the market. By sticking to this process we have been able to create innovative features that bring in new players and keep current ones engaged." — Aviram Steinhart, CEO, Plarium, PocketGamer.biz, 2022
+  - "One thing we would've handled differently is placing more resources into building a bigger and stronger culture around the game earlier in RAID's launch... Once we started to place equal resources on the community side, RAID really took off to be the popular title it is today." — Aviram Steinhart, CEO, Plarium, PocketGamer.biz, 2022
+- Why players love/support it:
+  - Console-quality dark-fantasy visuals, deep champion-collecting and team-building strategy, short-session auto-battle accessibility, constant events — but spending pressure is a real player complaint (paywall perception past day 30). Supporters stay for the character depth and clan/social loops.
+- Monetization philosophy (devs' words, if any):
+  - No direct monetization philosophy statement found from Plarium devs on record. ANALYSIS (PocketGamer.biz, 2019): the game starts generous with energy and fun ("come in, play and enjoy our new game"), and once players engage the deeper metagame loops (clans, grinding higher-quality items and shards), a "well-designed layered structure" encourages players to spend and spend big — while still providing an enjoyable experience for free.
+- Lesson for our games (1-2 lines, concrete):
+  - Plan live ops in three buckets from day one: acquire new players, reward loyal ones, re-engage lapsed ones — the CEO credits that balance (not just content volume) as the reason RAID kept growing after year four.
+  - Invest in community culture as early as game quality — Plarium says equal resourcing on the community side was the turning point.
+- Sources:
+  - https://Www.pocketgamer.biz/aviram-steinhart-we-knew-that-raid-shadow-legends-was-going-to-be-special/
+  - https://Www.pocketgamer.biz/how-does-raid-shadow-legends-monetise/
+- Coverage note: On-record CEO interview available (2022). No on-record dev statement on monetization philosophy found; monetization section is press ANALYSIS, labeled accordingly.

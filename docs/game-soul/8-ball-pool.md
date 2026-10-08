@@ -1,0 +1,17 @@
+# 8 Ball Pool — Heart and Soul
+- Developer / studio: Miniclip (originally a 2010 browser flash game; mobile launch Feb 2013)
+- Genre / platforms: Casual multiplayer sports (pool) / iOS, Android, web
+- Why players come back (in the devs' view): Pool is evergreen — not tied to fads — so the game can be enjoyed for years without spending; realistic physics comparable to real pool, seamless day-one multiplayer, and in-game social interaction keep it sticky. Regular updates (tournaments, challenges, season passes) keep a dedicated fan base fresh.
+- Key quotes:
+  - "Pool is evergreen in nature, it's not tied to fads or anything that changes with time, and it will never disappear." — Sérgio Varanda, Chief Creative Officer, Game World Observer interview, 2021
+  - "The realistic physics in the game are comparable to real world pool, which made it really attractive to players. It has also had seamless multiplayer mechanics from day one, making it very easy to play against another person; something that wasn't very common at the time." — Sérgio Varanda, Chief Creative Officer, Game World Observer interview, 2021
+  - "One fundamental part of 8 Ball Pool's design is that it can be enjoyed for a long period of time, even years, without a user spending any money... not giving too much friction to the players is the biggest thing that we try to keep to, and stick to with our games." — Saad Choudri, CEO, GamesIndustry.biz, 2021
+  - "We're trying to make reasonably simple games that are really fun to play that have a very well executed kind of cool mechanic to them... I think our competitors would look at us and say... you're probably not squeezing as much revenue out of your audience as you could be, but that's a kind of deliberate ploy for us." — Rob Small, co-founder/former CEO, GamesIndustry.biz, 2021
+- Why players love/support it: Social play (challenge friends, local competition), evergreen skill-based gameplay, free-to-play with low friction; 1B+ downloads, 30M+ monthly players at peak coverage, over 10M daily players a decade in.
+- Monetization philosophy (devs' words, if any): Retention-first — "No.1 priority is audience growth and retention. And we'd much rather have a slightly softer monetisation mechanic with better retention metrics." (Rob Small, GamesIndustry.biz, 2021). 8 Ball Pool launched completely free with IAPs retrofitted later; audience growth is the #1 KPI and Miniclip is "careful not to sacrifice [it] for aggressive monetisation." (Rob Small, PocketGamer.biz, 2016)
+- Lesson for our games (1-2 lines, concrete): Pick an evergreen mechanic, nail it (8 Ball Pool's physics never changed), and make it playable-for-free for years — retention compounds into revenue. Friction-free social play beats squeezing ARPU early.
+- Sources:
+  - https://gameworldobserver.com/?p=13126
+  - https://www.gamesindustry.biz/miniclip-at-20
+  - https://www.pocketgamer.biz/how-miniclip-took-mobile-by-storm-to-rack-up-one-billion-downloads/
+- Coverage note: On-record dev statements from CCO Sérgio Varanda, CEO Saad Choudri, and co-founder Rob Small verified via fetched pages.

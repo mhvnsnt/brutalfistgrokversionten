@@ -1,0 +1,16 @@
+# Vampire Survivors — Heart and Soul
+- Developer / studio: poncle (Luca Galante)
+- Genre / platforms: Bullet-heaven roguelite; PC, console, mobile
+- Why players come back (in the devs' view): Unpretentious, joyful silliness made purely for fun — an ugly-but-fun prototype that became beloved because the creator refused to take it, or himself, seriously. New content and mechanics keep landing on the existing game instead of a sequel.
+- Key quotes:
+  - "I had given up on the idea of success a long time ago. Vampire Survivors is the first game I made just for fun. That might be the key ingredient for its success." — Luca Galante, creator, Edge Magazine, quoted via GamesRadar, 2025 [unverified — via secondary reporting]
+  - "Sometimes, it was just me being selfish and wanting to make something just because I felt the need to be creative or to do something silly. Turning a tree into a playable character? Why not? Is it fun? Ship it." — Luca Galante, GameSpot, March 2023 [unverified — via RPS reporting]
+  - "I just wanted a little something I could play and relax [with] over the weekend." — Luca Galante, NME, 2022 [unverified — via secondary reporting]
+  - "With the way Vampire Survivors is designed, we can deliver both new content and new game mechanics on the existing game, so why make a sequel?" — Luca Galante, GameSpot, quoted via Rock Paper Shotgun, 2023
+- Why players love/support it: Priced like a coffee, over-delivered like a feast. Auto-attacks were designed so "the player could focus on doing something else" — respect for the player's life.
+- Monetization philosophy (devs' words): Paid DLC adds characters, stages and weapons, but "any new systems should be added to the base game and free to all." (Rock Paper Shotgun, March 2023). No microtransactions in the base game — generosity as default.
+- Lesson for our games: Make it for yourself first; price with generosity; give systems free and charge only for content. Players evangelize generous games for free.
+- Sources:
+  - https://www.rockpapershotgun.com/a-vampire-survivors-sequel-seems-unlikely-according-to-its-developer
+  - GameSpot, "How Vampire Survivors Went From Hobby Project To Game Of The Year," March 2023
+- Coverage note: Several quotes via secondary reporting; marked unverified.

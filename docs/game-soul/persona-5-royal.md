@@ -1,0 +1,17 @@
+# Persona 5 Royal — Heart and Soul
+- Developer / studio: Atlus P-Studio (director Daiki Itoh, producer Kazuhisa Wada; original P5 directed/produced by Katsura Hashino)
+- Genre / platforms: Turn-based JRPG / dungeon crawler + life-sim social sim; PS4/PS3 (JP 2019, WW 2020), PS5, Switch, Xbox, PC
+- Why players come back (in the devs' view): The fantasy of personal liberation — the game hands players "freedom, the kind that those sorts of people haven't had living in the real world," and the team wants players to come away "feeling like they have that power to take on the world around them and keep going in life." Royal specifically was built to be worth a second 100+ hour run: new third semester, new confidants woven organically into the story, faster XP tempo, and Play Assist that respects the player's time.
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "Persona 5, in that sense, is a game about freedom, the kind that those sorts of people haven't had living in the real world. I want them to be able to attain that sensation by playing through the game." — Katsura Hashino, Director/Producer (P5), Persona Magazine (via Siliconera), 2014
+  - "If the game can give people the courage to face everyday life or even act as a trigger for positive change, I believe we will have accomplished our goal." — Katsura Hashino, Director/Producer (P5), Famitsu (via Siliconera), 2015
+  - "We're not simply adding new elements. We're making it easier to earn experience points so you can play at a better tempo." — Daiki Itoh (Director) and Kazuhisa Wada (Producer), Weekly Famitsu (via Gematsu), 2019
+- Why players love/support it: Characters that feel like friends (reuniting with the Phantom Thieves "is akin to seeing old friends you haven't seen in a while" — GamesRadar); a stylish, cathartic power fantasy about outcasts changing a corrupt society; and Royal's promise that a replay is a genuinely new experience (new semester, Kasumi, Maruki, 20+ new tracks) rather than a rehash.
+- Monetization philosophy (devs' words, if any): The 'R' on the box is positioned as the "final form"/ultimate edition (Wada's mochi analogy for Atlus re-releases via RPG Site, 2026 — filling unchanged, the wrapping improved); the model is a premium re-release that must justify itself with a better tempo and genuinely new content, not a skin pass.
+- Lesson for our games (1-2 lines, concrete): Theme the game as emotional liberation for people discontent with real life — "take on the world around them and keep going" — and if we ever do a "definitive edition," make replay feel new (new arc + better tempo), never just a reskin.
+- Sources: (URLs)
+  - https://www.siliconera.com/persona-5-aimed-people-discontent-lives/
+  - https://www.siliconera.com/?p=461858
+  - https://www.gematsu.com/2019/05/persona-5-royal-third-semester-volume-beyond-expectations-of-persona-4-golden-players
+  - https://gameinformer.com/b/features/archive/2015/12/09/persona-5-story-and-characters-interview-katsura-hashino
+- Coverage note: No single interview directly answers "what keeps players coming back" for Royal; quotes are dev-stated design goals from the P5 and P5R pre-release press, framed as dev-view retention drivers. Press affection for the cast is ANALYSIS, not a dev quote.

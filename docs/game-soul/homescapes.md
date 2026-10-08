@@ -1,0 +1,22 @@
+# Homescapes — Heart and Soul
+
+- Developer / studio: Playrix
+- Genre / platforms: Match-3 + mansion renovation metagame; iOS, Android (2017)
+- Why players come back (in the devs' view):
+  - The narrative is the differentiator: same match-3 formula as Gardenscapes, but a different story — Austin's childhood, his parents, a family-reunion story. The devs' stated priority: quality of the story and making players believe in it.
+  - The 'scapes series philosophy: don't wait for the original to play itself out; build a sibling game and design so users play both games (cross-game retention by design).
+  - Simplicity in economy: single currency (coins) instead of the traditional hard/soft currency split — "we thought having a single currency would be more elegant."
+- Key quotes:
+  - "We don't have a secret sauce or tricks we use for the storyline. Our priority here is the quality of the story, keeping players engaged and making them believe in it. That's what makes them come back for more." — Igor Elovikov, Creative Director, Playrix, PocketGamer.biz, 2018
+  - "In the traditional F2P context, you need a sequel when the original game is playing itself out. Our case is different: we're looking to have our users play both of the games." — Igor Elovikov, Creative Director, Playrix, PocketGamer.biz, 2018
+  - "To be more specific, Homescapes is very much about Austin's childhood and the relationship he has with his parents. It's a family reunion story to a certain degree." — Igor Elovikov, Creative Director, Playrix, PocketGamer.biz, 2018
+- Why players love/support it:
+  - Charming family story centered on Austin and his parents; same trusted 'scapes renovation loop in a new setting; simplicity (single currency, no video-ad clutter in the original design).
+- Monetization philosophy (devs' words, if any):
+  - "Our priority here was to make it simple and get rid of everything that we could possibly get rid of... To put it simply, we just thought having a single currency would be more elegant." — Igor Elovikov on why Homescapes uses one currency: fewer currencies, players earn coins through effort, value protected by balance. (PocketGamer.biz, 2018)
+- Lesson for our games (1-2 lines, concrete):
+  - Story quality IS the retention mechanic for casual games — "no secret sauce," just believable characters players invest in; budget for narrative like it's a core system.
+  - Simplify the economy until it can't be simplified further: one currency, earnable by effort, protected by balance — elegance converts better than complexity.
+- Sources:
+  - https://www.PocketGamer.biz/the-making-of-homescapes/
+- Coverage note: Single deep dev interview (Elovikov, 2018) covers both retention and monetization philosophy. Only 3 on-record quotes found; no [unverified] quotes used.

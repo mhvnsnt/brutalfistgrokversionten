@@ -1,0 +1,27 @@
+# Boom Beach — Heart and Soul
+
+- Developer / studio: Supercell (Finland)
+- Genre / platforms: Combat strategy (base attack/defense, single player + multiplayer); iOS, Android (2014)
+- Why players come back (in the devs' view):
+  - Deliberate risk-taking: at launch the team made choices that broke from the Clash of Clans formula (different combat, no clans initially) to win a distinct audience — including "a healthy number of players who haven't played Clash of Clans at all."
+  - Supercell's design process (Boom Beach discussed at GDC): prototype and test through "the jungle" — the game is hidden somewhere and the designer's job is to find the best path, not execute one perfect initial idea. Constant testing, not blind faith in a single concept.
+  - Co-op Task Force operations and the Warships competitive mode added new objectives; each major refresh reinvigorated engagement even when the long-term trend declined.
+  - Focus as a value: few games, high quality — and killing what doesn't catch on fast.
+- Key quotes:
+  - "We've made some risky choices. There aren't any clans in the game and the combat mechanic is different to Clash of Clans. We like to take risks. This is important to us." — Ilkka Paananen, CEO, Supercell, PocketGamer.biz, 2014
+  - "We set out to get the best people to make the best games. Only the people matter. Financial success is secondary. It's the outcome of having the best people. It's the validation of our work." — Ilkka Paananen, CEO, Supercell, PocketGamer.biz, 2014
+  - "In practice, game development is more like being in a jungle... You have a team, maybe a rough idea of what kinda game you are trying to make. The game is somewhere hidden in the jungle and you try to find it." — Touko Tahkokallio, game lead, Supercell (GDC talk covering Boom Beach design decisions), PocketGamer.biz, 2018
+  - "We've had a huge amount of game ideas where something just was wrong. Making new games to be played for years is inexplicably difficult." — Ilkka Paananen, CEO, Supercell, Reuters via iPhoneInCanada, 2015
+- Why players love/support it:
+  - Strategic troop/gunboat tactics different from Clash of Clans; co-op Task Force operations; the game gives away surprising amounts of paid currency for free — generous F2P feel noted by players.
+- Monetization philosophy (devs' words, if any):
+  - No Boom Beach-specific monetization statement from devs found on record. Supercell-wide doctrine (Paananen, 2014): "if the monetisation is not your number one priority, that actually leads to better monetisation" — engagement and retention first.
+- Lesson for our games (1-2 lines, concrete):
+  - Take deliberate, audience-aware risks: don't clone your own formula — different combat, different social systems — so each game wins players the old one couldn't.
+  - Plan the refresh cycle: every competitive/co-op mode is a reinvigoration beat; long-haul games need scheduled reinvention, not just balance patches.
+- Sources:
+  - https://www.pocketgamer.biz/50-better-supercell-becomes-a-three-game-company-as-risky-boom-beach-launches-in-march/
+  - https://www.pocketgamer.biz/supercell-it-takes-more-than-one-good-idea-to-make-a-successful-game/
+  - https://www.iphoneincanada.ca/2015/05/20/clash-of-clans-developer-ceo-interview/
+  - https://www.gamigion.com/how-boom-beach-could-be-set-back-to-growth/
+- Coverage note: No dedicated Boom Beach postmortem interview with named devs was found on record; dev quotes are from CEO-level Supercell statements (launch and strategy) plus the GDC design-process talk covering Boom Beach. The Warships/update revival effect is press ANALYSIS (Gamigion), not a dev statement. No [unverified] quotes used.

@@ -194,7 +194,9 @@ describe('airborne attack routing', () => {
     withClock((advance) => {
       const fsm = new FighterStateMachine();
       advance(1 / 60);
-      fsm.update({ ...BASE, jump: true, lp: true }, 1 / 60);
+      fsm.update({ ...BASE, jump: true }, 1 / 60);
+      advance(1 / 60);
+      fsm.update({ ...BASE, lp: true }, 1 / 60);
       assert.equal(fsm.current, 'jumpAttack');
       assert.equal(fsm.action, 'Attacking');
       assert.equal(fsm.activeMoveName(), 'Jumping Light');
@@ -252,7 +254,7 @@ describe('directional roster moves are gameplay-owned', () => {
       fsm.setCharacterMoveClips({ forwardLight: 'uppercut' });
       advance(1 / 60);
       fsm.update({ ...BASE, forward: 1, lp: true }, 1 / 60);
-      assert.equal(fsm.current, 'lightAttack');
+      assert.equal(fsm.current, 'uppercut');
       assert.equal(fsm.activeMoveName(), 'Uppercut');
       assert.equal(fsm.activeClip(), 'uppercut');
     });

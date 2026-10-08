@@ -1,0 +1,16 @@
+# Fortnite — Heart and Soul
+- Developer / studio: Epic Games
+- Genre / platforms: Battle royale / live-service shooter; PC, console, mobile
+- Why players come back (in the devs' view): Fun above all, with players feeling equal to each other inside a funny, quirky world that doesn't take itself too seriously. Live events and story-bearing seasons give the island a shared narrative; social, laugh-filled moments (including absurd eliminations) keep it social.
+- Key quotes:
+  - "Fortnite is for players, first and foremost." — Tim Sweeney, founder & CEO of Epic Games, The Game Business interview, 2026
+  - "Every game developer's mission is to make the most fun game possible." — Tim Sweeney, founder & CEO of Epic Games, The Game Business interview, 2026
+  - "Players love the fact that Fortnite is a game where everybody has an equal chance. There's no pay-to-win. And there is no scenario in which spending a lot of money gives you a benefit over players who haven't spent money." — Tim Sweeney, The Game Business interview, 2026
+  - "That's our guiding principle and philosophy. Fortnite has a story because all great entertainment has a good story." — Donald Mustard, former Chief Creative Officer at Epic, The Verge, 2021 [unverified — via secondary quote]
+- Why players love/support it: It became a place, not just a game — concerts, live events, hangout space. Cosmetics-only monetization means spending never buys advantage, which builds trust.
+- Monetization philosophy (devs' words): Rejected loot boxes and chance mechanics for their own games; Sweeney wants "an economy that's bigger and better than the one in Roblox by explicitly steering everything towards good commercial practices" — fair, welcoming, no pay-to-win, no loot boxes.
+- Lesson for our games: Style-not-power is the proven billion-dollar model. Give players a place to BE (events, seasons, social moments), not just a thing to beat.
+- Sources:
+  - https://www.thegamebusiness.com/p/the-big-tim-sweeney-interview-the
+  - The Verge interview with Donald Mustard, 2021 (via FandomWire)
+- Coverage note: Quotes from The Verge 2021 taken via secondary reporting; marked unverified.

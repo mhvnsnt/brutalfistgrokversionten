@@ -1,0 +1,25 @@
+# Mortal Kombat 1 — Heart and Soul
+- Developer / studio: NetherRealm Studios (series co-creator Ed Boon)
+- Genre / platforms: 2D fighting game (3D graphics) — PS5, Xbox Series X|S, PC, Nintendo Switch (2023)
+- Why players come back (in the devs' view):
+  - Secrets and mystery: Boon "always wanted to see a question mark over the game" — hidden characters, hidden content, and the feeling that players don't know everything keeps intrigue alive ("maybe there is a secret ninja in the game?").
+  - New-player jumping-on points: MK1 is a narrative reboot deliberately designed so newcomers who "missed the first 10" can onboard, while hardcore players get hidden depth (unannounced mechanics like the high-block) to discover.
+  - "Loosened things up" design: MK1 is "a Wild West type of melee" that rewards players coming up with "the craziest combos that we didn't know they were going to come up with" — emergent combo creativity over rigid optimization.
+  - Spectacle that's funny, not disturbing: "around 90% of the reaction that we get from a Fatality is laughter... as long as people are laughing, then we feel like we're in the right zone" — the game stays a party piece, not a horror show.
+- Key quotes:
+  - "One of the things about Mortal Kombat that's amazing even to me is that it's still big. When we release a Mortal Kombat game, it still gets a lot of attention, it still gets a lot of excitement. So, to be able to be still around and still as strong as ever, that's a great feeling." — Ed Boon, Co-creator, GamesRadar, 2023
+  - "I always wanted to see a question mark over the game. I didn't want anyone ever thinking that they knew everything that's in the game... The fact that the games did have secrets added a level of possible believability to it where people go, 'Oh my god, maybe there is a secret ninja in the game?' And I always loved that because it just kept people intrigued." — Ed Boon, Co-creator, Game Informer, 2016 [unverified]
+  - "Striking the balance between making the game inviting for new players but not watering it down for the hardcore is a challenge for sure... But there are things that we're not even talking about in our demos and presentations... that's for the hardcore players. Those are the ones who are going to discover it, and use it to their advantage." — Ed Boon, Co-creator, GamesRadar, 2023
+- Why players love/support it:
+  - A 30+ year pop-culture fixture: MK is discussed in parliament and the US Senate in the 90s, still headlining today — players support a game that's a cultural event, not just a fighter.
+  - Nostalgia loop: Boon weighs "the relentless clamoring for a character" from fans heavily in casting decisions; characters absent for 17 years return, which he calls "fun" modernizations for fans who miss them.
+  - Multi-year content arcs: Year 2 of MK1 "won't be the end of the road" — ongoing new characters, guest crossovers (Homelander, Omni-Man, Conan), and modes keep the game fresh long past launch.
+- Monetization philosophy (devs' words, if any):
+  - No on-record anti/loot-box manifesto from Boon found. NetherRealm's model: premium game + Kombat Pack seasons (paid guest/legacy DLC characters), with Boon noting "Everybody wants new characters... more, more, more. As if anybody plays all 25 equally." — character drops are the monetization engine, driven by fan-demand data.
+- Lesson for our games (1-2 lines, concrete):
+  - Keep a question mark over the game: hidden unlocks, unannounced mechanics, and easter eggs give players a reason to talk and return. And cast your roster by listening to who fans relentlessly clamor for — nostalgia demand is monetizable data.
+- Sources:
+  - https://www.gamesradar.com/mortal-kombats-ed-boon-reflects-on-30-years-of-stomach-turning-violence-and-why-rebooting-is-right-for-the-series/
+  - https://www.archyde.com/mortal-kombat-1-ed-boon-on-gameplay-story-and-the-return-of-old-characters/
+  - https://gameinformer.com/b/features/archive/2016/12/01/ed-boon-interview-2016
+- Coverage note: GamesRadar 2023 interview fetched and verified. Game Informer "question mark" quote is from a search snippet (marked [unverified]). No on-record dev statement found on MK1's broader monetization philosophy.

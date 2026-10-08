@@ -1,0 +1,17 @@
+# Oxygen Not Included — Heart and Soul
+- Developer / studio: Klei Entertainment (Canada)
+- Genre / platforms: Space colony simulation; PC (Windows/Mac/Linux)
+- Why players come back (in the devs' view): Klei bet that enough players wanted to "embrace their inner scientist" — 1.5 million players proved the experiment worked. Retention comes from deep, honest simulation: gases, liquids, heat, and germs all behave consistently, so every colony is a cascade of engineering puzzles the player solves themselves. The stories come from within the simulation — from your own exploration and mistakes — not from injected events.
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "The game is extremely intricate, with so many moving parts; when we first designed it, we weren't sure how many people would be interested in embracing their inner scientist, but 1.5 million players later, we're happy to say the experiment has worked out." — Klei Entertainment (studio forum post, launch), Eurogamer, 2019 [unverified]
+  - ANALYSIS (press, not dev): "In Oxygen Not Included, the stories come from within. All the tales I've told my friends and family about my latest game of ONI came about entirely through my own exploration and interactions with the perilous jenga tower of disasters all around you." — Rock Paper Shotgun, 2019 [ANALYSIS, not a developer quote]
+- Why players love/support it: ANALYSIS — The deepest simulation of any colony sim: heat death, gas pressure, state changes — a "different mental skillset" that players say makes them smarter. Klei's golden track record (Don't Starve, Mark of the Ninja) plus consistent free post-launch content and expansion-level DLC at fair prices earns unusual trust.
+- Monetization philosophy (devs' words, if any): No on-record dev quote found; the pattern is consistent post-launch free updates plus substantial paid expansion (Spaced Out!). Coverage note: dev-on-record monetization philosophy not found in this pass.
+- Lesson for our games (1-2 lines, concrete): Make the simulation honest and deep enough that players teach themselves through failure — every disaster a player survives becomes a story they retell, which is retention you can't buy.
+- Sources: (URLs)
+  - https://www.eurogamer.net/dont-starve-devs-space-colony-sim-oxygen-not-included-leaves-early-access-in-may
+  - https://www.rockpapershotgun.com/have-you-played-oxygen-not-included
+  - https://www.rockpapershotgun.com/oxygen-not-included-review
+  - https://www.neogaf.com/threads/oxygen-not-included-is-a-masterclass-in-colony-sim-design.1685195/
+  - https://www.rockpapershotgun.com/oxygen-not-included-trailer
+- Coverage note: No full on-record dev interview on design philosophy was found in this pass — Klei communicates mostly via forums/podcasts. Only one studio quote (via press) is included, marked [unverified]; the rest is labeled ANALYSIS.

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { bindClipTracksToTargetBones, resolveToCanonicalBone } from './AnimationRetargeter.ts';
+import { bindClipTracksToTargetBones, mixamoBindKey, resolveToCanonicalBone } from './AnimationRetargeter.ts';
 import { makeClipBindRelative } from './BindRelativeMotion.ts';
 import { universalIntakeResult } from './UniversalIntakeGate.ts';
 
@@ -21,7 +21,21 @@ export function normalizeUniversalAnimation(input: UniversalAnimationInput, targ
   const targetRest = new Map<string, THREE.Quaternion>();
   for (const bone of targetBones) targetRest.set(bone.name, bone.quaternion.clone());
   const sourceRestInTarget = new Map<string, THREE.Quaternion>();
-  if (input.sourceRest) for (const [sourceName,q] of input.sourceRest) { const canonical=resolveToCanonicalBone(sourceName); if (!canonical) continue; const target=targetBones.find(x=>resolveToCanonicalBone(x.name)===canonical); if (target) sourceRestInTarget.set(target.name,q.clone()); }
+  // Source rest resolution. An exact target-name match wins. The canonical alias
+  // is only a fallback, and it never overwrites an exact match. Before this,
+  // rest was honoured only for the 17 canonical bones, so every other bone
+  // (Spine1, both clavicles, toes, all fingers) fell back to "frame 0 = bind"
+  // and its first frame snapped to bind. LeftShoulder and LeftArm also both
+  // resolve to canonical LUpperArm, so the arm's rest landed on the clavicle.
+  // MEASURED by tools/anim-intake/cc0_unarmed_intake.ts: a faithful 3.6 deg
+  // UAL jab came out at 41 deg effector error.
+  if (input.sourceRest) {
+    const byName = new Map(targetBones.map(b => [b.name, b]));
+    const byMixamo = new Map(targetBones.map(b => [mixamoBindKey(b.name), b]));
+    const exact = new Set<string>();
+    for (const [sourceName,q] of input.sourceRest) { const target=byName.get(sourceName) ?? byMixamo.get(mixamoBindKey(sourceName)); if (target) { sourceRestInTarget.set(target.name,q.clone()); exact.add(target.name); } }
+    for (const [sourceName,q] of input.sourceRest) { if (byName.has(sourceName) || byMixamo.has(mixamoBindKey(sourceName))) continue; const canonical=resolveToCanonicalBone(sourceName); if (!canonical) continue; const target=targetBones.find(x=>resolveToCanonicalBone(x.name)===canonical); if (target && !exact.has(target.name) && !sourceRestInTarget.has(target.name)) sourceRestInTarget.set(target.name,q.clone()); }
+  }
   const relative = makeClipBindRelative(bound.clip, targetRest, sourceRestInTarget);
   if (!relative) return { clip:null, verdict:'PARTIAL', mappedTracks:bound.resolvedTracks, unresolvedTracks:bound.unresolvedTracks, targetCoverage:0, missingBones:targetNames, movingBones:0, bodyCount, receives };
   for (const track of relative.tracks) for (const value of track.values) if (!Number.isFinite(value)) return { clip:null, verdict:'REJECTED_NONFINITE', mappedTracks:bound.resolvedTracks, unresolvedTracks:bound.unresolvedTracks, targetCoverage:0, missingBones:[], movingBones:0, bodyCount, receives };

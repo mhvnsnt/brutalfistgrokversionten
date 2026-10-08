@@ -1,0 +1,19 @@
+# EVE Online — Heart and Soul
+- Developer / studio: CCP Games (CEO Hilmar Veigar Pétursson)
+- Genre / platforms: Single-shard sci-fi sandbox MMO, PC
+- Why players come back (in the devs' view): Deep, real friendships forged "like going to war with somebody" — CCP's own research found the average EVE player has more friends than the average person on Earth. Combined with a brutally punishing game that "develops grit," plus player sovereignty so real that players clean out the sandbox themselves ("players colluded together to express their scorn... that's a beautiful thing"). Pétursson's mantra: "EVE forever."
+- Key quotes:
+  - "I fundamentally believe that a game that doesn't cuddle you but is brutally punishing develops grit in people, and grit is a valuable skill... it's worthwhile to spend our lives taking care of it." — Hilmar Veigar Pétursson, CEO, PC Gamer, 2023
+  - "It's like going to war with somebody, that's how strong the bond becomes... the average EVE player has more friends than the average person on planet Earth." — Hilmar Veigar Pétursson, CEO, Wccftech, 2019 [unverified]
+  - "The freedom of the sandbox. You can do anything... If you're determined, you can shape this universe. People love being in a universe where that can happen. It's exciting to know that every ship you see has a player controlling it, and every item for sale was put there by a player." — Hilmar Veigar Pétursson, CEO, PC Gamer, 2014 [unverified]
+  - "The games are social constructs and... if they do a good job of being relevant and keeping up with the times, there's no reason for them to end." — Hilmar Veigar Pétursson, CEO, Rock Paper Shotgun via GameRant, 2021 [unverified]
+- Why players love/support it: One universe, one shard — 20+ years of player history where everything has real consequence; wars, heists, and betrayals that make global news; a studio that treats the game as a city it co-governs with players (the biggest Fanfest cheers go to fixed frustrations, not new features); and genuine belief from CCP that the game makes people better.
+- Monetization philosophy (devs' words, if any): Subscription + PLEX (time-for-money exchange between time-rich and money-rich players; "PLEXs help money to flow faster... it increases trade and production"). Pétursson on the free-to-play transition (GamesBeat, 2025): "We were hiding the game away behind the subscription... It's much better to at least get the people who are curious inside the game without putting up a paywall before you even start." On subscription price rises (ScreenRant Fanfest 2022): the choice is "raise the subscription price, more free-to-play, or lower the investment. And we chose to do this, because doing nothing is not an option."
+- Lesson for our games (1-2 lines, concrete): Friendships ARE retention — build systems where players need each other (corps, shared stakes, shared enemies) and the game never dies. And when the community cheers loudest for removed frustrations, listen: "you took the pain away" beats "oh that's cool" every time.
+- Sources: (URLs)
+  - https://www.pcgamer.com/ccps-ceo-on-life-the-universe-and-eve-online-its-worthwhile-to-spend-our-lives-taking-care-of-it/
+  - https://wccftech.com/interview-ccp-games-ceo-eve-online-eve-mobile-vr/
+  - https://venturebeat.com/games/hilmar-veigar-petursson-interview-remembering-20-years-of-eve-online/
+  - https://www.pcgamer.com/eve-interview-ccp-ceo-hilmar-veigar-petursson-on-the-future-of-the-eve-universe/
+  - https://screenrant.com/ccp-games-ceo-hilmar-veigar-petursson-interview-eve-fanfest-2022/
+- Coverage note: The 2023 PC Gamer quotes were verified from the fetched page; the other three were taken from search snippets (marked [unverified]). Monetization philosophy is composite: no single on-record "philosophy" quote found, so Pétursson's F2P-transition and price-rise statements stand in.

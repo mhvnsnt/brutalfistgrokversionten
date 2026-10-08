@@ -79,7 +79,10 @@ export function signatureOf(clip) {
   if (firstHip) {
     for (const k of keys) {
       const h = k.bones?.mixamorigHips;
-      if (h) hipYaw = Math.max(hipYaw, Math.abs((h.ry ?? 0) - (firstHip.ry ?? 0)));
+      if (!h) continue;
+      const raw = (h.ry ?? 0) - (firstHip.ry ?? 0);
+      const wrapped = ((raw + Math.PI) % (2 * Math.PI)) - Math.PI;
+      hipYaw = Math.max(hipYaw, Math.abs(wrapped));
     }
   }
   const total = travel.arm + travel.leg + travel.core + travel.head;
@@ -122,6 +125,27 @@ export function classify(sig, name = '') {
   if (!sig) return null;
   const { dur, totalDeg, armShare, legShare, hipYaw } = sig;
 
+  // Semantic names are stronger evidence than a generic travel heuristic.
+  // These families are routinely short/rotational enough to be mistaken for
+  // attacks if we only look at limb travel. Preserve their role before the
+  // broad classifier runs so wakeups, falls and jumps cannot be routed into a
+  // strike slot.
+  if (/GET.?UP|WAKE.?UP|STAND.?UP|RECOVER|RISE/i.test(name)) {
+    return { state: 'getup', confidence: 'high', why: 'named wake-up/recovery motion' };
+  }
+  if (/JUMP|HOP|LEAP|AIRBORNE|FLY|DIVE/i.test(name)) {
+    return { state: 'jump', confidence: 'high', why: 'named airborne motion' };
+  }
+  if (/KNOCK.?DOWN|FALL|DOWNED|FLOOR|PRONE|GROUND.?HIT/i.test(name)) {
+    return { state: 'knockdown', confidence: 'high', why: 'named knockdown/floor motion' };
+  }
+  if (/BLOCK|GUARD|PARRY|DEFEND/i.test(name)) {
+    return { state: 'block', confidence: 'high', why: 'named defensive motion' };
+  }
+  if (/TAUNT|MOCK|POSE|SHOWBOAT/i.test(name)) {
+    return { state: 'taunt', confidence: 'high', why: 'named taunt/performance motion' };
+  }
+
   // A hit reaction is the one family the NAMES do state outright, and the
   // motion alone cannot tell "was struck" from "struck someone".
   if (/REACT|_RECV$/i.test(name)) return { state: 'hit', confidence: 'high', why: 'named a reaction' };
@@ -160,6 +184,10 @@ export function loadAllBanks() {
 
 async function main() {
   const banks = loadAllBanks();
+  const bankCounts = Object.values(banks).map((bank) => Object.keys(bank ?? {}).length);
+  if (bankCounts.reduce((a, n) => a + n, 0) === 0) {
+    throw new Error('No motion-bank clips were loaded; refusing to generate an empty classifier.');
+  }
   const { resolveClipAlias } = await import('../src/engine/retarget/MoveLibrary.ts').catch(() => ({}));
 
   // The resolver is TypeScript; when it cannot be imported directly we still

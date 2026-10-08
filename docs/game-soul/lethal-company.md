@@ -1,0 +1,16 @@
+# Lethal Company — Heart and Soul
+- Developer / studio: Zeekerss (solo dev, Mike Klippenstein), solo horror dev since the mid-2010s.
+- Genre / platforms: Co-op survival horror (up to 4 players); PC, early access (2023).
+- Why players come back (in the devs' view): It's a comedy engine as much as a horror game — proximity voice chat, screaming friends, slapstick death, and unpredictable monsters turn every run into a story. Zeekerss designs mechanics, not content: "making mechanics in normal games... feels like it has a lot more variety." The game went viral on streams because watching friends panic is endlessly watchable.
+- Key quotes:
+  - "I didn't start by making horror games, but I found my home in this genre... the emotional spectrum of fear and courage, hope and despair, is my way of interpreting the world. As an artist, it's my first language." — Zeekerss, Developer, GamesRadar via Rock Paper Shotgun, 2025 [unverified]
+  - "I only want to sell a game if I'm very certain that most people will enjoy it... I just don't have a reason to put unnecessary pressure on myself." — Zeekerss, Developer, GamesRadar, 2025 [unverified]
+  - "I'm still loving this game after 50 hours" — Zeekerss on REPO inspiring his return to Lethal Company development, PC Gamer, 2025 [unverified]
+- Why players love/support it: $10 price, endlessly streamable co-op chaos; proximity voice chat makes deaths hilarious; regular free updates (new moons, monsters, vehicles) keep it fresh; the dev is famously humble and responsive — one of indie gaming's most beloved solo stories.
+- Monetization philosophy (devs' words, if any): Low price ($10), no microtransactions, no DLC sales — everything free via updates. Zeekerss even released his next game free after Lethal Company's success: "I just don't have a reason to put unnecessary pressure on myself." Profit is a means to keep making games, not the goal.
+- Lesson for our games (1-2 lines, concrete): Co-op chaos + proximity voice = infinite content you never have to author; the players ARE the entertainment. Keep the price low and updates free — volume and goodwill beat nickel-and-diming.
+- Sources: (URLs)
+  - https://www.gamesradar.com/games/horror/life-after-lethal-company-solo-creator-zeekerss-says-weirdly-not-a-lot-has-changed-after-one-of-the-biggest-indie-hits-in-recent-memory-and-he-still-has-a-good-handful-of-ideas-for-games/
+  - https://www.pcgamer.com/games/horror/im-still-loving-this-game-after-50-hours-lethal-company-solo-dev-has-been-inspired-by-repo-to-carry-on-work-my-energy-level-is-suddenly-very-high/
+  - https://www.rockpapershotgun.com/lethal-companys-dev-talks-his-relationship-with-horror-and-the-zork-roots-of-his-latest-game
+- Coverage note: All three dev quotes are snippet-sourced, marked [unverified]. No on-record dev interview found this wave specifically addressing what keeps Lethal Company players coming back — the retention section is analysis from the games' design and community behavior.

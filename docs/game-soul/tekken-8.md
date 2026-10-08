@@ -1,0 +1,25 @@
+# Tekken 8 — Heart and Soul
+- Developer / studio: Bandai Namco Studios (director Katsuhiro Harada, producer Michael Murray)
+- Genre / platforms: 3D fighting game — PS5, Xbox Series X|S, PC (2024)
+- Why players come back (in the devs' view):
+  - "Easy to get into, but having a lot to learn and master" — Harada's stated philosophy; Tekken is deliberately pick-up-and-play with deep mastery depth, and "that's why Tekken keeps people hooked."
+  - Aggression by design: Tekken 8's Heat system intentionally rewards the player on the offensive and creates dramatic "the match could turn now" moments — designed to be exciting both to play and to spectate, feeding the esports/fighting-game scene.
+  - Constant renewal: "able to constantly update with the times" — each era Tekken becomes a benchmark of what's next (PS1 3D polygons, UE5), so the series feels current to newcomers, not legacy.
+  - Knowing the audience: "not all hardcore fighting game players. Some just want to grab some beer and pizza with friends and mash buttons together. Some are alone enjoying story and arcade mode" — style, features, and marketing are consistently tailored to that target.
+- Key quotes:
+  - "We've found it's important for a game to have our philosophy of being easy to get into, but having a lot to learn and master. That's why Tekken keeps people hooked." — Katsuhiro Harada, Director, Digital Trends at Evo, 2023
+  - "The concept of the new system is the term of aggression, which came about from how Tekken 8 should feel both good to play and good to watch." — Katsuhiro Harada, Director, via Game Rant interview, 2022 [unverified]
+  - "We're able to understand the consumer... From the style to the features and marketing, we know our target and we consistently tailor Tekken to that target." — Michael Murray, Producer, Digital Trends at Evo, 2023
+- Why players love/support it:
+  - The elitist psychology Murray describes: players believe "I play Tekken and it's the hardest, so I'm a better fighting game player" — prestige attached to mastery keeps the grind meaningful.
+  - Characters are treated as Harada's children: "there is no way I hate any character... they are all like my children" — roster care and long-running Mishima saga give players emotional investment across decades.
+  - Community interaction since the arcade era: Harada and Murray built the series' audience face-to-face at Evo/tournaments when arcades died — loyalty was earned, not marketed.
+- Monetization philosophy (devs' words, if any):
+  - Harada has openly studied free-to-play ("That's why I'm so interested in Riot's Project L... I wish I could be a temporary Riot employee so I could find out" about the business formula), but Murray warns F2P doesn't save fighting games alone — "You always have that initial player base, but how will it handle the drop-off"; console players "wanted the full package." Tekken 8 shipped as a full-price game with paid DLC characters.
+- Lesson for our games (1-2 lines, concrete):
+  - Easy to pick up, bottomless to master — that's the retention engine. Add one "offensive advantage" system (like Heat) that creates watch-worthy turning points, and design characters as "children" the devs visibly love so players love them too.
+- Sources:
+  - https://www.digitaltrends.com/gaming/tekken-8-harada-interview/
+  - https://gamerant.com/tekken-8-gameplay-more-aggressive/
+  - https://www.gamesradar.com/games/tekken/veteran-tekken-icon-tells-disgruntled-fans-hes-going-to-charge-them-for-game-design-lectures-if-they-keep-assuming-he-hates-their-mains/
+- Coverage note: Digital Trends interview fetched and verified. Game Rant "aggression" quote is from a search snippet (marked [unverified]); GameSpot-style aggression framing also appeared in Harada's UE5 trailer breakdowns. No on-record statement found on Tekken 8's live-service/monetization philosophy beyond the F2P business-formula discussion.

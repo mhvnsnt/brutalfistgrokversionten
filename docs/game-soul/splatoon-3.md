@@ -1,0 +1,18 @@
+# Splatoon 3 — Heart and Soul
+- Developer / studio: Nintendo EPD (Producer: Hisashi Nogami; Director: Seita Inoue)
+- Genre / platforms: Third-person shooter (Turf War); Nintendo Switch (2022)
+- Why players come back (in the devs' view): The Inkling world is co-created with players — "We're not the only ones creating the game. The passion and involvement of all the fans are a part of the process." The game world ages in real time alongside players, Splatfest results steer the world's direction (Team Chaos winning literally rebuilt the game's theme city), and free updates keep the world moving. The team also deliberately lowers the entry fear: "the answer is not simply lowering the bar and making things easier" — instead they tune the early levels to feel comfortable and let players' skills grow through play.
+- Key quotes:
+  - "What we're also aiming for is creating a world where people have fun just by being there. As you grow, so do the people around you, and the Splatoon world itself evolves as well. We want everyone to enjoy this process together." — Hisashi Nogami, Producer, Nintendo "Ask the Developer, Vol. 7: Splatoon 3", 2022
+  - "We're not the only ones creating the game. The passion and involvement of all the fans are a part of the process, and I think that is one of the aspects that makes the Inkling world feel more real." — Splatoon 3 dev team, Nintendo "Ask the Developer, Vol. 7: Splatoon 3", 2022
+  - "We wanted players to feel that the time in the game passes with their own real lives... we could say that this is a game franchise in which players and developers walked side by side over the seven years since the first release." — Hisashi Nogami, Producer, Nintendo "Ask the Developer, Vol. 7: Splatoon 3", 2022
+  - "We decided on chaos as the theme for this title because Team Chaos won the 'Chaos vs. Order' Splatfest" — Splatoon 3 dev team, Nintendo interview via Gameranx, 2022
+- Why players love/support it: Player votes (Splatfests) visibly reshape the world and theme, giving real agency; deep cosmetic identity (lockers, gear, tableturf) means everyone looks and plays differently; regular free updates + Splatfest events create a living calendar; adaptive playstyles across weapons welcome both shooter veterans and newcomers; players were still playing in growing numbers four years later (Famitsu 2026 interview, director Seita Inoue).
+- Monetization philosophy (devs' words, if any): No on-record monetization quotes. Post-launch support pattern: free content updates (weapons, stages, modes like X Battle/League Battle) for the community, with a paid DLC expansion (Side Order) arriving later — premium game first, free updates keep the base alive, DLC as the paid tier.
+- Lesson for our games (1-2 lines, concrete): Let player choices visibly reshape the game world (Concrete Dragon: turf/war results change the city) and treat updates as world evolution the community co-owns, not just content drops. Free drip-feed updates for years beats microtransaction monetization for a game's lifespan.
+- Sources:
+  - https://www.nintendo.com/ph/interview/av5j/04.html
+  - https://www.nintendo.com/en-ca/whatsnew/ask-the-developer-vol-7-splatoon-3-part-1/
+  - https://gameranx.com/updates/id/358334/article/splatoon-3-developers-talk-about-how-the-game-has-grown/
+  - https://thisisgamesea.com/game/switch/splatoon-3-player-activity-splatoon-raiders-2026/
+- Coverage note: Quotes verified from fetched Nintendo "Ask the Developer" page and official Nintendo interview text. No direct monetization philosophy on record.

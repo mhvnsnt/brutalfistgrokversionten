@@ -1,0 +1,18 @@
+# Apex Legends — Heart and Soul
+- Developer / studio: Respawn Entertainment (EA)
+- Genre / platforms: Hero battle royale FPS / PC, PlayStation, Xbox, Nintendo Switch
+- Why players come back (in the devs' view): The core is competition — Respawn's stated vision is a "forever game" built on the competitive nature of the gameplay, not on content volume. Senior design director Evan Nikolich says Apex must be "self-sufficient and stand on its own" so that even without new bespoke content the systems are "strong and interesting and good for players to play season over season." The studio's design method is "tending the garden": when a meta becomes solved and a choice becomes a must-pick, they disrupt it — remove the weeds, keep interesting choices alive. In 2026 the turnaround came from getting closer to players: being more responsive, moving faster, and shipping additive changes that compounded over time (Season 28 Steam player counts rose ~50%, highest in 18 months).
+- Key quotes:
+  - "Our goal is to make Apex a forever game, the game you will teach your kids how to play" — Evan Nikolich, Senior Design Director, Respawn (GamesRadar Season 14 interview, 2022)
+  - "Anytime we see a meta gravitating towards something that becomes a must pick, a must do, that's a non-choice that's not interesting to us. So we have to go in there and tend to the garden, pull out a few weeds, trim the trees a bit, and get more interesting choices back in there." — Evan Nikolich, Senior Design Director, Respawn (GamesRadar Season 14 interview, 2022)
+  - "What sets Apex up for potential success forever at its core is the competitive nature of its gameplay. It is a competition. And games that have stood the test of time — and I'm talking about all games — are competitive games. Chess is one of them, for example." — Evan Nikolich, Senior Design Director, Respawn (GameSpot interview, 2024)
+  - "We're going to keep working that way. We're gonna stay really close to the players. This is what I love about working in live games: listening to the players, building the best experience for our current player base." — Evan Nikolich, Senior Design Director, Respawn (PCGamesN, 2026)
+- Why players love/support it: Characters and movement with personality; a competitive core that rewards mastery; Respawn's open commitment to 20+ years of support (no sequel split — the one game keeps evolving).
+- Monetization philosophy (devs' words, if any): No on-record statement found specifically about monetization philosophy from Respawn in the sources reviewed.
+- Lesson for our games (1-2 lines, concrete): Build the core loop so it stands on its own as a competition (like Respawn's chess analogy) — then "tend the garden" by pruning solved metas instead of letting power-creep stack up; closeness to players (fast, responsive updates) is the recovery engine.
+- Sources:
+  - https://www.gamesradar.com/apex-legends-season-14-interview-respawn/
+  - https://www.gamespot.com/articles/respawn-grew-a-beautiful-garden-with-apex-legends-but-its-time-to-pull-out-the-weeds-in-year-5/1100-6511272/
+  - https://www.pcgamesn.com/apex-legends/dead-game-interview
+  - https://www.dexerto.com/apex-legends/respawn-want-apex-legends-to-still-be-popular-in-20-years-2056901/
+- Coverage note: Quotes above are from fetched pages. No on-record developer statement found regarding monetization philosophy.

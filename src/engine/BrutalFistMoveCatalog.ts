@@ -641,7 +641,7 @@ export const SIGNATURE_MOVES: Record<string, BrutalFistMove> = {
     id: 'bf_chainsnatcher', displayName: 'Chainsnatcher', category: 'signature',
     startup: 14, active: 3, recovery: 28, damage: 42, hitAdvantage: 6, blockAdvantage: -8,
     pushback: 0.6, hitstun: 36, blockstun: 14, animation: 'chainsnatcher',
-    animationAliases: ['chainsnatcher', 'chain_snatcher', 'backstabber', 'Backstabber', 'finxsse_sig'],
+    animationAliases: ['chainsnatcher', 'chain_snatcher', 'backstabber', 'Backstabber', 'finxsse_sig', 'KNEETHROW'],
     minRange: 0.2, maxRange: 1.6, priority: 36, low: false, mid: true, overhead: false, throw: false, canCancel: true,
     inputSequence: 'RP+RK (Finxsse)',
     description: "Finxsse's Chainsnatcher. Jumping double-knee to the back — a backstabber.",
@@ -651,11 +651,58 @@ export const SIGNATURE_MOVES: Record<string, BrutalFistMove> = {
     id: 'bf_getbackk', displayName: 'Getbackk', category: 'signature',
     startup: 20, active: 3, recovery: 48, damage: 82, hitAdvantage: 0, blockAdvantage: 0,
     pushback: 0, hitstun: 70, blockstun: 0, animation: 'getbackk',
-    animationAliases: ['getbackk', 'get_backk', 'Getbackk', 'finxsse_finisher', 'f5_mod'],
+    // F5: real owner capture, deliverer half only — see NamedGrappleBindings.getbackk.
+    animationAliases: ['getbackk', 'get_backk', 'Getbackk', 'finxsse_finisher', 'f5_mod', 'F5'],
     minRange: 0.1, maxRange: 0.9, priority: 50, low: false, mid: false, overhead: false, throw: true, canCancel: false,
     inputSequence: 'LP+RP+LK+RK (Finxsse)',
     description: "Finxsse's Getbackk. Fireman-carry tornado slam — a violent modified F-5.",
     hitbox: { offsetX: 0.4, offsetZ: 0, width: 0.8, depth: 0.7, damage: 82, hitstun: 70, blockstun: 0, pushback: 0, launch: 0.2 }
+  },
+  // ── Named grapples bound to real clips (src/engine/combat/NamedGrappleBindings.ts).
+  // The roster already pointed at these ids; they did not resolve until now.
+  deadliftGerman: {
+    id: 'bf_deadlift_german', displayName: 'Deadlift German Suplex', category: 'throw',
+    startup: 16, active: 3, recovery: 40, damage: 70, hitAdvantage: 0, blockAdvantage: 0,
+    pushback: 0, hitstun: 64, blockstun: 0, animation: 'deadliftGerman',
+    // PUMPHANDLE_GERMAN_DOUBLE (+ __RECV) is a real two-body stand-in: bridging German, pumphandle grip.
+    animationAliases: ['deadliftGerman', 'deadlift_german', 'DeadliftGerman', 'PUMPHANDLE_GERMAN_DOUBLE'],
+    minRange: 0.1, maxRange: 0.9, priority: 48, low: false, mid: false, overhead: false, throw: true, canCancel: false,
+    inputSequence: 'LP+RP+LK+RK (Bannon)',
+    description: "Bannon's Deadlift German. Rear waistlock, deadlift, bridging German suplex (into the Ring of Saturn).",
+    hitbox: { offsetX: 0.4, offsetZ: 0, width: 0.8, depth: 0.7, damage: 70, hitstun: 64, blockstun: 0, pushback: 0, launch: 0 }
+  },
+  flyingHeadbutt: {
+    id: 'bf_flying_headbutt', displayName: 'Flying Headbutt', category: 'signature',
+    startup: 22, active: 4, recovery: 52, damage: 76, hitAdvantage: 0, blockAdvantage: -16,
+    pushback: 0, hitstun: 66, blockstun: 20, animation: 'flyingHeadbutt',
+    // FLYING_HEADBUTT + FLYING_HEADBUTT__RECV: real two-body owner capture.
+    animationAliases: ['flyingHeadbutt', 'flying_headbutt', 'FlyingHeadbutt', 'diving_headbutt', 'FLYING_HEADBUTT'],
+    minRange: 0.4, maxRange: 3.2, priority: 48, low: true, mid: false, overhead: false, throw: false, canCancel: false,
+    inputSequence: 'LP+RP+RK (Bannon, opponent grounded)',
+    description: 'Top-rope dive landing headfirst onto a prone opponent. The attacker sells the crash.',
+    hitbox: { offsetX: 0.8, offsetZ: 0, width: 1.0, depth: 0.8, damage: 76, hitstun: 66, blockstun: 20, pushback: 0, launch: 0 }
+  },
+  hallStreetJustice: {
+    id: 'bf_hall_street_justice', displayName: 'Hall Street Justice', category: 'signature',
+    startup: 16, active: 4, recovery: 40, damage: 72, hitAdvantage: 0, blockAdvantage: -12,
+    pushback: 1.6, hitstun: 62, blockstun: 20, animation: 'hallStreetJustice',
+    // ILLEGAL_KNEE: the real finishing knee (Mixamo). Receiver MISSING_CLIP.
+    animationAliases: ['hallStreetJustice', 'hall_street_justice', 'HallStreetJustice', 'ILLEGAL_KNEE'],
+    minRange: 0.2, maxRange: 1.6, priority: 46, low: false, mid: true, overhead: false, throw: false, canCancel: false,
+    inputSequence: 'LP+RP+RK (Tyneshia)',
+    description: "Tyneshia's Hall Street Justice. A street combo that ends in a knee.",
+    hitbox: { offsetX: 0.6, offsetZ: 0, width: 0.8, depth: 0.6, damage: 72, hitstun: 62, blockstun: 20, pushback: 1.6, launch: 0.2 }
+  },
+  titanFall: {
+    id: 'bf_titan_fall', displayName: 'Titan Fall', category: 'signature',
+    startup: 24, active: 2, recovery: 52, damage: 86, hitAdvantage: 0, blockAdvantage: 0,
+    pushback: 0, hitstun: 72, blockstun: 0, animation: 'titanFall',
+    // Deliverer MISSING_CLIP; CHOKESLAM is the victim half only.
+    animationAliases: ['titanFall', 'titan_fall', 'TitanFall', 'chokeslam_titan'],
+    minRange: 0.1, maxRange: 0.9, priority: 52, low: false, mid: false, overhead: false, throw: true, canCancel: false,
+    inputSequence: 'LP+RP+LK+RK (Titan)',
+    description: "Titan's Titan Fall. Throat grab into a chokeslam.",
+    hitbox: { offsetX: 0.4, offsetZ: 0, width: 0.8, depth: 0.7, damage: 86, hitstun: 72, blockstun: 0, pushback: 0, launch: 0 }
   },
   // Tarzanian Devil
   hurricanrana: {
@@ -698,7 +745,13 @@ export const BRUTAL_FIST_FULL_CATALOG: Record<string, BrutalFistMove> = {
 };
 
 export function getMoveById(id: string): BrutalFistMove | null {
-  return BRUTAL_FIST_FULL_CATALOG[id] ?? null;
+  // Catalog object keys are legacy semantic names for some entries, while
+  // gameplay move IDs live in the move object's id field. Resolve both forms
+  // so roster-authored moves such as bf_uppercut/bf_spin_kick cannot silently
+  // fall back to a generic attack just because the catalog key differs.
+  const direct = BRUTAL_FIST_FULL_CATALOG[id];
+  if (direct) return direct;
+  return Object.values(BRUTAL_FIST_FULL_CATALOG).find(move => move.id === id) ?? null;
 }
 
 export function getMovesByCategory(category: MoveCategory): BrutalFistMove[] {

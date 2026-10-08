@@ -1,0 +1,15 @@
+# Stumble Guys — Heart and Soul
+- Developer / studio: Kitka Games (Finland, founded 2017 by Olli Lahtinen); acquired by Scopely, 2022 (Scopely now operates it)
+- Genre / platforms: Party battle-royale platformer (obstacle-course knockout); iOS, Android, PC
+- Why players come back (in the devs' view): a vibrant, fun "digital playground" that connects people of all ages; social multiplayer at the core; personalized collectibles (skins, emotes, avatars) for self-expression; a long-term live-operated experience built to resonate for years
+- Key quotes: (3)
+  - "As a small game studio, our heart is in the development process and we were looking for the right partner to take 'Stumble Guys' to the next level." — Olli Lahtinen, CEO of Kitka Games, PocketGamer.biz, 2022
+  - "Kitka Games created a vibrant, fun game that connects people of all ages around the world – serving as a compelling digital playground that delights players each day." — Tim O'Brien, Chief Revenue Officer, Scopely, PocketGamer.biz, 2022
+  - "'Stumble Guys' is one of the most social multiplayer and deeply engaging experiences that we have seen in a long time... With community at its core, 'Stumble Guys' embodies our strategic approach of investing in, creating and live operating games that resonate long-term with players." — Tim O'Brien, Chief Revenue Officer, Scopely, PocketGamer.biz, 2022
+- Why players love/support it: easy to learn, hard to master obstacle racing; expressive cosmetics (skins, emotes) as the core collection chase; 20M+ daily players / 1B+ hours of playtime (2022) — community scale becomes the feature
+- Monetization philosophy (devs' words, if any): none stated on record by the developers; Scopely's stated strategy is long-term live operation of community-driven games, and cosmetics are the monetization layer (personalized collectibles, discoverable rewards).
+- Lesson for our games (1-2 lines, concrete): "Easy to learn, hard to master, fun for all ages" is a retention engine — social multiplayer + expressive cosmetics beats raw content volume. And a tiny team can build the hit; partner for live-ops scale only when the game demands it.
+- Sources:
+  - https://www.PocketGamer.Biz/scopely-acquires-stumble-guys-from-kitka-games/
+  - https://www.gamedeveloper.com/business/scopely-acquires-stumble-guys-a-competitive-platformer-thats-definitely-not-fall-guys
+- Coverage note: No design-depth interview with the original Kitka team found; quotes above are from the acquisition announcement (executive statements). Scopely-side voices speak to live-ops philosophy, not original design intent.

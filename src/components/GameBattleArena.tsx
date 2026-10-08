@@ -98,6 +98,7 @@ import {
 } from '../engine/combat/RoundSystem';
 import { commandButtonsFor, moveSetForFighter, schwarzerblitzSpecials } from '../engine/combat/SchwarzerblitzSpecials';
 import { generatedMoveset } from '../engine/combat/GeneratedMovesets';
+import { resolveRosterMoveWindows } from '../engine/combat/RosterMoveWindows';
 // ── Overdrive / super armor / Finisher ──────────────────────────────────────
 import { type OverdriveState, type SuperArmorState, type FinisherState,  } from '../engine/combat/OverdriveSystem';
 // ── Directional throw system ──────────────────────────────────────────────────
@@ -248,10 +249,10 @@ export default function GameBattleArena({
    * Which clip each body is REALLY playing comes from the resolver itself
    * (`onClipResolved`), not from a second copy of the lookup here.
    */
-  const [grappleBeat, setGrappleBeat] = useState<{ victim: 'p1' | 'p2'; clip: string; source: string } | null>(null);
+  const [grappleBeat, setGrappleBeat] = useState<{ victim: 'p1' | 'p2'; clip: string; source: string; durationSeconds: number } | null>(null);
   const grappleBeatTimer = useRef<number | null>(null);
   /** Mirrored for the probe: state is not readable from outside React. */
-  const grappleBeatRef = useRef<{ victim: 'p1' | 'p2'; clip: string; source: string } | null>(null);
+  const grappleBeatRef = useRef<{ victim: 'p1' | 'p2'; clip: string; source: string; durationSeconds: number } | null>(null);
   const liveClipRef = useRef<{ p1: string | null; p2: string | null }>({ p1: null, p2: null });
   /** The clip the attacker was playing when the grab connected. */
   const throwDelivererRef = useRef<{ p1: string | null; p2: string | null }>({ p1: null, p2: null });
@@ -262,16 +263,69 @@ export default function GameBattleArena({
     throwId: string;
   } | null>(null);
   const lastDirectionalThrowIdRef = useRef<string | null>(null);
+  const pendingThrowCommitTimerRef = useRef<number | null>(null);
 
-  const playOpponentHalf = useCallback((victim: 'p1' | 'p2', deliverer: string | null, receiverOverride?: string | null, receiverDuration?: number) => {
+  /**
+   * A throw break is decided immediately, but a successful throw is not applied
+   * immediately. The defender's break window closes first; then both bodies stay
+   * in their authored grapple until the attacker's clip reaches its end. Only
+   * then do we ground/damage the receiver. This prevents the old "grab -> instant
+   * generic knockdown" shortcut and makes the receiver half a true consequence of
+   * the throw that was actually played.
+   */
+  const scheduleThrowCommit = (
+    attacker: 'p1' | 'p2',
+    victim: 'p1' | 'p2',
+    damage: number,
+    deliverer: string | null,
+    receiverOverride?: string | null,
+    receiverDuration?: number,
+    directionalDef?: { defenderPositionOffset: { x: number; y: number; z: number } },
+  ) => {
+    if (pendingThrowCommitTimerRef.current !== null) window.clearTimeout(pendingThrowCommitTimerRef.current);
+    const attackerSM = attacker === 'p1' ? p1SMRef.current : p2SMRef.current;
+    const delayMs = Math.max(0, Math.round(attackerSM.currentMoveRemainingSeconds() * 1000));
+    // The two halves start together when the throw commits. The old path
+    // started the receiver only inside this timeout, i.e. AFTER the deliverer
+    // had finished. That made a grapple look like attacker animation -> generic
+    // knockdown -> receiver animation, rather than one two-body performance.
+    const syncDuration = Math.max(0.05, delayMs / 1000);
+    if (directionalDef) alignDirectionalThrowBodies(attacker, directionalDef);
+    playOpponentHalf(victim, deliverer, receiverOverride, receiverDuration, syncDuration);
+    pendingThrowCommitTimerRef.current = window.setTimeout(() => {
+      pendingThrowCommitTimerRef.current = null;
+      const victimSM = victim === 'p1' ? p1SMRef.current : p2SMRef.current;
+      const victimLoco = victim === 'p1' ? p1LocoRef.current : p2LocoRef.current;
+      const victimHitbox = victim === 'p1' ? p1HitboxRef.current : p2HitboxRef.current;
+      victimSM.applyKnockdown();
+      victimLoco.halt();
+      victimHitbox.reset();
+      engineRef.current?.applyIncomingHit(victim, damage, false, 0.3);
+      logHit(attacker, victim, damage, false, 'throw');
+      if (settings.soundEnabled) sfx.playHeavyHit();
+      audioManagerRef.current.playSFX('throw_connect');
+      setDamageEvent({
+        count: ++damageEventCountRef.current,
+        player: victim,
+        damage,
+        isCounter: false,
+        factionColor: victim === 'p1' ? p1Color : p2Color,
+      });
+      setKnockdownEvent({ count: ++knockdownEventCountRef.current, player: victim });
+      console.log(`[Arena] 🤼 Throw commit after authored grapple: ${attacker} -> ${victim}, delay=${delayMs}ms, damage=${damage}`);
+    }, delayMs);
+  };
+
+  const playOpponentHalf = useCallback((victim: 'p1' | 'p2', deliverer: string | null, receiverOverride?: string | null, receiverDuration?: number, syncDurationSeconds?: number) => {
     if (!deliverer) return;
     const pick = receiverOverride
       ? { receiver: receiverOverride, source: 'owner' as const, dur: receiverDuration ?? 0 }
       : receiverClipFor(deliverer, { available: (c) => bakedClipNames().has(c) });
     if (!pick) return;
     if (grappleBeatTimer.current !== null) window.clearTimeout(grappleBeatTimer.current);
-    grappleBeatRef.current = { victim, clip: pick.receiver, source: pick.source };
-    setGrappleBeat({ victim, clip: pick.receiver, source: pick.source });
+    const durationSeconds = Math.max(0.05, syncDurationSeconds ?? pick.dur ?? 0.8);
+    grappleBeatRef.current = { victim, clip: pick.receiver, source: pick.source, durationSeconds };
+    setGrappleBeat({ victim, clip: pick.receiver, source: pick.source, durationSeconds });
     console.log(
       `[Arena] 🤼 opponent half — ${deliverer} -> ${pick.receiver} (${pick.source}, ${pick.dur}s) on ${victim}`,
     );
@@ -279,7 +333,7 @@ export default function GameBattleArena({
     // reaction short and leave a 0.5 s knee throw standing in a pose.
     grappleBeatTimer.current = window.setTimeout(
       () => { grappleBeatRef.current = null; setGrappleBeat(null); grappleBeatTimer.current = null; },
-      Math.max(250, Math.round((pick.dur || 0.8) * 1000)),
+      Math.max(50, Math.round(durationSeconds * 1000)),
     );
   }, []);
 
@@ -307,6 +361,7 @@ export default function GameBattleArena({
 
   useEffect(() => () => {
     if (grappleBeatTimer.current !== null) window.clearTimeout(grappleBeatTimer.current);
+    if (pendingThrowCommitTimerRef.current !== null) window.clearTimeout(pendingThrowCommitTimerRef.current);
   }, []);
   const [ko, setKo] = useState(false);
   const [winner, setWinner] = useState<'p1' | 'p2' | 'draw' | null>(null);
@@ -532,6 +587,8 @@ export default function GameBattleArena({
     p2SMRef.current.setCharacterMoveClips(p2MoveData.clips);
     p1SMRef.current.setCharacterMoveIds(p1MoveData.ids);
     p2SMRef.current.setCharacterMoveIds(p2MoveData.ids);
+    p1SMRef.current.setCharacterMoveWindows(resolveRosterMoveWindows(p1Fighter.id)?.windows ?? {});
+    p2SMRef.current.setCharacterMoveWindows(resolveRosterMoveWindows(p2Fighter.id)?.windows ?? {});
 
     // The roster's CharacterMoveSet is authoritative for each fighter's
     // presentation AND directional combat data. The generic semantic bank is
@@ -2026,8 +2083,17 @@ export default function GameBattleArena({
         // the mat, so a juggle was impossible. resolveHitReaction splits it
         // and prefers the move's own authored reaction when it has one.
         const p2WasAirborne = p2SMRef.current.isAirborne;
+        const p1MoveReaction = (p1HbWindow.move as { reaction?: string } | undefined)?.reaction;
+        // Keep the canonical heavy kick's grounded knockdown contract at the
+        // hitbox boundary too. DEFAULT_MOVE_WINDOWS declares Smackdown, but
+        // older/generated move-window paths can omit that optional field while
+        // still selecting the heavyKick animation. Without this fail-safe the
+        // same playable heavy kick silently degrades to a standing hit reaction.
         const p2Reaction = resolveHitReaction(
-          { launch: p1Hit.launch, reaction: (p1HbWindow.move as { reaction?: string } | undefined)?.reaction },
+          {
+            launch: p1Hit.launch,
+            reaction: p1MoveReaction ?? (p1HbWindow.move?.animation === 'heavyKick' ? 'Smackdown' : undefined),
+          },
           p2WasAirborne,
         );
         const p2Effect = reactionFor(p2Reaction);
@@ -2185,23 +2251,8 @@ export default function GameBattleArena({
       } else if (throwBreakOutcome === 'committed' && directionalP2Throw) {
         directionalThrowPendingRef.current = null;
         const throwDmg = getThrowDamage(directionalP2Throw.throwId, false);
-        p2SMRef.current.applyKnockdown();
         const p2ThrowDef = THROW_CATALOG[directionalP2Throw.throwId];
-        if (p2ThrowDef) alignDirectionalThrowBodies('p1', p2ThrowDef);
-        playOpponentHalf('p2', p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1, p2ThrowDef?.defenderAnimation, p2ThrowDef?.receiverDuration);
-        p2LocoRef.current.halt();
-        p2HitboxRef.current.reset();
-        engineRef.current?.applyIncomingHit('p2', throwDmg, false, 0.3);
-        if (settings.soundEnabled) sfx.playHeavyHit();
-        audioManagerRef.current.playSFX('throw_connect');
-        setDamageEvent({
-          count: ++damageEventCountRef.current,
-          player: 'p2',
-          damage: throwDmg,
-          isCounter: false,
-          factionColor: p2Color,
-        });
-        setKnockdownEvent({ count: ++knockdownEventCountRef.current, player: 'p2' });
+        scheduleThrowCommit('p1', 'p2', throwDmg, p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1, p2ThrowDef?.defenderAnimation, p2ThrowDef?.receiverDuration, p2ThrowDef);
       } else if (throwBreakOutcome === 'broken') {
         p1SMRef.current.resolveCommandThrow(false);
         p2LocoRef.current.applyPushback(0.35);
@@ -2211,36 +2262,8 @@ export default function GameBattleArena({
         setTimeout(() => setSpecialMoveNotice(null), 900);
       } else if (throwBreakOutcome === 'committed') {
         const throwDmg = COMMAND_THROW_MOVE.damage ?? 220;
-        p2SMRef.current.applyKnockdown();
-        // THE OTHER MAN'S HALF. applyKnockdown still runs underneath, so the
-        // physics, the damage and the wake-up are untouched — this only
-        // decides what his body is seen doing while it happens.
-        playOpponentHalf('p2', p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1);
-        p2LocoRef.current.halt();
-        p2HitboxRef.current.reset();
-        console.log('[Arena] ✅ Command throw committed — damage:', throwDmg);
-        engineRef.current?.applyIncomingHit('p2', throwDmg, false, 0.3);
-        logHit('p1', 'p2', throwDmg, false, 'throw');
-        if (settings.soundEnabled) sfx.playHeavyHit();
-        audioManagerRef.current.playSFX('throw_connect');
-        setDamageEvent({
-          count: ++damageEventCountRef.current,
-          player: 'p2',
-          damage: throwDmg,
-          isCounter: false,
-          factionColor: p2Color,
-        });
-        setFeedbackEvents(prev => [...prev.slice(-6), {
-          id: ++feedbackIdRef.current,
-          moveId: 'commandThrow',
-          moveName: 'Command Throw',
-          damage: throwDmg,
-          isBlocked: false,
-          isCounter: false,
-          player: 'p1',
-          x: 60 + Math.random() * 10,
-          y: 20 + Math.random() * 20,
-        }]);
+        scheduleThrowCommit('p1', 'p2', throwDmg, p1SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p1);
+        console.log('[Arena] 🤼 Command throw committed; damage waits for grapple completion:', throwDmg);
       }
 
       // ── THE SAME THING, WITH THE PLAYER AS THE VICTIM ─────────────────
@@ -2261,23 +2284,8 @@ export default function GameBattleArena({
       } else if (p1ThrowBreakOutcome === 'committed' && directionalP1Throw) {
         directionalThrowPendingRef.current = null;
         const throwDmg = getThrowDamage(directionalP1Throw.throwId, false);
-        p1SMRef.current.applyKnockdown();
-        p1LocoRef.current.halt();
-        p1HitboxRef.current.reset();
         const p1ThrowDef = THROW_CATALOG[directionalP1Throw.throwId];
-        if (p1ThrowDef) alignDirectionalThrowBodies('p2', p1ThrowDef);
-        playOpponentHalf('p1', p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2, p1ThrowDef?.defenderAnimation, p1ThrowDef?.receiverDuration);
-        engineRef.current?.applyIncomingHit('p1', throwDmg, false, 0.3);
-        if (settings.soundEnabled) sfx.playHeavyHit();
-        audioManagerRef.current.playSFX('throw_connect');
-        setDamageEvent({
-          count: ++damageEventCountRef.current,
-          player: 'p1',
-          damage: throwDmg,
-          isCounter: false,
-          factionColor: p1Color,
-        });
-        setKnockdownEvent({ count: ++knockdownEventCountRef.current, player: 'p1' });
+        scheduleThrowCommit('p2', 'p1', throwDmg, p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2, p1ThrowDef?.defenderAnimation, p1ThrowDef?.receiverDuration, p1ThrowDef);
       } else if (p1ThrowBreakOutcome === 'broken') {
         p2SMRef.current.resolveCommandThrow(false);
         p1LocoRef.current.applyPushback(0.35);
@@ -2287,21 +2295,8 @@ export default function GameBattleArena({
         setTimeout(() => setSpecialMoveNotice(null), 900);
       } else if (p1ThrowBreakOutcome === 'committed') {
         const throwDmg = COMMAND_THROW_MOVE.damage ?? 220;
-        p1SMRef.current.applyKnockdown();
-        p1LocoRef.current.halt();
-        p1HitboxRef.current.reset();
-        playOpponentHalf('p1', p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2);
-        engineRef.current?.applyIncomingHit('p1', throwDmg, false, 0.3);
-        logHit('p2', 'p1', throwDmg, false, 'throw');
-        if (settings.soundEnabled) sfx.playHeavyHit();
-        audioManagerRef.current.playSFX('throw_connect');
-        setDamageEvent({
-          count: ++damageEventCountRef.current,
-          player: 'p1',
-          damage: throwDmg,
-          isCounter: false,
-          factionColor: p1Color,
-        });
+        scheduleThrowCommit('p2', 'p1', throwDmg, p2SMRef.current.throwCommitClip() ?? throwDelivererRef.current.p2);
+        console.log('[Arena] 🤼 AI command throw committed; damage waits for grapple completion:', throwDmg);
       }
 
       const p2Hb = p2HitboxRef.current;
@@ -2477,7 +2472,12 @@ export default function GameBattleArena({
         } else if (!p1GuardResult.blocked) {
           p1SMRef.current.applyReaction(
             resolveHitReaction(
-              { launch: p2Hit.launch, reaction: (p2HbWindow.move as { reaction?: string } | undefined)?.reaction },
+              {
+                launch: p2Hit.launch,
+                reaction:
+                  (p2HbWindow.move as { reaction?: string } | undefined)?.reaction ??
+                  (p2HbWindow.move?.animation === 'heavyKick' ? 'Smackdown' : undefined),
+              },
               p1SMRef.current.isAirborne,
             ),
             p2HbWindow.move ?? null,
@@ -2840,6 +2840,13 @@ export default function GameBattleArena({
           { x: p2XRef.current, z: p2ZRef.current },
           p1Stick,
         );
+        // Knockdown owns the floor. Do not let a previous jump/juggle Y value
+        // survive into the fall/get-up animation; the renderer then has a real
+        // floor contact instead of a character animating several centimetres
+        // above or below the stage.
+        if (p1SMRef.current.action === 'Knockdown' || p1SMRef.current.action === 'WakeupTechRoll' || p1SMRef.current.action === 'WakeupBackrise' || p1SMRef.current.action === 'WakeupQuickStand') {
+          p1LocoRef.current.land();
+        }
         if (p2AIInput.jump) p2LocoRef.current.beginJump();
         else p2LocoRef.current.armJump();
         p2LocoRef.current.update(
@@ -2848,6 +2855,9 @@ export default function GameBattleArena({
           { x: p1XRef.current, z: p1ZRef.current },
           p2Stick,
         );
+        if (p2SMRef.current.action === 'Knockdown' || p2SMRef.current.action === 'WakeupTechRoll' || p2SMRef.current.action === 'WakeupBackrise' || p2SMRef.current.action === 'WakeupQuickStand') {
+          p2LocoRef.current.land();
+        }
 
         // ── Feed locomotion positions back to visual state ────────────────
         // Enforce minimum separation so fighters can't overlap
@@ -3329,6 +3339,8 @@ export default function GameBattleArena({
             : introBeat?.player === 'p1' ? introBeat.clip : p1Animation}
           p2Animation={grappleBeat?.victim === 'p2' ? grappleBeat.clip
             : introBeat?.player === 'p2' ? introBeat.clip : p2Animation}
+          p1GrappleDurationSeconds={grappleBeat?.victim === 'p1' ? grappleBeat.durationSeconds : undefined}
+          p2GrappleDurationSeconds={grappleBeat?.victim === 'p2' ? grappleBeat.durationSeconds : undefined}
           onClipResolved={(who, clip) => { liveClipRef.current[who] = clip; }}
           p1Color={p1Color}
           p2Color={p2Color}
@@ -4028,6 +4040,11 @@ function mapActionToDisplayState(
 }
 
 /** Character-authored P2 combat brain. */
+let p2ThrowCooldownUntil = 0;
+const P2_THROW_COOLDOWN_MS = 1200;
+const P2_APPROACH_PERIOD_MS = 1100;
+const P2_APPROACH_PULSE_MS = 140;
+
 function buildP2AIInput(
   p2State: string, p1Health: number, p2Health: number,
   p2X: number, p1X: number, p2Z: number, p1Z: number,
@@ -4053,7 +4070,14 @@ function buildP2AIInput(
   const preferredGap = speedStyle ? 1.7 : powerStyle ? 1.9 : 1.6;
   // LOCAL forward: LocomotionSystem multiplies by facing. +1 therefore means
   // toward the opponent for both P1 and P2; the old P2 AI incorrectly used -1.
-  if (distance > preferredGap)
+  // Do not glue the AI to the player's retreat. A continuous pursuit input made
+  // the two fighters translate together across the whole arena, which reads as
+  // skating instead of footwork. Approach in short pulses and leave a larger
+  // neutral band once the preferred range is reached.
+  const approachPhase = now % P2_APPROACH_PERIOD_MS;
+  const approachPulse = approachPhase < P2_APPROACH_PULSE_MS;
+  const approachGap = preferredGap + 0.70;
+  if (distance > approachGap && approachPulse)
     return {forward:1,strafe:orbit,light:false,heavy:false,guard:false,crouch:false,jump:false};
   if ((aerialStyle || speedStyle) && cycle === 6)
     return {forward:1,strafe:orbit,light:false,heavy:false,guard:false,crouch:false,jump:true};
@@ -4070,11 +4094,13 @@ function buildP2AIInput(
     powerStyle,
     evasiveStyle,
   });
-  if (directionalThrowId)
+  if (directionalThrowId && now >= p2ThrowCooldownUntil) {
+    p2ThrowCooldownUntil = now + P2_THROW_COOLDOWN_MS;
     return {
       forward: 0, strafe: 0, light: false, heavy: false, guard: false,
       crouch: false, jump: false, directionalThrowId,
     };
+  }
 
   if (healthPressure && cycle === 4)
     return {forward:-1,strafe:0,light:false,heavy:false,guard:false,crouch:true,jump:false};
@@ -4092,8 +4118,10 @@ function buildP2AIInput(
    * wrestler or brawler reaches for it, everyone else does it occasionally.
    * The player gets the same 0.35 s break window the AI does.
    */
-  if (distance <= 1.35 && (cycle === 4 || (powerStyle && cycle === 2)))
+  if (distance <= 1.35 && now >= p2ThrowCooldownUntil && (cycle === 4 || (powerStyle && cycle === 2))) {
+    p2ThrowCooldownUntil = now + P2_THROW_COOLDOWN_MS;
     return {forward:0,strafe:0,light:false,heavy:false,guard:false,crouch:false,jump:false,grapple:true};
+  }
   switch (cycle) {
     case 0: case 1: return {forward:0,strafe:orbit,light:true,heavy:false,guard:false,crouch:false,jump:false};
     case 2: return {forward:0,strafe:orbit,light:false,heavy:true,guard:false,crouch:false,jump:false};

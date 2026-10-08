@@ -1,0 +1,16 @@
+# Gossip Harbor — Heart and Soul
+- Developer / studio: Microfun
+- Genre / platforms: Merge-2 puzzle adventure with narrative/mystery progression; iOS, Android
+- Why players come back (in the devs' view): No on-record Microfun developer statements found (see coverage note). The clearest professional read is that live ops is treated as the core experience from the first session — events, offers, and season passes onboarded immediately so players are in the live-ops rhythm from day one — with the player's daily attention protected by ruthless UI clarity.
+- Key quotes: The below are from Michael Khripin, product owner at live-ops platform Balancy, deconstructing the game (PocketGamer.biz webinar writeup, 2026) — industry analysis, NOT Microfun statements:
+  - "The real challenge isn't adding another event. It's making sure the player still knows what matters today." — Michael Khripin, Product Owner at Balancy, PocketGamer.biz, 2026
+  - "At some point, live ops just outgrows the screen. The UI becomes the bottleneck." — Michael Khripin, Product Owner at Balancy, PocketGamer.biz, 2026
+  - "There's no fixed 'correct' live ops setup. What matters is continuous measurement and iteration." — Michael Khripin, Product Owner at Balancy, PocketGamer.biz, 2026
+  - "Mechanics that work in one core loop don't automatically translate to another. Energy systems, pacing, and reward timing all change the equation." — Michael Khripin, Product Owner at Balancy, PocketGamer.biz, 2026
+- Why players love/support it: narrative uncovering layered on the merge loop (rebuilt structures advance the mystery); live-ops events visible early create anticipation and planning; parallel events hit competition, collection, and progression motivations simultaneously
+- Monetization philosophy (devs' words, if any): none on record. ANALYSIS: early offers are behavioral price-sensitivity sampling ("at the start, this is mostly about understanding player sensitivity" — Khripin), escalating later into conversion pressure via short timers and steep discounts; season pass as the stable long-horizon anchor.
+- Lesson for our games (1-2 lines, concrete): Make your live-ops rhythm part of onboarding, not a late-game add-on — but protect the player's daily focus: one more event that nobody can parse kills more engagement than missing content.
+- Sources:
+  - https://www.pocketgamer.biz/how-gossip-harbor-builds-live-ops-from-day-one/
+  - https://www.pocketgamer.com/gossip-harbor-merge-story/alternative-storefront/
+- Coverage note: No on-record Microfun developer interviews found in English-language press. All quotes above are industry analysis by a third-party live-ops practitioner, labeled as such and never presented as developer statements.

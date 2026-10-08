@@ -1,0 +1,16 @@
+# PUBG Mobile — Heart and Soul
+- Developer / studio: LightSpeed & Quantum Studio (Tencent Games), co-developed with KRAFTON
+- Genre / platforms: Battle royale shooter / iOS, Android
+- Why players come back (in the devs' view): Portability means it can reach anyone, anywhere — and the team deliberately lowers the barrier to entry so players can go from watching esports to jumping into a match instantly, and even rise to pro status through open grassroots tournaments.
+- Key quotes:
+  - "We are built on mobile, and this is what makes PUBG Mobile so special. You can carry a phone anywhere, so it brings us a lot of opportunity to get in touch with players anytime, anywhere." — Oliver Ye, Senior Director of PUBG Mobile Global Esports, Pocket Tactics (PMWC/EWC interview), 2026
+  - "Right now we are focusing on trying to lower the barrier, making sure that anyone from the world can be part of our esports ecosystem." — Oliver Ye, Senior Director of PUBG Mobile Global Esports, Pocket Tactics (PMWC/EWC interview), 2026
+  - "For PUBG MOBILE itself, we do not only stand to become a game that players play, but we also want it to become a lifestyle for all our players." — Li, PUBG Mobile producer, Rolling Stone, 2026 [unverified]
+  - "They want to be seen. They want to be part of the ecosystem, but maybe in the past they didn't have any chance." — Oliver Ye, on grassroots tournaments, Pocket Tactics, 2026
+- Why players love/support it: Every match tells a different story — the unpredictable, high-stakes survival tension of the shrinking zone keeps daily play fresh; squad voice-chat teamwork builds real connection; the open esports ladder (Guinness-record Global Open) gives ordinary players a genuine shot at becoming stars.
+- Monetization philosophy (devs' words, if any): No on-record statement found.
+- Lesson for our games (1-2 lines, concrete): Run on the weakest phones your players actually own and optimize for their networks — portability plus open "anyone can rise" competition turns a game into a lifestyle, which is what makes it last a decade.
+- Sources:
+  - https://www.pockettactics.com/pubg-mobile/esports-interview
+  - https://wdcnews6.com/pubg-mobile-how-the-game-built-a-cross-generational-global-empire/
+- Coverage note: Monetization philosophy: no on-record dev statement found. Player-love points on match variety and squad bonding are ANALYSIS from press/player coverage, not dev quotes.

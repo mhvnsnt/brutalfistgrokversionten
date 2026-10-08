@@ -1,0 +1,21 @@
+# God of War Ragnarök — Heart and Soul
+- Developer / studio: Santa Monica Studio (Sony Interactive Entertainment)
+- Genre / platforms: Action-adventure (mythological) / PS4, PS5, PC
+- Why players come back (in the devs' view):
+  - The entire Norse saga is engineered around one emotional engine: the Kratos–Atreus father-son relationship. Every system and spectacle ripples outward from that bond.
+  - Barlog believed players who grew up with the original trilogy grew older alongside Kratos — the reboot let them see a changed man and, by extension, reckon with their own change.
+  - They deliberately ended the Norse story in two games instead of stretching a trilogy, to keep the emotional core tight rather than diluting it.
+- Key quotes:
+  - "The core of the story's engine is really the relationship between these two characters and the complexity radiates out like ripples in a pond... is that necessary and is that beneficial, or are we feeling like 'You know what, it's just spreading it too far apart'." — Cory Barlog, former director/creative lead, Inverse, 2021 [unverified]
+  - "If he didn't change, it would feel disingenuous to the journey of every person on this planet." — Cory Barlog, The Ringer, 2018 [unverified]
+  - "Barlog gave me three things that had to be done... Ragnarok's going to happen. The kid's got to leave, and Brok's going to die." — Eric Williams, Game Director, via IGN Beyond spoilercast, 2022 [unverified]
+- Why players love/support it:
+  - Players come back because the games grew up with them — old fans see their own parenthood, aging, and attempts at redemption in Kratos. The "Boy." meme is surface; underneath is genuine emotional excavation that made the 2018 reboot and Ragnarök feel personal, not just mythological.
+- Monetization philosophy (devs' words, if any): None on record. Premium single-purchase games; no microtransactions. No dev commentary on monetization philosophy found.
+- Lesson for our games (1-2 lines, concrete): Give Concrete Dragon one emotional engine — a central relationship (mentor/mentee, family, rival) — and let every turf war ripple outward from it. Also: end arcs while they're strong; a tight two-chapter saga beats a stretched-out one.
+- Sources:
+  - https://www.inverse.com/gaming/god-of-war-ragnarok-cory-barlog-trilogy-norse-saga
+  - https://www.theringer.com/2018/05/01/video-games/god-of-war-how-cory-barlog-avoided-pitfalls
+  - https://weeklygeek.net/video-games/the-three-things-that-needed-to-happen-in-god-of-war-ragnarok-according-to-cory-barlog/
+  - https://fandomwire.com/god-of-war-cory-barlog-one-change/
+- Coverage note: Quotes are from search snippets (not fetched full pages), marked [unverified] per protocol. No invented statements included.

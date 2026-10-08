@@ -1,6 +1,7 @@
 // `.ts` extensions on purpose — the repo's runner resolves them literally.
 import type { SpecialMoveDefinition } from './FighterStateMachine.ts';
 import { travelForClip } from '../retarget/BakedMotionBank.ts';
+import { powerCrushWindow } from './DefensiveWindows.ts';
 
 /**
  * A FULL MOVESET PER FIGHTER, ACROSS THE WHOLE DIRECTIONAL MATRIX.
@@ -52,6 +53,25 @@ export interface GeneratedMove {
   damage: number;
   /** Measured source-limb reach in metres, used to size the contact envelope. */
   contactReach?: number;
+  // ── Style-profile gameplay (tools/moves/build_style_movesets.mjs) ──────────
+  // Optional so an older table still loads exactly as before.
+  /** Hitstun inflicted, seconds. */
+  hitstun?: number;
+  /** Pushback on hit, world units. */
+  pushback?: number;
+  /** Launch on hit (0 = grounded). */
+  launch?: number;
+  /** Designed frame advantage on block. */
+  onBlock?: number;
+  attackLevel?: 'high' | 'mid' | 'low';
+  /** Authored reaction; overrides the derived one. */
+  reaction?: string;
+  /** Power-crush armour through startup. */
+  armor?: boolean;
+  /** Explicit string continuation (ids in this fighter's set). [] = string ender. */
+  string?: string[];
+  /** `primary/secondary` archetype that produced this row. */
+  style?: string;
 }
 
 let table: Record<string, GeneratedMove[]> = {};
@@ -135,8 +155,12 @@ export function generatedMoveset(fighterId: string): SpecialMoveDefinition[] {
     // attacks and therefore require the crouch stance at match time.
     const dirs = m.command.flatMap((c) => c.dirs);
     const effectiveStance = /[123]/.test(dirs.join('')) ? 'Crouch' : m.stance;
-    const candidate = stringPartner(m.id);
-    const partner = candidate && rows.some((r) => r.id === candidate) ? candidate : null;
+    // A style profile's explicit string wins; `[]` marks a string ENDER, which
+    // must not pick up the derived P→K default and loop. Rows without one keep
+    // the derived pairing exactly as before.
+    const explicit = Array.isArray(m.string) ? m.string.filter((id) => rows.some((r) => r.id === id)) : null;
+    const candidate = explicit ? null : stringPartner(m.id);
+    const partners = explicit ?? (candidate && rows.some((r) => r.id === candidate) ? [candidate] : []);
     return {
     id: m.id,
     name: m.name,
@@ -158,8 +182,14 @@ export function generatedMoveset(fighterId: string): SpecialMoveDefinition[] {
       hitboxEndFrame: Math.max(2, Math.round((m.startup + m.active) * 60)),
       totalFrames: Math.round((m.startup + m.active + m.recovery) * 60),
       damage: m.damage,
-      reaction: reactionForGenerated(m),
+      reaction: m.reaction ?? reactionForGenerated(m),
       contactReach: m.contactReach,
+      ...(m.hitstun !== undefined ? { hitstun: m.hitstun } : {}),
+      ...(m.pushback !== undefined ? { pushback: m.pushback } : {}),
+      ...(m.launch !== undefined ? { launch: m.launch } : {}),
+      ...(m.onBlock !== undefined ? { onBlock: m.onBlock } : {}),
+      ...(m.attackLevel ? { attackLevel: m.attackLevel } : {}),
+      ...(m.armor ? { defence: [powerCrushWindow(Math.max(1, Math.round(m.startup * 60)))] } : {}),
       isSpecial: true,
       specialName: m.name,
       /**
@@ -177,13 +207,11 @@ export function generatedMoveset(fighterId: string): SpecialMoveDefinition[] {
        * The string this move can continue into, and when. Without it the move
        * runs to completion whatever the player does — see stringPartner.
        */
-      cancelInto: partner
-        ? [{
-            move: partner,
-            from: (m.startup + m.active) * CANCEL_OPENS_AT,
-            to: m.startup + m.active + m.recovery,
-          }]
-        : [],
+      cancelInto: partners.map((partner) => ({
+        move: partner,
+        from: (m.startup + m.active) * CANCEL_OPENS_AT,
+        to: m.startup + m.active + m.recovery,
+      })),
     },
     };
   }) as SpecialMoveDefinition[];

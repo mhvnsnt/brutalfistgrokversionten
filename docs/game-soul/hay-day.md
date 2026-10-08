@@ -1,0 +1,29 @@
+# Hay Day — Heart and Soul
+
+- Developer / studio: Supercell (Finland)
+- Genre / platforms: Farming simulation; iOS, Android (2012)
+- Why players come back (in the devs' view):
+  - Social bonds as the core retention engine: neighbourhoods (alliances) and the Derby turned a single-player farming game into a social game "where you have a lot of things to do every week." A social feature has its own self-sustaining loop that doesn't need constant new content.
+  - A world "where nothing bad ever happens" — the chill, pleasant 1950s-esque game that "feels like home and that you can come back to any time."
+  - Reliable content cadence: updates 3-4 times a year, planned for years, so players always have things coming — stability the team never feared losing.
+  - Maturing WITH the audience: after 10 years, the team focuses on polishing existing systems and what the community specifically wants, keeping "the core as it is."
+- Key quotes:
+  - "The Derby really changed [Hay Day]. It went from a farming game where you consume content to a social game where you have a lot of things to do every week." — Camilla Avellar, Hay Day team, Supercell, GamesIndustry.biz, 2022
+  - "A social feature like that can work on its own without us feeling the pressure of always having to provide more and more content... with a new social feature, it has its own loop where I think it occupies you for way longer than a simple content update." — Stephan Demirdjian, Hay Day team, Supercell, MobileGamer.biz, 2022
+  - "There will always be the shiny new thing... We can't compete with those, nor do we want to. I think there will always be space for the chill experience, the pleasant game that feels like home and that you can come back to any time." — Camilla Avellar, Hay Day team, Supercell, PocketGamer.biz, 2022
+  - "I think this is a general challenge that all live service games have to tackle... our past focus on strengthening the social bonds among players through our own Alliance system and various gameplay tied to it, has helped to create a habit of playing together." — Stephan Demirdjian, Hay Day team, Supercell, PocketGamer.biz, 2022
+- Why players love/support it:
+  - A kind, cozy world with nothing bad happening; deep social neighbourhoods and friendly competition; a loyal fanbase that "energised" the team through a decade.
+- Monetization philosophy (devs' words, if any):
+  - "The huge irony here is that if the monetisation is not your number one priority, that actually leads to better monetisation... When you prioritise engagement and retention — making a great game that people play often and want to play for a long time — they are happy to pay. We want to design games that people can theoretically play for years." — Ilkka Paananen, CEO, Supercell, The Guardian via PocketGamer.biz, 2014
+  - Companion doctrine: "You can't design fun on a spreadsheet" — creativity and design matter more than analytics-led monetization design.
+- Lesson for our games (1-2 lines, concrete):
+  - Build a social loop (neighbourhoods/derbies equivalent) that runs on its own — it keeps players longer than any content drip and takes the pressure off the content team.
+  - Monetize second: prioritize engagement and retention first; players who play for years will pay gladly — money as the outcome of great games, never the design goal.
+- Sources:
+  - https://www.PocketGamer.Biz/supercell-looking-back-10-years-of-hay-day-part-one/
+  - https://www.PocketGamer.biz/supercell-looking-back-on-10-years-of-hay-day-part-two/
+  - https://www.gamesindustry.biz/supercells-hay-day-team-on-10-years-of-sowing-the-seeds-of-stability
+  - http://mobilegamer.biz/what-supercells-hay-day-team-learned-from-ten-years-of-updates/
+  - https://www.pocketgamer.biz/supercell-free-to-play-games-can-be-more-than-monetisation-machines/
+- Coverage note: Strong on-record coverage (Hay Day 10th-anniversary retrospective interviews, 2022). No [unverified] quotes used.
