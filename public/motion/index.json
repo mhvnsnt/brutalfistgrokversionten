@@ -2139,7 +2139,8 @@
     "provenance": {
       "origin": "AUTHORED_CAPTURE",
       "repo": null,
-      "licenseClass": "owner-supplied reference capture (third-party footage)",
+      "licenseClass": "third-party clip, owner-approved for use 2026-10-07",
+      "credit": "@mackeymcqui (TikTok)",
       "sourceVideo": {
         "file": "GETBACKK_src.mp4",
         "sha256": "185e4d2a2a22054f7637f7b133c6d1e8b209d7ee5300e931d5ffaacda60a0112",
@@ -2186,7 +2187,8 @@
     "provenance": {
       "origin": "AUTHORED_CAPTURE",
       "repo": null,
-      "licenseClass": "owner-supplied reference capture (third-party footage)",
+      "licenseClass": "third-party clip, owner-approved for use 2026-10-07",
+      "credit": "@mackeymcqui (TikTok)",
       "sourceVideo": {
         "file": "GETBACKK_src.mp4",
         "sha256": "185e4d2a2a22054f7637f7b133c6d1e8b209d7ee5300e931d5ffaacda60a0112",
@@ -2258,6 +2260,114 @@
       ],
       "interpolationRule": "linear, gaps of at most 6 frames only; longer gaps would have failed the capture",
       "tool": "Bannon tools/mocap/video_to_clip.py build_clip (unchanged retarget, 84 keys, smooth 5) fed by tools/mocap/getbackk: RTMO-l 2D tracking (rtmlib, Apache-2.0) + RTMW3D-x depth ordering + bone-length-constrained 3D lift",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "CHAINSNATCHER": {
+    "file": "CHAINSNATCHER.json",
+    "bytes": 39340,
+    "dur": 2.0667,
+    "keys": 26,
+    "bones": 12,
+    "src": "owner-supplied reference video, 2026-10-07; original footage: third-party TikTok (@thatjtawesome3)",
+    "via": "video_to_clip/build_clip/two-body (RTMO+RTMW3D front end)",
+    "role": "attacker",
+    "pairedWith": "CHAINSNATCHER__RECV",
+    "coverFrac": 0.619,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Chainsnatcher (jumping double-knee backbreaker / backstabber) — owner-supplied reference",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": null,
+      "licenseClass": "third-party clip, owner-approved for use 2026-10-07",
+      "credit": "@thatjtawesome3 (TikTok)",
+      "sourceVideo": {
+        "file": "CHAINSNATCHER_src.mp4",
+        "sha256": "cc9ad43482b36e164b755be6a8c97156f001aaaba01430d81d1ef5ab2dd2b040",
+        "format": "576x1024 portrait, 30 fps, 7.8 s, one handheld low-angle shot of live indie wrestling; TikTok watermark masked (ffmpeg delogo, two positions); capture window 3.20-5.27 s",
+        "supplied": "owner-supplied reference video, 2026-10-07",
+        "originalFootage": "third-party TikTok (@thatjtawesome3)"
+      },
+      "captureWindowSeconds": [
+        3.2,
+        5.2667
+      ],
+      "trackedFrames": "39/63",
+      "interpolatedGaps": [],
+      "interpolationRule": "linear, gaps of at most 6 frames only; longer gaps would have failed the capture",
+      "constrainedSolve": {
+        "fromFrame": 135,
+        "toFrame": 158,
+        "frames": 24,
+        "rule": "NOT TRACKED: the body is occluded behind and under the partner; posed by a constrained solve (own bone lengths, last tracked pose -> canon end pose, landing frame measured from the partner). See the capture README."
+      },
+      "tool": "tools/mocap/chainsnatcher: the Getbackk RTMO-l + RTMW3D-x front end with a three-identity tracker (the referee is tracked and dropped), a FLAGGED constrained solve for the attacker's occluded landing, Bannon tools/mocap/video_to_clip.py build_clip (unchanged: key times, smoothing, pose{}) and engine_retarget.py for bones{}",
+      "boneConvention": "bones{} are ABSOLUTE local rotations on public/models/BANNON_rigged.glb (the convention scripts/bake-fighter-animations.mjs reads for the Bannon bank: sourceRest = targetRest = bind), solved by tools/mocap/chainsnatcher/engine_retarget.py from the same joints build_clip keys on; build_clip's own camera-axis, rest-relative bones would play yawed 90 degrees with T-pose arms through this bake",
+      "cameraYaw": "handheld camera orbits ~52 degrees during the take; one common yaw per frame (mean facing of both men, smoothed, held after the attacker's last tracked frame) is removed from BOTH bodies",
+      "labelFixes": "receiver f149 (isolated between two gaps): left/right labels exchanged to agree with both tracked neighbours (lr_swap rule in the README)",
+      "mixamo": false,
+      "synthetic": "partial"
+    }
+  },
+  "CHAINSNATCHER__RECV": {
+    "file": "CHAINSNATCHER__RECV.json",
+    "bytes": 39601,
+    "dur": 2.0667,
+    "keys": 26,
+    "bones": 12,
+    "src": "owner-supplied reference video, 2026-10-07; original footage: third-party TikTok (@thatjtawesome3)",
+    "via": "video_to_clip/build_clip/two-body (RTMO+RTMW3D front end)",
+    "role": "receiver",
+    "coverFrac": 0.841,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Chainsnatcher (jumping double-knee backbreaker / backstabber) — owner-supplied reference",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": null,
+      "licenseClass": "third-party clip, owner-approved for use 2026-10-07",
+      "credit": "@thatjtawesome3 (TikTok)",
+      "sourceVideo": {
+        "file": "CHAINSNATCHER_src.mp4",
+        "sha256": "cc9ad43482b36e164b755be6a8c97156f001aaaba01430d81d1ef5ab2dd2b040",
+        "format": "576x1024 portrait, 30 fps, 7.8 s, one handheld low-angle shot of live indie wrestling; TikTok watermark masked (ffmpeg delogo, two positions); capture window 3.20-5.27 s",
+        "supplied": "owner-supplied reference video, 2026-10-07",
+        "originalFootage": "third-party TikTok (@thatjtawesome3)"
+      },
+      "captureWindowSeconds": [
+        3.2,
+        5.2667
+      ],
+      "trackedFrames": "53/63",
+      "interpolatedGaps": [
+        {
+          "fromFrame": 113,
+          "toFrame": 114,
+          "frames": 2
+        },
+        {
+          "fromFrame": 145,
+          "toFrame": 148,
+          "frames": 4
+        },
+        {
+          "fromFrame": 150,
+          "toFrame": 152,
+          "frames": 3
+        },
+        {
+          "fromFrame": 157,
+          "toFrame": 157,
+          "frames": 1
+        }
+      ],
+      "interpolationRule": "linear, gaps of at most 6 frames only; longer gaps would have failed the capture",
+      "tool": "tools/mocap/chainsnatcher: the Getbackk RTMO-l + RTMW3D-x front end with a three-identity tracker (the referee is tracked and dropped), a FLAGGED constrained solve for the attacker's occluded landing, Bannon tools/mocap/video_to_clip.py build_clip (unchanged: key times, smoothing, pose{}) and engine_retarget.py for bones{}",
+      "boneConvention": "bones{} are ABSOLUTE local rotations on public/models/BANNON_rigged.glb (the convention scripts/bake-fighter-animations.mjs reads for the Bannon bank: sourceRest = targetRest = bind), solved by tools/mocap/chainsnatcher/engine_retarget.py from the same joints build_clip keys on; build_clip's own camera-axis, rest-relative bones would play yawed 90 degrees with T-pose arms through this bake",
+      "cameraYaw": "handheld camera orbits ~52 degrees during the take; one common yaw per frame (mean facing of both men, smoothed, held after the attacker's last tracked frame) is removed from BOTH bodies",
+      "labelFixes": "receiver f149 (isolated between two gaps): left/right labels exchanged to agree with both tracked neighbours (lr_swap rule in the README)",
       "mixamo": false,
       "synthetic": false
     }

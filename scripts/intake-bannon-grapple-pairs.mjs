@@ -11,13 +11,15 @@
  * pair in the bank.
  *
  * OWNER CAPTURES made outside Bannon (OWNER_CAPTURES below) come in the same
- * way from `--owner-captures <dir>`: the two halves written by the capture run
- * documented in tools/mocap/getbackk/README.md, with that run's own coverage
- * and interpolation record copied into provenance.
+ * way, each from its own capture directory (`dir`): the two halves written by
+ * the capture run documented in tools/mocap/getbackk/README.md (and
+ * tools/mocap/chainsnatcher/README.md), with that run's own coverage,
+ * interpolation and constrained-solve record copied into provenance.
+ * `--owner-captures-root <dir>` replaces the /workspace/mocap-src root.
  *
  * Usage:
  *   node scripts/intake-bannon-grapple-pairs.mjs [--bannon /workspace/ref-repos/Bannon]
- *        [--owner-captures /workspace/mocap-src/getbackk_capture] [--dry]
+ *        [--owner-captures-root /workspace/mocap-src] [--dry]
  */
 import { copyFileSync, existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -27,7 +29,7 @@ const flag = (k, d) => { const i = argv.indexOf(`--${k}`); return i >= 0 ? argv[
 const BANNON = flag('bannon', '/workspace/ref-repos/Bannon');
 const DRY = argv.includes('--dry');
 const SRC_DIR = join(BANNON, 'assets', 'moves', 'clips');
-const OWNER_DIR = flag('owner-captures', '/workspace/mocap-src/getbackk_capture');
+const OWNER_ROOT = flag('owner-captures-root', '/workspace/mocap-src');
 const DST_DIR = join('public', 'motion');
 
 /** Bannon main at the time of intake. */
@@ -66,9 +68,12 @@ export const INTAKE = [
  * RTMW3D tracking front end, because the stock YOLOX + BlazePose front end
  * lost the receiver for the whole carry. Footage is NOT committed anywhere.
  */
+/** The owner approved shipping motion captured from third-party clips on 2026-10-07. */
+export const THIRD_PARTY_APPROVED = 'third-party clip, owner-approved for use 2026-10-07';
+
 export const OWNER_CAPTURES = [
   {
-    deliverer: 'GETBACKK', receiver: 'GETBACKK__RECV', bodies: 2,
+    deliverer: 'GETBACKK', receiver: 'GETBACKK__RECV', bodies: 2, dir: 'getbackk_capture',
     label: 'Getbackk (fireman carry, corkscrew toss, F-5 style) — owner-supplied reference',
     sourceVideo: {
       file: 'GETBACKK_src.mp4',
@@ -77,19 +82,41 @@ export const OWNER_CAPTURES = [
       supplied: 'owner-supplied reference video, 2026-10-04',
       originalFootage: 'third-party TikTok (@mackeymcqui)',
     },
-    licenseClass: 'owner-supplied reference capture (third-party footage)',
+    licenseClass: THIRD_PARTY_APPROVED,
+    credit: '@mackeymcqui (TikTok)',
     tool: 'Bannon tools/mocap/video_to_clip.py build_clip (unchanged retarget, 84 keys, smooth 5) fed by tools/mocap/getbackk: RTMO-l 2D tracking (rtmlib, Apache-2.0) + RTMW3D-x depth ordering + bone-length-constrained 3D lift',
+  },
+  {
+    deliverer: 'CHAINSNATCHER', receiver: 'CHAINSNATCHER__RECV', bodies: 2, dir: 'chainsnatcher_capture',
+    label: 'Chainsnatcher (jumping double-knee backbreaker / backstabber) — owner-supplied reference',
+    sourceVideo: {
+      file: 'CHAINSNATCHER_src.mp4',
+      sha256: 'cc9ad43482b36e164b755be6a8c97156f001aaaba01430d81d1ef5ab2dd2b040',
+      format: '576x1024 portrait, 30 fps, 7.8 s, one handheld low-angle shot of live indie wrestling; TikTok watermark masked (ffmpeg delogo, two positions); capture window 3.20-5.27 s',
+      supplied: 'owner-supplied reference video, 2026-10-07',
+      originalFootage: 'third-party TikTok (@thatjtawesome3)',
+    },
+    licenseClass: THIRD_PARTY_APPROVED,
+    credit: '@thatjtawesome3 (TikTok)',
+    tool: 'tools/mocap/chainsnatcher: the Getbackk RTMO-l + RTMW3D-x front end with a three-identity tracker (the referee is tracked and dropped), a FLAGGED constrained solve for the attacker\'s occluded landing, Bannon tools/mocap/video_to_clip.py build_clip (unchanged: key times, smoothing, pose{}) and engine_retarget.py for bones{}',
+    extra: {
+      boneConvention: 'bones{} are ABSOLUTE local rotations on public/models/BANNON_rigged.glb (the convention scripts/bake-fighter-animations.mjs reads for the Bannon bank: sourceRest = targetRest = bind), solved by tools/mocap/chainsnatcher/engine_retarget.py from the same joints build_clip keys on; build_clip\'s own camera-axis, rest-relative bones would play yawed 90 degrees with T-pose arms through this bake',
+      cameraYaw: 'handheld camera orbits ~52 degrees during the take; one common yaw per frame (mean facing of both men, smoothed, held after the attacker\'s last tracked frame) is removed from BOTH bodies',
+      labelFixes: 'receiver f149 (isolated between two gaps): left/right labels exchanged to agree with both tracked neighbours (lr_swap rule in the README)',
+    },
   },
 ];
 
 function ownerEntryFor(c, name, role, partner) {
   const file = `${name}.json`;
-  const src = JSON.parse(readFileSync(join(OWNER_DIR, file), 'utf8'));
-  const report = JSON.parse(readFileSync(join(OWNER_DIR, 'capture_report.json'), 'utf8'))[name];
+  const dir = join(OWNER_ROOT, c.dir);
+  const src = JSON.parse(readFileSync(join(dir, file), 'utf8'));
+  const report = JSON.parse(readFileSync(join(dir, 'capture_report.json'), 'utf8'))[name];
+  const solved = report.solved_count > 0;
   const k0 = src.keys?.[0] ?? {};
   return {
     file,
-    bytes: statSync(join(OWNER_DIR, file)).size,
+    bytes: statSync(join(dir, file)).size,
     dur: src.dur,
     keys: src.keys?.length ?? 0,
     bones: Object.keys(k0.bones ?? {}).length,
@@ -105,14 +132,22 @@ function ownerEntryFor(c, name, role, partner) {
       origin: 'AUTHORED_CAPTURE',
       repo: null,
       licenseClass: c.licenseClass,
+      credit: c.credit,
       sourceVideo: c.sourceVideo,
       captureWindowSeconds: report.window_s,
       trackedFrames: `${report.tracked}/${report.total}`,
       interpolatedGaps: report.interpolated_gaps.map(([a, b, n]) => ({ fromFrame: a, toFrame: b, frames: n })),
       interpolationRule: 'linear, gaps of at most 6 frames only; longer gaps would have failed the capture',
+      ...(solved ? {
+        constrainedSolve: {
+          fromFrame: report.solved_frames[0], toFrame: report.solved_frames[1], frames: report.solved_count,
+          rule: 'NOT TRACKED: the body is occluded behind and under the partner; posed by a constrained solve (own bone lengths, last tracked pose -> canon end pose, landing frame measured from the partner). See the capture README.',
+        },
+      } : {}),
       tool: c.tool,
+      ...(c.extra ?? {}),
       mixamo: false,
-      synthetic: false,
+      synthetic: solved ? 'partial' : false,
     },
   };
 }
@@ -165,7 +200,7 @@ for (const [del, recv, label, cover, bodies] of INTAKE) {
 }
 for (const c of OWNER_CAPTURES) {
   for (const [name, role, partner] of [[c.deliverer, 'attacker', c.receiver], [c.receiver, 'receiver', null]]) {
-    const from = join(OWNER_DIR, `${name}.json`);
+    const from = join(OWNER_ROOT, c.dir, `${name}.json`);
     if (!existsSync(from)) throw new Error(`owner capture missing: ${from}`);
     const entry = ownerEntryFor(c, name, role, partner);
     if (!DRY) copyFileSync(from, join(DST_DIR, entry.file));

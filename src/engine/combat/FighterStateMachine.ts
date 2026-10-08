@@ -202,6 +202,7 @@ import {
 } from './ThrowChains.ts';
 import { THROW_CATALOG, type ThrowDirection } from './DirectionalThrowSystem.ts';
 import { getMoveById } from '../BrutalFistMoveCatalog.ts';
+import { namedGrappleThrowFor, type NamedGrappleThrow } from './NamedGrappleBindings.ts';
 import { resolveAirborneDive } from './AirborneDiveSystem.ts';
 
 export interface SpecialMoveDefinition {
@@ -858,6 +859,16 @@ export class FighterStateMachine {
   private characterMoveClips: Partial<Record<CharacterMoveClipSlot, string>> = {};
   private characterMoveWindows: Partial<Record<CharacterMoveClipSlot, MoveWindow>> = {};
   private characterMoveIds: Partial<Record<CharacterMoveClipSlot, string>> = {};
+  /**
+   * NAMED GRAPPLES ON THE THROW BUTTONS. A fighter whose move set holds a named
+   * owner grapple that is a REAL_PAIR and a catalog throw (Finxsse's
+   * Chainsnatcher, RP+RK) fires it from that two-button throw instead of the
+   * generic Left/Right Throw, so the grab, the commit clip and the victim's
+   * half are the named pair. See NamedGrappleBindings.namedGrappleThrowFor.
+   */
+  private namedThrows: { leftThrow?: NamedGrappleThrow; rightThrow?: NamedGrappleThrow } = {};
+  /** The named pair the current command throw commits with, if any. */
+  private namedGrapple: NamedGrappleThrow | null = null;
 
   private currentMove: MoveWindow | null = null;
   private moveTimer = 0;
@@ -1043,6 +1054,47 @@ export class FighterStateMachine {
   /** Install the fighter's canonical catalog move IDs separately from clip names. */
   setCharacterMoveIds(moveIds: Partial<Record<string, string>>): void {
     this.characterMoveIds = { ...moveIds };
+    this.namedThrows = {};
+    for (const id of Object.values(moveIds)) {
+      const named = id ? namedGrappleThrowFor(id) : null;
+      if (named?.button && !this.namedThrows[named.button]) this.namedThrows[named.button] = named;
+    }
+  }
+
+  /** The named grapple this fighter fires from a throw button, if any. */
+  namedThrowFor(button: 'leftThrow' | 'rightThrow'): NamedGrappleThrow | null {
+    return this.namedThrows[button] ?? null;
+  }
+
+  /**
+   * Start a named owner grapple as a REAL command throw: same grab range, same
+   * break window, same arena commit as every other throw, but the attacker
+   * plays the named deliverer and the commit clip is that deliverer, so
+   * GrapplePairing resolves the victim's half to the named receiver.
+   */
+  beginNamedGrapple(moveId: string): FighterMotionState {
+    const named = namedGrappleThrowFor(moveId);
+    if (!named) return this.motionState;
+    const move: MoveWindow = {
+      startup: named.startup,
+      active: named.active,
+      recovery: named.recovery,
+      animation: 'grapple',
+      clip: named.deliverer,
+      hitboxStartFrame: Math.max(1, Math.round(named.startup * 60)),
+      hitboxEndFrame: Math.max(2, Math.round((named.startup + named.active) * 60)),
+      totalFrames: Math.round((named.startup + named.active + named.recovery) * 60),
+      damage: named.damage,
+      isThrow: true,
+      isCommandThrow: true,
+      isUnblockable: true,
+      grabRange: COMMAND_THROW_MOVE.grabRange,
+      specialName: named.displayName,
+      throwComboRoute: [],
+    };
+    const state = this.beginCommandThrowWithMove(move);
+    this.namedGrapple = named;
+    return state;
   }
 
   /** Clip override for the current non-attack motion, if this fighter owns one. */
@@ -2269,12 +2321,16 @@ export class FighterStateMachine {
 
     // ── Left Throw (1+3): LP+LK ──────────────────────────────────────────
     if (resolvedInput.leftThrow && this.actionState !== 'Attacking') {
+      const named = this.namedThrows.leftThrow;
+      if (named) return this.beginNamedGrapple(named.moveId);
       console.log('[FSM] 🤜 Left Throw (1+3)');
       return this.beginCommandThrowWithMove(LEFT_THROW_MOVE);
     }
 
     // ── Right Throw (2+4): RP+RK ─────────────────────────────────────────
     if (resolvedInput.rightThrow && this.actionState !== 'Attacking') {
+      const named = this.namedThrows.rightThrow;
+      if (named) return this.beginNamedGrapple(named.moveId);
       console.log('[FSM] 🤛 Right Throw (2+4)');
       return this.beginCommandThrowWithMove(RIGHT_THROW_MOVE);
     }
@@ -2671,6 +2727,7 @@ export class FighterStateMachine {
 
   // ── Begin command throw with a specific move ──────────────────────────────
   private beginCommandThrowWithMove(move: MoveWindow): FighterMotionState {
+    this.namedGrapple = null;
     this.walkVelocity = { forward: 0, strafe: 0 };
     this.actionState = 'CommandThrow';
     // The MOVE decides what it looks like. This used to be hard-set to
@@ -2692,6 +2749,7 @@ export class FighterStateMachine {
 
   // ── Begin command throw ────────────────────────────────────────────────────
   private beginCommandThrow(): FighterMotionState {
+    this.namedGrapple = null;
     this.walkVelocity = { forward: 0, strafe: 0 };
     this.actionState = 'CommandThrow';
     // NOT 'heavyAttack'. See COMMAND_THROW_MOVE — that one word made the throw
@@ -2745,6 +2803,7 @@ export class FighterStateMachine {
     this.throwComboIndex = 0;
     this.throwComboTimer = 0;
     this.directionalThrowId = throwId;
+    this.namedGrapple = null;
     this.grabRangeActive = true;
     this.grabRangeTimer = move.startup + move.active;
     console.log('[FSM] 🤲 Directional throw started —', def.name, direction, def.attackerAnimation);
@@ -2760,6 +2819,7 @@ export class FighterStateMachine {
       this.motionState = 'idle';
       this.moveTimer = COMMAND_THROW_MOVE.recovery * 1.5; // 50% extra recovery on whiff
       this.currentMove = null;
+      this.namedGrapple = null;
       this.throwComboQueue = [];
       console.log('[FSM] ❌ CommandThrow whiffed — extra recovery penalty');
     } else {
@@ -2775,6 +2835,25 @@ export class FighterStateMachine {
        * resolvable every single time instead of 13-in-455 of the time.
        */
       const directional = this.directionalThrowId ? THROW_CATALOG[this.directionalThrowId] : null;
+      const named = directional ? null : this.namedGrapple;
+      if (named) {
+        // A named owner grapple commits with ITS deliverer for the whole
+        // recorded take, so the victim's half (looked up by throwCommitClip)
+        // is the named receiver on the same clock.
+        this.currentMove = {
+          ...(this.currentMove ?? THROW_COMMIT_MOVE),
+          startup: 0,
+          clip: named.deliverer,
+          animation: 'grapple',
+          damage: 0, // billed once, by the grab that caught
+          specialName: named.displayName,
+        };
+        this.motionState = 'grapple';
+        this.moveTimer = Math.max(this.currentMove.active + this.currentMove.recovery, named.commitSeconds);
+        this.moveElapsed = 0;
+        console.log('[FSM] ✅ Named grapple connected —', named.deliverer, '->', named.receiver);
+        return;
+      }
       this.currentMove = directional
         ? {
             // A directional throw always set currentMove when it began; fall

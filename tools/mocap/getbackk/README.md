@@ -5,9 +5,8 @@ These scripts are capture tooling, not game code; they are not run by the build 
 
 ## Source
 - `GETBACKK_src.mp4`, owner-supplied reference video (sha256 `185e4d2a…0112`), 576x1024, 30 fps, 11.5 s.
-  The original footage is a third-party TikTok (@mackeymcqui). License class:
-  **owner-supplied reference capture (third-party footage)**. The footage is not committed anywhere.
-  **The owner should confirm they are OK shipping motion extracted from it.**
+  The original footage is a third-party TikTok, credit @mackeymcqui. License class:
+  **third-party clip, owner-approved for use 2026-10-07**. The footage is not committed anywhere.
 - Prepared with ffmpeg: trimmed to 0.0–7.0 s (TikTok outro removed), comment overlay and watermark masked:
   `ffmpeg -i GETBACKK_src.mp4 -t 7.0 -an -vf "delogo=x=47:y=127:w=290:h=100,delogo=x=6:y=465:w=132:h=94,fps=30" -crf 14 GETBACKK.mp4`
 

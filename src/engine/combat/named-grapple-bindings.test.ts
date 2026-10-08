@@ -103,11 +103,11 @@ describe('the owner\'s named grapples are bound to real clips, or honestly MISSI
     });
   }
 
-  it('the real pairs are Flying Headbutt, Getbackk (exact) and Deadlift German, Chainsnatcher (stand-ins)', () => {
+  it('the real pairs are Flying Headbutt, Getbackk, Chainsnatcher (exact) and Deadlift German (stand-in)', () => {
     const real = Object.values(NAMED_GRAPPLE_BINDINGS).filter((b) => b.status === 'REAL_PAIR').map((b) => b.moveKey).sort();
     assert.deepEqual(real, ['chainsnatcher', 'deadliftGerman', 'flyingHeadbutt', 'getbackk']);
     assert.equal(NAMED_GRAPPLE_BINDINGS.deadliftGerman.fidelity, 'stand_in');
-    assert.equal(NAMED_GRAPPLE_BINDINGS.chainsnatcher.fidelity, 'stand_in');
+    assert.equal(NAMED_GRAPPLE_BINDINGS.chainsnatcher.fidelity, 'exact');
     assert.equal(NAMED_GRAPPLE_BINDINGS.flyingHeadbutt.fidelity, 'exact');
     assert.equal(NAMED_GRAPPLE_BINDINGS.getbackk.fidelity, 'exact');
   });
@@ -159,7 +159,8 @@ describe('Getbackk: exact two-body pair from the owner-supplied reference captur
       const p = SOURCE[c].provenance;
       assert.equal(p.origin, 'AUTHORED_CAPTURE');
       assert.equal(p.synthetic, false);
-      assert.equal(p.licenseClass, 'owner-supplied reference capture (third-party footage)');
+      assert.equal(p.licenseClass, 'third-party clip, owner-approved for use 2026-10-07');
+      assert.equal(p.credit, '@mackeymcqui (TikTok)');
       assert.equal(p.sourceVideo.originalFootage, 'third-party TikTok (@mackeymcqui)');
       assert.match(p.sourceVideo.supplied, /owner-supplied reference video/);
       for (const g of p.interpolatedGaps) assert.ok(g.frames >= 1 && g.frames <= 6, JSON.stringify(g));
@@ -167,7 +168,8 @@ describe('Getbackk: exact two-body pair from the owner-supplied reference captur
     }
     assert.equal(SOURCE.GETBACKK.pairedWith, 'GETBACKK__RECV');
     assert.match(b.note, /@mackeymcqui/);
-    assert.match(b.note, /owner must confirm/);
+    assert.match(b.note, /owner-approved for use 2026-10-07/);
+    assert.doesNotMatch(b.note, /owner must confirm/);
   });
 
   it('F5 stays a deliverer-only capture and never borrows a stand-in victim', () => {
