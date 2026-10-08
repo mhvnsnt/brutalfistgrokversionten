@@ -318,3 +318,15 @@ Important: these are implementation corrections, not a claim that all animation 
 - The safety behavior is preserved: explicit clips must pass motion/upright/start/team-capture and grounded attack direction/receiver gates before they can override the semantic move. Otherwise the normal measured resolver remains authoritative.
 - Main hotfix commit: `e9d5d1c9e6a63fa74302f33373e2ac3e76964003`.
 - PWA visual certification remains pending; this fixes the client-module crash so preview can load again.
+
+
+### Intro FMV treatment v2: owner decisions, round 2 (docs only) — 2026-09-28
+
+- Added the intro-movie production docs under `docs/intro-movie/`: `DIRECTOR_BLUEPRINT.md` (owner source), `TREATMENT.md` (v2, 1800 frames / 60s at 30fps), `TREATMENT_v1.1.md` (archived), `GOD_WITHIN_RESEARCH.md`, and `CANON_NOTES.md`.
+- Stick-Up: Cyborg attire only in the Banyan Tree scenes (C1–C3), and the normal `STICKUP.glb` look everywhere else, including I1–I2. The Cyborg model is MODEL_MISSING (the owner is building a Terminator-style model). The stand-in is the default model plus a post/VFX metal half-face and red eye, clearly flagged.
+- "Beast Mode" is struck as a named state. The I3 Bannon roar stays as a plain power moment.
+- God Within is reframed as an alternate-universe, ontological reference (the Devil Within counterpart), not a power-up mode. Grounded visuals are limited to the Bannon Reality Check distortion and the God Within attire GLBs. Eye glow is UNKNOWN, and any fallback is a flagged placeholder.
+- B5 Golden Bull: `PABLO_goldenbull.glb` is a humanoid attire (58-joint Mixamo rig, no emissive), not a bull form. Options (a) through (c) are documented, with (a) recommended: a flash-frame swap to the existing GLB. Pablo's `bf_bull_rush` has no catalog entry and no clip.
+- Music: a generated placeholder is pending the owner's approval or rejection.
+- Every repo GLB checked is decimated to about 18k tris. The un-decimated sources are UNKNOWN until the owner supplies them.
+- No code or assets changed. Every FMV shot remains RUNTIME_PENDING until it's rendered, reopened, and SHA-256 logged.
