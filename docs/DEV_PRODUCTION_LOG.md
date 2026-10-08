@@ -116,6 +116,16 @@ Important: these are implementation corrections, not a claim that all animation 
 - **Promotion rule:** do not mark aerial clips PASS from static code alone.
 
 
+### Airborne PR26 integration correction — 2026-09-28
+
+- CI on the first PR26 revision exposed four integration regressions rather than a problem with the airborne routing itself.
+- Corrected the ordering so aerial input is not pre-empted by the generic special resolver.
+- Corrected fighter-owned special presentation so the selected authored clip is retained on the active MoveWindow, which is the renderer's authoritative active-clip path.
+- Corrected attack start handling so non-aerial authored fighter clips can drive presentation without destroying semantic combat state; aerial attacks deliberately retain `jumpAttack` as the semantic state.
+- Latest correction commit: `e332d22e282e0a0d20820ff4a1f25f124282261a`.
+- GitHub Actions run #435 is attached to this revision and is currently pending. No CI/PWA PASS is claimed until its actual tests and browser stages complete.
+
+
 ### Fighter-owned special presentation pass — 2026-09-28
 
 - Continued directly on `main` in `mhvnsnt/brutalfistgrokversionten`; this pass did not switch to another repository.
@@ -140,6 +150,174 @@ Important: these are implementation corrections, not a claim that all animation 
 - Expanded docs/OPEN_SOURCE_ANIMATION_INTAKE.md with KayKit Character Animations as a CC0 candidate source and with the larger per-character move-graph target.
 - Main implementation sequence: 6241232f (directional slots), 1075d7d9 (slot library), 1644acfe (catalog frame-data resolution), 1092e552 (directional kick slots), 85ff8149 (directional input routing), cbd013ff (fighter-specific synthesized defaults), fd216f68 (separate move IDs from clips), e7dc4f36 (initial-match binding cleanup), 42054a30 (reset binding), c68b7584 + 17667bac (tests), 389cf2c1 (open-source intake update), a0192d18 (persistent gaps).
 - CI/browser runtime certification is still UNKNOWN; no GitHub Actions workflow run was attached to the latest test commits when checked.
+
+
+### PWA intro / canon-stage / grapple handoff — 2026-09-28
+
+- Repo Co Dev is building the real 60-second intro renderer on a separate branch: tap-to-start gate for browser audio autoplay permission, Skip control, Esc/Enter/Start keyboard equivalents, clean handoff to the existing start screen, and a missing-video fallback straight to the start screen. The actual rough-cut video is intentionally not added to main until the owner's media pass is ready.
+- Owner production is supplying music, arena backgrounds, the Great Banyan Tree environment, fighter placement marks, and the Cyborg Stick-Up stand-in. Stand-ins remain clearly labeled and unpublished until the real captures/models exist.
+- PR #23 (grok/canon-stages-and-grapple-pairs) contains 8 canon graybox stages and 8 Bannon grapple/aerial capture imports with provenance. It remains a draft and is currently based on the pre-typecheck-fix main, so it is not merged yet.
+- Merged PR #22 (grok/fix-main-typecheck) into main as 6fd4c07d32348c7427b380771bea8ebc6040dd0d; this removes the pre-existing TypeScript errors in CharacterMoveSetSystem, DirectionalThrowSystem, and FighterStateMachine without changing intended runtime behavior.
+- PR #20 (grok/per-fighter-movesets) contains the larger style-driven 27-fighter moveset/OSS intake pass: measured style profiles, generated move windows/strings, 113 baked OSS strike candidates, and 141/269 intake passes. It remains a draft and is based on the earlier main, so it must be reconciled with current main before promotion.
+- Runtime rule remains unchanged: static tests/builds and intake measurements do not equal PWA visual certification. Intro playback, audio unlock, skip/handoff, stage rendering, grapples, and per-fighter move individuality remain UNKNOWN until observed in the browser/PWA.
+
+
+### PWA intro gate wired on main — 2026-09-28
+
+- Added `src/components/IntroVideoGate.tsx` and wired it into `src/App.tsx` before `TitleScreen`.
+- The gate uses `/intro/brutal-fist-intro.mp4` as the production media path, waits for a user gesture before calling `video.play()` with sound enabled, supports TAP TO START, Enter/Space/S, Escape, gamepad Start (button 9), an on-screen SKIP button after playback begins, and `ended` handoff to the existing title/start screen.
+- Missing or unloadable intro media calls the same completion path, so the PWA falls through directly to the existing start screen instead of trapping the player on a blank/video error state.
+- This is the shell for Repo Co Dev's separate rough-cut renderer; the actual 60-second media file is intentionally not fabricated or committed here.
+- Runtime status: UNKNOWN until the PWA is opened with the real media file and the browser observes audio unlock, playback, skip, natural completion, and missing-file fallback.
+
+
+### PR20/PR23 non-destructive reconciliation completed — 2026-09-28
+
+- PR #20 and PR #23 were not force-merged from their old `db752c8` base. Two fresh reconciliation branches were created from current `main`.
+- PR #24 reconciled the PR23 stage/blockout + named-grapple work onto current main and merged as `a8e8d6a375b3fd20e0c7f5c15e214876312b0949`.
+- PR #25 reconciled the PR20 per-fighter style/move-window/OSS intake work onto current main and merged as `90cca08a568caa19ba2f9bb0aca87d773b8f83c9`.
+- Original PR #20 and PR #23 were closed as superseded, preserving their history while removing the stale merge targets.
+- The reconciled pass preserves the current main intro/typecheck work rather than resetting files to the old PR base.
+- Added `docs/NAMED_GRAPPLE_TECHNICAL_MAP.md` to make technical move definitions and capture gaps explicit. Cody Buster remains UNKNOWN rather than being guessed; Titan Fall is documented as a throat-grab chokeslam; Hall Street Justice is documented as a street-fight combo ending in a knee; Getbackk is the F5-style fireman's-carry tornado slam; Chainsnatcher is the jumping double-knee backstabber and its current knee-bash pair remains a stand-in.
+- Owner footage for Getbackk and Chainsnatcher can be captured with Bannon's `tools/mocap/video_to_clip.py --two`, producing attacker + receiver halves from one take. Runtime certification of the newly reconciled assets remains UNKNOWN until the PWA is exercised.
+
+
+### Airborne / dive attack routing — 2026-09-28
+
+- Added `src/engine/combat/AirborneDiveSystem.ts` as the explicit airborne routing layer. Up/jump creates the airborne window; the attack press selects neutral, forward, or back airborne routing.
+- Fixed the existing FSM behavior so an attack can be pressed **after** the jump edge while the fighter is still airborne. Previously the jump-attack branch required `resolvedInput.jump` and therefore effectively required attack on the jump frame.
+- Added facing-relative command semantics: neutral airborne attack = 8, forward + up = 9, back + up = 7. These are routing commands, not claims that an exact named animation exists.
+- Added stage-dive metadata to `StageConfig` and registered initial launch points for the dojo upper edge, wrestling-ring ropes, steel-cage top, industrial upper catwalk, and sky-crane edge. Traversal/render runtime still requires browser/PWA evidence before this is called VERIFIED.
+- Named elbow drops, moonsaults, and other diving signatures remain authored-motion slots; no generic clip is being mislabeled as one.
+- Added regression coverage for delayed mid-air attack, directional airborne attack, stage-origin falling attack, and grounded rejection.
+- Getbackk and Chainsnatcher remain exact-capture jobs: owner footage should enter through `video_to_clip.py --two` as attacker + receiver pairs. No stand-in was promoted to exact.
+- Runtime/CI status remains UNKNOWN until the branch is built/tested and the PWA is exercised with the actual media/assets.
+
+
+### Airborne PR #26 promoted to main — 2026-09-28
+
+- PR #26 was merged non-destructively with a normal merge commit: `618451e2767bcdf967f38e6f60e749a90e06db10`.
+- The merge preserves the full PR history and does not reset or rewrite `main`.
+- The promoted work includes delayed airborne attack input, neutral/forward/back airborne routing, stage-dive launch metadata, regression coverage, and the fighter-owned presentation integration corrections.
+- The branch had no current CI status attached at merge time; therefore the merge is a source-control promotion, **not** a claim of CI or PWA certification.
+- Next gate is deployment/browser verification on `main`; any runtime issue will be fixed with a new follow-up commit/PR so this merged history remains intact.
+
+
+## GitHub Pages PWA deployment hardening — 2026-09-28
+
+- Inspected the live deployment path on `main` rather than treating the PR merge as a PWA verification.
+- Confirmed `.github/workflows/pages.yml` is the repository's GitHub Pages PWA publisher and triggers on pushes to `main`.
+- Hardened the workflow with `actions/configure-pages@v5` and upgraded `actions/upload-pages-artifact` to `@v4`, matching the current GitHub Pages custom-workflow deployment pattern.
+- Commit: `6b4589b705da76bb7ce9235febbac789232d1c05`.
+- The workflow still builds the Vite bundle with the repository base path, stamps the service-worker cache generation, creates `404.html`, runs `verify-pwa-build.mjs`, uploads `dist`, and deploys through the `github-pages` environment.
+- IMPORTANT: GitHub connector access available in this session does not expose the push-triggered Pages run/deployment result, and web access could not open the private/live deployment endpoint. Therefore runtime/PWA visual status remains UNKNOWN rather than being called PASS.
+- Next runtime gate: obtain the actual Pages deployment URL/run result, then browser-test the Brutal Fist match flow (including the current canon Bannon/Kobra roster pairing) on the newly deployed generation before calling the PWA verified.
+
+
+## Locomotion + knockdown correction pass — 2026-09-28
+
+- Owner runtime report promoted to P0: ordinary walking was visually reading as hyper-speed skating, and P2 AI pursuit made both bodies translate together across the arena when P1 retreated.
+- Root cause found in the current architecture: programmatic locomotion was using a 1.72 m/s walk tier while P2 AI continuously requested forward pursuit whenever outside its preferred gap. That made a player retreat and AI pursuit look like one sliding pair. Walk/run/backdash were not sufficiently separated in the browser feel.
+- Tuned locomotion tiers on main to deliberate walk 1.15 m/s, dash/run 3.2 m/s, backdash 2.7 m/s, sidestep 1.0 m/s; matched the unknown-clip animation playback fallback to 1.15 m/s.
+- Changed P2 pursuit to short approach pulses with a larger neutral band instead of continuously chasing the player. This preserves approach behavior without gluing both fighters together across the stage.
+- Added an authored `Smackdown` reaction to the canonical heavy-kick move so an ordinary playable attack now has an explicit grounded knockdown path instead of relying only on imported moves that may not be selected by the basic controls.
+- Updated the locomotion pace regression to enforce the new deliberate-walk contract and a clearly distinct dash tier.
+- IMPORTANT: these are source-level fixes; PWA/browser visual status remains UNKNOWN until the deployed generation is actually played. Do not call the walk, knockdown, or animation PASS from tests alone.
+
+
+### Project identity correction — 2026-09-28
+
+- **Brutal Fist is the active game in this repository (mhvnsnt/brutalfistgrokversionten).** Bannon is a separate game/project. The two share canon, characters, assets, footage, and other production resources where appropriate, but they are not the same game and must not be described as interchangeable.
+- “Make Bannon playable” is therefore not the project objective for this repo. The objective here is to make **Brutal Fist** playable and complete its own PWA/game flow. Bannon-derived material is treated as shared source/canon/asset input, not as a rename of the game.
+- Future production logs, PWA checks, animation work, combat work, stages, roster work, and open-source intake for this repository will be labeled **Brutal Fist** unless a Bannon asset/source is specifically being referenced.
+- Current deployment evidence: GitHub Pages run 36489445419 built and deployed main commit 7c70faba6b27aeb2946bc860437beda3a796ec47 successfully. This proves the new bundle reached the Pages deployment pipeline; it does **not** by itself prove that an already-installed phone PWA has refreshed to that generation. The service worker uses commit-stamped cache generations and controller-change/update checks, so the remaining gate is actual device/browser observation of the deployed Brutal Fist build.
+
+
+## 2026-09-28 — Grounded states, wakeup choices, AI throw discipline, grapple timing
+
+- Added a persistent grounded layer instead of forcing every knockdown to quick-stand. Fighters now retain face-up/face-down grounded presentation after the minimum fall duration and may remain down until the player chooses an option.
+- Added distinct wakeup state routes for forward roll, backward roll, side roll, kip-up, wake attack, backrise and quick-stand. These are separate semantic states so the mesh can resolve dedicated clips rather than turning every recovery into walking/idle.
+- Added grounded animation aliases for supine/prone, roll, kip-up and rising-attack candidates. Exact visual correctness remains UNKNOWN until a real PWA fighter is observed.
+- Changed successful grapple resolution so the throw break window can expire without immediately applying damage. The receiver is grounded and damaged only after the attacker's authored grapple move reaches its end, keeping attacker/receiver timing coupled.
+- Added an explicit AI throw cooldown and shortened approach pulses with a larger neutral band. The opponent should make discrete decisions instead of continuously translating with a retreating player or repeatedly holding a throw input.
+- Remaining grounded parity: four canonical face/feet orientations, grounded attacks, OTG rules, measured invulnerability/guard windows, and runtime PWA certification.
+
+- CI follow-up: grounded wakeup frame-data defaults and explicit regression typing were added after the first PR verification run exposed stale merge-ref typecheck failures.
+
+- Grounded wakeup CI trigger follows the corrected MoveLibrary state table and regression typing.
+
+- CI follow-up: removed the duplicate MoveWindow type import exposed by the next verification pass.
+
+
+## 2026-09-28 — Grounded/wakeup and grapple timing promoted to current main
+
+- Current main now contains the grounded combat layer: persistent face-up/face-down knockdown presentation, deliberate stay-down, forward/back/side rolls, kip-up and wake-attack routes, with semantic animation mappings and regression coverage.
+- Successful grapples now delay receiver damage/grounding until the attacker's authored grapple animation completes; failed breaks remain break outcomes instead of damage commits.
+- Opponent AI throw attempts have a real cooldown and its approach is pulse-based with a larger neutral band, reducing the old continuous pursuit/held-grapple exploit.
+- Dash playback cap raised from 2.6x to 3.0x so the measured 3.2 m/s dash can visually match the 1.15 m/s deliberate walk tier instead of being capped and skating.
+- CI typecheck passes on the current main changes. The remaining test failures are the pre-existing fighter-owned special/directional roster tests; they are being kept as failures rather than weakening them.
+- PR #27 and the stale-base reconciliation PR #28 were closed without deleting their commits; the grounded behavior itself is present on current main.
+
+
+## 2026-09-29 — Animation recovery pass: preserve authored rotational attacks
+
+- Audited the shipped baked manifest (455 clips) against the runtime animation gates before changing behavior.
+- Found a concrete false-positive: `HURRICANE_KICK` is measured as 1/22 moving bones, but it is not a frozen pose. Its baked evidence is 0.67 m travel, airborne=true, 0.991 strike reach, 0.8046 m strike extent, and 0.997 median spine-up. The old frozen/turn-away gates could therefore discard a visually authored spinning kick.
+- Fixed `markFrozen()` and `markTurnsAway()` to recognize measured rotational-attack signatures instead of treating every low-moving-bone or rear-facing frame as broken. The same evidence is now exposed to the repair audit as `rotationalAttack`.
+- Added a regression test proving Hurricane Kick remains animated and facing-valid after manifest verdict installation.
+- Existing grapples remain on the two-body contract: deliverer + paired receiver. The baked bank already contains measured grapple pairing and 89 Quaternius source clips; Quaternius' current Universal Animation Library releases are CC0 and include combat/locomotion/root-motion variants, so that open-source lane remains available for replacement/rebake candidates.
+- IMPORTANT: do not blanket-repair the 455 clips. The audit must continue to protect known-good guards, walks, jumps, crouches, and authored default strikes/kicks, and only replace clips after measured evidence or visual certification shows a fault.
+
+### Animation work still required / missing
+
+- Generate a real per-clip repair report artifact with KEEP/ROUTE/REBAKE/REAUTHOR/BLOCK plus the underlying measurements; console-only audit is insufficient.
+- Add a measured loopability field instead of leaving locomotion loopability UNKNOWN in the runtime audit.
+- Add actual unresolved-track evidence to the runtime audit instead of hard-coding unresolvedTracks=0.
+- Separate semantic/routing defects from actual motion defects; do not let a bad semantic label cause a good clip to be treated as a rig failure.
+- Continue two-sided grapple certification using the existing Schwarzerblitz/Forger-Blitz-intended grapple lane and the user's Getbackk/Chainsnatcher footage when available; every promoted grapple needs synchronized attacker/receiver evidence.
+- Re-audit all open-source/Quaternius clips after routing changes; preserve good clips and only rebake/re-author measured failures.
+- PWA visual certification is still required after the latest main changes; CI/deploy status must be verified from GitHub Actions before calling the PWA fixed.
+
+## 2026-09-29 — Animation routing + two-body grapple correction pass
+
+- Re-audited the current public/motion/baked/index.json directly instead of treating old working reports as protection. The bank currently contains 455 clips. Raw evidence flags include 72 low-motion/static candidates, 104 inverted candidates, 65 starts-down candidates, 15 turn-away attack candidates, and 12 multi-body/team captures. These are audit flags, not blanket repair counts; semantic role matters (receivers, taunts, aerials and rotational attacks can legitimately violate a standing-slot measurement).
+- Found an important runtime hole: a caller supplying a clip filename directly could bypass the measured animation safety gates. That meant a currently-broken explicit clip could still play even though the semantic resolver would have rejected it. Fixed FighterMesh so explicit solo clips now pass live keyframe motion, authored-pose, team-capture, upright/start/facing/strike gates before playback. Failed explicit clips fall through to a measured healthy semantic/alias candidate. Real grapple receiver clips retain their receiver-specific allowance while still being required to animate and remain single-body/not owner-labelled broken.
+- This is specifically intended to stop stale historical 'this used to work' assignments from protecting a clip that is broken now.
+- Fixed the repair classifier so semantic=null is BLOCK/WRONG_SEMANTIC rather than accidentally becoming ROUTE. UNKNOWN remains fail-closed.
+- Reconciled movement regression expectations with the current deliberate 25%-tier locomotion contract rather than raising movement speeds just to satisfy old tests. The current fallback prevents an unmeasured clip from being fast-forwarded past the 1.5x safety cap.
+- Current Quaternius intake is real baked source data, not just documentation: the bank contains UAL1/UAL2 vendor clips, including locomotion, crouch, jump, punch, hit, roll, melee and receiver variants. The official Quaternius libraries are CC0, retargetable humanoid packs, and the June 2026 releases include separate root-motion and in-place variants.
+- Grapple lane remains two-body-first. Current inventory documents 14 Bannon two-body captures (12 grapple/aerial pairs after excluding two locomotion captures), plus existing Schwarzerblitz/Bannon receiver clips. Getbackk and Chainsnatcher remain explicit two-sided certification jobs; no synthetic receiver is being promoted as an exact owner capture.
+- Next runtime work is now centered on repairing/re-routing clips that fail current evidence, not preserving historical assignments: per-clip repair artifact, measured loopability/unresolved-track evidence, named grapple pair smoke scenarios across different roster fighters, then PWA visual certification.
+- Current GitHub Pages deployment for the newest changes is queued/in progress; CI is also queued. Do not call the latest animation pass PWA-certified until those runs complete and the browser playtest passes.
+
+### Animation missing-needed list update
+- Live explicit-clip safety routing: DONE.
+- Semantic UNKNOWN fail-closed: DONE.
+- Two-body grapple receiver synchronization: IN PROGRESS.
+- Attach real grapple pairs to multiple distinct roster fighters for visible gameplay coverage: IN PROGRESS.
+- Per-clip repair artifact + measured loopability + real unresolved-track evidence: REQUIRED.
+- Full 455-clip current audit and targeted rebake/re-author pass: IN PROGRESS.
+- UAL1/UAL2 retarget quality audit and selective promotion: IN PROGRESS.
+- PWA combat visual certification of movement, sub-states, bones/joints, strikes, guards, crouches, jumps, wakeups and grapples: REQUIRED.
+
+
+## 2026-09-28 — Authored animation playback / moveset regression repair
+
+- Root cause found for the current “some attacks do not play / some are too fast” regression: authored per-fighter clips were being pushed into the FSM's semantic motion-state field. That makes the renderer lose the canonical attack state while the visual clip is being selected, so attack locks, root-motion/attack-state routing and replay ownership can disagree. Fixed by keeping `lightAttack`/`heavyAttack`/`lightKick`/`heavyKick` (or the move's semantic animation) as the state and carrying the authored animation only in `MoveWindow.clip`.
+- Explicit per-fighter clips now use the same measured attack safety gates as semantic resolution: live motion, upright/start posture, single-body capture, non-receiver, forward strike, and facing. A bad generated assignment is rejected and falls back to a measured semantic clip instead of forcing a visibly broken animation.
+- Attack playback speed is now explicitly 1.0x for authored combat clips. The combat frame-data clock and animation playback clock are separate; no attack clip is silently sped up to fit startup/active/recovery. A valid longer clip is allowed to finish at authored speed rather than being fast-forwarded. This removes the prior speed regression without changing the deliberate locomotion pacing contract.
+- Locomotion pacing remains the deliberate measured contract: walk 0.90 m/s, retreat/back-walk 1.10 m/s, dash 3.00 m/s, sidestep 1.00 m/s, with the unmeasured locomotion fallback at 0.95 m/s.
+- Current generated move data contains several measured clips that fail the grounded attack gates (examples include backward-striking/airborne/long demonstration captures). Those assignments are no longer allowed to bypass the runtime gate; they remain in the move bank for audit/reclassification instead of being deleted.
+- PWA visual certification is still REQUIRED. GitHub has no workflow/status result attached to the three repair commits yet, so this pass is source-corrected but not claimed as browser-certified.
+
+
+## 2026-09-29 — Preview crash hotfix
+
+- Preview crash `attackClip is not defined` traced to the first explicit-clip safety patch being inserted inside `resolveClipName()`, where the prop is not in scope.
+- Removed that out-of-scope reference and moved the explicit per-fighter clip validation into the FighterMesh render/playback effect, where `attackClip` is actually available.
+- The safety behavior is preserved: explicit clips must pass motion/upright/start/team-capture and grounded attack direction/receiver gates before they can override the semantic move. Otherwise the normal measured resolver remains authoritative.
+- Main hotfix commit: `e9d5d1c9e6a63fa74302f33373e2ac3e76964003`.
+- PWA visual certification remains pending; this fixes the client-module crash so preview can load again.
 
 
 ### Intro FMV treatment v2: owner decisions, round 2 (docs only) — 2026-09-28

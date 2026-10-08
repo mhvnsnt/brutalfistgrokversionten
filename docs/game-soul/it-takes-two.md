@@ -1,0 +1,25 @@
+# It Takes Two — Heart and Soul
+- Developer / studio: Hazelight Studios (director Josef Fares), published by EA Originals
+- Genre / platforms: Co-op-only action-adventure — PS4/PS5, Xbox One/Series X|S, PC, Nintendo Switch (2021)
+- Why players come back (in the devs' view):
+  - Never repeat a mechanic: "It Takes Two never repeats a major mechanic from level to level" — variety is "a key sticking point"; something new around every corner, story-driven, so players never get bored and actually finish the game.
+  - Finish-the-game obsession: "it bothers me that the statistics we have on games, people don't even finish them... I really do believe that you have to have a varied experience" — the design goal is completion, not replayability, and variety is how you earn it.
+  - Mechanics AS story: writers and designers must never feel like "two different games" — every mechanic is a metaphor for the relationship, so gameplay "feels like it's essential to the story, and vice versa."
+  - Co-op only, by design: "written and designed from the beginning as co-op... You cannot play it alone" — two different characters with different abilities create drama and dynamics impossible in single-player; Fares finds co-op "underestimated from a creative perspective."
+- Key quotes:
+  - "It bothers me that the statistics we have on games, people don't even finish them. It's crazy how the statistics look like. And I think one of the reasons is that the games are too repetitive... I really do believe that you have to have a varied experience." — Josef Fares, Director, GamingBolt, 2020
+  - "I can guarantee you, I'm ready to give you $1,000 if someone genuinely think that they get tired of It Takes Two. It's impossible, because there will be something new around every corner for a story reason, or for what they go through." — Josef Fares, Director, GamingBolt, 2020
+  - "When you have two characters that are very different, and even mechanically play different, the dynamic between them creates a way more interesting story... Sometimes it's even more interesting what goes on on the couch, or with the attraction between the players and characters, because people actually connect to the characters they are playing more than I expected." — Josef Fares, Director, GameSpot, 2021
+- Why players love/support it:
+  - The Friend's Pass: only one copy needed for two players — an anti-friction gift mechanic that turned the game into the default "play this with someone you love" recommendation (GOTY 2021, 20M+ copies sold).
+  - An experience you can't get alone: every level reinvents the game (mini-games, genre switches), so players keep talking about "the part where..." — watercooler moments built into the level list.
+  - It filled a neglected space: the "games for two" niche was empty; Hazelight owned it completely.
+- Monetization philosophy (devs' words, if any):
+  - No on-record statement found on monetization philosophy. The model speaks for itself: one premium price, zero microtransactions, and the Friend's Pass free for player two. Fares' philosophy is anti-content-treadmill ("I do believe that many of the single-player games last a bit too long and mechanics are used for too long"), which reads as a rejection of engagement-monetized design.
+- Lesson for our games (1-2 lines, concrete):
+  - Variety is retention: never let a mechanic outstay its welcome — every level should play like a new game. And mechanics should serve story: when the gameplay IS the narrative metaphor, players finish the game instead of abandoning it halfway.
+- Sources:
+  - https://www.gamespot.com/articles/josef-fares-it-takes-two-is-co-op-because-i-like-to-f-k-with-the-players-minds/1100-6488262/
+  - https://gamingbolt.com/narrative-games-can-become-very-repetitive-josef-fares-promises-max-variety-for-it-takes-two
+  - https://www.pcgamesn.com/it-takes-two/josef-fares-collectibles
+- Coverage note: GamingBolt (2020) and GameSpot snippets verified against multiple sources; GameSpot full page not fetched — its quote is snippet-verified against the article preview. No on-record dev statement found on It Takes Two's monetization philosophy.

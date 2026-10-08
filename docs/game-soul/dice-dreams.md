@@ -1,0 +1,17 @@
+# Dice Dreams — Heart and Soul
+- Developer / studio: SuperPlay (Israeli studio; acquired by Playtika for up to $1.95B, 2024)
+- Genre / platforms: Social casino-adjacent board/kingdom builder (dice rolls, raids, village building); iOS, Android
+- Why players come back (in the devs' view): retention in layers — D1–D7 needs a super-satisfying tight core loop with "soul"; mid-game needs gated feature reveals (big unlocks at day 14/30+); all-time needs a hyperactive live-ops calendar where every chase ends just as the next one starts; emotionally connecting characters (the Peons) and seamless core+meta on one screen
+- Key quotes: (4)
+  - "Juicy, delightful interaction, clear UX, minimal friction, and a sprinkle of 'soul' to fall in love with the world. These are key to the early days of the player." — Elad Drory, CPO and Co-founder of SuperPlay, PocketGamer.biz, 2024
+  - "If you grit your teeth and only unlock big features in days 14, 30, or even later, it can be such a big moment for players that ultimately makes the game much more engaging and carries you to that D90 mark and high ROAS progression." — Elad Drory, CPO and Co-founder of SuperPlay, PocketGamer.biz, 2024
+  - "We want players to always feel like there are exciting things happening in the game, and every time one chase ends, they're already in the middle of the next chase." — Elad Drory, CPO and Co-founder of SuperPlay, PocketGamer.biz, 2024
+  - "We want our games to create memories and emotional connections for our players, both through the social loops of the game and through in-game characters that make the game feel alive and welcoming." — Elad Drory, CPO and Co-founder of SuperPlay, PocketGamer.biz, 2024
+- Why players love/support it: social loops (raiding friends' kingdoms); the lovable Peon characters the team "fell in love with" first; remote-reconfigurable events that keep the world visually and functionally fresh
+- Monetization philosophy (devs' words, if any): none stated directly in the interview; Drory describes long-term value through "D90 mark and high ROAS progression" driven by gated feature unlocks and an "extremely active live ops calendar," plus heavy data-driven marketing (celebrity creatives: Eva Longoria, Kate Beckinsale).
+- Lesson for our games (1-2 lines, concrete): Hold back finished features and gate them by day 14/30+ — a big reveal beats early completeness for D90 retention. And build remote-reconfig tooling so one event ending always overlaps the next starting.
+- Sources:
+  - https://www.PocketGamer.biz/how-superplay-grew-dice-dreams-into-a-300m-sleeper-hit/
+  - https://www.pocketgamer.biz/five-lessons-on-dice-dreams-successful-growth-strategy/
+  - http://mobilegamer.biz/playtika-to-acquire-dice-dreams-maker-superplay-for-700m/
+- Coverage note: Developer interview located and verified (PocketGamer.biz, March 2024, republished after Playtika acquisition). Drory does not state an explicit monetization philosophy; that section reflects what the interview documents.

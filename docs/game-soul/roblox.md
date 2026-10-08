@@ -1,0 +1,15 @@
+# Roblox — Heart and Soul
+- Developer / studio: Roblox Corporation
+- Genre / platforms: User-generated games platform; PC, console, mobile
+- Why players come back (in the devs' view): Connection through co-creation — millions playing together daily in a world where everyone can be both player and creator; creativity comes from ordinary users in every country.
+- Key quotes:
+  - "Roblox was founded really with the vision of creating a platform where people could play and connect, where all of the content, all of the games, all of the experiences... is 100 percent created by the user community." — David Baszucki, co-founder & CEO, Conversations with Tyler (Tyler Cowen), recorded May 27, 2026
+  - "The vast majority of the players on our platform are not spending any money. They're coming, they're playing for free, they're having great experiences with their friend." — David Baszucki, Conversations with Tyler, 2026
+  - "We actually decided to pull it [pre-roll advertising] out because we really wanted to focus on the fun and the user experience." — David Baszucki, Conversations with Tyler, 2026
+  - "The focus isn't creating teenage millionaires" — the point is a platform where people play and connect; creator earnings are a byproduct. — David Baszucki, Conversations with Tyler, 2026
+- Why players love/support it: Players ARE the content. Free players get full experiences; creators are celebrated; the platform trusts ordinary users.
+- Monetization philosophy (devs' words): Fun and user experience first — pulled ads to protect it. Creators want their creations "to be fun for everyone who's playing for free, which is the vast majority of everyone."
+- Lesson for our games: The game gets humanity when players leave fingerprints on it. Trust the community as co-creators, not just an audience.
+- Sources:
+  - https://conversationswithtyler.com/episodes/dave-baszucki/
+- Coverage note: All quotes from a single long-form interview; verified via fetched page.

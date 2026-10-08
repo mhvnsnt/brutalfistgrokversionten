@@ -1,0 +1,19 @@
+# Resident Evil Village — Heart and Soul
+- Developer / studio: Capcom (director Morimasa Sato; producers Tsuyoshi Kanda and Peter Fabiano)
+- Genre / platforms: First-person survival horror; PS5, PS4, Xbox Series X/S, PC (2021)
+- Why players come back (in the devs' view): Variety of horror. Village was designed as a "theme park of horror" — each of the four lords embodies a *different* style of horror (gothic castle, doll-house psychological, swamp survival, factory action), "to ensure environments and gameplay all felt fresh up until the very end" and "keep players interested — and on their toes." Player freedom: Sato wanted "more freedom toward solving problems" — "a horror movie that you can play." The critical balance: more action than RE7 was fine, but "it's important that the player constantly feels afraid of the enemies, and the experience should be all about overcoming that fear." Also Mercenaries mode replayability and the Gold Edition's third-person mode.
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "We wanted to make sure each location offered something different and new for anyone stepping into its premises for the first time." — Morimasa Sato, director, Inverse, 2021 [unverified]
+  - "That is indeed something we need to be very careful with... It's important that the player constantly feels afraid of the enemies, and the experience should be all about overcoming that fear." — Morimasa Sato, director, IGN interview (via ResetEra summary), 2021 [unverified]
+  - "You'll notice we took a lot of inspiration from Resident Evil 4. The team has put a ton of effort into creating a truly authentic feel. There are plenty of surprises to keep you on your toes; players will find a balance of combat, exploration, and puzzle solving." — Peter Fabiano, producer, Official PlayStation Magazine (via GamingBolt), 2021 [unverified]
+  - "While Ethan was just a young man who had somehow found himself in this house of maniacs in Resident Evil 7, this time I wanted to portray him as a father." — Morimasa Sato, director, IGN interview (via ResetEra summary), 2021 [unverified]
+- Why players love/support it: Lady Dimitrescu became a cultural phenomenon; the four distinct areas give near-replayable variety in one campaign; the overarching RE universe crossover setup (Umbrella/Spencer seeds per producer Jun Takeuchi's 30th-anniversary interview) rewards deep-lore fans and feeds fan analysis that drives the series' narrative strategy.
+- Monetization philosophy (devs' words, if any): Premium game + expanded Gold Edition (third-person, Mercenaries characters, Winters' Expansion). No on-record dev monetization philosophy found.
+- Lesson for our games (1-2 lines, concrete): One campaign, many flavors — if each district/faction plays like a different *genre of street*, players replay for variety within one purchase. And protect the tension curve: action growth must never make players stop being afraid of enemies.
+- Sources: (URLs)
+  - https://www.inverse.com/gaming/resident-evil-village-game-director-interview-lady-dimitrescu
+  - https://www.resetera.com/threads/resident-evil-villages-director-interview-by-ign.418443/
+  - https://gamingbolt.com/resident-evil-village-took-a-lot-of-inspiration-from-resident-evil-4-says-producer
+  - https://www.gamepur.com/guides/what-does-resident-evil-village-gold-edition-include-new-modes-new-mercenaries-characters-and-more
+- Coverage note: (if no on-record dev statements found, say so; label press analysis as ANALYSIS, never quotes)
+  - All quotes are via secondary summaries (ResetEra, Inverse snippet, GamingBolt) of primary interviews (IGN, Inverse, OPM) — all marked [unverified]. No direct full-text fetch of the primary interviews was performed.

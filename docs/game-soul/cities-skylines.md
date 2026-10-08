@@ -1,0 +1,18 @@
+# Cities: Skylines — Heart and Soul
+- Developer / studio: Colossal Order (Paradox Interactive)
+- Genre / platforms: City-builder simulation; PC, Mac, Linux, consoles
+- Why players come back (in the devs' view): Facilitate many different player types at once — the beautiful-city creators (unlimited-money mods), the machine-optimizers, the horrible mayors who flood the map — and give the community real tools so modders become "a huge team" alongside the 13-person studio. The devs' job: build what modders can't (deep simulation features), make failing forgiving rather than ruthless, and keep investing in the simulation so players keep pushing its limits.
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "I think the modding is another way to involve people in the development of the game... People are helping us to make the game into something great. We are a small team but with the modders, we're a huge team." — Mariina Hallikainen, CEO, Colossal Order, Rock Paper Shotgun, 2015
+  - "We try to facilitate it to many different kinds of players... Some people want to make beautiful things and don't care about money... [others] want to balance the city, think about the strategy behind it. Like how to build an optimal and perfect city." — Mariina Hallikainen, CEO, Colossal Order, GameReactor/RPS, 2015 [unverified — paraphrase from snippets]
+  - "We didn't want it to be so ruthless that you could fail if you messed up your road network... we wanted failsafes for younger or more casual players." — Mariina Hallikainen, CEO, Colossal Order, Rock Paper Shotgun, 2015 [unverified]
+  - "And Paradox are really committed to us making a lot of free content. That's really important because adding tunnels, for example, isn't something we want to charge people for. It should be in the game." — Mariina Hallikainen, CEO, Colossal Order, Rock Paper Shotgun, 2015
+- Why players love/support it: The definitive post-SimCity city builder — intuitive road tools, living citizen simulation, tens of thousands of mods, and a decade of support. Players stay because their cities are personal creative achievements and because the game never punishes experimentation.
+- Monetization philosophy (devs' words, if any): "We are working together WITH the community, so we're developing things that they can't" — charge for expansions, but missing-in-spirit features (like tunnels) go in free: "It should be in the game." — Mariina Hallikainen, RPS, 2015
+- Lesson for our games (1-2 lines, concrete): Ship powerful modding/tools and let the community finish your vision — a small team plus a huge modder base beats a big team alone; and never charge for what "should be in the game."
+- Sources: (URLs)
+  - https://www.rockpapershotgun.com/mods-maxis-and-forward-motion-cities-skylines-interview
+  - https://www.gamereactor.eu/facilitating-different-players-with-cities-skylines/
+  - http://www.pcgamesn.com/cities-skylines/how-colossal-order-touched-the-clouds-the-making-and-success-of-cities-skylines
+  - https://www.gamedeveloper.com/design/how-colossal-order-turned-roads-into-the-backbone-of-cities-skylines-ii
+- Coverage note: RPS 2015 quotes verified from fetched page. GameReactor paraphrase is snippet-sourced, marked [unverified].

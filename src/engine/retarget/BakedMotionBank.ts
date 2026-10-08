@@ -9,6 +9,7 @@ import { fetchZstdJson } from '../assets/zstdJson.ts';
 import { setLowerBodyCredibility } from '../motion/BoneMask.ts';
 import { setAuthoredStrideSpeeds } from '../motion/DistanceMatching.ts';
 import { setDerivedAttackLevels } from '../combat/DerivedAttackLevels.ts';
+import { diagnoseAnimation, summarizeAnimationAudit, type AnimationDiagnosis } from '../animation/AnimationRepairPipeline.ts';
 
 /**
  * CLIPS ALREADY RESOLVED ONTO THE ONE SKELETON.
@@ -162,6 +163,8 @@ export interface BakedManifestEntry {
   spineUp?: number;
   /** Which way the legs hang, median over the clip. -1 is a standing leg. */
   legDown?: number;
+  /** Offline lower-body evidence, merged into the runtime audit when available. */
+  lowerBodyCredible?: boolean;
 }
 
 /** Past this, a clip's feet never reach the ground and it cannot be a stance. */
@@ -367,6 +370,44 @@ const BASE = '/motion/baked/';
  * Fighters need combat owners first; taunts, demos and utility/open-library
  * clips hydrate into the same Map after the arena is alive.
  */
+/**
+ * Filter generated per-fighter attack assignments against the SAME measured
+ * manifest gates used by FighterMesh. Once the manifest exists, UNKNOWN is not
+ * promoted to PASS: a generated clip must have enough evidence to be a real,
+ * solo, upright, forward-facing attack before it can replace a semantic move.
+ */
+function sanitizeGeneratedMoveClips(
+  manifest: Record<string, BakedManifestEntry>,
+  raw: Record<string, Array<Record<string, unknown>>>,
+): Record<string, Array<Record<string, unknown>>> {
+  const out: Record<string, Array<Record<string, unknown>>> = {};
+  for (const [fighterId, rows] of Object.entries(raw ?? {})) {
+    out[fighterId] = (rows ?? []).map((row) => {
+      const clip = typeof row.clip === 'string' ? row.clip : '';
+      const entry = clip ? manifest[clip] : undefined;
+
+      // Only promote facts that are actually measured and unambiguous here:
+      // the clip exists in the baked bank, contains real motion, is a solo
+      // capture, and is not explicitly classified as a reaction/receiver or
+      // malformed clip. Do NOT infer punch-vs-kick or Ground-vs-Air from the
+      // strike heuristic: the audit has demonstrated those fields are not
+      // reliable enough to rewrite authored move slots.
+      const measurable =
+        !!entry
+        && (entry.boneCount ?? entry.bones ?? 0) >= ANIMATED_MIN_BONES
+        && (entry.movingBones ?? 0) >= MIN_MOVING_BONES
+        && (entry.bodies ?? 1) < TEAM_BODY_MIN
+        && !entry.receives
+        && !notAPose.has(clip)
+        && !notAnimated.has(clip)
+        && !inverted.has(clip);
+
+      return measurable ? row : { ...row, clip: '' };
+    });
+  }
+  return out;
+}
+
 const CORE_BAKED_SEMANTICS = new Set([
   'idle','walk_forward','walk_back','strafe_left','strafe_right',
   'attack_1','attack_rp','attack_2','attack_lk','attack_rk',
@@ -557,7 +598,20 @@ export function markTurnsAway(manifest: Record<string, BakedManifestEntry>): Set
     if (!/^attack/.test(entry.semantic ?? '')) continue;
     const worst = entry.strike?.faceMin;
     if (worst === undefined) continue;
-    if (worst < FACE_AWAY_MIN) out.add(name);
+    if (worst >= FACE_AWAY_MIN) continue;
+
+    // Spinning attacks legitimately pass through rear-facing frames. Refusing
+    // every attack whose minimum facing crosses zero was the exact failure
+    // mode that broke Hurricane Kick even though its strike reach is clean.
+    // Require both large rotational travel and a long strike extension before
+    // treating a rear-facing frame as an authored spin rather than a backward
+    // strike.
+    const authoredSpin =
+      entry.airborne === true &&
+      (entry.travels ?? 0) >= 0.4 &&
+      (entry.strike?.reach ?? 0) >= 0.85 &&
+      (entry.strike?.reachExtent ?? 0) >= 0.7;
+    if (!authoredSpin) out.add(name);
   }
   return out;
 }
@@ -672,8 +726,42 @@ export function markSlotOwners(manifest: Record<string, BakedManifestEntry>): Ma
  *
  * Unknown clips are allowed, so a checkout with no bake behaves as before.
  */
-export function clipAnimates(name: string): boolean {
-  return !notAnimated.has(name);
+/**
+ * Runtime animation evidence can be newer than the committed manifest. In
+ * particular, a stale movingBones field must not quarantine a real imported
+ * clip, and a stale "healthy" field must not resurrect a frozen one.
+ *
+ * When the actual AnimationClip is available, measure its quaternion tracks
+ * directly. Three.js AnimationClip stores the actual keyframe tracks, so this
+ * check is independent of filename/alias ordering and catches stale bake
+ * metadata at the point where the clip is about to play.
+ */
+export function clipAnimates(name: string, clip?: THREE.AnimationClip): boolean {
+  const manifestSaysAnimated = !notAnimated.has(name);
+  if (!clip) return manifestSaysAnimated;
+
+  const quaternionTracks = clip.tracks.filter((track) => track.name.endsWith('.quaternion'));
+  if (quaternionTracks.length < ANIMATED_MIN_BONES) return false;
+
+  let movingBones = 0;
+  for (const track of quaternionTracks) {
+    const values = track.values;
+    if (values.length < 8) continue;
+    const x0 = values[0], y0 = values[1], z0 = values[2], w0 = values[3];
+    let widest = 0;
+    for (let i = 4; i + 3 < values.length; i += 4) {
+      const dot = Math.abs(
+        x0 * values[i] + y0 * values[i + 1] + z0 * values[i + 2] + w0 * values[i + 3],
+      );
+      widest = Math.max(widest, Math.acos(Math.min(1, dot)) * 2 * 180 / Math.PI);
+    }
+    if (widest > 5) movingBones++;
+  }
+
+  // Actual clip evidence is authoritative for the static/frozen question.
+  // The manifest is still useful before loading, but it cannot override what
+  // the loaded keyframes actually contain.
+  return movingBones >= MIN_MOVING_BONES;
 }
 
 /** For tests: the clips the last manifest ruled out as frozen. */
@@ -688,7 +776,15 @@ export function markFrozen(manifest: Record<string, BakedManifestEntry>): Set<st
     const bones = entry.boneCount;
     const moving = entry.movingBones;
     if (bones === undefined || moving === undefined) continue;
-    if (bones >= ANIMATED_MIN_BONES && moving < MIN_MOVING_BONES) out.add(name);
+    if (bones < ANIMATED_MIN_BONES || moving >= MIN_MOVING_BONES) continue;
+
+    // Root travel, airborne state, strike reach, or a large hip rotation
+    // cannot turn a one-bone clip into a full-body animation. That exact
+    // exception previously protected HURRICANE_KICK: 1/22 bones moved while
+    // the hips spun ~172 degrees, so the runtime rendered a spinning statue.
+    // Rotational attacks still need articulated limb/body motion; they are
+    // not exempt from the static gate.
+    out.add(name);
   }
   return out;
 }
@@ -757,6 +853,46 @@ export function applyStandability(manifest: Record<string, BakedManifestEntry>):
   turnsAway = markTurnsAway(manifest);
   startsDown = markGroundStarts(manifest);
   return notStandable;
+}
+
+/**
+ * Evidence-first audit of the baked bank. This is deliberately derived from
+ * the same measurements already present in index.json; it does not invent a
+ * PASS from a filename or playback success. Missing measurements remain
+ * UNKNOWN/null and therefore cannot silently become a healthy verdict.
+ */
+export function auditBakedAnimationManifest(
+  manifest: Record<string, BakedManifestEntry>,
+): { rows: AnimationDiagnosis[]; summary: ReturnType<typeof summarizeAnimationAudit>; healthyReferenceClips: string[] } {
+  const rows = Object.entries(manifest).map(([name, entry]) => diagnoseAnimation({
+    clipName: name,
+    semantic: entry.semantic ?? null,
+    source: 'RETARGETED',
+    movingBones: entry.movingBones ?? null,
+    boneCount: entry.boneCount ?? entry.bones ?? null,
+    spineUp: entry.spineUp ?? null,
+    startUp: entry.strike?.startUp ?? null,
+    faceMin: entry.strike?.faceMin ?? null,
+    bodies: entry.bodies ?? 1,
+    unresolvedTracks: 0,
+    lowerBodyCredible: entry.lowerBodyCredible ?? null,
+    hasRootTravel: (entry.travels ?? 0) > 0,
+    rotationalAttack:
+      /^attack/.test(entry.semantic ?? '') &&
+      entry.airborne === true &&
+      (entry.travels ?? 0) >= 0.4 &&
+      (entry.strike?.reach ?? 0) >= 0.85 &&
+      (entry.strike?.reachExtent ?? 0) >= 0.7,
+    loopable: null,
+    owner: Boolean(entry.owns),
+  }));
+  // A reference is a measured healthy OWNER, not merely a clip whose name
+  // contains "punch" or "kick". These references protect the working defaults
+  // from broad repair passes and become the control group for future rebakes.
+  const healthyReferenceClips = rows
+    .filter(r => r.repairClass === 'KEEP' && r.evidence.owner)
+    .map(r => r.clipName);
+  return { rows, summary: summarizeAnimationAudit(rows), healthyReferenceClips };
 }
 
 /** Decide standability from a manifest without needing the network. */
@@ -904,7 +1040,31 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
   const out = new Map<string, THREE.AnimationClip>();
   try {
     const manifest = (await fetchZstdJson(INDEX_URL)) as Record<string, BakedManifestEntry>;
+
+    // Merge the independently measured lower-body evidence before auditing.
+    // This keeps the repair classifier tied to the actual bake measurements,
+    // while preserving fail-open loading if the optional report is absent.
+    try {
+      const lower = await fetchZstdJson('/motion/lower_body_credibility.json') as {
+        clips?: Record<string, { credible?: boolean }>;
+      };
+      for (const [name, row] of Object.entries(lower.clips ?? {})) {
+        if (manifest[name] && typeof row.credible === 'boolean') {
+          manifest[name].lowerBodyCredible = row.credible;
+        }
+      }
+    } catch {
+      // Missing optional evidence stays null/unknown in the classifier.
+    }
+
     applyStandability(manifest);
+    const animationAudit = auditBakedAnimationManifest(manifest);
+    console.info(
+      '[AnimationRepairPipeline] baked audit:',
+      animationAudit.summary,
+      'healthy owner references:',
+      animationAudit.healthyReferenceClips.length,
+    );
     // The opponent's half of every grapple, read off the same index rather
     // than a second fetch. See engine/combat/GrapplePairing.
     markGrapplePairs(manifest);
@@ -914,7 +1074,14 @@ async function loadBakedMotionBankOnce(): Promise<Map<string, THREE.AnimationCli
     // The generated per-fighter movesets, same deal: silent on failure, and
     // absent it every fighter keeps exactly the imported commands he had.
     void fetchZstdJson('/motion/movesets.json')
-      .then((m) => { if (m) setGeneratedMovesets(m as never); })
+      .then((m) => {
+        if (!m) return;
+        const sanitized = sanitizeGeneratedMoveClips(
+          manifest,
+          m as Record<string, Array<Record<string, unknown>>>,
+        );
+        setGeneratedMovesets(sanitized as never);
+      })
       .catch(() => {});
     void fetchZstdJson('/motion/command-clips.json')
       .then((m) => { if (m) setCommandClipMap(m as never); })

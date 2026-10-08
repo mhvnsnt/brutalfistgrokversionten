@@ -1,0 +1,15 @@
+# Brawl Stars — Heart and Soul
+- Developer / studio: Supercell
+- Genre / platforms: Top-down hero brawler; mobile
+- Why players come back (in the devs' view): Community co-creation — a team trusted and left alone building the game WITH players: taking forum jokes and Reddit ideas straight into the game, with brawlers whose personality and culture shine through ("iconic simplicity" in character design).
+- Key quotes:
+  - "We've gone all-in with building a game together with our community, rather than for them." — Frank Keienburg, Brawl Stars Game Lead/GM, PocketGamer.biz, 2021 [unverified — via secondary reporting]
+  - "When you go through other organizations, you end up with three or four layers of approvals to do anything. But here, we see a cool idea on Reddit, and we implement it. There's no approval chain – we just do it." — Frank Keienburg, GamesIndustry.biz, 2018 [unverified — via secondary reporting]
+  - "With the coming update we will remove boxes, yes, all boxes from the game. No more probabilities, no more random rewards, and no more playing the guessing game when you unlock brawlers." — Frank Keienburg, Brawl Talk, quoted via PocketGamer.biz, Dec 2022
+  - "We're making this change for a few reasons, mainly moving away from probabilities and chances, which will make things more fair and predictable for you... It also gives you clear and exciting goals every time you play the game." — Supercell, PocketGamer.biz, Dec 2022
+- Why players love/support it: 3-minute sessions that respect your time; fair, deterministic progression. When players complained about loot-box fairness, the team actually removed them.
+- Monetization philosophy (devs' words): Fairness through determinism — removed ALL loot boxes in 2022 to make progression "more fair and predictable." (Note: Supercell later partially reintroduced random "Starr Drops" in 2023-24; the fairness principle remains the stated stance.)
+- Lesson for our games: When players complain about fairness, the beloved games actually listen. Deterministic progression beats gambling mechanics for long-term love.
+- Sources:
+  - https://www.pocketgamer.biz/supercell-unveils-a-new-monetisation-strategy-in-brawl-stars/
+- Coverage note: Interview quotes via secondary reporting; marked unverified. Starr Drops caveat noted.

@@ -23,6 +23,8 @@
  * failed is strictly worse than a game with no cache layer.
  */
 
+declare const __BF_BUILD_VERSION__: string;
+
 export interface RegisterResult {
   registered: boolean;
   reason?: string;
@@ -73,7 +75,8 @@ export async function registerServiceWorker(): Promise<RegisterResult> {
     // only the second one may reload.
     const hadController = Boolean(navigator.serviceWorker.controller);
 
-    const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+    const workerUrl = `./sw.js?bf=${encodeURIComponent(__BF_BUILD_VERSION__)}`;
+    const reg = await navigator.serviceWorker.register(workerUrl, { scope: './' });
 
     // TAKING OVER IS NOT THE SAME AS BEING USED.
     //

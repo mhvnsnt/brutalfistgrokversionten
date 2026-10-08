@@ -1,0 +1,23 @@
+# Dragon Ball Z Dokkan Battle — Heart and Soul
+- Developer / studio: Bandai Namco (developed by Akatsuki Inc.; live ops by Bandai Namco's Dokkan Battle operation team). Producer interviewed: Toshitaka Tachibana.
+- Genre / platforms: Puzzle-board battle RPG gacha; iOS / Android (launched JP Jan 2015, global 2015; 350M+ downloads by 2022 anniversary).
+- Why players come back (in the devs' view):
+  - Gradual mastery that mirrors the DBZ story: players feel themselves getting better at a slow rate — train like Goku, then beat an "impossible" opponent, then prove the strongest party against the next one.
+  - Constant updates that fix what players felt could be better, plus new characters dropped at relevant timing (e.g., a character debuts in Dragon Ball Super) so players are "heated up" for them.
+  - Veterans are made to feel appreciated; new players are made to feel they can comfortably catch up — the explicit retention goal for the west.
+  - Character attachment is the meta layer: "as many ways to enjoy DOKKAN BATTLE and play styles as there are players" — the operation team watches player reaction, runs player surveys, and reflects feedback in the game "little by little."
+- Key quotes:
+  - "I feel like it's the experience where players feel they are getting better at a slow rate, such as when Goku was in training in the story and then finally defeating a seemingly impossible opponent, and then moving on to another so that they can prove they have the strongest party." — Toshitaka Tachibana, Producer, DualShockers interview, 2017
+  - "Right now we want to make sure that everyone who is still playing Dragon Ball Z Dokkan Battle feels like they are appreciated, and anyone who comes in as a new player feels like they are in a position to comfortably still catch up." — Toshitaka Tachibana, Producer, DualShockers interview, 2017
+  - "We are very thankful to the large number of players who continue to play and support our game. Because so many people are playing DOKKAN BATTLE, we think there are as many ways to enjoy DOKKAN BATTLE and play styles as there are players." — Omatsu (Operation Team member), PocketGamer.com interview on the Worldwide Celebration campaign, ~2022 [unverified]
+- Why players love/support it:
+  - The slow-burn power fantasy: your team visibly grows and a boss that looked unbeatable eventually falls. Team-building, orb manipulation, and event-specific puzzles give long-term players a deep meta to solve; community knowledge-sharing (builds, strategies, friend leaders) sustains engagement without synchronous multiplayer.
+- Monetization philosophy (devs' words, if any):
+  - "Of course, we want to make sure that everyone feels that it's fair and if other people have an advantage, then it's not something that is specific to them paying money. 'Fair' is definitely the key word." — Toshitaka Tachibana, DualShockers interview, 2017. Design target: all players get the same opportunities; paying never buys a special advantage.
+- Lesson for our games (1-2 lines, concrete):
+  - Make the player's growth arc mirror the fiction's arc (train → beat the impossible boss → next challenge) so progression feels narrative, not just numeric; and hold "paying must never gate the fun" as an explicit design pillar, stated publicly.
+- Sources:
+  - https://www.Dualshockers.com/dragon-ball-z-dokkan-battle-interview/
+  - https://Www.pocketgamer.biz/three-years-on-bandai-namco-on-the-evolution-of-dragon-ball-z-dokkan-battle/
+  - https://www.pocketgamer.com/dragon-ball-z-dokkan-battle/interview/
+- Coverage note: Third key quote above is marked [unverified] (taken from a search snippet; the PocketGamer.com Worldwide Celebration interview page was not fetched in full). No on-record statement found from the devs on long-term narrative/storytelling as a retention driver; the ANALYSIS below is inferred. Monetization quotes come from the 2017 interview and may not reflect current policy.

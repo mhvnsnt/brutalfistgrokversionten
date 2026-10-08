@@ -1,0 +1,26 @@
+# Gardenscapes — Heart and Soul
+
+- Developer / studio: Playrix
+- Genre / platforms: Match-3 + garden renovation metagame; iOS, Android (2016; originally a 2007 PC hidden-object series)
+- Why players come back (in the devs' view):
+  - Layered goals: short-term (finish a level), medium-term (decorate the garden, solve problems, help Austin), long-term (build a beautiful mansion). The meta gives every match-3 session a story purpose.
+  - The storyline itself drives retention: nearly all active users play the storyline; the number who ignore the story "tends to zero," and even players who start as match-3-only gradually get interested in restoring the garden.
+  - Austin the butler: an imperfect, emotionally evocative character (his flaws make him feel alive) — players come back for him, not just the puzzles.
+  - Relentless content pace: new content monthly; the studio's belief is "never stop developing the game" and preserve the special something that hooked players.
+- Key quotes:
+  - "A short-term goal is to finish a level, medium-term goals are about decorating the garden and solving some specific problems and help Austin, a long-term goal is to build a beautiful mansion." — Tanja Evdokimenko, Playrix, Game World Observer interview, 2016
+  - "According to our internal statistics, almost all active users play the storyline. This is an important part of the game, which directly affects retention." — Tanja Evdokimenko, Playrix, Game World Observer interview, 2016
+  - "The main thing in Austin is his character and memory, he feels alive." — Tanja Evdokimenko, Playrix, Game World Observer interview, 2016
+  - "We've always had a firm belief that we should never stop developing the game and that players should get new content regularly." — Alexander Vedeneev, Playrix producer, PocketGamer.biz, 2020
+- Why players love/support it:
+  - A warm, personal story world with a memorable lead; restoration gameplay that makes progress visible; quality-over-volume production polish; a long-running game that keeps growing.
+- Monetization philosophy (devs' words, if any):
+  - On match-3 level design (Game World Observer, 2019): balancing monetization and dropout metrics is the central craft — "If you have a difficult level where you want to reduce the dropout rate, it's not enough to just add moves and make it easier, because your monetization metrics will also decrease" — so every level tune is an A/B-tested balance of retention vs. revenue, not raw difficulty extraction.
+- Lesson for our games (1-2 lines, concrete):
+  - Give the core loop a story purpose: stack short/medium/long-term narrative goals on top of mechanics so players return for the story, not just the grind.
+  - Make the mascot flawed and human: Austin works because he's an ordinary man with flaws — aim for characters players feel affection for, not perfect avatars.
+- Sources:
+  - https://gameworldobserver.com/2016/11/23/gardenscapes
+  - https://www.PocketGamer.biz/why-playrix-producer-alexander-vedeneev-believes-gardenscapes-is-more-than-just-a-candy-crush-clone/
+  - https://gameworldobserver.com/2019/09/27/playrix-levels-elements-match-3
+- Coverage note: Speaker Tanja Evdokimenko's exact role was not stated in the Game World Observer piece; quotes are from the 2016 Playrix interview. No [unverified] quotes used — all from fetched pages.

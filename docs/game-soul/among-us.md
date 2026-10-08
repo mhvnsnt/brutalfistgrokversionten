@@ -1,0 +1,18 @@
+# Among Us — Heart and Soul
+- Developer / studio: Innersloth (three-person team at the time: Forest Willard, Marcus Bromander, Amy Liu)
+- Genre / platforms: Social deduction party game / Mobile, PC, Switch, PlayStation, Xbox, VR
+- Why players come back (in the devs' view): Community momentum, not content drops — every wave of players re-energized the tiny team to keep going rather than move on. The studio's retention philosophy is player-driven energy: waves of players push the devs to want to do more; simplicity keeps the barrier low (chat-to-win); community is treated as the studio's most valuable asset, built from pre-production.
+- Key quotes:
+  - "I feel like every time we saw big waves of players, that pushed us to get excited and want to do more with it." — Marcus Bromander, Artist and Designer / co-founder, The Escapist, 2020
+  - "You release (the game) and someone takes notice, and suddenly that's where your, like, 80-hour work weeks... come in. Like, it's those intense bursts of, 'Oh, something's happening.' You must react quickly. You don't want to lose this moment." — Forest Willard, Programmer and Business Lead, The Escapist, 2020
+  - "That's the reason why Among Us 1 stayed so simple. We would always just say, 'This is so cool.' It's so much extra that we're not gonna do it." — Forest Willard, Programmer and Business Lead, The Escapist, 2020
+  - "Should we do Among Us 2? Or should we update the game that everyone is already playing? And that's what we ended up settling with." — Marcus Bromander, co-founder, Overcome's Visionaries podcast (via Dexerto), 2021 [unverified]
+- Why players love/support it: Lie-to-your-friends chaos that needs no skill to enjoy; memes and community art feed back into the culture; new maps, roles, and VR keep it fresh; tiny studio players trust; low specs and cross-play let anyone in.
+- Monetization philosophy (devs' words, if any): No direct on-record dev quote found. ANALYSIS: cosmetics-only (hats, pets, skins) with everything purchasable for cheap; the paid game + cosmetic store never sells gameplay advantage; Innersloth stayed indie and reinvested success into the one game rather than forcing a sequel.
+- Lesson for our games (1-2 lines, concrete): Chase excitement, not roadmaps — when a wave of players shows up, react fast and update the game they're already playing instead of building the next version. Keep it simple on purpose: a game anyone can learn in 60 seconds lets memes and streamers do your marketing.
+- Sources:
+  - https://www.escapistmagazine.com/among-us-devs-have-created-a-gaming-phenomenon-albeit-two-years-after-it-launched/
+  - https://www.dexerto.com/among-us/among-us-devs-reveal-they-abandoned-party-game-before-viral-success-1889509/
+  - https://www.noobfeed.com/news/innersloth-reflects-on-among-us-success
+  - https://www.svg.com/308548/the-untold-truth-of-among-us/
+- Coverage note: Bromander and Willard quotes verified via fetched Escapist page (Sep 2020). The Visionaries-podcast sequel quote from Dexerto snippet — [unverified]. No on-record dev statement found on monetization philosophy; labeled ANALYSIS.

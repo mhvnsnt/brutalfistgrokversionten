@@ -5,7 +5,26 @@
  */
 
 export type StageId =
-  | 'urban_night' |'training' |'dojo' |'wrestling_ring' |'mma_octagon' |'steel_cage' |'industrial' |'ghetto_streets' |'junkyard' |'sky_crane' |'spike_pit' |'acid_pit' |'grinder_pit' |'gang_brawl' |'subway' |'random';
+  | 'urban_night' |'training' |'dojo' |'wrestling_ring' |'mma_octagon' |'steel_cage' |'industrial' |'ghetto_streets' |'junkyard' |'sky_crane' |'spike_pit' |'acid_pit' |'grinder_pit' |'gang_brawl' |'subway'
+  // Canon stages, first playable BLOCKOUTS (not final art) — see docs/stage_architecture.md §9.
+  | 'black_swamp' |'jpcw_arena' |'club_onyx' |'kennedy_debate' |'void_ring' |'aztec_temple' |'parking_lot' |'banyan_tree'
+  |'random';
+
+/**
+ * How far along a stage's geometry is. NOTHING in this repo is final art:
+ * every stage is Three.js primitives built at runtime (no stage GLB exists).
+ *  - PROCEDURAL: the original 15, hand-built primitive geometry, shipped.
+ *  - BLOCKOUT:   first playable greybox of a canon stage. Layout, floor,
+ *                spawns and lighting are real and playable; art is not.
+ */
+export type StageBuildStatus = 'PROCEDURAL' | 'BLOCKOUT';
+
+/** Where a canon stage comes from, so nobody has to rediscover it. */
+export interface StageCanon {
+  location: string;
+  /** Book/doc the stage is named in (mhvnsnt/Bannon canon/...) or the owner. */
+  source: string;
+}
 
 /** Whether a stage has a destructible wall (glass, cage door, etc.) */
 export type WallType = 'solid' | 'destructible' | 'none';
@@ -33,6 +52,16 @@ export interface LevelZone {
   label: string;
 }
 
+export interface DiveLaunchPoint {
+  id: string;
+  /** World-space height relative to the stage level the point belongs to. */
+  yOffset: number;
+  /** Whether the point can be reached by the climb/traversal layer. */
+  climbable: boolean;
+  /** Human-readable source, e.g. ring ropes, catwalk, crane edge. */
+  label: string;
+}
+ 
 export interface StageConfig {
   id: StageId;
   /** Display name */
@@ -55,6 +84,9 @@ export interface StageConfig {
   // ── Multi-level / breakable floor ─────────────────────────────────────────
   /** Ordered array of floor levels (index 0 = top/main, last = lowest pit) */
   levels: LevelZone[];
+  /** Optional high/climbable positions that can originate stage dives. */
+  diveLaunchPoints?: DiveLaunchPoint[];
+
   /**
    * If true, a hard slam / ground-pound sends the opponent crashing through
    * the current floor to the next level down (Tekken-style stage transition).
@@ -121,6 +153,11 @@ export interface StageConfig {
   // ── Edge zone for proximity ledge-throw overrides ─────────────────────────
   /** Distance from boundary where ledge-throw override activates */
   edgeZoneDistance: number;
+
+  // ── Build status / canon ─────────────────────────────────────────────────
+  /** Omitted = PROCEDURAL (the original 15). Canon additions are BLOCKOUT. */
+  buildStatus?: StageBuildStatus;
+  canon?: StageCanon;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -199,6 +236,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
   dojo: {
     id: 'dojo',
     name: 'DOJO',
+diveLaunchPoints: [{ id: 'dojo_upper_edge', yOffset: 0, climbable: true, label: 'UPPER DOJO EDGE' }],
     subtitle: 'ANCIENT TRAINING HALL',
     accentColor: '#f97316',
     bgColor: '#1a0800',
@@ -228,6 +266,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
   wrestling_ring: {
     id: 'wrestling_ring',
     name: 'WRESTLING RING',
+diveLaunchPoints: [{ id: 'ring_ropes', yOffset: 1.0, climbable: true, label: 'RING ROPES' }],
     subtitle: 'THE SQUARED CIRCLE',
     accentColor: '#ef4444',
     bgColor: '#1a0000',
@@ -280,6 +319,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
   steel_cage: {
     id: 'steel_cage',
     name: 'STEEL CAGE',
+diveLaunchPoints: [{ id: 'cage_top', yOffset: 2.5, climbable: true, label: 'CAGE TOP' }],
     subtitle: 'NO ESCAPE',
     accentColor: '#94a3b8',
     bgColor: '#0a0a0a',
@@ -306,6 +346,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
   industrial: {
     id: 'industrial',
     name: 'INDUSTRIAL',
+diveLaunchPoints: [{ id: 'industrial_catwalk', yOffset: 1.5, climbable: true, label: 'UPPER CATWALK' }],
     subtitle: 'FACTORY FLOOR',
     accentColor: '#f59e0b',
     bgColor: '#0f0800',
@@ -393,6 +434,7 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
   sky_crane: {
     id: 'sky_crane',
     name: 'SKY CRANE',
+diveLaunchPoints: [{ id: 'crane_edge', yOffset: 0.8, climbable: true, label: 'CRANE EDGE' }],
     subtitle: 'HIGH ALTITUDE PLATFORM',
     accentColor: '#38bdf8',
     bgColor: '#00080f',
@@ -569,7 +611,275 @@ export const STAGE_CONFIGS: Record<Exclude<StageId, 'random'>, StageConfig> = {
     hasTrainHazard: true,
     edgeZoneDistance: 1.5,
   },
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // CANON STAGES — FIRST PLAYABLE BLOCKOUTS. NOT FINAL ART.
+  // Geometry lives in src/engine/stages/StageBlockouts.ts. Every one keeps the
+  // engine's floor contract: the combat floor is y = 0, the fight plane is
+  // z = 0, fighters spawn at x = ±STAGE_SPAWN_X and hit FX sit at 1.05 m.
+  // Ring stages use a 3.5 m half-width ring (7 m canvas).
+  // ───────────────────────────────────────────────────────────────────────────
+
+  black_swamp: {
+    id: 'black_swamp',
+    name: 'BLACK SWAMP',
+    subtitle: 'SECTOR 7 — FOG, MUD, GOTHIC RUIN',
+    accentColor: '#7fb069',
+    bgColor: '#070b07',
+    ringOutEnabled: false,
+    boundaryX: 5.0,
+    boundaryZ: 3.2,
+    levels: [{ floorY: 0, boundaryX: 5.0, boundaryZ: 3.2, hazardDamagePerSec: 0, label: 'MUD FLATS' }],
+    breakableFloor: false,
+    floorBreakThreshold: 0,
+    ambientIntensity: 0.3,
+    ambientColor: '#1d2a1c',
+    primaryLightColor: '#9fb58a',
+    fillLightColor: '#2e4a3a',
+    neonPalette: ['#7cff9a', '#4ade80', '#a3e635'],
+    bgmTrack: 'black_swamp',
+    hazardDamagePerSec: 0,
+    hazardLabel: '',
+    hasWalls: true,
+    hasDestructibleWalls: false,
+    hazardVolume: undefined,
+    hasTrainHazard: false,
+    edgeZoneDistance: 1.5,
+    buildStatus: 'BLOCKOUT',
+    canon: { location: 'Black Swamp, Sector 7 (the Island)', source: 'owner canon stage list; Sector 7 per mhvnsnt/Bannon canon/05b, canon/06' },
+  },
+
+  jpcw_arena: {
+    id: 'jpcw_arena',
+    name: 'JPCW ARENA',
+    subtitle: 'TOKYO — JAPAN PRORESU CHAMPIONSHIP WRESTLING',
+    accentColor: '#e11d48',
+    bgColor: '#0c0508',
+    ringOutEnabled: true,
+    boundaryX: 3.5,
+    boundaryZ: 3.5,
+    levels: [{ floorY: 0, boundaryX: 3.5, boundaryZ: 3.5, hazardDamagePerSec: 0, label: 'RING' }],
+    breakableFloor: false,
+    floorBreakThreshold: 0,
+    ambientIntensity: 0.3,
+    ambientColor: '#1a0a12',
+    primaryLightColor: '#ffffff',
+    fillLightColor: '#fda4af',
+    neonPalette: ['#e11d48', '#ffffff', '#38bdf8'],
+    bgmTrack: 'jpcw_arena',
+    hazardDamagePerSec: 0,
+    hazardLabel: '',
+    hasWalls: false,
+    hasDestructibleWalls: false,
+    hazardVolume: { triggerX: 3.2, chipDamage: 0.05, label: 'CROWD SHOVE' },
+    hasTrainHazard: false,
+    edgeZoneDistance: 1.5,
+    buildStatus: 'BLOCKOUT',
+    canon: { location: 'JPCW Arena, Tokyo', source: 'owner canon stage list; JPCW per mhvnsnt/Bannon canon/00_cast_and_world.md' },
+  },
+
+  club_onyx: {
+    id: 'club_onyx',
+    name: 'CLUB ONYX',
+    subtitle: 'MIAMI — UNDERGROUND CLUB SCENE',
+    accentColor: '#f472b6',
+    bgColor: '#0d0410',
+    ringOutEnabled: false,
+    boundaryX: 4.5,
+    boundaryZ: 3.0,
+    levels: [{ floorY: 0, boundaryX: 4.5, boundaryZ: 3.0, hazardDamagePerSec: 0, label: 'DANCE FLOOR' }],
+    breakableFloor: false,
+    floorBreakThreshold: 0,
+    ambientIntensity: 0.28,
+    ambientColor: '#220a2a',
+    primaryLightColor: '#f0abfc',
+    fillLightColor: '#22d3ee',
+    neonPalette: ['#ff3d81', '#22d3ee', '#a855f7', '#facc15'],
+    bgmTrack: 'club_onyx',
+    hazardDamagePerSec: 0,
+    hazardLabel: '',
+    hasWalls: true,
+    hasDestructibleWalls: false,
+    hazardVolume: undefined,
+    hasTrainHazard: false,
+    edgeZoneDistance: 1.5,
+    buildStatus: 'BLOCKOUT',
+    canon: { location: 'Club Onyx, Miami', source: 'mhvnsnt/Bannon canon/06_book6_kayfabe_is_real.md (The Club God)' },
+  },
+
+  kennedy_debate: {
+    id: 'kennedy_debate',
+    name: 'PRESIDENTIAL DEBATE',
+    subtitle: 'THE KENNEDY CENTER — WASHINGTON D.C.',
+    accentColor: '#3b82f6',
+    bgColor: '#050814',
+    ringOutEnabled: false,
+    boundaryX: 5.0,
+    boundaryZ: 3.0,
+    levels: [{ floorY: 0, boundaryX: 5.0, boundaryZ: 3.0, hazardDamagePerSec: 0, label: 'DEBATE STAGE' }],
+    breakableFloor: false,
+    floorBreakThreshold: 0,
+    ambientIntensity: 0.4,
+    ambientColor: '#1b2340',
+    primaryLightColor: '#f8fafc',
+    fillLightColor: '#93c5fd',
+    neonPalette: ['#ff7a18', '#ef4444', '#ffd166'],
+    bgmTrack: 'kennedy_debate',
+    hazardDamagePerSec: 0,
+    hazardLabel: '',
+    hasWalls: true,
+    hasDestructibleWalls: false,
+    hazardVolume: undefined,
+    hasTrainHazard: false,
+    edgeZoneDistance: 1.5,
+    buildStatus: 'BLOCKOUT',
+    canon: { location: 'Presidential Debate, the Kennedy Center', source: 'owner canon stage list (Book 6 general-election arc, mhvnsnt/Bannon canon/06)' },
+  },
+
+  void_ring: {
+    id: 'void_ring',
+    name: 'VOID RING',
+    subtitle: 'A RING AT THE END OF EVERYTHING',
+    accentColor: '#a78bfa',
+    bgColor: '#010103',
+    ringOutEnabled: true,
+    boundaryX: 3.5,
+    boundaryZ: 3.5,
+    levels: [{ floorY: 0, boundaryX: 3.5, boundaryZ: 3.5, hazardDamagePerSec: 0, label: 'VOID CANVAS' }],
+    breakableFloor: false,
+    floorBreakThreshold: 0,
+    ambientIntensity: 0.35,
+    ambientColor: '#171030',
+    primaryLightColor: '#ede9fe',
+    fillLightColor: '#6d28d9',
+    neonPalette: ['#a78bfa', '#22d3ee'],
+    bgmTrack: 'void_ring',
+    hazardDamagePerSec: 0,
+    hazardLabel: '',
+    hasWalls: false,
+    hasDestructibleWalls: false,
+    hazardVolume: undefined,
+    hasTrainHazard: false,
+    edgeZoneDistance: 1.5,
+    buildStatus: 'BLOCKOUT',
+    canon: { location: 'Void Ring', source: 'owner canon stage list' },
+  },
+
+  aztec_temple: {
+    id: 'aztec_temple',
+    name: 'AZTEC TEMPLE',
+    subtitle: 'STONE, PILLARS AND FIRE',
+    accentColor: '#f59e0b',
+    bgColor: '#0f0a04',
+    ringOutEnabled: false,
+    boundaryX: 4.8,
+    boundaryZ: 3.2,
+    levels: [{ floorY: 0, boundaryX: 4.8, boundaryZ: 3.2, hazardDamagePerSec: 0, label: 'TEMPLE FLOOR' }],
+    breakableFloor: false,
+    floorBreakThreshold: 0,
+    ambientIntensity: 0.32,
+    ambientColor: '#2a1c0c',
+    primaryLightColor: '#fde68a',
+    fillLightColor: '#7c2d12',
+    neonPalette: ['#ff9a3c', '#ffd166', '#ff5e3a'],
+    bgmTrack: 'aztec_temple',
+    hazardDamagePerSec: 0,
+    hazardLabel: '',
+    hasWalls: true,
+    hasDestructibleWalls: false,
+    hazardVolume: undefined,
+    hasTrainHazard: false,
+    edgeZoneDistance: 1.5,
+    buildStatus: 'BLOCKOUT',
+    canon: { location: 'Aztec Temple', source: 'owner canon stage list' },
+  },
+
+  parking_lot: {
+    id: 'parking_lot',
+    name: 'PARKING LOT',
+    subtitle: 'CONCRETE, CARS AND SODIUM LIGHTS',
+    accentColor: '#fbbf24',
+    bgColor: '#0a0a0c',
+    ringOutEnabled: false,
+    boundaryX: 5.5,
+    boundaryZ: 3.2,
+    levels: [{ floorY: 0, boundaryX: 5.5, boundaryZ: 3.2, hazardDamagePerSec: 0, label: 'PARKING DECK' }],
+    breakableFloor: false,
+    floorBreakThreshold: 0,
+    ambientIntensity: 0.3,
+    ambientColor: '#1c1a16',
+    primaryLightColor: '#fcd34d',
+    fillLightColor: '#475569',
+    neonPalette: ['#ffb347', '#f0d080', '#94a3b8'],
+    bgmTrack: 'parking_lot',
+    hazardDamagePerSec: 0,
+    hazardLabel: '',
+    hasWalls: true,
+    hasDestructibleWalls: false,
+    hazardVolume: undefined,
+    hasTrainHazard: false,
+    edgeZoneDistance: 1.5,
+    buildStatus: 'BLOCKOUT',
+    canon: { location: 'Parking Lot (Corporate District Parking Structure)', source: 'owner canon stage list; story location in StoryModeScreen' },
+  },
+
+  banyan_tree: {
+    id: 'banyan_tree',
+    name: 'THE GREAT BANYAN TREE',
+    subtitle: 'SECTOR 7 — THE ROOTS',
+    accentColor: '#34d399',
+    bgColor: '#040c09',
+    ringOutEnabled: false,
+    // The canon space is a 60 x 60 m open clearing. The COMBAT lane inside it
+    // is ±7 m, walled by the buttress roots ("tosses him into the Banyan
+    // Tree's roots") so a wall splat lands on a root, not an invisible line.
+    boundaryX: 7.0,
+    boundaryZ: 4.0,
+    levels: [{ floorY: 0, boundaryX: 7.0, boundaryZ: 4.0, hazardDamagePerSec: 0, label: 'THE ROOTS' }],
+    breakableFloor: false,
+    floorBreakThreshold: 0,
+    ambientIntensity: 0.34,
+    ambientColor: '#12281f',
+    primaryLightColor: '#d9f99d',
+    fillLightColor: '#065f46',
+    neonPalette: ['#5eead4', '#a7f3d0', '#86efac'],
+    bgmTrack: 'banyan_tree',
+    hazardDamagePerSec: 0,
+    hazardLabel: '',
+    hasWalls: true,
+    hasDestructibleWalls: false,
+    hazardVolume: undefined,
+    hasTrainHazard: false,
+    edgeZoneDistance: 1.5,
+    buildStatus: 'BLOCKOUT',
+    canon: { location: 'The Great Banyan Tree, Sector 7 — 60 x 60 m open space; the Banyan Ring lit by bioluminescent fungi', source: 'mhvnsnt/Bannon canon/05b_book5_level99_part2.md, canon/06_book6_kayfabe_is_real.md' },
+  },
 };
+
+/** Every concrete stage id, in catalogue order. */
+export const ALL_STAGE_IDS = Object.keys(STAGE_CONFIGS) as Exclude<StageId, 'random'>[];
+
+/** Build status of a stage — the original 15 are PROCEDURAL. */
+export function stageBuildStatus(cfg: Pick<StageConfig, 'buildStatus'>): StageBuildStatus {
+  return cfg.buildStatus ?? 'PROCEDURAL';
+}
+
+/**
+ * Round-start spawn. The engine resets fighters to x = ±1.8 on the z = 0
+ * fight plane (GameBattleArena, StageManager.transitionStage); this is that
+ * contract as data so every stage can be checked against it.
+ */
+export const STAGE_SPAWN_X = 1.8;
+
+export interface StageSpawnPoints {
+  p1: { x: number; y: number; z: number };
+  p2: { x: number; y: number; z: number };
+}
+
+export function stageSpawnPoints(cfg: Pick<StageConfig, 'levels'>): StageSpawnPoints {
+  const y = cfg.levels[0]?.floorY ?? 0;
+  return { p1: { x: -STAGE_SPAWN_X, y, z: 0 }, p2: { x: STAGE_SPAWN_X, y, z: 0 } };
+}
 
 /** Resolve a StageId (including 'random') to a concrete StageConfig */
 export function resolveStageConfig(id: StageId): StageConfig {

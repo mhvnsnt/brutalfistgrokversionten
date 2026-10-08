@@ -1,0 +1,20 @@
+# ARK: Survival Evolved — Heart and Soul
+- Developer / studio: Studio Wildcard (co-founded 2014 by Jeremy Stieglitz and Jesse Rapczak)
+- Genre / platforms: Dinosaur survival sandbox (PvE/PvP), PC / PS / Xbox / Switch / mobile
+- Why players come back (in the devs' view): A relentless cadence of new content — "visibility of new content is really the big driver" — with each annual expansion changing the game so much it feels like "a whole new experience," not just another dinosaur or item. Each expansion pulls lapsed players back in, spikes player counts, and brings in new players through friends of existing ones.
+- Key quotes:
+  - "Visibility of new content is really the big driver. And that's how Ark was so popular for so long, even more than we ever anticipated. Ark was at the top of the Steam charts because we were always releasing content. There was always something new in the game." — Jesse Rapczak, Co-Founder/Co-Creative Director, GamesIndustry.biz, 2017
+  - "That's one of our strategies for Ark, to always give your players new stuff that changes the game significantly so that those players aren't just coming back in for, like, another dinosaur or a couple new items or something. They're coming back in for a whole new experience." — Jesse Rapczak, Co-Founder/Co-Creative Director, GamesIndustry.biz, 2017
+  - "Doing one big premium update every year so far has provided the game with the yearly revenue model that it needs to continue development." — Jesse Rapczak, Co-Founder/Co-Creative Director, GamesIndustry.biz via Massively OP, 2019
+  - "Our overall feeling is that you enable the players to play the game the way they want to... You build the game and let the community figure out how to play." — Doug Kennedy, CEO/Co-founder, GamesIndustry.biz (E3 2017), 2017
+- Why players love/support it: Taming and riding dinosaurs is a fantasy no other survival game offered (Rust had gunplay, ARK filled "no real creature aspects" + solid PvE + a world to "own and make homey"); Early Access transparency — players saw their feedback land in the game, which Rapczak calls "very compelling"; tribes/community emergent politics (jails, mega-tribe wars, cross-server transfers) that create stories no dev scripted.
+- Monetization philosophy (devs' words, if any): No microtransactions, no skins/lootboxes — sustainability comes from one big paid premium expansion per year ("yearly revenue model"), which funds ongoing free development of the base game. Rapczak explicitly framed selling players new content, not selling to players, as the virtuous loop: "It's important to us to always be bringing in new players, and part of that is creating new content for the existing ones so they bring in their friends."
+- Lesson for our games (1-2 lines, concrete): Sell game-changing expansions, not drips of small items — each drop must feel like "a whole new experience" to pull lapsed players back. And ship content constantly; visibility of the next thing is the retention engine itself.
+- Sources: (URLs)
+  - https://www.gamesindustry.biz/ark-dev-retail-was-not-something-we-had-planned-to-do
+  - https://www.eurogamer.net/how-ark-survived-steam-early-access
+  - https://www.gamesindustry.biz/when-to-listen-to-your-players-and-when-not-to
+  - https://massivelyop.com/2019/08/19/studio-wildcards-co-founder-talks-about-how-ark-survival-evolved-stays-sustainable-without-microtransactions/
+  - https://mcvuk.com/development-news/ark-survival-evolved-one-year-on/
+  - https://www.pcgamesn.com/ark-survival-ascended/studio-wildcard-interview-survival-evolved
+- Coverage note: No on-record dev statements found specifically about why players PAY beyond the expansion model; the monetization section above is their stated model. The 2019 sustainability quote was sourced from a search snippet summarizing the GamesIndustry.biz interview via Massively OP (secondhand paraphrase — labeled accordingly in the quote); everything else came from fetched pages.

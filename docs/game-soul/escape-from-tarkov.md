@@ -1,0 +1,19 @@
+# Escape from Tarkov — Heart and Soul
+- Developer / studio: Battlestate Games (Nikita Buyanov, co-founder/co-owner/CEO, game director)
+- Genre / platforms: Hardcore extraction shooter (FPS with RPG/milsim depth), PC (own launcher, then Steam 2025)
+- Why players come back (in the devs' view): The game is engineered for SATISFACTION, not fun — every raid risks everything you own, so surviving extraction is a genuine emotional event. Losing it all and getting everything are two sides of the same coin, and that gamble-like emotional swing is what nothing else in the genre delivers. The unwavering vision itself is the product: Buyanov designed it for a niche audience and refused to dilute it even as it became mainstream.
+- Key quotes:
+  - "I thought we should make it for ourselves, for a niche audience. We never planned the game to be for everyone." — Nikita Buyanov, Co-founder/CEO & Game Director, GamesRadar+ (Edge magazine #418 feature on the 1.0 launch), 2025/26 (exact pub date not shown on page)
+  - "We wanted a multiplayer game but with the details of a singleplayer game." — Nikita Buyanov, Co-founder/CEO & Game Director, GamesRadar+ (Edge #418), 2025/26
+  - "I bought this spaceship in Eve Online, using real money. And then I lost it, of course. But this sparked the idea in my mind, and from there the concept of extraction was born." — Nikita Buyanov, Co-founder/CEO & Game Director, GamesRadar+ (Edge #418), 2025/26
+  - "Tarkov is made for satisfaction, not for fun. Not for enjoyment. To have a chance to get the satisfaction or to frustrate... It's polarizing. You get everything or you get nothing." — Nikita Buyanov, Co-founder/CEO & Game Director, Insider Gaming (Access Granted interview), 2025 [unverified]
+- Why players love/support it: It delivers a hardcore experience you can't get anywhere else — the stakes make every decision consequential, and even tiny wins (limping out of a gunfight with a broken arm) feel like terrific victories; the game's brutal emotional honesty ("it is what it is"); a deeply invested community where Buyanov himself is the direct feedback sponge; and regular progression wipes that give every raid cycle a fresh start.
+- Monetization philosophy (devs' words, if any): Buy-once editions on their own launcher (controversy 2024: the $150 Edge of Darkness edition's "all subsequent DLC" promise vs. the premium "Unheard" edition — ANALYSIS from coverage, not a dev quote). No on-record statement found from Buyanov specifically framing monetization philosophy; the studio's practice has been premium editions + paid spin-offs rather than in-game microtransactions.
+- Lesson for our games (1-2 lines, concrete): Design for SATISFACTION over fun when the fantasy is stakes — if losing hurts, winning heals, and that emotional loop is retention. And hold the vision: "we never planned the game to be for everyone" is why Tarkov has no real rival.
+- Sources: (URLs)
+  - https://www.gamesradar.com/games/fps/we-never-planned-the-game-to-be-for-everyone-escape-from-tarkovs-creator-reflects-on-the-unwavering-vision-that-pioneered-an-fps-genre/
+  - https://insider-gaming.com/tarkov-battlestate-satisfaction-not-fun/
+  - https://insider-gaming.com/escape-from-tarkov-nikita-lowering-entry-barrier/
+  - https://www.espn.ph/gaming/story/_/id/44700185/escape-tarkov-nikita-buyanov-interview
+  - https://www.techradar.com/gaming/pc-gaming/escape-from-tarkov-director-says-arena-will-be-a-mediocre-game-that-increases-attention
+- Coverage note: The "satisfaction, not fun" quote is from a search snippet summarizing Insider Gaming's paywalled Access Granted interview (marked [unverified]); the 1.0-era quotes were verified from the fetched GamesRadar+/Edge feature, though the page did not display a publication date (labeled 2025/26 since it covers the 1.0 launch). No on-record dev statement found on monetization philosophy as a philosophy; the Unheard-edition controversy is press-analysis context only.

@@ -1,0 +1,26 @@
+# Black Myth: Wukong — Heart and Soul
+- Developer / studio: Game Science (founder Feng Ji)
+- Genre / platforms: Action RPG (boss-rush adventure) — PS5, PC, Xbox Series X|S (2024)
+- Why players come back (in the devs' view):
+  - Satisfy the developers first: since founding, Feng Ji has "consistently emphasized making games that developers themselves can understand, approve of, and genuinely love" — the game is built for people who would play it themselves, not a market segment.
+  - Fun is the goal AND the bottom line: "if an internal build is not fun enough, the studio simply repeats the cycle of researching, reflecting, learning, and redoing it from scratch." No build survives that isn't fun.
+  - Only difficulty is valuable: "when it is difficult does it become truly valuable" — Feng Ji dismissed his own studio's early "easy route" games as dabbling; players "quickly saw through" them. The studio's moat is "advancing despite knowing the difficulty."
+  - Study the best, then set your own bar: "aim for the best at the starting line, and lead at the finish line" — benchmark industry leaders, but "setting a long-term goal merely to match a specific title is dangerous." Be the standard others copy.
+  - Bosses as people, not targets: each boss is "not simply an enemy" — teachers, old friends, allies with their own odyssey — which makes fights memorable long after the difficulty fades.
+- Key quotes:
+  - "What we can control is choosing what we do: tackling real challenges, doing hard things, pursuing what we believe in. When you're doing these things, you should absolutely have confidence." — Feng Ji, Founder, public letter after losing Game of the Year, The Game Awards 2024 [unverified]
+  - "There are no easy opportunities in a mature market, and players quickly notice what was made taking the easy route. 'Advancing despite knowing the difficulty' becomes the true moat." — Feng Ji, Founder, Weibo 10 Principles via InvenGlobal, 2026
+  - "This was no fluke. It's the inevitable outcome of Chinese culture, Chinese talent, China's business environment, China's gaming industry, and gamers worldwide coming together." — Feng Ji, Founder, on Wukong's success, public letter, The Game Awards 2024 [unverified]
+- Why players love/support it:
+  - A single-player, complete, no-live-service AAA epic in 2024 — one purchase, no battle pass, no monetization debate — made it a rallying point for players tired of service models (20M+ copies).
+  - Cultural pride and craft: real Chinese heritage sites scanned into the world, Journey to the West told with reverence — the game made Chinese mythology feel triple-A for the first time, and global players supported the authenticity.
+  - The 13-minute 2020 trailer built 4 years of grassroots hype: the studio released footage to recruit like-minded developers, and the public became the biggest fan base in the world before the game existed.
+- Monetization philosophy (devs' words, if any):
+  - No on-record statement found on monetization philosophy. The model is traditional premium: full game, no microtransactions, no live service — the business philosophy is "tackle hard things" rather than chase engagement revenue.
+- Lesson for our games (1-2 lines, concrete):
+  - Build the game you'd love to play, then let market data check your self-indulgence — not the other way around. And when there's no clear path forward, "increase density": polish your proven strengths until players can feel the difference instead of chasing new gimmicks.
+- Sources:
+  - https://www.invenglobal.com/articles/24993/same-development-philosophy-behind-wukong-black-myth-zhong-kui-developer-reveals-10-principles
+  - https://mp1st.com/news/black-myth-wukong-studio-ceo-wrote-game-of-the-year-acceptance-speech-2-years-ago
+  - https://www.pcgamer.com/games/action/black-myth-wukong-developer-gamescience-had-to-grow-into-a-aaa-powerhouse-to-bring-its-vision-of-journey-to-the-west-to-life/
+- Coverage note: The 10 Principles article (InvenGlobal) was fetched and verified; Feng Ji's principles are paraphrased from that verified translation. The Game of the Year acceptance letter quotes are from search snippets (marked [unverified]). No on-record dev statement found on Wukong's monetization philosophy.

@@ -4,6 +4,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 describe('animation transition timing', () => {
+
+  it('retires faded actions so locomotion cannot accumulate ghost layers', () => {
+    const source = fs.readFileSync(path.resolve(process.cwd(), 'src/engine/retarget/AnimationController.ts'), 'utf8');
+    assert.match(
+      source,
+      /retiringActions\.set\(action, Math\.max\(retiringActions\.get\(action\) \?\? 0, fade\)\)/,
+      'faded actions must be tracked for deterministic retirement',
+    );
+    assert.match(
+      source,
+      /action\.stop\(\);[\s\S]*action\.enabled = false;/,
+      'retired actions must be stopped and disabled rather than left scheduled',
+    );
+  });
+
   it('does not enable Three.js crossfade time-warping', () => {
     const source = fs.readFileSync(path.resolve(process.cwd(), 'src/engine/retarget/AnimationController.ts'), 'utf8');
     assert.match(

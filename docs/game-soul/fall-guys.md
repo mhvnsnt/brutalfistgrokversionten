@@ -1,0 +1,17 @@
+# Fall Guys — Heart and Soul
+- Developer / studio: Mediatonic (Epic Games since 2021); originally published by Devolver Digital
+- Genre / platforms: Platformer battle royale ("game show on Earth") / PlayStation, Xbox, PC, Switch, mobile (China)
+- Why players come back (in the devs' view): Unpredictability and variety — "the joy of Fall Guys comes from not knowing what you're gonna be doing next." Seasonal cadence with batches of new rounds and free content injections; responding to players and keeping the first few rounds welcoming for newcomers so they stick around. Accessibility is the retention pillar: many Fall Guys players had never played an online multiplayer game before.
+- Key quotes:
+  - "It's important to make sure those core people feel listened to, but also making sure new players have a nice experience because those first few rounds you play are really going to dictate whether you hang around and feel welcomed into the game." — Joe Walsh, Lead Game Designer, GamesIndustry.biz, 2021
+  - "We can't just rely on [what] other games do, because a lot of people who play Fall Guys have probably never played those other games." — Joe Walsh, Lead Game Designer, GamesIndustry.biz, 2021
+  - "Right now, our real focus is on making the PlayStation and PC games as good as they possibly can be... We really have to build trust with the community now and make sure they believe that we can support this game and make it really good." — Joe Walsh, Lead Game Designer, Gary Whitta's Talk Guys podcast (via Dexerto), 2020
+  - "It's unbelievable how insatiable people's appetite for content is." — Dave Bailey, CEO and co-founder, GamesIndustry.biz, 2021
+- Why players love/support it: Instantly understandable concept (Takeshi's Castle-style game show); beans, costumes, and slapstick chaos; free seasonal content drops; launch on PlayStation Plus made it a shared social event during lockdown; player-made levels in Fall Guys Creative (though creator incentives later faded).
+- Monetization philosophy (devs' words, if any): No direct on-record dev quote found. ANALYSIS: cosmetics-driven (costumes, DLC packs) and seasonal passes after going free-to-play under Epic — spectacle and self-expression sell, never power.
+- Lesson for our games (1-2 lines, concrete): Make the first few rounds decide whether a newcomer stays — design onboarding to feel welcoming, not just for veterans. Build a live cadence that injects free rounds/costumes so "you never know what you're doing next."
+- Sources:
+  - https://www.gamesindustry.biz/the-rise-of-fall-guys
+  - https://www.dexerto.com/fall-guys/fall-guy-devs-want-to-build-trust-before-taking-game-to-xbox-mobile-1413176/
+  - https://www.gamesradar.com/fall-guys-seasons-will-add-bunch-of-free-content-to-the-game-confirms-mediatonic/
+- Coverage note: All four quotes verified via fetched pages (GamesIndustry.biz Jan 2021; Dexerto Aug 2020). No on-record dev statement found on monetization philosophy; labeled ANALYSIS.

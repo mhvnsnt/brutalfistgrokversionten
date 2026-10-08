@@ -1,0 +1,18 @@
+# Subway Surfers — Heart and Soul
+- Developer / studio: SYBO Games (Copenhagen) — concept, art, gameplay; Kiloo — publisher, co-developer (UI, monetization, player retention)
+- Genre / platforms: Endless runner; iOS + Android
+- Why players come back (in the devs' view): "Fun always comes first" — fun core gameplay, cool recognizable characters players want to engage with, and the World Tour: a new city around the world every three weeks with fresh content and tech; the core was deliberately designed in parallel with a clever deep meta; 25-person live-ops team keeps fans "following us on our journey."
+- Key quotes:
+  - "Fun core gameplay. Fun always comes first." — Mathias Gredal Nørvig, Managing Director, SYBO Games, PocketGamer.biz interview, 2017
+  - "We really love the fact that our fans keep enjoying the game - and they follow us on our journey visiting new cities every three weeks on the world tour." — Mathias Gredal Nørvig, Managing Director, SYBO Games, PocketGamer.biz interview, 2017
+  - "Fun is still essential in a game's success, but the core needs to be designed in parallel to a clever and deep meta." — Mathias Gredal Nørvig, Managing Director, SYBO Games, PocketGamer.biz interview, 2017
+  - "Our fans are the reason we get up in the morning!" — Mathias Gredal Nørvig, Managing Director, SYBO Games, PocketGamer.biz interview, 2017
+- Why players love/support it: instantly readable one-touch fun, beloved cartoon characters, ever-rotating world cities that make the "endless" loop never feel monotonous, low entry threshold for kids and casuals (best-in-class retention, ~150-180M monthly users even a decade on).
+- Monetization philosophy (devs' words, if any): No explicit dev statement on record; (ANALYSIS: non-aggressive monetization — characters, boards, keys, and watch-to-earn ads rather than disruptive advertising; focus stays on fun first, money second.)
+- Lesson for our games (1-2 lines, concrete): "Fun always comes first" + a rotating destination/event cadence (new city every 3 weeks) kept one simple loop alive for 12+ years — pair our beat-em-up core with rotating districts/patrols so the world feels endless without changing the combat.
+- Sources:
+  - https://www.PocketGamer.Biz/sybo-on-the-evolution-of-subway-surfers/
+  - https://Www.pocketgamer.biz/seven-years-on-sybo-games-subway-surfers-2-5-billion-downloads/
+  - https://www.PocketGamer.Biz/sybos-ceo-mathias-gredal-nrvig-on-subway-surfers-12-year-run/
+  - https://gameworldobserver.com/2016/06/24/subway-surfers-gameplay-analysis
+- Coverage note: SYBO quotes verified via fetched PocketGamer.biz interview (2017 five-year piece). Player-type retention framework (achievers/explorers/socialisers/killers) from GameWorldObserver is ANALYSIS, not dev quotes.

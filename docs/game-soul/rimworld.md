@@ -1,0 +1,17 @@
+# RimWorld — Heart and Soul
+- Developer / studio: Ludeon Studios (Tynan Sylvester)
+- Genre / platforms: Sci-fi colony sim / story generator; PC (Windows/Mac/Linux), consoles
+- Why players come back (in the devs' view): RimWorld is deliberately a story generator, not a skill test — it intentionally harms even skilled players, because great stories need disproportionate, unexpected setbacks. Failure is elastic (raids, kidnappings, losses you recover from) rather than a brick wall, and the tragedy makes every victory earned. Players extract more story meaning from a game event than the mechanics actually encode — so the designer's job is to feed events, not write plot.
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "It's essentially the notion that players extract more story meaning from a game event than is really represented in the mechanics." — Tynan Sylvester, Creator/Designer, Rock Paper Shotgun, 2016 [unverified]
+  - "We embrace the negative as well as the positive... If we're going to have a story, it has to have tragedy, it has to have conflict and challenge." — Tynan Sylvester, Creator/Designer, Polygon, 2022 [unverified]
+  - "The player's knowledge of what could happen has a tremendous impact on their understanding of what is happening" — every victory feels better because it could have gone so horribly wrong. — Tynan Sylvester, Creator/Designer, Polygon, 2022 (paraphrase of article's account) [unverified]
+- Why players love/support it: ANALYSIS — Every colony is a war story worth retelling; the game generates "my botanist had to go cannibal on her sculptor husband" moments no scripted game can. A solo-developer-scale studio that kept expanding for a decade earns fierce loyalty, and the mod scene extends the sandbox endlessly.
+- Monetization philosophy (devs' words, if any): No on-record statement found in this pass. Ludeon follows a premium price + substantial paid expansions (Royalty, Ideology, Biotech, Anomaly) model. Coverage note: dev-on-record monetization philosophy not found.
+- Lesson for our games (1-2 lines, concrete): Design for retellable stories, not for winning — elastic failure and genuine tragedy make victories feel earned and give players something to talk about, which is the real marketing.
+- Sources: (URLs)
+  - https://www.rockpapershotgun.com/how-rimworld-generates-great-stories
+  - https://www.polygon.com/23389122/rimworld-story-simulator-explained-gameplay-systems-crisis-breaks
+  - https://www.eurogamer.net/rimworld-can-you-make-your-game-up-as-you-go-along
+  - https://www.engadget.com/2016-11-23-q-a-with-tynan-sylvester.html
+- Coverage note: Dev quotes are snippet-sourced and marked [unverified]. Sylvester's GDC-style talk "Contrarian, Ridiculous, and Impossible Game Design Methods" covers elastic failure but is video-only (not fetched).

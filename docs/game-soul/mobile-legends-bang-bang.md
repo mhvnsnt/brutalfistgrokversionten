@@ -1,0 +1,18 @@
+# Mobile Legends: Bang Bang — Heart and Soul
+- Developer / studio: MOONTON Games (ByteDance)
+- Genre / platforms: Mobile MOBA (5v5); iOS, Android
+- Why players come back (in the devs' view): matches that fit real life (10–30 minutes, phone-native); hyper-localized identity (130+ heroes rooted in regional history and folklore — Lapu-Lapu, Gatotkaca, Badang); a deep competitive ecosystem players can belong to — from grassroots to the M-series world championships; education-first expansion that builds local communities instead of buying users
+- Key quotes: (4)
+  - "We don't believe in boosting markets just for the numbers. Without local communities, even the best teams will struggle. We're building long-term foundations." — Ray Ng, Head of Esports Ecosystem at MOONTON Games, The Esports Radar, 2025
+  - "We've learned that a lot of users are not familiar with the mobile MOBA genre... The idea is to let people experience it and learn what it's about." — Ray Ng, Head of Esports Ecosystem at MOONTON Games, The Esports Radar, 2025
+  - "We see this as a global product. Just having 16 or more regions represented in our tournaments shows that." — Ray Ng, Head of Esports Ecosystem at MOONTON Games, The Esports Radar, 2025
+  - On device optimization, the team "started a project" to "automatically provide each device with the most suitable game assets" — so low-end phones don't lose the players who own them. — Senior game designer (56 heroes incl. Chou, Ling, Roger), official 5-year Dev Talk (via PinoyGamer), 2022 [unverified]
+- Why players love/support it: heroes that look like their own legends and history; short matches that fit commutes and breaks; a real pro path (MPL leagues, national-team play at multi-sport events); the game runs on the phones players actually own
+- Monetization philosophy (devs' words, if any): none stated on record; ANALYSIS (Naavik, 2023): a gacha-based cosmetic economy; the studio's product philosophy described as "arriving first and perfecting later" — ship lean, refine relentlessly — attributed to CEO Justin Yuan [unverified]
+- Lesson for our games (1-2 lines, concrete): Hyper-localize your cast — heroes drawn from a player's own history and folklore create attachment no generic character can match. And never let hardware exclude players: optimize for the device your audience actually holds, not the flagship.
+- Sources:
+  - https://esportsradar.gg/is-the-west-important-for-mobile-legends-esports-an-interview-with-moontons-ray-ng/
+  - https://esports.gg/news/mobile-legends-bang-bang/mobile-legends-esports-sea-empire/
+  - https://pinoygamer.ph/articles/mobile-legends-5-year-dev-talk-reveals-the-plans-for-the-game-in-the-next-five-years.15848/
+  - https://naavik.co/deep-dives/mobile-legends-bang-bang/
+- Coverage note: Game-design interviews from MOONTON's design team were sparse in accessible press; quotes above are from the esports-ecosystem head (verified) plus the official Dev Talk (snippet-sourced, [unverified]). No on-record monetization philosophy from developers found.

@@ -1,0 +1,22 @@
+# Marvel's Spider-Man: Miles Morales — Heart and Soul
+- Developer / studio: Insomniac Games (Sony Interactive Entertainment)
+- Genre / platforms: Open-world action-adventure (superhero) / PS4, PS5, PC
+- Why players come back (in the devs' view):
+  - Miles is "his own Spider-Man" — unique traversal, unique combat, unique powers (bioelectricity, invisibility), plus deliberately unconfident swinging animations. The identity is baked into the movement.
+  - Harlem itself is "the heart and soul of the game" — the neighborhood Miles is fighting for is treated as a main character, with research trips, murals, and street life shaping the vision.
+  - A compact, complete coming-of-age story ("a full arc") beats a bloated sequel — the team trusted that a tighter emotional story (Lost Legacy-scale) would hit harder.
+- Key quotes:
+  - "Harlem is probably one of the most important characters in our game, because it's what Miles is fighting for. Harlem and the people he loves is the heart and soul of this game." — Brian Horton, Creative Director, Game Informer, 2020 [unverified]
+  - "This is a full arc for Miles Morales that started in Spider-Man. We really are completing this hero's coming of age in our game. It is a complete story." — Brian Horton, Creative Director, Entertainment Weekly, 2020 [unverified]
+  - "We wanted to make sure that his traversal was unique, that his combat was unique, and we also wanted to make sure that Miles is his own Spider-Man." — James Ham, Senior Animator, Sony/Insomniac interview, 2020 [unverified]
+  - "When we started crafting it we realized that, with a little bit more of a compact storytelling style, we could tell a very emotionally impactful story that would fit really well." — Brian Horton, Creative Director, Entertainment Weekly, 2020 [unverified]
+- Why players love/support it:
+  - Players love swinging through a snowy Harlem that feels like a real neighborhood, and they return for the fantasy of being Miles specifically — his flail-y early swings, his venom punches, his culture. The compact size made replays common; it respects your time.
+- Monetization philosophy (devs' words, if any): None on record. Premium standalone game. No dev commentary on monetization philosophy found.
+- Lesson for our games (1-2 lines, concrete): Make movement the identity — each Concrete Dragon fighter should move differently, with the traversal itself making you feel like that character. And make one district a "main character" players fight FOR; attachment to a block drives replay more than any checklist.
+- Sources:
+  - https://www.gamesradar.com/spider-man-miles-morales-is-a-coming-of-age-story-says-insomniac/
+  - https://www.comingsoon.net/games/news/1145263-new-details-revealed-on-marvels-spider-man-miles-morales
+  - https://www.shacknews.com/article/118738/insomniac-shares-new-spider-man-miles-morales-details
+  - https://www.digitaltrends.com/gaming/insomniac-new-info-spiderman-miles-morales/
+- Coverage note: Quotes are from search snippets (not fetched full pages), marked [unverified] per protocol. No invented statements included.

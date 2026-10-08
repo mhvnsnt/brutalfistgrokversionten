@@ -1,0 +1,16 @@
+# Diablo Immortal — Heart and Soul
+- Developer / studio: Blizzard Entertainment + NetEase
+- Genre / platforms: MMO action RPG; iOS, Android, PC (Windows)
+- Why players come back (in the devs' view): a social, shared-moment Diablo that adapts to mobile play sessions; lore callbacks to beloved Diablo history; build depth that rewards experimentation; session length tuned so moments never feel like they take too long
+- Key quotes: (4)
+  - "But the other side of it is an opportunity to group up, right? To share that moment with other people and to take that big monster down, that's a really valuable thing too." — Julian Love, Senior Combat Designer, Android Central interview, 2021
+  - "No matter how you design it, if there's a way for them to change it, they will always do that to their advantage. So we have to design with those two ideals in mind." — Julian Love, Senior Combat Designer, Android Central interview, 2021
+  - "We are still looking at systems throughout the entire game with a focus on how much time does something take." — Julian Love, Senior Combat Designer, Android Central interview, 2021
+  - "The philosophy was always to lead with great gameplay and make sure that hundreds of millions of people can go through the whole campaign without any costs. From that standpoint, I feel really good about it as an introduction to Diablo." — Mike Ybarra, President of Blizzard, Los Angeles Times, 2022 [unverified]
+- Why players love/support it: full free campaign as an on-ramp to the franchise; group play moments (shared demon kills, Cycle of Strife as Shadows vs Immortals); deep buildcraft (Helliquary buffs vs kit choices vs Challenge Rifts)
+- Monetization philosophy (devs' words, if any): "The monetization comes in at the end game" — Ybarra, Los Angeles Times, 2022 [unverified]; Blizzard claims the "vast majority of players" play free (Game World Observer, 2022 [unverified])
+- Lesson for our games (1-2 lines, concrete): Design for the shared kill moment, not the solo grind — players return to take big monsters down together; and audit every system for "how much time does this take," because perceived session bloat kills retention faster than difficulty.
+- Sources:
+  - https://www.androidcentral.com/diablo-immortal-interview
+  - https://gameworldobserver.com/2022/07/07/blizzard-boss-mike-ybarra-responds-to-diablo-immortal-controversial-monetization
+- Coverage note: Developer interviews located (Android Central, LA Times via press). Monetization quotes above are the studio's public position; press analysis broadly disputes the fairness of endgame monetization.

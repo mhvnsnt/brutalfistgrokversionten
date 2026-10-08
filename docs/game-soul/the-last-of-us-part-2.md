@@ -1,0 +1,22 @@
+# The Last of Us Part II — Heart and Soul
+- Developer / studio: Naughty Dog (Sony Interactive Entertainment)
+- Genre / platforms: Cinematic action-adventure (survival horror) / PS4, PS5, PC
+- Why players come back (in the devs' view):
+  - Nothing from the first game was precious: "all the characters you love are safe and nothing can happen to them" would have been a recipe for failure. The sequel asked for its own emotional core instead of replicating the first game's template.
+  - That core is the cycle of violence: empathy, perspective, "no heroes or villains." The game deliberately engineers hatred for Abby first — "where they think they want to do horrible things to her" — then forces you into her perspective, because interactive media gives an "empathic shortcut" film can't.
+  - Druckmann's philosophy is that being passionately divisive beats being forgettable: "I'd rather have people passionately hate it than just be like, 'Yeah, it was OK.'"
+- Key quotes:
+  - "I'd rather have people passionately hate it than just be like, 'Yeah, it was OK.'" — Neil Druckmann, Co-president/Director, Wired via GameSpot, 2020 [unverified]
+  - "This game really is about the cycle of violence. It's about empathy. It's about perspective. It's about no heroes or villains. It's about how there isn't a set destiny. Real-life is messy." — Neil Druckmann, MobileSyrup interview, 2020 [unverified]
+  - "It's kind of what I described: I wanted people to hate her immensely. Where they think they want to do horrible things to her." — Neil Druckmann, Eurogamer via ScreenRant, 2020 [unverified]
+  - "When we started making The Last of Us Part 2, specifically, we knew we were making something that would be controversial for part of the fanbase... our intention is not to upset people or alienate people, our intention is to tell a story that's meaningful to us that we think has some value behind it." — Neil Druckmann, Game Informer via GamesRadar, 2021 [unverified]
+- Why players love/support it:
+  - Supporters stayed for the moral gut-punch: the game makes you feel things no other medium could force — guilt, empathy for an enemy, horror at your own revenge. Even detractors couldn't stop talking about it; it became the most-awarded game of its era precisely because it refused to be safe.
+- Monetization philosophy (devs' words, if any): None on record. Premium game; No Return roguelike mode later added free. No dev commentary on monetization philosophy found.
+- Lesson for our games (1-2 lines, concrete): Swing big emotionally — make players feel something real (guilt, empathy, rivalry) rather than aiming for universal approval. For Concrete Dragon: give rival bosses full perspective — let players fight AS the rival crew so the territory war has two hearts, not one villain.
+- Sources:
+  - https://www.gamespot.com/articles/the-last-of-us-part-2-isnt-for-everyone-director-w/1100-6478271/
+  - https://mobilesyrup.com/2020/06/18/the-last-of-us-part-2-interview-creative-director-neil-druckmann/
+  - https://screenrant.com/last-of-us-2-people-hate-abby/
+  - https://www.gamesradar.com/the-last-of-us-2-director-says-that-he-stands-by-the-game-we-made-despite-criticism/
+- Coverage note: Quotes are from search snippets (not fetched full pages), marked [unverified] per protocol. No invented statements included.

@@ -1,0 +1,19 @@
+# Stellaris — Heart and Soul
+- Developer / studio: Paradox Development Studio (Paradox Interactive)
+- Genre / platforms: Grand strategy 4X (space); PC, consoles
+- Why players come back (in the devs' view): The galaxy must always be unknown and surprising — no fixed tech tree, no major pre-set races, randomly generated galaxies and alien empires, so every playthrough creates a new story. Vision statement: "The galaxy is ancient and full of wonders." Exploration — "the most neglected" of the four Xs — is the soul; discovery drives the game, and galactic crises shake up the late game so long campaigns never settle.
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "The best stories are the ones you just happen to come across." — Henrik Fåhraeus, Game Director, GameSpot, 2016
+  - "These games are all about discovery. Stellaris is no exception. In fact, in many ways, you'll discover new things every time you play." — Henrik Fåhraeus, Game Director, GameSpot, 2016
+  - "The galaxy should always be unknown and surprising... I want to make Stellaris the most replayable of all of our games." — Henrik Fåhraeus, Game Director, Stellaris dev diary (reported by Rock Paper Shotgun / PC Gamer), 2015 [unverified]
+  - "My artistic ambition lies not in writing cool narratives, but in the simulation itself. That is, making a game that will allow players to experience any number of emergent stories themselves." — Henrik Fåhraeus, Game Director, GameGrin interview, 2016 [unverified]
+- Why players love/support it: Symmetrical-start fairness, huge mod support ("we intentionally designed the game to support almost any kind of space game total conversion mod"), and Paradox's habit of effectively re-launching the game years later via free reworks plus expansions — you can come back after a year away to something that feels like a sequel.
+- Monetization philosophy (devs' words, if any): No explicit statement found in this pass; Paradox's standard expansion + free-patch model. Coverage note: dev-on-record monetization statements not found.
+- Lesson for our games (1-2 lines, concrete): Replayability = unknown and surprising every run; mix scripted flavor into a random galaxy rather than writing one fixed story, and keep the early-game "discovery high" alive deep into the late game.
+- Sources: (URLs)
+  - https://www.gamespot.com/articles/stellaris-is-civilization-in-a-massive-sci-fi-univ/1100-6432516/
+  - https://www.gamegrin.com/articles/stellaris-interview/
+  - https://www.rockpapershotgun.com/stellaris-developer-diary
+  - https://www.pcgamer.com/stellaris-dev-the-galaxy-should-always-be-unknown-and-surprising/
+  - https://www.pcgamesn.com/stellaris/stellaris-galaxy-edition-4x-history
+- Coverage note: GameSpot quotes verified from fetched page. Dev-diary and GameGrin quotes are snippet-sourced, marked [unverified].

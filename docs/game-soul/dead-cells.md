@@ -1,0 +1,17 @@
+# Dead Cells — Heart and Soul
+- Developer / studio: Motion Twin (Sébastien Bénard, lead designer).
+- Genre / platforms: Roguelite action-platformer (metroidvania + roguelike); PC + consoles + mobile (2018), with 8 years of post-launch updates.
+- Why players come back (in the devs' view): Short 30–45 minute runs with procedurally assembled levels, so no two runs are alike — "kill, die, learn, repeat." Every weapon should change the way you play, forcing fresh builds each run; years of updates, a training room, Aspects, and an Assist/Continue mode keep both hardcore and casual players in.
+- Key quotes:
+  - "That was the idea, making sure you have new experiences each time, or at least as new as possible, but not too many things to learn in each session." — Sébastien Bénard, Lead Designer, Rock Paper Shotgun (The Mechanic), 2017
+  - "Instead of forcing you, I hope curiosity for how they play will pull you to try new things instead." — Sébastien Bénard, Lead Designer, Rock Paper Shotgun (The Mechanic), 2017
+  - "The real draw of roguelikes is the element of really having to learn the game. You have to adapt to what the game gives you, making decisions and changing your strategy on the fly." — Mathieu Houghton, Evil Empire designer, Inverse, 2024 [unverified]
+- Why players love/support it: Motion Twin updated the game for 8 years after launch (35+ updates, free expansions); the co-op worker-owned studio's anti-corporate reputation; Castlevania-inflected fast combat that feels endlessly fresh through build variety.
+- Monetization philosophy (devs' words, if any): "When you make a free-to-play game you really think about the lifetime of the game. When you make a PC game it's more about... just making good gameplay rather than a lengthy game or the tools to make people pay." — Sébastien Bénard, MCV/DEVELOP, 2018 [unverified]. Paid DLC expansions (The Bad Seed, Fatal Falls, The Queen and the Sea) came after years of free updates.
+- Lesson for our games (1-2 lines, concrete): Never force variety — seduce players into trying new things (curiosity > coercion). Watch how players ACTUALLY play (not how you intended) and rebalance around reality, not the design doc.
+- Sources: (URLs)
+  - https://www.rockpapershotgun.com/the-long-hard-journey-behind-the-design-of-dead-cells-player-builds
+  - https://www.gamedeveloper.com/design/how-watching-people-play-i-dead-cells-i-incorrectly-influenced-its-designers
+  - https://mcvuk.com/development-news/when-we-made-dead-cells/
+  - https://www.inverse.com/gaming/dead-cells-practice-makes-perfect-mode-interview
+- Coverage note: The MCV/DEVELOP and Inverse quotes are snippet-sourced, marked [unverified].

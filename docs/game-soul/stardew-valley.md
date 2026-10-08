@@ -1,0 +1,17 @@
+# Stardew Valley — Heart and Soul
+- Developer / studio: ConcernedApe (Eric Barone), solo developer — programming, pixel art, and music all by him.
+- Genre / platforms: Farming/life-sim RPG; PC, console, mobile (35M+ copies sold).
+- Why players come back (in the devs' view): Barone says the game taps a basic human drive — the quiet satisfaction of small daily rituals (watering crops, talking to villagers). No grand adventure; the "little domestic things" mirror real life and keep people going day to day. He keeps adding content because it's his dream game and he personally wants to keep improving it.
+- Key quotes:
+  - "There's no high, grand adventure. It's kind of, like, little domestic things. But that's the sort of thing that, you know, we all do every day, and that's just part of life. You know, it just keeps us going every day. So I think there's something about that that does tap into a certain — a human drive that we have." — Eric Barone, Creator, NPR interview, 2024
+  - "For me, it's a dream game. It's the game that I always wanted to play. Whenever I play it, I'm always coming up with new ideas. And it's just, like, I can add these things to the game, so it's fun. Like, I just want to keep adding to it." — Eric Barone, Creator, NPR interview, 2024
+  - "Nothing. It's just like, I don't care. I don't care about money that much to be honest. I'm not trying to virtue signal, but I honestly don't care about money that much. It's never been the driving, motivating factor. What I care about is people loving the game." — Eric Barone, Creator, Tiger Belly Podcast via NintendoEverything, 2025
+  - "I swear on the honor of my family name, I will never charge money for a DLC or update for as long as I live. Screencap this and shame me if I ever violate this oath." — Eric Barone, @ConcernedApe on X, July 22, 2024 (via Eurogamer)
+- Why players love/support it: Years of massive free updates (1.6 added festivals, recipes, dialogue, a new farm type) to a $15 game; zero microtransactions; a creator who publicly treats the game as his life's work and player love as the real currency. Community trust is the compounding asset.
+- Monetization philosophy (devs' words, if any): Never charge for updates/DLC, ever ("for as long as I live"); "I value the love of the players more than the money that I could squeeze out of everyone." Reported by GameInformer via Yardbarker (snippet-sourced, [unverified]): "You can either chase the dollar or you can chase the respect and admiration of the community. And [chasing the community] is just what I prefer."
+- Lesson for our games (1-2 lines, concrete): Free, substantial post-launch updates convert players into lifetime evangelists and drive new sales for years — treat updates as marketing that pays in goodwill. Chase player love over squeezing dollars; the love becomes the revenue.
+- Sources: (URLs)
+  - https://www.nprillinois.org/2024-12-19/the-creator-of-video-game-stardew-valley-talks-its-legacy-and-future
+  - https://nintendoeverything.com/stardew-valley-creator-on-why-all-of-the-updates-are-free-doesnt-care-about-money-that-much/
+  - https://www.eurogamer.net/stardew-valley-creator-will-never-charge-money-for-dlc-or-updates
+- Coverage note: No on-record dev statements found on community/management tactics beyond the update policy; no on-record comments on multiplayer/community features in the sources reviewed.

@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 
 import { FrameDataHitboxSystem } from '../combat/FrameDataHitbox.ts';
 import { FighterStateMachine } from '../combat/FighterStateMachine.ts';
-import { DASH_SPEED, WALK_SPEED } from './LocomotionSystem.ts';
+import { DASH_SPEED, WALK_SPEED, LocomotionSystem } from './LocomotionSystem.ts';
 
 /**
  * Schwarzerblitz walks at 80 units/s and its modal authored strike range is 65
@@ -52,25 +52,20 @@ describe('the fight is paced like the genre it is built on', () => {
     assert.ok(reach > 0.5, `a jab connects no further than ${reach.toFixed(2)}m`);
   });
 
-  /**
-   * THIS IS THE NUMBER THAT MADE BACK ATTACKS WHIFF. Walking fast relative to
-   * your own reach means any moment spent holding back puts you outside your
-   * range before your active frames arrive — the attack was never the problem.
-   */
-  it('crosses its own reach at roughly the rate Schwarzerblitz does', () => {
-    const ours = WALK_SPEED / reach;
-    assert.ok(
-      Math.abs(ours - GENRE_REACHES_PER_SECOND) < 0.3,
-      `we cross ${ours.toFixed(2)} reaches/sec against the genre's ${GENRE_REACHES_PER_SECOND.toFixed(2)}`
-      + ` (walk ${WALK_SPEED}, measured reach ${reach.toFixed(2)}m)`,
-    );
+  it('uses exactly 25 percent of the previous walk and run tiers', () => {
+    assert.equal(WALK_SPEED, 0.225);
+    assert.equal(DASH_SPEED, 0.75);
   });
 
-  /** runningSpeed = walkingSpeed * 2.5f, read out of FK_Character. */
-  it('dashes at the source engine\'s multiple of its own walk', () => {
-    assert.ok(
-      Math.abs(DASH_SPEED / WALK_SPEED - 2.5) < 0.25,
-      `dash is ${(DASH_SPEED / WALK_SPEED).toFixed(2)}x the walk, not 2.5x`,
+  it('keeps the run tier distinct while preserving the 3.33x relationship', () => {
+    const ratio = DASH_SPEED / WALK_SPEED;
+    assert.ok(Math.abs(ratio - (3 / 0.9)) < 1e-9, `run is ${ratio.toFixed(2)}x the walk — expected the prior tier relationship`);
+  });
+
+  it('paces the slowed walk against measured strike reach without restoring the old speed', () => {
+    const ours = WALK_SPEED / reach;
+    assert.ok(ours > 0 && ours < 0.35,
+      `walk crosses ${ours.toFixed(2)} reaches/sec — the 25% movement tier must remain deliberately slow`,
     );
   });
 
@@ -79,8 +74,17 @@ describe('the fight is paced like the genre it is built on', () => {
    * cannot reach his opponent is a different complaint from a fighter who
    * reaches him too easily.
    */
-  it('still closes the round-start gap in a couple of seconds', () => {
+  it('lifts a fighter into a real airborne arc and returns to the floor', () => {
+    const loco = new LocomotionSystem(0, 0, 1);
+    loco.beginJump();
+    loco.update(0, 0, 0.1, false, false);
+    assert.ok(loco.airborneY > 0.2, `jump height ${loco.airborneY.toFixed(3)}m is not visible`);
+    for (let i = 0; i < 120; i++) loco.update(0, 0, 1 / 60, false, false);
+    assert.equal(loco.airborneY, 0);
+  });
+
+  it('still closes the round-start gap without exceeding the new deliberate pace', () => {
     const closeSeconds = (3.6 - reach) / (WALK_SPEED * 2);
-    assert.ok(closeSeconds < 1.5, `it would take ${closeSeconds.toFixed(1)}s to get in range`);
+    assert.ok(closeSeconds > 4.0 && closeSeconds < 10.0, `it would take ${closeSeconds.toFixed(1)}s to get in range at the 25% walk tier`);
   });
 });

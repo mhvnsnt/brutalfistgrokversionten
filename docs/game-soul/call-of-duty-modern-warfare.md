@@ -1,0 +1,18 @@
+# Call of Duty: Modern Warfare — Heart and Soul
+- Developer / studio: Infinity Ward (Activision)
+- Genre / platforms: First-person shooter (campaign + multiplayer) / PC, PlayStation, Xbox
+- Why players come back (in the devs' view): Personal progression turned multiplayer into an RPG journey — unlocks, perks, and prestige give every match a "personal journey" that rewards mastery and experimentation; killstreaks add in-match escalation and stakes so even the familiar Team Deathmatch stays tense; movement so fluid the heroic action "in your brain" happens through your fingers.
+- Key quotes:
+  - "It's nice because it gets you to play stuff you wouldn't normally play... the designer's job to encourage the player to get out of their comfort zone a little bit without turning them off from the game." — Mackey McCandlish, original Modern Warfare developer, IGN retrospective via Rock Paper Shotgun, 2023
+  - "You know what, our players just want to play Team Deathmatch... Is there anything we could do to make Team Deathmatch something we want to play too? The way to get there was the Killstreaks, where 'Hey, I've got two or three kills, now I have a reason not to just go run into the next person.' There's a little bit of stakes there." — Mackey McCandlish, original Modern Warfare developer, IGN retrospective via Rock Paper Shotgun, 2023
+  - "Our design philosophy never changes... the focus is always to make it accessible and fun for any type of gamer, whether you've been playing FPSs your entire life or Call of Duty 4: Modern Warfare was your first one." — Infinity Ward, Modern Warfare 2 dev interview, NextGenUpdate [unverified]
+  - "That's what I want to do, and then the game did it, and that felt great. So that's kind of our philosophy, to try and get what's in people's brains through their fingers out into the game." — Geoff O'Hara, Infinity Ward, GameSpot (Modern Warfare 4 playtest), 2026 [unverified]
+- Why players love/support it: Gunsmith customization as identity ("my build"); seasonal battle passes and events; friends-in-lobby social loop; the yearly cadence that brings the community back together; mastery progression that respects both newcomers and veterans.
+- Monetization philosophy (devs' words, if any): No on-record developer statement found on monetization philosophy. ANALYSIS: premium annual release + battle pass + cosmetic store; progression unlocks are earned through play, never purchasable.
+- Lesson for our games (1-2 lines, concrete): Steal the formula honestly — unlock ladders, perks, and in-run escalation (killstreaks) turn repetition into personal journey. Concrete Dragon: meaningful unlocks for every playstyle plus mid-run stakes escalation so each run feels different.
+- Sources:
+  - https://www.rockpapershotgun.com/modern-warfares-creators-were-very-divided-over-its-most-influential-feature-unlocking-guns
+  - https://www.gamesindustry.biz/call-of-duty-transcends-entertainment-in-such-a-massive-way
+  - https://www.gamespot.com/articles/infinity-ward-makes-key-improvements-to-the-formula-with-call-of-duty-modern-warfare-4/
+  - https://nextgenupdate.com/forums/call-duty-modern-warfare-2/58827-modern-warfare-2-exclusive-developer-interview.html
+- Coverage note: McCandlish quotes verified via fetched Rock Paper Shotgun page. O'Hara and design-philosophy quotes from search snippets — [unverified]. No on-record dev statement found on monetization philosophy; labeled ANALYSIS.

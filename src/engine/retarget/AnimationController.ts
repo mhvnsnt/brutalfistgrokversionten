@@ -11,7 +11,7 @@ export type FighterMotionState =
   | 'hitAir' | 'hitBack' | 'hitGround'
   // ── Extended locomotion states ────────────────────────────────────────────
   | 'walk' | 'run' | 'dash' | 'dashForward' |'Walking' | 'Backdashing' | 'Guard' | 'Knockdown'
-  | 'WakeupTechRoll'| 'WakeupBackrise' | 'WakeupQuickStand' |'HitStun' | 'Stunned' | 'Crumple' | 'CommandThrow' | 'ThrowWhiff'
+  | 'WakeupTechRoll'| 'WakeupBackrise' | 'WakeupQuickStand' | 'WakeupRollForward' | 'WakeupRollBack' | 'WakeupRollSide' | 'WakeupKipUp' | 'WakeupAttack' | 'GroundedFaceUp' | 'GroundedFaceDown' | 'GroundedRoll' |'HitStun' | 'Stunned' | 'Crumple' | 'CommandThrow' | 'ThrowWhiff'
   // ── Extended combat states ────────────────────────────────────────────────
   | 'Startup' | 'Active' | 'Blockstun' | 'Hitstun'
   // A GRAB IS ITS OWN MOTION, NOT A PUNCH. Without this state the command
@@ -52,6 +52,14 @@ const CROSSFADE_DURATIONS: Partial<Record<FighterMotionState, number>> = {
   WakeupTechRoll:    0.083,
   WakeupBackrise:    0.083,
   WakeupQuickStand:  0.067,
+  WakeupRollForward: 0.083,
+  WakeupRollBack:    0.083,
+  WakeupRollSide:    0.083,
+  WakeupKipUp:       0.067,
+  WakeupAttack:      0.050,
+  GroundedFaceUp:    0.100,
+  GroundedFaceDown:  0.100,
+  GroundedRoll:      0.067,
   // Attacks — fast snaps
   lightAttack:       0.050,  // 3 frames — fast snap into attack
   heavyAttack:       0.067,
@@ -102,7 +110,7 @@ const LOOP_STATES = new Set<FighterMotionState>([
   'strafeLeft', 'strafeRight', 'sidestepLeft', 'sidestepRight',
   'crouch', 'crouchWalk', 'guard', 'guardLow', 'Guard',
   'Backdashing', 'Knockdown',
-  'WakeupTechRoll', 'WakeupBackrise', 'WakeupQuickStand',
+  'GroundedFaceUp', 'GroundedFaceDown', 'GroundedRoll',
 ]);
 
 // ── States that play once and return to idle ──────────────────────────────────
@@ -112,6 +120,11 @@ const ONESHOT_STATES = new Set<FighterMotionState>([
   'overdrive', 'finisher', 'superArmor',
   'hit', 'hitLow', 'hitHigh', 'HitStun', 'Stunned', 'Hitstun',
   'knockdown', 'Crumple',
+  'WakeupTechRoll', 'WakeupBackrise', 'WakeupQuickStand',
+  'WakeupRollForward', 'WakeupRollBack', 'WakeupRollSide',
+  'WakeupKipUp', 'WakeupAttack',
+  'jump', 'jumpForward', 'jumpBack',
+  'GroundedRoll',
   'victory', 'defeat', 'taunt', 'intro',
 ]);
 
@@ -146,6 +159,16 @@ export function buildAnimationController(
   let stanceAction: THREE.AnimationAction | null = null;
   let stanceState: FighterMotionState = 'idle';
   let masked = false;
+  // Every action that leaves the visible layer is retired after its fade.
+  // Three.js keeps zero-weight actions alive unless explicitly stopped. A long
+  // chain of locomotion/crouch/jump transitions can therefore leave old
+  // actions updating the same skeleton indefinitely; on some clips that reads
+  // as the "double/ghost fighter" the PWA exposed. Keep the fade, then stop it.
+  const retiringActions = new Map<THREE.AnimationAction, number>();
+  const retire = (action: THREE.AnimationAction | null, fade: number) => {
+    if (!action) return;
+    retiringActions.set(action, Math.max(retiringActions.get(action) ?? 0, fade));
+  };
   /**
    * DISTANCE MATCHING. The clip name and the live ground speed, so playback can be
    * scaled to the stride the clip was authored with — otherwise the feet slide by
@@ -231,6 +254,25 @@ export function buildAnimationController(
         hitGround:         ['knockdown', 'hit'],
         guardLow:          ['guard'],
         crouchWalk:        ['crouch', 'walkForward'],
+        wake:              ['WakeupQuickStand', 'WakeupBackrise', 'knockdown', 'idle'],
+        WakeupTechRoll:    ['GroundedRoll', 'knockdown', 'wake', 'idle'],
+        WakeupBackrise:    ['wake', 'knockdown', 'idle'],
+        WakeupQuickStand:  ['wake', 'knockdown', 'idle'],
+        WakeupRollForward: ['GroundedRoll', 'knockdown', 'wake', 'idle'],
+        WakeupRollBack:    ['GroundedRoll', 'knockdown', 'wake', 'idle'],
+        WakeupRollSide:    ['GroundedRoll', 'knockdown', 'wake', 'idle'],
+        WakeupKipUp:       ['wake', 'knockdown', 'idle'],
+        // Grounded attacks must never fall through to a standing jab/heavy.
+        // The Schwarzerblitz move graph has SupineReversal/Gbackroll/Gforeroll
+        // contracts, but the corresponding faceRun2/flyingKick/lowAttack1 clips
+        // are not present in the 455-clip baked bank. Keep the state honest until
+        // a real grounded attack clip is imported rather than inventing a pose.
+        WakeupAttack:      ['GroundedFaceUp', 'GroundedFaceDown', 'wake', 'idle'],
+        GroundedFaceUp:    ['knockdown', 'hitGround', 'idle'],
+        GroundedFaceDown:  ['knockdown', 'hitGround', 'idle'],
+        GroundedRoll:      ['knockdown', 'hitGround', 'idle'],
+        jumpForward:       ['jump', 'idle'],
+        jumpBack:          ['jump', 'idle'],
         sidestepLeft:      ['strafeLeft', 'walkBackward'],
         sidestepRight:     ['strafeRight', 'walkForward'],
         dashForward:       ['walkForward', 'walk'],
@@ -266,7 +308,10 @@ export function buildAnimationController(
     const lower = stanceClip ? lowerBodyHalf(validateRetargetedClip(stanceClip)) : null;
     if (!lower) { masked = false; return false; }
     const action = mixer.clipAction(lower, root);
-    if (stanceAction && stanceAction !== action) stanceAction.fadeOut(fade);
+    if (stanceAction && stanceAction !== action) {
+      stanceAction.fadeOut(fade);
+      retire(stanceAction, fade);
+    }
     action.setLoop(THREE.LoopRepeat, Infinity);
     if (!action.isRunning()) action.reset().play();
     action.fadeIn(fade);
@@ -276,7 +321,11 @@ export function buildAnimationController(
   };
 
   const lowerStanceLayer = (fade: number) => {
-    if (stanceAction) stanceAction.fadeOut(fade);
+    if (stanceAction) {
+      stanceAction.fadeOut(fade);
+      retire(stanceAction, fade);
+    }
+    stanceAction = null;
     masked = false;
   };
 
@@ -320,6 +369,7 @@ export function buildAnimationController(
       nextAction.setEffectiveTimeScale(1);
       nextAction.setEffectiveWeight(1);
       currentAction.crossFadeTo(nextAction, fadeDuration, false);
+      retire(currentAction, fadeDuration);
       nextAction.play();
     } else {
       // No current action — just start
@@ -367,7 +417,25 @@ export function buildAnimationController(
     /** The stance currently holding the pelvis and legs. */
     get stance() { return stanceState; },
     play,
-    update(delta: number) { mixer.update(delta); },
+    update(delta: number) {
+      mixer.update(delta);
+      // Stop faded actions deterministically. This is intentionally done after
+      // mixer.update so the final fade frame is still visible.
+      for (const [action, remaining] of retiringActions) {
+        const left = remaining - delta;
+        if (left <= 0) {
+          if (action !== currentAction && action !== stanceAction) {
+            action.stop();
+            // Do not leave a stopped action scheduled in the mixer. Reusing the
+            // cached clipAction is safe; the next play() resets it.
+            action.enabled = false;
+          }
+          retiringActions.delete(action);
+        } else {
+          retiringActions.set(action, left);
+        }
+      }
+    },
   };
 }
 

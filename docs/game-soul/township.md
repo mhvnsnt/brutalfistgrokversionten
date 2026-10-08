@@ -1,0 +1,26 @@
+# Township — Heart and Soul
+
+- Developer / studio: Playrix
+- Genre / platforms: Farming + city building + match-3 minigame; iOS, Android (2013 mobile; originally Facebook)
+- Why players come back (in the devs' view):
+  - A genre-blending formula (match-3, farming, city building) built by a ~20-person team, now run by a ~130-person live team — constant content and iteration.
+  - Relentless data-driven iteration: content decisions made on game metrics, heavy A/B testing aimed specifically at improving retention and monetization.
+  - Player feedback: Playrix says it was "very in-touch with player feedback and deep into the detail of player data," treating the game as a system and reading market signals meticulously.
+  - Portfolio cross-learning: having four hit games means every experiment in one title feeds the others.
+- Key quotes:
+  - "When adding content, we heavily relied on the game's metrics, and did a lot of A/B testing trying to improve retention and monetisation." — Maxim Kirilenko, Chief Business Development Officer, Playrix, MobileGamer.biz, 2023
+  - "We approach our games as a system, and we're very meticulous when it comes to analysing and interpreting market signals." — Maxim Kirilenko, Chief Business Development Officer, Playrix, MobileGamer.biz, 2023
+  - "Going mobile with Township was a pivotal move... From a technical and game design perspective, Playrix's future games Fishdom, Gardenscapes, and Homescapes owe a great deal to their city-building counterpart." — Maxim Kirilenko, Chief Business Development Officer, Playrix, MobileGamer.biz, 2023
+  - "Township is primarily a 'female' game. About 70% of the audience are women." — Playrix, Game World Observer interview, 2018 (on the Hay Day-inspired rework)
+- Why players love/support it:
+  - A cozy, long-running town players build and tend; social co-op elements; endless production-chain depth; 10+ years of trust (600m downloads, $2.1bn+ revenue by 2023).
+- Monetization philosophy (devs' words, if any):
+  - No explicit philosophy quote on record for Township; the stated method is A/B-tested balance of retention vs. monetization (Kirilenko's words above). Playrix's broader match-3 design doctrine: monetization and dropout metrics are closely connected and tuned together, level by level.
+- Lesson for our games (1-2 lines, concrete):
+  - Treat the live game as a system of metrics: decide every content addition by data and A/B tests aimed at retention first, monetization second — not by gut feel.
+  - A 10-year game is run by a big, patient team (20 → 130 people): long-term success is a staffing and iteration commitment, not a launch-day event.
+- Sources:
+  - http://mobilegamer.biz/playrixs-township-is-10-and-still-growing-after-2-1bn-revenue-600m-downloads/
+  - https://gameworldobserver.com/?p=552
+  - https://www.PocketGamer.Biz/are-casual-games-maturing-part-two-lessons-from-playrix/
+- Coverage note: No Township-specific monetization philosophy quote from devs found on record; monetization section reflects Kirilenko's general method statements. No [unverified] quotes used.
