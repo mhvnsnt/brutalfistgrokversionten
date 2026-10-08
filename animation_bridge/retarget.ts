@@ -15,6 +15,7 @@ import {
   BANNON_MOTION_CLIP_NAMES,
   buildBannonMotionClips,
 } from '../src/engine/retarget/BannonMotionBank';
+import { retargetFromSourceScene } from '../src/engine/retarget/RuntimeUniversalRetarget';
 import {
   SCHWARZERBLITZ_CLIP_NAMES,
   buildSchwarzerblitzMotionClips,
@@ -78,8 +79,19 @@ export class AnimationBridge {
       mergedSourceClips.push(clip);
     }
 
+    // Source GLB clips whose rig differs from the target go through the
+    // universal retargeter (world-space rotation transfer) first; the name
+    // rewrite below then binds them 1:1. Same-skeleton pairs are untouched.
+    const universal = retargetFromSourceScene(sourceScene, targetScene, sourceClips, this.characterId);
+
     const { clips: retargetedClipsRaw, totalResolved, totalUnresolved } =
       this.retargeter.retargetClips(mergedSourceClips, this.characterId);
+    if (universal) {
+      // Already on the target's own bone names; the name rewrite would drop them.
+      universal.clips.forEach((clip, i) => {
+        if ((clip as THREE.AnimationClip & { userData?: { universalRetarget?: unknown } }).userData?.universalRetarget === true) retargetedClipsRaw[i] = clip;
+      });
+    }
 
     // AnimationRetargeter intentionally produces fresh clips, so source
     // metadata is not relied upon here. The generated bank's exact clip names

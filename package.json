@@ -31,7 +31,9 @@
     "pwa:verify": "node scripts/verify-pwa-build.mjs dist",
     "bake": "node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs scripts/bake-fighter-animations.mjs --gate",
     "pretest": "node scripts/classify-clip-motion.mjs",
-    "animation:bulk-repair": "node scripts/fetch-open-animation-packs.mjs && node scripts/sync-open-animation-sources.mjs && node scripts/classify-clip-motion.mjs && node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs scripts/bake-fighter-animations.mjs --gate && node scripts/animation-continuity-audit.mjs --gate"
+    "animation:bulk-repair": "node scripts/fetch-open-animation-packs.mjs && node scripts/sync-open-animation-sources.mjs && node scripts/classify-clip-motion.mjs && node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs scripts/bake-fighter-animations.mjs --gate && node scripts/animation-continuity-audit.mjs --gate",
+    "retarget:matrix": "node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs scripts/retarget-matrix.mjs",
+    "retarget:proof": "node --experimental-strip-types --import ./scripts/register-ts-resolve.mjs scripts/retarget/render-proof.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.4",
