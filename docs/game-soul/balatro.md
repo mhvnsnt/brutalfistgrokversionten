@@ -1,0 +1,16 @@
+# Balatro — Heart and Soul
+- Developer / studio: LocalThunk (solo dev), published by Playstack (2024).
+- Genre / platforms: Poker roguelike; PC + consoles + mobile.
+- Why players come back (in the devs' view): Designed as an evergreen, low-stakes comfort game — "like people play solitaire." No player character, no health, no enemies; every run is a fresh puzzle to break. LocalThunk watches how real players play (seeds became a social/competitive tool, inspiring a daily challenge mode) and expands the design space rather than changing the core.
+- Key quotes:
+  - "I wanted it to feel evergreen, comforting, and enjoyable in a very low-stakes way. I wanted this game to be as low stakes as a crossword or a sudoku puzzle while still exercising the problem-solving part of the brain. Essentially I wanted to play Balatro like people play solitaire." — LocalThunk, Developer, personal blog via GamesRadar, 2025
+  - "I don't ever want microtransactions or anything like that in the game. I love that it's just a single price tag, and you get the whole designed experience for that amount of money." — LocalThunk, Developer, Polygon, 2024 [unverified]
+  - "I only played Slay the Spire last May because I wanted to understand what they did with gamepad controls. If I'd played that game before designing this one, it would have infiltrated the design quite a bit... Figuring out design issues is fun for me." — LocalThunk, Developer, GamesRadar, 2024 [unverified]
+- Why players love/support it: Instantly readable (it's poker!) yet bottomless; every run generates a broken, hilarious build story worth sharing; free updates added jokers and content with more promised; the dev's sincerity and refusal of microtransactions earned deep goodwill.
+- Monetization philosophy (devs' words, if any): Single price tag, whole designed experience, no microtransactions — stated explicitly. Updates free ("good marketing"); LocalThunk believes a good game at one price sells itself.
+- Lesson for our games (1-2 lines, concrete): Build the game around a universally understood core (poker = zero tutorial needed) then add one twist that breaks it gloriously. One fair price with free updates builds trust that no battle pass can buy.
+- Sources: (URLs)
+  - https://www.gamesradar.com/games/roguelike/balatro-dev-says-solitaire-exists-at-the-peak-of-game-culture-and-was-debatably-the-most-important-inspiration-for-his-poker-roguelike/
+  - https://www.polygon.com/24216323/balatro-update-2025-details-new-jokers-iphone-android-version/
+  - https://www.crossplay.news/p/is-balatro-okay-for-kids
+- Coverage note: The Polygon (microtransactions) and GamesRadar (Slay the Spire influence) quotes are snippet-sourced, marked [unverified].

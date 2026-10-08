@@ -1,0 +1,13 @@
+# Super Mario Party Jamboree — Heart and Soul
+- Developer / studio: Nintendo Cube (formerly Nd Cube) with Nintendo
+- Genre / platforms: Party / minigame compilation; Nintendo Switch (2024)
+- Why players come back (in the devs' view): ANALYSIS — no on-record developer interviews or "Ask the Developer" volume were found for Jamboree itself. Nintendo's public framing positions it as the "biggest Mario Party yet" — more boards, more characters, 110+ minigames — and post-launch support (a free party-rules/battle-pass-style progression track, plus the Switch 2 Edition + Jamboree TV upgrade) extends its life. The retention thesis from press and product messaging is social: the formula's joy is playing with friends, and Jamboree maximizes variety per session so every game night feels fresh.
+- Key quotes: (none — no verifiable on-record developer quotes found; press coverage only)
+- Why players love/support it: ANALYSIS — the core dice-and-stars board formula has survived 25+ years because its betrayal moments ("first can drop to fourth in an instant") create stories players retell; Jamboree's 20-player Koopathlon online mode and cooperative Bowser Kaboom Squad gave the series its biggest multiplayer scale yet; free progression rewards (the lighthearted rank-up track Nintendo Life called "a Battle Pass... nothing to pay here") reward continued play.
+- Monetization philosophy (devs' words, if any): ANALYSIS — Nintendo's model here is premium price + free content progression (rank-up rewards) + paid hardware-generation upgrade path (Switch 2 Edition). No microtransaction monetization; the "battle pass" analogy cited in press explicitly has nothing to pay for.
+- Lesson for our games (1-2 lines, concrete): In social games, retention is the people around the table — build modes and betrayal moments that generate stories players retell, and use free progression rewards (ranks, cosmetics) instead of paid ones to keep everyone playing together.
+- Sources:
+  - https://www.nintendolife.com/previews/first-impressions-nintendos-taken-feedback-to-heart-with-super-mario-party-jamboree
+  - https://www.nintendolife.com/previews/hands-on-super-mario-party-jamboree-brings-together-the-best-of-both-worlds
+  - https://www.nintendo-insider.com/super-mario-party-jamboree-review/
+- Coverage note: No on-record developer interviews with Nintendo Cube/Nintendo staff about Jamboree's retention philosophy were found in search. Nintendo has not published an "Ask the Developer" volume for this title; the Switch 2 Edition is only discussed in hardware-focused Vol. 16 interviews. All design observations above are press ANALYSIS, not dev statements — labeled accordingly.

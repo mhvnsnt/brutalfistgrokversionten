@@ -1,0 +1,23 @@
+# Street Fighter 6 — Heart and Soul
+- Developer / studio: Capcom
+- Genre / platforms: Fighting — PC, PS4/PS5, Xbox Series X|S (2023)
+- Why players come back (in the devs' view):
+  - Approachability as the #1 design goal: "make Street Fighter 6 one of the most approachable fighting games ever." New players are the growth strategy, not just pros.
+  - Modern Control Type removes the biggest roadblock: "one of the frustrations newcomers face with the fighting game genre is that it's very hard to execute combos and special moves" — giving newcomers the fun first.
+  - World Tour mode exists to "make people become fans of Street Fighter outside of the traditional fights" — players "learn how to love fighting games through the things that you do during the journey of World Tour."
+  - Choice, not dumbing down: "By no means are we saying this is easy mode... We want to have a world where players have a choice in how they play Street Fighter 6."
+- Key quotes:
+  - "I'm making a fighting game, but beyond that, I'm making a Street Fighter game that is for a much wider audience. Street Fighter 6 is not just for hardcore fighting game fans, but for people who might not be versed in the genre as well." — Takayuki Nakayama, Game Director, Digital Trends, 2022
+  - "We want players to dive into this mode and be able to learn how to love fighting games through the things that you do during the journey of World Tour." — Takayuki Nakayama, Game Director, on World Tour mode, Digital Trends, 2022
+  - "By no means are we saying this is easy mode. This is just a new way to play Street Fighter that addresses some common frustrations that a lot of people have... We want to have a world where players have a choice in how they play Street Fighter 6." — Takayuki Nakayama, Game Director, Digital Trends, 2022
+  - "We were definitely aware of some of the criticism that we faced with Street Fighter 5, and we want to continue to learn from those criticisms and make Street Fighter 6 a better product." — Takayuki Nakayama, Game Director, Digital Trends, 2022
+- Why players love/support it:
+  - ANALYSIS: highest launch content package in series history (three pillars: World Tour, Fighting Ground, Battle Hub); competitive scene embracing Modern controls kept the door open for newcomers while pros keep depth; strong post-launch seasonal DLC cadence.
+- Monetization philosophy (devs' words, if any):
+  - No on-record statement found from devs on monetization philosophy. Model: paid game + seasonal character passes + cosmetic DLC. Nakayama confirmed live-service post-launch discussions but framed longevity as making "the best point for the fighting game genre as a whole," not monetization.
+- Lesson for our games (1-2 lines, concrete):
+  - Strip the entry barrier, keep the ceiling: Modern controls gave newcomers real wins without calling them bad players. Build a "learn to love it" single-player journey (World Tour-style) alongside versus — don't let the game be only a versus mode.
+- Sources:
+  - https://www.digitaltrends.com/gaming/street-fighter-6-interview-world-tour-details/
+  - https://www.vg247.com/street-fighter-6-season-2-interview-summer-game-fest
+- Coverage note: Quotes verified on fetched Digital Trends page. No on-record dev statements found on monetization philosophy.

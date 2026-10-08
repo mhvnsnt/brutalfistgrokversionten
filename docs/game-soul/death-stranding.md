@@ -1,0 +1,23 @@
+# Death Stranding — Heart and Soul
+- Developer / studio: Kojima Productions (published by Sony Interactive Entertainment)
+- Genre / platforms: "Strand" delivery adventure (open world) / PS4, PS5, PC
+- Why players come back (in the devs' view):
+  - The Social Strand System turns strangers into a positive force: you can only connect positively — likes, shared structures, warnings. Kojima wants players to carry what they felt into real life.
+  - The game's success metric is personal, not mechanical: a good game is the place a tired person returns to after work or school — "a very personal space" that does things their normal life cannot.
+  - Kojima deliberately avoids "mainstream" satisfaction — he wants players to "gradually appreciate elements they initially disliked, because that's where genuine affection is forged." The divisive delivery gameplay is the point, not a bug.
+- Key quotes:
+  - "In Death Stranding, you can only connect positively. When the user stops playing, I hope they can carry what they felt during the game over into real life." — Hideo Kojima, Director, GQ via 421.news, 2025 [unverified]
+  - "I want players to find joy in life through my stories... If someone plays my game and, after a few years, feels like I want to live on because I played this game and it cheered me up. That would be the happiest thing that I would feel." — Hideo Kojima, Death Stranding World Tour 2 panel, Lucca Comics, 2025 [unverified]
+  - "I don't want that [mainstream, pre-digested work]. I want players to gradually appreciate elements they initially disliked, because that's where genuine affection is forged." — Hideo Kojima, reported by composer Yoann Lemoine (Woodkid), Rolling Stone, 2025 [unverified]
+  - "We may be connected through the internet more than ever, but what's happening is that people are attacking each other because we're so connected." — Hideo Kojima, BBC Newsbeat, 2019 [unverified]
+- Why players love/support it:
+  - Players who stayed became evangelists because the asynchronous cooperation (bridges, ladders, likes from strangers you'll never meet) genuinely changed how they thought about kindness in games — and the "carry it into real life" ethos gave the grind meaning. The passionate divide kept it culturally alive for years.
+- Monetization philosophy (devs' words, if any): None on record. Premium games; no monetization philosophy commentary found.
+- Lesson for our games (1-2 lines, concrete): Build a positive-only async layer in Concrete Dragon — player-built shortcuts, likes, turf graffiti from strangers you never meet — so the game makes people feel connected, not just competitive. And trust divisive-but-meaningful systems over broadly-liked bland ones; friction that becomes affection is the strongest retention there is.
+- Sources:
+  - https://www.421.news/en/hideo-kojima-en/
+  - https://www.notebookcheck.net/Hideo-Kojima-reveals-his-true-motivation-for-making-games-I-want-players-to-find-joy-in-life-through-my-stories.1155764.0.html
+  - https://mao10.com/news/hideo-kojima---death-stranding-2-playtesters--x27too-goodx27.html
+  - https://www.technetbooks.com/2025/12/hideo-kojima-on-game-design-his.html
+  - https://www.tweaktown.com/news/68552/death-stranding-hideo-kojimas-answer-president-trump-brexit/index.html
+- Coverage note: Quotes are from search snippets (not fetched full pages), marked [unverified] per protocol. The "too good playtesters" and GQ 2025 quotes are reported by secondary outlets from interviews/panels. No invented statements included.

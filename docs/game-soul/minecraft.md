@@ -1,0 +1,15 @@
+# Minecraft — Heart and Soul
+- Developer / studio: Mojang / Microsoft
+- Genre / platforms: Sandbox; PC, console, mobile
+- Why players come back (in the devs' view): Playfulness and trust — a sandbox where the player owns the narrative and controls their world; the studio acts as steward of worlds players have kept for 10-15 years. Success is measured by "players finding possibilities inside it that nobody on the team had planned for."
+- Key quotes:
+  - "The community — that's really our strongest inspiration all of the time. I think that comes from the beginning of Minecraft. It's a tradition we've kept strong, listening to our players, making sure we can implement feedback." — Anna Lundgren, Senior Product Manager at Mojang, GameRant, June 23, 2026
+  - "Some people have had worlds since more than 10, 15 years back. And we want to make sure that they can trust us and continue playing and have fun as we evolve the game. That's super important." — Anna Lundgren, GameRant, 2026
+  - Minecraft's core principles are "a sandbox where the player owns the narrative and controls their world." — Anna Lundgren, GameRant, 2026
+  - "We try to make sure we can give something to all our different players... because all our different players out there want different things." — Anna Lundgren, GameRant, 2026
+- Why players love/support it: No objectives, no judgment — a kid and an architect get the same infinite box of Legos. The studio treats 15-year-old player worlds as sacred.
+- Monetization philosophy (devs' words): One-time purchase, not a free-to-play economy; philosophy is stewardship and trust rather than extraction. The marketplace pays independent creators. No pay-to-win by design.
+- Lesson for our games: The deepest humanity is letting people express themselves — and stewardship: never betray the trust of long-time players for a quick dollar.
+- Sources:
+  - https://gamerant.com/minecraft-interview-chaos-cubed/
+- Coverage note: No explicit monetization-ethics manifesto found beyond the stewardship/trust framing.

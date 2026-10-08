@@ -1,0 +1,17 @@
+# Grounded — Heart and Soul
+- Developer / studio: Obsidian Entertainment, Xbox Game Studios
+- Genre / platforms: Co-op survival adventure; Xbox One, Xbox Series X|S, PC, Switch, PS5
+- Why players come back (in the devs' view): Frequent content drops during a two-year Game Preview meant every return visit found "a lot of new things that you've never seen before." Plus co-op as the core ("surviving is just more fun when you do it together") and player-tunable everything — difficulty, story on/off, sandbox unlocks — so players can "make the game your own."
+- Key quotes:
+  - "The cadence of releasing new content pretty frequently is also helping out quite a bit... even if you played the game on launch, I think if you come back a few months later, you'll probably see a lot of new things that you've never seen before in Grounded." — Adam Brennecke, Game Director, Obsidian, ScreenRant (2020) [unverified]
+  - "I would love to continue to work on Grounded, as long as people are playing and enjoying it." — Adam Brennecke, Windows Central (2022) [unverified]
+  - "Play through with a friend, too, because the game is so much better with a friend. Surviving is just more fun when you do it together... If you want to play the game without the storyline, you can do that; if you want to play it with just base building and get all the recipes right off the bat, you can do that, too." — Adam Brennecke, Windows Central (2022) [unverified]
+- Why players love/support it: The team "banked on player feedback to help shape the game" from day one (early access/Game Preview), so the community owns the game as co-creators — a dedicated, theory-crafting fanbase that creates fan art and dissects every content drop. Phil Spencer himself plays it.
+- Monetization philosophy (devs' words, if any): None stated by devs; premium title + Game Pass day one. Post-launch updates were free — the 2-year Preview model treated early buyers as investors whose feedback shaped 1.0.
+- Lesson for our games (1-2 lines, concrete): Regular content drops are the single best re-engagement hook — give players a reason to come back every few months and they'll bring friends. Build with the community (public previews, visible feedback loop), not just for them.
+- Sources: (URLs)
+  - https://screenrant.com/adam-brennecke-interview-grounded-november-update/
+  - https://www.windowscentral.com/gaming/xbox/grounded-interview-the-road-to-release-with-creative-director-adam-brennecke
+  - https://www.polygon.com/2019/11/14/20964726/obsidian-entertainment-grounded-announcement-release-date-xbox-one-x019/
+  - https://checkpointgaming.net/features/2025/10/an-interview-with-obsidian-entertainment-about-future-plans-for-grounded-2/
+- Coverage note: All quotes sourced from search snippets, marked [unverified]; full page fetch not performed in this pass. The Checkpoint Gaming quotes (Taylor/Justin) concern Grounded 2's community and are excluded from Grounded quotes.

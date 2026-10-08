@@ -1,0 +1,18 @@
+# Destiny 2 — Heart and Soul
+- Developer / studio: Bungie (self-published since leaving Activision in 2019)
+- Genre / platforms: Online FPS / shared-world shooter / PC, PlayStation, Xbox
+- Why players come back (in the devs' view): Bungie's company purpose is literally "create worlds that inspire friendship" — "the community is the product as much as the game." The game is treated as a platform and catalyst for friendships that outlast the software. Design-wise: evolve Destiny from a perishable campaign into a "lifestyle and a hobby game" via the seasonal model (quest lines leading to exotic weapons, surprises, world changes), and keep investing in what players are happiest doing. After the Edge of Fate stumble, game director Tyson Green stated the philosophy plainly: "There are really two kinds of live games: those that listen to the players and respond, and those that don't. And we don't want to be a dead live game."
+- Key quotes:
+  - "We quite literally have a company purpose of, 'create worlds that inspire friendship'. So the community is the product as much as the game. We see the game as a platform and a catalyst for bringing people together who would never have met before." — David "Deej" Dague, Communications Director (VGC interview, 2019)
+  - "I think we're getting better at sustaining a lifestyle and a hobby game, instead of something that is perishable." — David "Deej" Dague, Communications Director (VGC interview, 2019)
+  - "There are really two kinds of live games: those that listen to the players and respond, and those that don't. And we don't want to be a dead live game." — Tyson Green, Game Director (2025 interview, via GameFragger) [unverified]
+  - "We want to return Destiny to its original promise, to recapture the qualities that have always made it special: the awe-inspiring mystery, meaningful discovery, and a community of Guardians coming together against impossible odds." — Bungie studio statement (VideoGamesChronicle, 2026)
+- Why players love/support it: A world worth exploring with satisfying gunplay, friendships formed in fireteams, and a studio that publicly admits missteps and earns back trust by restoring removed content (vaulted campaigns/destinations returning in 2026).
+- Monetization philosophy (devs' words, if any): No on-record statement found specifically on monetization philosophy. The shift to free-to-play (New Light) was framed as removing barriers: "create a situation where it is easier to join the Destiny community" (Deej, VGC 2019); expansions/seasons monetize the continuing hobby, and Deej noted post-F2P "people are holding themselves to a higher standard."
+- Lesson for our games (1-2 lines, concrete): Design for friendship as the product — shared experiences, clan tools, reasons for old friends to return together; build a hobby (seasons, chases, surprises) rather than a perishable campaign; when trust breaks, restore what was taken and say so plainly.
+- Sources:
+  - https://www.videogameschronicle.com/features/interviews/destiny-2/
+  - https://www.videogameschronicle.com/news/we-intend-to-earn-back-your-trust-bungie-announces-plans-to-bring-back-destiny-2-and-improve-marathon/
+  - https://gamefragger.com/multiplatform/first-person-shooter/destiny-2/we-dont-want-to-be-a-dead-live-game-destiny-2-game-director-states-in-new-interview-a27822
+  - https://www.polygon.com/2014/1/17/5319178/bungie-wants-you-to-personally-invest-in-destinys-world/
+- Coverage note: Deej quotes verified from the fetched VGC page. Green quote sourced from a search snippet — marked [unverified].

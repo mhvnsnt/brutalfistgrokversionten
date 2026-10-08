@@ -1,0 +1,17 @@
+# Red Dead Redemption 2 — Heart and Soul
+- Developer / studio: Rockstar Games (Rockstar North lead; all Rockstar studios)
+- Genre / platforms: Open-world action-adventure Western (PS4, Xbox One, PC, Stadia)
+- Why players come back (in the devs' view): Rockstar's stated design goal was a world players "get lost in at every level" — intimate, grounded, and layered with systemic detail, so that wandering, camping, hunting, and stumbling into stranger encounters is as compelling as the main story. They deliberately blurred the line between "story mission" and "side mission" so players move in and out of experiences naturally through exploration and interaction.
+- Key quotes:
+  - "It's the sense of life the game has that most sets it apart... you are not even sure if what you've done was a mission or not. When all the systemic parts of the world come together with our scripted content in the right ways, it's kind of incredible." — Aaron Garbut, Art Director (Rockstar North), The Hollywood Reporter / GamesRadar+, 2018
+  - "We wanted to go deeper into the world than we ever have so players truly left like this was a place to live... We've tried to make the game something you can get lost in at every level." — Rob Nelson, Co-Studio Head (Rockstar North), Official PlayStation Magazine (via Wccftech), 2018
+  - "We wanted RDR2 to feel a lot more intimate and grounded... We want to create the illusion of realism without being too punitive to the player." — Rob Nelson, Co-Studio Head (Rockstar North), Official PlayStation Magazine (via Wccftech), 2018
+  - "We have used that power to create a world that goes far beyond anything we have ever done in terms of depth, interactivity and persistence." — Josh Bass, Art Director (Rockstar San Diego), The Hollywood Reporter / GamesRadar+, 2018
+- Why players love/support it: The living-world detail (townspeople with routines, reactive strangers, environmental storytelling), Arthur Morgan's character arc, and the freedom to treat the frontier as a place to inhabit rather than a checklist — players describe it as "a memory of a place."
+- Monetization philosophy (devs' words, if any): No on-record statement found. ANALYSIS: RDR2 shipped as a premium $60 game with a separate Red Dead Online mode monetized through Gold Bars microtransactions; Rockstar has published no design-rationale statements about that model.
+- Lesson for our games (1-2 lines, concrete): Blur the line between "mission" and "world" — our beat-em-up districts should trigger new missions organically from exploration and NPC interaction, not just from menus. Add systemic detail that makes players share different stories (like Bass's "hundreds of decisions" point) so runs feel personal.
+- Sources: (URLs)
+  - https://www.gamesradar.com/red-dead-redemption-2-devs-talk-about-what-most-sets-it-apart-from-gta-5-its-the-sense-of-life/
+  - https://wccftech.com/rdr2-intimate-grounded-you-can-get-lost/amp/
+  - https://gamingbolt.com/red-dead-redemption-2-tries-to-think-beyond-story-missions-and-side-missions-says-rockstar
+- Coverage note: Monetization philosophy has no on-record dev statements — Rockstar rarely discusses it. Press analysis labeled as ANALYSIS.

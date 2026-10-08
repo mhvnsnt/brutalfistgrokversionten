@@ -1,0 +1,18 @@
+# Pokémon TCG Pocket — Heart and Soul
+- Developer / studio: Creatures Inc. (creators of the physical TCG) + DeNA (Pokémon Masters EX), published by The Pokémon Company
+- Genre / platforms: Digital card collecting / streamlined card battling — iOS, Android
+- Why players come back (in the devs' view): Two free packs a day, forever — the daily pack-rip ritual is the whole retention thesis. Creatures CEO Yuji Kitano framed the pitch as "immersive cards that give players the experience of leaping into the world of the card illustration," with "streamlined game rules... so you can enjoy a quick battle during the free moments in your day." DeNA's own Q3 financials called it a "very high retention rate compared to other DeNA games," with users "enjoying and engaging with the game on a daily basis" — the game later crossed 100M downloads and ~$1.5B revenue, though MAU softened (39M avg in Q1 2025), pushing DeNA to declare "enhancement of collection experience" a key retention objective.
+- Key quotes:
+  - "We've developed new streamlined game rules based on our existing battle system, so you can enjoy a quick battle during the free moments in your day." — Yuji Kitano, President & CEO of Creatures Inc., Pokémon Presents reveal via VGC, 2024
+  - "Immersive cards [that] give players the experience of leaping into the world of the card illustration." — Yuji Kitano, President & CEO of Creatures Inc., Pokémon Presents reveal via VGC, 2024
+  - "This game lets you easily collect Pokémon cards which players all over the world have enjoyed since they debuted in 1996, but in a new digital format." — Takato Utsunomiya, COO of The Pokémon Company, Pokémon Presents reveal via VGC, 2024
+  - "We recognize initiatives to improve retention rate and login frequency, such as enhancement of collection experience, are key objectives." — DeNA, Q1 2025 financial report (via TheGamer) [unverified — from search snippet]
+- Why players love/support it: The pack opening is engineered as pure tactile joy (pick a pack, tear the wrapper, swipe reveals, illustrator-celebrating animations for rare cards), collecting comes before battling, social pull mechanics (Wonder Pick, trading, binders/display boards) turn collection into conversation, and a free-pack-every-12-hours promise never forces spend — the Premium Pass only buys more of what you already enjoy.
+- Monetization philosophy (devs' words, if any): No explicit on-record monetization quote found. By design evidence (ANALYSIS): monetization is deliberately backgrounded — GameReactor noted the shop is "not exactly front and centre in the interface"; spend accelerates collecting (packs/hourglasses/Premium Pass) rather than gating play, so the F2P loop stays the same game, just slower.
+- Lesson for our games (1-2 lines, concrete): Make the core ritual a tactile daily habit that feels like a gift (free pack, free pull) — retention lives in the joy of the ritual, and monetization that only accelerates joy converts without coercion.
+- Sources:
+  - https://www.videogameschronicle.com/news/pokemon-trading-card-game-pocket-is-coming-to-mobile-this-year/
+  - https://www.pocketgamer.biz/pokemon-trading-card-game-pocket-has-very-high-retention-rate-compared-to-other-dena-games/
+  - https://www.thegamer.com/pokemon-tcg-pocket-is-set-for-major-update-by-end-of-2025/
+  - https://www.androidpolice.com/a-year-with-the-biggest-mobile-game-of-2024/
+- Coverage note: No direct developer interviews on Pocket's live ops found beyond the reveal statements and DeNA's financial disclosures quoted above (two reveal quotes verified from fetched page; DeNA Q1 line is snippet-sourced and marked [unverified]). Player-side appeal and monetization reads are press analysis labeled ANALYSIS.

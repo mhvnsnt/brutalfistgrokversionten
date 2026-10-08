@@ -1,0 +1,17 @@
+# The Legend of Zelda: Tears of the Kingdom — Heart and Soul
+- Developer / studio: Nintendo EPD (Series Producer: Eiji Aonuma; Director: Hidemaro Fujibayashi)
+- Genre / platforms: Open-world action-adventure; Nintendo Switch (2023)
+- Why players come back (in the devs' view): Players don't want the game to end because it rewards their own creativity — finding *their* way through problems, building wild contraptions, and then showing them off. The team treats that player-driven discovery and the shareable "look what I made" moment as the core loop that keeps people playing, and social media has turned it into a direct motivation pipeline back into the team's design thinking.
+- Key quotes:
+  - "It's important that we don't make creativity a requirement. Instead we put things into the game that encourage people to be creative, and give them the opportunity to be creative, without forcing them to... I think everyone delights in the discovery of finding your own way through a game... there isn't one right way to play." — Eiji Aonuma, Series Producer, Polygon interview, 2023
+  - "Breath of the Wild was the first time that, as a development team, we saw this new, added layer of enjoyment that people have in being able to share and talk about, 'Look what I was able to do, look what I was able to make.'" — Hidemaro Fujibayashi, Director, Polygon interview, 2023
+  - "I've seen many people saying that they don't want to go to the ending of the game because they don't want it to end... that's something I haven't experienced before." — Eiji Aonuma, Series Producer, Game Informer interview, 2023
+  - "The Zelda team is filled with people who love to actually feel the excitement, the joy that players are having when they're playing their games... that's all again thanks to seeing people actually play it, actually experience it, and actually enjoy it." — Hidemaro Fujibayashi, Director, Polygon interview, 2023
+- Why players love/support it: Ultrahand building turned the game into a personal creativity platform; every puzzle has multiple solutions, so two players' playthroughs never look the same; creations became shareable social currency (viral builds, edits). Players genuinely delay finishing because they don't want the sandbox to end.
+- Monetization philosophy (devs' words, if any): No monetization statements found. The game shipped as a complete single-purchase title with no in-game transactions; the team's stated value loop is player joy → franchise trust, not spend.
+- Lesson for our games (1-2 lines, concrete): Build systems that give players *their* story to tell (build/combine/discover) and make those stories shareable — the "look what I did" loop is a stronger retention engine than content volume. Encourage creativity, never gate progression behind it.
+- Sources:
+  - https://www.polygon.com/legend-zelda-tears-kingdom/24001489/zelda-tears-of-the-kingdom-totk-developer-interview/
+  - https://gameinformer.com/interview/2023/12/07/aonuma-and-fujibayashi-talk-tears-of-the-kingdoms-reception-and-their-approach
+  - https://www.polygon.com/legend-zelda-tears-kingdom/23720150/zelda-tears-of-the-kingdom-abilities-eiji-aonuma-hidemaro-fujibayashi
+- Coverage note: Quotes verified from fetched Polygon and Game Informer interview pages. No monetization commentary found on record.

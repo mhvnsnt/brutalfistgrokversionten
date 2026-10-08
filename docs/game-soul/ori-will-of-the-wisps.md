@@ -1,0 +1,17 @@
+# Ori and the Will of the Wisps — Heart and Soul
+- Developer / studio: Moon Studios, published by Xbox Game Studios
+- Genre / platforms: 2D action-metroidvania platformer; Xbox One, Xbox Series X|S, Switch, PC
+- Why players come back (in the devs' view): Moon Studios bet on timelessness over tech — hand-painted everything (they counted ~7,000 assets × 6 light-direction maps ≈ 30,000 hand-painted light maps) so the game never "dates," and hand-crafted character animation that conveys mood and personality "completely wordlessly." Players return — and cry — because craft this dense creates genuine emotional attachment.
+- Key quotes:
+  - "I think motion capture is dumb... All the animations look kinda stilted and wooden [through mo-cap], whereas with Ori we're able to put so much expression into each character, conveying their mood, personality, and intention completely wordlessly." — Thomas Mahler, Game Director, Moon Studios, GamesRadar+ (2020) [unverified]
+  - "It's heartwarming to see people react so emotionally to something you created." — Alex van Leeuwen, Technical Art Director (attributed via Inverse interview, 2024) [unverified]
+  - On the finale: the music "transitions seamlessly" across the final encounter's phases and "we also managed to play every key melody from Blind Forest and Will of the Wisps." — Gareth Coker, Composer, Inverse (2024) [unverified]
+- Why players love/support it: It's one of the rare games players describe as making them cry — found family, loss, healing nature — wrapped in what many call the best-looking hand-drawn 2D game ever. Fans say they follow Moon Studios' next game on art alone.
+- Monetization philosophy (devs' words, if any): None stated by devs; premium single-purchase title. The pitch was completeness and craft, not ongoing spend.
+- Lesson for our games (1-2 lines, concrete): Timelessness beats spectacle — chase art that never dates (hand-painted reads forever; high-tech graphics expire in 3 years). Emotion is a retention mechanic: if players cry at your story, they evangelize for free.
+- Sources: (URLs)
+  - https://www.gamesradar.com/i-think-mo-cap-is-dumb-moon-studios-thomas-mahler-on-the-art-and-science-behind-ori-and-the-will-of-the-wisps/
+  - https://www.inverse.com/gaming/ori-will-of-the-wisps-interview
+  - https://www.thegamer.com/ori-and-the-will-of-the-wisps-art-interview/
+  - https://www.geekgirlauthority.com/ori-and-the-will-of-the-wisps/
+- Coverage note: All quotes sourced from search snippets, marked [unverified]; full page fetch not performed in this pass. Role attribution for van Leeuwen is from the Inverse snippet's byline context, not fully verified.

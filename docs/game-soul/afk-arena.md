@@ -1,0 +1,27 @@
+# AFK Arena — Heart and Soul
+
+- Developer / studio: Lilith Games (Shanghai, China)
+- Genre / platforms: Idle RPG (gacha, turn-based strategy); iOS, Android (2019)
+- Why players come back (in the devs' view):
+  - The idle hook: progress happens while you're away, so leaving the game doesn't mean falling behind — it means coming back to rewards. The team designed around the idea that it's okay to "AFK" for a version and return at the next one without cost (expansion-pack model philosophy).
+  - Steady cadence of new content and activities to engage and retain players long-term; version quality held to a high bar during live ops.
+  - Player feedback as an operating principle: live-service work treated as a collaboration with players, with formal sentiment analysis every two weeks and daily community monitoring.
+- Key quotes:
+  - "Thus, we want to emulate the expansion pack model of 'World of Warcraft,' where it's okay if a player AFKs (away from keyboard) for a version, as they can return in the next version without cost." — AFK Journey dev team (translated Chinese interview), via Gamigion, 2024 [unverified — translation summary, not fetched directly]
+  - "The key metric we focus on is user retention. We will not easily cancel a project just because this metric is not met in the short-term. We typically give the development team enough time to continuously test and optimise." — Vincent Ou, Head of Strategy and Investment, Lilith Games, PocketGamer.biz, 2024
+  - "We've always believed that running a live service game is, in essence, a collaborative process with the players. That's why player feedback is important to us." — Jiangyuan, AFK team, PocketGamer.biz, 2024
+  - "Our gameplay design is far from perfect, and the team highly values players' critical feedback and suggestions." — Vincent Ou, PocketGamer.biz, 2024
+- Why players love/support it:
+  - Zero-pressure idle progression (numbers go up while you sleep), storybook art style, ensemble cast of memorable characters, F2P-friendly pace, and a sequel (AFK Journey) that carried the community over.
+- Monetization philosophy (devs' words, if any):
+  - Team-reported test data: enabling payments *improved* KPIs — "a good numerical game must enhance the game experience after players pay" (translated, [unverified — translation summary from Gamigion]).
+  - Studio-level: "long-termism" — founders' philosophy of continuous knowledge accumulation; employee 'Aladdin Plan' giving core devs 20% project stakes, aligning the team with the game's long-term health.
+- Lesson for our games (1-2 lines, concrete):
+  - Never punish absence: design so players can leave and return without feeling behind (idle gains, expansion-style re-entry) — it converts quitters into returners instead of punishing them.
+  - Run live ops as a player collaboration: formalize a regular feedback-review cadence rather than only reacting to complaints.
+- Sources:
+  - https://www.pocketgamer.biz/inside-mobile-hitmaker-lilith-games/
+  - https://www.pocketgamer.biz/the-nuance-of-a-successful-sequel-balancing-familiarity-and-refreshing-experiences-in-afk-journey/
+  - https://www.gamigion.com/7-highlights-from-the-interview-with-afk-journey-dev-lilith/
+  - https://www.pockettactics.com/afk-journey/interview
+- Coverage note: No AFK Arena-specific on-record retention quote from the original game's team was found; the closest direct statements come from Lilith leadership (Vincent Ou) and the AFK Journey team, which is largely the same AFK Arena team. Quote 1 is a translated Chinese dev interview [unverified].

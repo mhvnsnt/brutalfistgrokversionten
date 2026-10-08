@@ -1,0 +1,16 @@
+# Octopath Traveler — Heart and Soul
+- Developer / studio: Square Enix (Business Division 11, producers Tomoya Asano & Masashi Takahashi) + Acquire (director Keisuke Miyauchi); "HD-2D" flagship
+- Genre / platforms: Turn-based JRPG with eight standalone stories; Switch (2018), then PC, Xbox, Stadia, PS5/PS4
+- Why players come back (in the devs' view): The journey itself is the point — "The biggest theme of this game is 'the journey'. The world is ripe for exploration with any of the eight characters." Eight distinct protagonists with "different experiences with each character" mean eight entry points and eight stories, and the break/boost system lets "players set off their own combos, which is always a good feeling" — replaying with different party builds and a different hero each time.
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "The biggest theme of this game is 'the journey'. The world is ripe for exploration with any of the eight characters." — Famitsu interview with Masashi Takahashi (Producer) and Keisuke Miyauchi (Director), via Siliconera, 2018
+  - "This means that players can set off their own combos, which is always a good feeling." — Famitsu interview (battle system, break/shield points), via Siliconera, 2018
+  - "We didn't want to play favorites by choosing a specific location from the game. Each of the eight travelers are the main characters." — Tomoya Asano, Producer, NintendoEverything interview, 2018 [unverified]
+- Why players love/support it: Nostalgia made premium — HD-2D was engineered so pixel art justifies "full price"; every traveler is an equal main character, so fans bond with "their" protagonist and replay for others. The second game added Crossed Paths precisely because "we saw a lot of fans asking for" more character interaction (Takahashi, Nintendo Life, 2023).
+- Monetization philosophy (devs' words, if any): Full-price single purchase; the visual craft itself was the value argument ("feel confident in spending full price on"). Sequel as the upsell vehicle, built from fan requests.
+- Lesson for our games (1-2 lines, concrete): Make the GAME's core theme playable as a feeling ("the journey") and give every character equal main-character status — players attach to "their" fighter and replay to discover others.
+- Sources: (URLs)
+  - https://www.siliconera.com/project-octopath-traveler-developers-answer-project-started-troubles-developing-hd-2d/
+  - https://nintendoeverything.com/octopath-traveler-devs-on-character-origins-visual-style-initial-hd-rumble-plans-much-more/
+  - https://www.nintendolife.com/features/enjoying-the-journey-how-square-enix-learned-from-the-past-for-octopath-traveler-ii
+- Coverage note: First two quotes verified from the fetched Siliconera page (Famitsu highlights). The Asano "no favorites" quote is snippet-sourced from NintendoEverything — marked [unverified]. The "confident in spending full price" line is referenced in the coverage note's source page but not reproduced as a quote since its exact attribution could not be verified.

@@ -1,0 +1,19 @@
+# Frostpunk — Heart and Soul
+- Developer / studio: 11 bit studios (Poland)
+- Genre / platforms: Society-survival city builder; PC, consoles, mobile
+- Why players come back (in the devs' view): It's a society-management game, not a city-management game — the decisions you make as leader (what people believe, the laws they follow, who they are) are "the real meat of the game." The studio never judges the player and never tells them the right answer; it puts players in grey-area moral choices and confronts them with the outcomes. The end-of-campaign question — "Was the city worth it in the end?" — sticks with players and brings them back to face it again with different choices.
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "We don't want to guide the player in a certain direction like a compass... We rather let them take control of a steering wheel. We provide them an environment that gives them the opportunity to make their own decisions and confront the outcomes." — 11 bit studios, AltChar interview, ~2019 [unverified]
+  - "Our most significant games are dark. It's not about us wanting to make depressing games for the sake of making depressing games. We want to make you think about something and to do that, you have to pick a dark thing." — Łukasz Juszczyk, Game Director, DualShockers, 2024 [unverified]
+  - "Playing with morality should happen within the game or in the player's mind. The game cannot judge you." — Grzegorz Miechowski, CEO, 11 bit studios, Game Informer, 2018 [unverified]
+  - "Losing is part of the experience. You learn, you adapt, and you adjust." — Grzegorz Miechowski, CEO, 11 bit studios, Game Informer, 2018 [unverified]
+- Why players love/support it: ANALYSIS — The moral weight is the product: players still argue about whether child labor in the mines was justified, and the final "was it worth it" judgment makes every replay personal. Replayable scenarios (Fall of Winterhome, The Last Autumn) and Frostpunk 2 kept the world alive. Post-launch, players reported feeling the need to "justify" awful decisions to themselves — exactly the effect the studio aimed at.
+- Monetization philosophy (devs' words, if any): No on-record statement found in this pass; premium price plus scenario/expansion DLC. Coverage note: not researched here.
+- Lesson for our games (1-2 lines, concrete): Make choices with real consequences but no "right answer" — players return to argue with themselves about what they did, and that haunting self-reflection is stronger retention than any loot loop.
+- Sources: (URLs)
+  - https://www.altchar.com/game-news/interview-11-bit-studios-creators-of-frostpunk-and-this-war-of-mine-apFJk9X2OkOI
+  - https://www.dualshockers.com/frostpunk-2-darker-experience-game-director/
+  - https://www.dualshockers.com/frostpunk-interview-11-bit-studios/
+  - https://www.pcgamer.com/frostpunk-developers-on-hope-misery-and-the-ultimately-terrifying-book-of-laws/
+  - https://gameinformer.com/games/frostpunk/b/pc/archive/2018/03/25/new-game-from-this-war-of-mine-developer-leaves-you-with-difficult-choices
+- Coverage note: Dev quotes are snippet-sourced and marked [unverified]. The PC Gamer "making of" piece contains more on-record developer material (Juszczyk, art director) but quotes were not fetched in this pass.

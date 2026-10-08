@@ -1,0 +1,17 @@
+# Clash Royale — Heart and Soul
+- Developer / studio: Supercell (Helsinki)
+- Genre / platforms: Real-time PvP card battler; iOS + Android
+- Why players come back (in the devs' view): Supercell's whole doctrine is long-term retention — games "played for years and remembered forever"; comebacks are engineered through novelty (Card Evolutions that refresh cards players already own), accessible progression for lapsed players (Magic Items, earnable Evolution events), simplified systems for returning players, and a strong creator community.
+- Key quotes:
+  - "In Clash of Clans and I think in all Supercell games, the key thing is long-term retention. We really want to make games that are played for years. And remembered forever." — Marika Appel, Community Manager, Supercell, PocketGamer.biz Clash Fest interview, 2022
+  - "When you push out these cards and they are that sweet spot between pay to win and pay to lose, we would actually get these viral spikes in terms of player engagement." — Aleksandar Markovic, Clash Royale Game Lead, GDC session via Mobilegamer.biz, 2026
+  - "We can only learn these lessons by having the space to try things out, to make these mistakes, and not be afraid of that short term pain." — James Back, Clash Royale Game Design Lead, GDC session via Mobilegamer.biz, 2026
+  - "From a business perspective, simple just costs a lot." — Aleksandar Markovic, Clash Royale Game Lead, GDC session via Mobilegamer.biz, 2026 (on simplifying systems for returning players)
+- Why players love/support it: 3-minute real-time PvP battles with endless deck depth, progression that visibly rewards skill, live events that welcome back churned players, creators who keep the meta conversation alive.
+- Monetization philosophy (devs' words, if any): aim for "that sweet spot between pay to win and pay to lose"; Evolution cards added to the Battle Pass as sign-up incentive; accept short-term metric pain for long-term gains.
+- Lesson for our games (1-2 lines, concrete): Design for the lapsed player, not just the whale — free earnable events for lapsed players (free Mega Knight Evolution week) drove returning-player retention; add novelty to things players already own instead of forcing them to learn new systems.
+- Sources:
+  - https://www.PocketGamer.biz/marika-appel-has-been-at-supercell-for-over-ten-years-and-is-still-as-passionate-as-ever/
+  - http://mobilegamer.biz/supercell-explains-clash-royales-big-comeback/
+  - https://mobilegamer.biz/how-did-we-misjudge-this-so-badly-what-supercell-learned-from-its-fierce-clash-royale-community/
+- Coverage note: Dev quotes verified via fetched pages (PocketGamer.biz interview; Mobilegamer.biz GDC write-up). Session-design analysis from GameDeveloper's "Deconstructing Clash Royale" is ANALYSIS, not dev quotes.

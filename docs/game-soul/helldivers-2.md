@@ -1,0 +1,25 @@
+# Helldivers 2 — Heart and Soul
+- Developer / studio: Arrowhead Game Studios (creative director/then-CEO Johan Pilestedt)
+- Genre / platforms: Co-op PvE third-person extraction shooter — PS5, PC (2024)
+- Why players come back (in the devs' view):
+  - Live service that's secondary to a full experience: "We view ourselves as a live service game because it's unfair to say anything else" — but the base $40 game "should give you a full experience," and live-service monetization only enters years later.
+  - Earn the right to monetize: "'You have to earn the right to monetize' — I truly believe that. If people want to support this title they have an option, but we are never forcing anyone to do so."
+  - Non-expiring, non-predatory Warbonds: unlike battle passes, players "cannot pay to skip tiers, and the content does not expire" — new players never feel FOMO-punished for joining late.
+  - Not pay-to-win, aggressively: "we really applied ourselves to not make it p2w even though items are functionally different. The only item that's p2w is the revolver — which will win you any 'cool gun' competition. Only (minor) problem is that it's not that good."
+- Key quotes:
+  - "'You have to earn the right to monetize' — I truly believe that. If people want to support this title they have an option, but we are never forcing anyone to do so." — Johan Pilestedt, Creative Director/CEO, X (Twitter) / VGC, 2024
+  - "We view ourselves as a live service game because it's unfair to say anything else. We are going to continue adding more stuff to the game, and there are monetization elements in the game... the content that we put out for free, like new enemies, new missions, whatever it might be, we also give the players the opportunity to support us in continuing to build the title." — Johan Pilestedt, Creative Director/CEO, PC Gamer, 2024
+  - "I'm partial but we really applied ourselves to not make it [pay-to-win] even though items are functionally different. The only item that's [pay-to-win] is the revolver — which will win you any 'cool gun' competition. Only (minor) problem is that it's not that good." — Johan Pilestedt, Creative Director/CEO, X (Twitter) / PC Gamer, 2024
+- Why players love/support it:
+  - Managed democracy satire + co-op chaos: friendly fire, starship barrages, and emergent disaster stories give players watercooler moments every session.
+  - Anti-live-service trust: no FOMO, no pay-to-skip, free new enemies/missions for everyone — players reward the studio's restraint with loyalty and Superstore spending.
+  - ANALYSIS: $40 price point undercut the live-service norm and read as honesty; premium currency earnable in-game defused the "premium shop" outrage pre-launch.
+- Monetization philosophy (devs' words, if any):
+  - Explicit and quotable: monetization only after the base game earns it; everything is an option, never a force; nothing expires; never pay-to-win. The $10 premium Warbonds + $2–5 cosmetic store exist, but core progression currency (War Medals, earnable Super Credits) cannot be bought.
+- Lesson for our games (1-2 lines, concrete):
+  - Deliver a full game for the asking price first, then treat monetization as a tip jar you earn the right to open — players who feel respected become supporters instead of skeptics. Battle passes that never expire kill FOMO resentment.
+- Sources:
+  - https://www.pcgamer.com/arrowhead-ceo-says-the-live-service-aspect-of-helldivers-2-has-to-be-secondary-to-delivering-a-full-experience-for-dollar40-we-view-ourselves-as-a-live-service-game-because-its-unfair-to-say-anything-else/
+  - https://www.videogameschronicle.com/news/helldivers-2-dev-says-games-need-to-earn-the-right-to-monetise/
+  - https://www.glitched.online/helldivers-2-dev-says-studios-need-to-earn-the-right-to-monetize/
+- Coverage note: Pilestedt quotes verified across multiple outlets (VGC, PC Gamer, Glitched); X-post quotes are per press reporting of his posts (snippet-sourced where indicated).

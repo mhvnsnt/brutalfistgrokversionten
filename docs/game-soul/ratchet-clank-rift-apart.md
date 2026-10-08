@@ -1,0 +1,18 @@
+# Ratchet & Clank: Rift Apart — Heart and Soul
+- Developer / studio: Insomniac Games (Creative Director: Marcus Smith; Game Director: Mike Daly)
+- Genre / platforms: Action-platformer / third-person shooter; PlayStation 5 (2021)
+- Why players come back (in the devs' view): Insomniac's standing studio question when weighing any feature is "is this charming?" — the series is built around humor and heart first, tech second (Eurogamer). Marcus Smith says the goal was "the highest quality computer-generated visuals, the most heart, the most charm, and that has stayed consistent." The weapons arsenal (each weapon a new joke and new mechanic) is the moment-to-moment retention engine, and they deliberately thread newcomers and veterans together: accessibility/difficulty pillars let anyone play while hardcore fans get their hard modes. Mike Daly adds the lesson learned: "gameplay works better when it's married to narrative" — moment-to-moment play must serve a narrative purpose.
+- Key quotes:
+  - "We wanted to have the highest quality computer-generated visuals, the most heart, the most charm, and that has stayed consistent." — Marcus Smith, Creative Director, Geek Culture interview, 2021
+  - "We've always had a pillar that has lent itself to having varying stages of difficulty. From something that doesn't pose a ton of challenge, so that people can experience the story and enjoy themselves, not be worried about dying frustratingly all the time, all the way up to a very hard mode that a lot of our hardcore players will enjoy." — Marcus Smith, Creative Director, Geek Culture interview, 2021
+  - "Another thing we have taken away from our past games is how much we've realized gameplay works better when it's married to narrative... all that moment-to-moment gameplay feels better when it has a narrative purpose." — Mike Daly, Game Director, IGN interview (via Sirus Gaming), 2021
+  - "Our cinematics look incredible even somebody like me who watches them every day, several times, I'm still amazed at how good they look, and they're running in real-time." — Marcus Smith, Creative Director, Geek Culture interview, 2021
+- Why players love/support it: The series' trademark absurd weapon arsenal keeps combat fresh and funny (each weapon a new punchline-mechanic); genuine heart in the Ratchet/Clank buddy dynamic plus Rivet's new storyline; near-instant dimension-hopping made the PS5 showcase feel like magic; playful accessibility options opened it to wider audiences.
+- Monetization philosophy (devs' words, if any): No on-record monetization philosophy found. Shipped as a complete single-purchase game with no microtransactions.
+- Lesson for our games (1-2 lines, concrete): Make "is this charming?" the gate for every feature — charm is the retention differentiator, not tech. And marry gameplay to narrative purpose: players feel the moment-to-moment more when every fight means something to the story (matches the street-brawler turf framing).
+- Sources:
+  - https://geekculture.co/geek-interview-exploring-the-dimensions-with-ratchet-clank-rift-aparts-marcus-smith/
+  - https://www.eurogamer.net/ratchet-and-clank-rift-apart-a-ps5-stress-test-built-from-charm
+  - https://sirusgaming.com/ratchet-and-clank-rift-apart-gameplay-narrative-blend-well-together/
+  - https://www.gamespot.com/articles/ratchet-clank-rift-apart-is-ps5s-gorgeous-new-comfort-food/1100-6491353/
+- Coverage note: Quotes verified from the fetched Geek Culture interview. The Eurogamer "is this charming?" studio question is the journalist's reporting of the studio's internal test, not a direct dev quote — attributed accordingly. No monetization commentary on record.

@@ -1,0 +1,18 @@
+# Age of Empires IV — Heart and Soul
+- Developer / studio: Relic Entertainment, overseen by World's Edge (Xbox Game Studios)
+- Genre / platforms: Real-time strategy; PC, Xbox consoles
+- Why players come back (in the devs' view): Mods and community content are one of the explicit pillars of the franchise — "one of the reasons Age has lasted as long as it has." Add analytic-based onboarding that tutors new players into the genre, plus a living legacy promise: World's Edge keeps the old games (Age II: DE) alive with DLC and balance alongside the new one, so players move freely between titles.
+- Key quotes:
+  - "I will tell you that one of the pillars of all of the Age of Empires games is mods, and allowing people access to tools that allow them to build great content. We all believe that's one of the reasons Age has lasted as long as it has — because the community has been able to support the game." — Adam Isgreen, Creative Director, Age of Empires franchise, PCGamesN (2019) [unverified]
+  - "analytic-based tutorialising... we can see how players are playing and be like, 'Hey! Did you know you can do this? Or hey, this cool thing that you're not doing?'" — Adam Isgreen, via TweakTown (2019) [unverified]
+  - "We love these legacy games, and our commitment is to keep them alive." — World's Edge (Emma Bridle, Director of Customer Voice), PCGamesN (2019) [unverified]
+  - "You mentioned resources, you mentioned ages, those are obviously core parts of the experience... We wanted to maintain that core." — Quinn Duffy, Game Director, Relic Entertainment, Windows Central (2021) [unverified]
+- Why players love/support it: History-as-gameplay — BBC-level documentaries stitching campaigns to real history; a familiar core (villagers, ages, rock-paper-scissors counters) that rewards both nostalgia and micro-skill. The community kept Age alive for 20+ years, and the devs honor that.
+- Monetization philosophy (devs' words, if any): Traditional premium purchase model — "Are you confident launching an RTS with a traditional premium purchase model?" was asked outright (PCGamesN, 2019); DLC civ packs post-launch. No dev-sourced microtransaction philosophy found.
+- Lesson for our games (1-2 lines, concrete): Ship mod tools as a core pillar, not an afterthought — user content is what makes a game outlive its devs. And watch new players' actual behavior to build adaptive onboarding that teaches without shaming.
+- Sources: (URLs)
+  - https://www.pcgamesn.com/age-of-empires-4/interview
+  - https://www.tweaktown.com/news/69034/age-empires-iv-doing-something-game-done-before/index.html
+  - https://news.xbox.com/en-us/2021/04/10/age-of-empires-4-interview/amp/
+  - https://www.windowscentral.com/age-empires-4-preview-event-interview
+- Coverage note: All quotes sourced from search snippets, marked [unverified]; full page fetch not performed in this pass. Community-priority (PvE over esports) framing from a Steam discussion summary is ANALYSIS, not a dev quote, and is excluded from quotes.

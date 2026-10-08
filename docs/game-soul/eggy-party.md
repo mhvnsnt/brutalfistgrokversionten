@@ -1,0 +1,17 @@
+# Eggy Party — Heart and Soul
+- Developer / studio: Eggy Studio (NetEase Games)
+- Genre / platforms: Party battle-royale platformer (Fall Guys-like); iOS, Android
+- Why players come back (in the devs' view): UGC is the game — players are the most creative content source, so the editor barrier must be as low as "building with blocks"; social connection and self-expression inside the game; promotion powered by the community itself (billions of monthly Douyin/TikTok views)
+- Key quotes: (4)
+  - "Other party games typically rely on their own development teams to create most of the levels and gameplay mechanics. However, we believe in one principle: players are the most creative people with limitless potential." — Kwan Cheng, Producer and GM of Eggy Studio, Mobilegamer.biz, 2024
+  - "The core of UGC lies in lowering the barrier of using editors." — Kwan Cheng, Producer and GM of Eggy Studio, Mobilegamer.biz, 2024
+  - "The key to Eggy Party's success lies in efficient means of promotion and marketing, instead of resorting to hefty investments in user acquisition. Eggy Party's promotion relies on players and the community." — Kwan Cheng, Producer and GM of Eggy Studio, Mobilegamer.biz, 2024
+  - "We aim for all players to establish close social connections within the game, become friends and party together. Therefore, our core commercial philosophy is to help players be themselves." — Kwan Cheng, Producer and GM of Eggy Studio, Mobilegamer.biz, 2024
+- Why players love/support it: over 100 million user-created maps (GDC 2024); 60% of players actively create content, 10M+ map creators per the studio (PocketGamer.biz, 2024); social self-expression beats winning — "Trendiness" judged before rounds, cosmetics over power
+- Monetization philosophy (devs' words, if any): "Eggy Party is not a pay-to-win game" — Cheng, Mobilegamer.biz, 2024. Monetization is mostly cosmetics judged on a 'Trendiness' factor; core commercial philosophy is "to help players be themselves."
+- Lesson for our games (1-2 lines, concrete): Hand players the level editor and your content roadmap becomes infinite — 10M creators out-produce any dev team. And when marketing budget is zero, make the game itself the content engine (map contests, shareable clips).
+- Sources:
+  - https://mobilegamer.biz/eggy-partys-boss-on-cracking-ugc-and-poaching-western-players/
+  - https://www.pockettactics.com/eggy-party/interview
+  - https://Www.pocketgamer.biz/eggy-party-sails-past-100-million-user-generated-maps/
+- Coverage note: On-record producer interview located and verified. 100M-maps figure from NetEase's GDC 2024 session as reported by press.

@@ -1,0 +1,18 @@
+# Marvel's Spider-Man 2 — Heart and Soul
+- Developer / studio: Insomniac Games (with Marvel Games)
+- Genre / platforms: Open-world superhero action-adventure / PlayStation 5
+- Why players come back (in the devs' view): The "ultimate fantasy" — making every player feel good at being Spider-Man from the first swing. Low barrier to entry, high feel; every activity given a narrative payoff so the game never feels like a checklist; sandbox combat/gadget systems that let players improvise.
+- Key quotes:
+  - "There's a reason the previous games open up with swinging right away. That's the ultimate fantasy. One of the things we set out to do from day one was honor the fact that being Spider-Man is such a fantasy for so many people... we want anybody to wear the mask and be good at wearing the mask at the same time. The barrier of entry should be pretty low." — Bryan Intihar, Creative Director, Inverse, 2023
+  - "One of our pillars for Spider-Man 2 was making sure there's a great narrative and payoff in anything we did. The more we can include a narrative that people can connect to, it takes away from the game feeling like a checklist." — Bryan Intihar, Creative Director, Inverse, 2023
+  - "We just want players to improvise with the experience." — Bryan Intihar, Creative Director, Inverse, 2023
+  - "Our job is to make sure that you feel no matter how long it is, it's worth that money, it's worth that investment." — Bryan Intihar, Creative Director, BBC News via GamesRadar, 2023 [unverified]
+- Why players love/support it: The traversal itself is joy (web-swinging tuned so players feel better at the game than they are); beloved characters handled with reverence; accessibility-minded design; a story worth finishing, not just content to clear.
+- Monetization philosophy (devs' words, if any): Premium single-player, one-time purchase, no microtransactions; the devs' value proposition is stated explicitly in the quote above — quality and experience justify the price, not length or grind.
+- Lesson for our games (1-2 lines, concrete): Make movement feel good for everyone from second one — Concrete Dragon's core movement/combat feel must be instantly satisfying for a first-time player, then deepen. Give every mission a story payoff so missions never read as a checklist.
+- Sources:
+  - https://nc.inverse.com/gaming/spider-man-2-directors-interview-ryan-smith-bryan-intihar
+  - https://www.gamesradar.com/marvels-spider-man-2-lead-says-longer-isnt-always-better-for-games-our-job-is-to-make-sure-that-you-feel-no-matter-how-long-it-is-its-worth-that-money/
+  - https://www.gameshub.com/news/features/marvels-spider-man-2-ps5-interview-insomniac-games-josue-benavidez-2631578/
+  - https://www.cheatcc.com/articles/how-insomniac-tuned-spider-man-s-swing-to-feel-so-fast/
+- Coverage note: Quotes from Inverse interview verified via fetched page (Sep 2023). GamesRadar/BBC quote from search snippet — [unverified]. No on-record statement found on live-service or microtransaction philosophy; the game has none.

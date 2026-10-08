@@ -1,0 +1,22 @@
+# Ghost of Tsushima — Heart and Soul
+- Developer / studio: Sucker Punch Productions (Sony Interactive Entertainment)
+- Genre / platforms: Open-world action-adventure (samurai) / PS4, PS5, PC
+- Why players come back (in the devs' view):
+  - The team designed for total immersion: they stripped HUD clutter and replaced waypoints with the wind, so players look at the world, not the interface, and stay inside the fantasy.
+  - They built the game around a clear, compelling fantasy ("wouldn't it be cool if we could be a samurai in an open world?") and trusted that sincerity to pull players in rather than forcing engagement.
+  - Combat was tuned to feel like samurai cinema — fluid target-switching with no lock-on, so every fight demands skill and feels cinematic.
+- Key quotes:
+  - "If I see a ton of UI on the screen, ugh, I'm just looking at UI. I want to look at our beautiful game. I want people to be transported, not reading text on the screen." — Jason Connell, Creative Director, VG247, 2020 [unverified]
+  - "We tried to give [the Mongols] a feeling of being like a wolf pack that would surround you. And only through skill, could you fend them off as they came at you from all sides." — Nate Fox, Narrative Director, GameSpot interview, 2020 [unverified]
+  - "We always begin by making a game we would want to play ourselves... delivering something you genuinely believe is fun is the most powerful way to create excitement before launch. Players can sense that sincerity." — Nate Fox, Creative/Art Director, Sony "Voices of Creativity" interview, undated [unverified]
+  - "By using the wind, part of nature, part of the island, helping you as you're playing through it, the idea is that maybe you'll identify with [Jin's] love for the island as well." — Jason Connell, Creative Director, TechRadar, 2020 [unverified]
+- Why players love/support it:
+  - The living island itself — wind, weather that clears as regions are liberated, foxes guiding shrines — makes exploration feel like bonding with a place, not checklist tourism. The cinematic combat and the samurai-fantasy sincerity earned it a devoted, protective fanbase (later honored with Japan's tourism-ambassador recognition for Tsushima island).
+- Monetization philosophy (devs' words, if any): None on record. Premium single-purchase game; the Iki Island expansion sold as paid Director's Cut upgrade. No dev commentary on monetization philosophy found.
+- Lesson for our games (1-2 lines, concrete): Strip the HUD and let the world teach and guide — in Concrete Dragon, make the city itself the navigation and tutorial. Immersion is the retention mechanic: if players want to look at your world, they'll want to come back to it.
+- Sources:
+  - https://www.techradar.com/news/ghost-of-tsushima-interview-nature-sprawls-in-ps4s-epic-samurai-swan-song
+  - https://gamermatters.com/sucker-punch-explains-why-ghost-of-tsushima-has-no-lock-on-targeting/
+  - https://www.sony.com/en/brand/voicesofcreativity/interviews/ghost1/
+  - https://www.vg247.com/ghost-of-tsushima-interview-combat-exploration-morality-themes-world
+- Coverage note: Quotes are from search snippets (not fetched full pages), marked [unverified] per protocol. No invented statements included.

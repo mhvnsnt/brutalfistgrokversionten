@@ -1,0 +1,19 @@
+# Sea of Thieves — Heart and Soul
+- Developer / studio: Rare, Xbox Game Studios
+- Genre / platforms: Open-world pirate adventure (shared world); Xbox One, Xbox Series X|S, PC, PS5
+- Why players come back (in the devs' view): Rare's stated design is a "friendship creation tool" — social lubricants (music, grog, emotes) engineered to turn strangers into friends, plus the "tools, not rules" philosophy: give players paintbrushes, never a painting. Horizontal cosmetic-only progression removes every barrier between veterans and newcomers, so no one is ever locked out of playing together.
+- Key quotes:
+  - "Our game is a friendship creation tool. We want to turn as many strangers into friends as we can... When you do that with strangers, you're much more likely to make friends, just like you would in a real pub." — Joe Neate, Executive Producer, Rare, Game Informer (2017) [unverified]
+  - "Tools, not rules." — Mike Chapman, Creative Director, Rare, GameSpot (2022) [unverified]
+  - "A cutlass is always a cutlass, a pistol is always a pistol. It's not about chasing stats... you tell them that they have to play for 25 hours before you can play with them" [paraphrased context] — Mike Chapman, Creative Director, Rare, Digital Trends (2018) [unverified]
+  - "We want Sea of Thieves to be a multi-year journey... Our hope is that players continue to play. We want our game to be replayable and we want to keep adding ingredients." — Duncan (Rare studio head, Microsoft news feature, 2018) [unverified]
+- Why players love/support it: Every session writes its own story — the journey is the destination; no two voyages play out the same because the players ARE the content. Cosmetic trophies represent real accomplishments and carry visible reputation.
+- Monetization philosophy (devs' words, if any): Deliberately horizontal — all progression is cosmetic so a day-one player and a thousand-hour veteran stand on equal footing. Power-based progression "drives a wedge between friends," so it's rejected outright (Rare, Windows Central interview).
+- Lesson for our games (1-2 lines, concrete): Build social mechanics that create stories (not stat grinds) and keep ALL progression cosmetic-or-fair so a new player can jump in beside a veteran on day one. "Tools, not rules" — give players verbs and let them surprise you.
+- Sources: (URLs)
+  - https://gameinformer.com/b/features/archive/2017/11/17/how-rare-cast-away-its-developmental-process-for-sea-of-thieves.aspx?amp
+  - https://www.gamespot.com/articles/sea-of-thieves-tools-not-rules-design-keeps-it-unique-four-years-later/1100-6506144/
+  - https://www.digitaltrends.com/gaming/sea-of-thieves-return-to-form-for-rare-studi/
+  - https://www.windowscentral.com/the-sea-of-thieves-vision-interview?_ga=2.238081920.1419045998.1520800204-399166358.1480320681
+  - https://news.microsoft.com/en-gb/features/how-rare-studios-made-gamers-part-of-its-crew-for-sea-of-thieves/
+- Coverage note: All quotes sourced from search snippets, marked [unverified]; full page fetch not performed in this pass. Strong dev-voice coverage overall.

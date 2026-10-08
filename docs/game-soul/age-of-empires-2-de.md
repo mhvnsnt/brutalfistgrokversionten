@@ -1,0 +1,19 @@
+# Age of Empires II: Definitive Edition — Heart and Soul
+- Developer / studio: World's Edge (Microsoft, steward studio) with Forgotten Empires, Tantalus, Wicked Witch; original by Ensemble Studios
+- Genre / platforms: Real-time strategy; PC (Windows), Xbox, Game Pass
+- Why players come back (in the devs' view): The game is "instantly accessible by so many people across the world" — approachable mechanics plus a community so dedicated it kept the game alive through years without support. World's Edge treats itself as steward, not owner: "Age isn't ours anymore. We're stewards, it belongs to the community." Longevity comes from constant community interaction ("we are driven, at a studio level, by community interaction"), flighting every build with players, and never touching the sacred core — "Do not touch combat!"
+- Key quotes: (2-4; each: "quote" — Name, Role, Publication/Event, Year; append [unverified] if from a search snippet not a fetched page)
+  - "Age isn't ours anymore. We're stewards, it belongs to the community, and it belongs to the globe." — Shannon Loftis, Head of World's Edge, Windows Central, 2019 [unverified]
+  - "I have to credit the community for keeping the game alive for so long. The modders, the balance patches, all of the stuff that was done even when Microsoft wasn't fully supporting the title... I'm really humbled that we've been able to work with them." — Adam Isgreen, Creative Director, Windows Central, ~2024 [unverified]
+  - "We are driven, at a studio level, by community interaction." — Adam Isgreen, Creative Director, PCGamesN, 2021 [unverified]
+  - "Do not touch combat!" — community feedback instruction to the DE team (PCGamesN interview with World's Edge, 2021) [unverified — reported instruction]
+- Why players love/support it: ANALYSIS — 25+ years of living strategy: 45 civilizations, dozens of campaigns, a thriving ranked ladder and esports scene, and a DE that respected the original instead of replacing it. The community saved it twice (HD edition, then DE) — so the players feel genuine ownership.
+- Monetization philosophy (devs' words, if any): No on-record statement found; pattern is fair-priced base game + regular civilization DLC packs + Game Pass availability. Coverage note: dev-on-record monetization philosophy not found in this pass.
+- Lesson for our games (1-2 lines, concrete): Be a steward, not an owner — if your core game is beloved, don't touch what works; serve the community with flighting, co-development, and fair-priced DLC, and they'll carry the game for decades.
+- Sources: (URLs)
+  - https://www.windowscentral.com/gaming/age-of-empires-interview-with-adam-isgreen
+  - https://www.windowscentral.com/age-empires-worlds-edge-head-xbox-x019
+  - https://www.pcgamesn.com/age-of-empires-4/interview
+  - https://www.eurogamer.net/age-of-empires-2-definitive-edition-looks-great-but-still-has-to-compete-against-itself
+  - https://www.toomuchgaming.net/blog-news/age-of-empires-2-definitive-edition-and-age-of-empires-4-is-coming-to-xbox-consoles
+- Coverage note: Dev quotes are snippet-sourced and marked [unverified]. Eurogamer's DE preview interview contains additional on-record quotes from Jörg Neumann and Adam Isgreen not fetched in this pass.

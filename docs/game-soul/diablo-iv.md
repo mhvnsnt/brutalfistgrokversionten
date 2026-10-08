@@ -1,0 +1,18 @@
+# Diablo IV — Heart and Soul
+- Developer / studio: Blizzard Entertainment (Blizzard Albany; franchise overseen by Team 3)
+- Genre / platforms: Action RPG / PC, PlayStation, Xbox
+- Why players come back (in the devs' view): Feeling powerful. Blizzard's stated design priority is that the player must always feel like an unstoppable force — seasonal content, expansions (Vessel of Hatred), and difficulty systems are tuned around an ever-rising power fantasy; the audience has shifted toward invested, experienced players who want a polished, replayable endgame.
+- Key quotes:
+  - "It's absolutely critical that players feel powerful in any game they play." — Aislyn Hall, Systems Designer, Ars Technica (via VideoGamer), 2025
+  - "The way I think about how players can feel powerful is the concept of the immovable object and the unstoppable force. When a seemingly immovable object is put in front of a player yet the player is an unstoppable force, that sense of power emerges." — Aislyn Hall, Systems Designer, Ars Technica (via VideoGamer), 2025
+  - "We are not a series of games. We are a universe." — Brent Gibson, Diablo V Game Director, Icy Veins interview, 2026 [unverified]
+  - "We are planning on supporting seasons as long as the community continues to show up for D4, similar to what we have in D2 and D3... The train isn't stopping... Because we're going to be making content for a long time." — Brent Gibson, Game Director, Icy Veins / KitGuru, 2026 [unverified]
+- Why players love/support it: The loot-and-build loop (always another number to push higher); quarterly seasons that bring players back in waves; a decades-long franchise bond; endgame build-crafting and boss hunting for veterans.
+- Monetization philosophy (devs' words, if any): No direct on-record dev quote found on monetization philosophy. ANALYSIS: premium game + paid expansions + optional cosmetics/battle pass; gear is never sold for power — the fantasy economy is built on earned drops, and the Hall quotes confirm the studio treats *feeling powerful* as the thing that must never be purchasable.
+- Lesson for our games (1-2 lines, concrete): Make the player feel overwhelmingly powerful — scaling damage numbers, enemy hordes, and upgrade pacing that visibly escalates. Never sell power in a shop; power is earned through play, so paying players get cosmetics/convenience only.
+- Sources:
+  - https://www.videogamer.com/news/diablo-4-designer-says-its-absolutely-critical-that-players-feel-powerful-to-maintain-popularity/
+  - https://www.icy-veins.com/d4/news/diablo-4-players-will-keep-getting-seasons-even-after-diablo-5-launches/
+  - https://www.kitguru.net/gaming/matthew-wilson/blizzard-says-diablo-4-will-still-get-new-content-even-after-diablo-5-releases/
+  - https://gameinformer.com/exclusive-interview/2023/11/10/diablo-iv-leads-talk-development-process-post-launch-priorities
+- Coverage note: Hall quotes verified via fetched VideoGamer page (Apr 2025). Gibson quotes from Icy Veins/KitGuru search snippets — [unverified]. No on-record dev statement found on monetization philosophy; labeled ANALYSIS above.

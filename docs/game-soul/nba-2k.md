@@ -1,0 +1,17 @@
+# NBA 2K — Heart and Soul
+- Developer / studio: Visual Concepts, published by 2K (Take-Two Interactive)
+- Genre / platforms: Sports simulation (basketball) / PlayStation, Xbox, PC, Switch, mobile
+- Why players come back (in the devs' view): A fresh start every year — every annual release deliberately resets all players to equal opportunity, no carryover, so veterans and first-timers begin on the same playing field. MyCareer and MyTeam are the hooks: live-out-your-NBA-dream progression (including narrative personas, press conferences, and "living" story arcs) plus year-round team-building and competitive seasons keep players grinding through the calendar year.
+- Key quotes:
+  - "We want every new game that we release to be a completely fresh start where every user, regardless of whether they've been in a prior game or they're entering our franchise and seeing this current game for the very first time, that they all come in with an exactly equal opportunity." — Michael O'Dwyer, VP of Production Management (NBA 2K), GameFile via Kotaku, 2026
+  - "That's not something we philosophically want to do." — Michael O'Dwyer, VP of Production Management (NBA 2K), on separating/rolling over purchased VC between games, GameFile via Kotaku, 2026
+  - "Following games, you will participate in press conferences where members of the media will grill you on pressing events happening around you and the team... how you answer questions will affect three qualities: your team chemistry, league-wide popularity, and local fan popularity." — Erick Boenisch, Producer, Kotaku, 2011 [unverified]
+- Why players love/support it: The only NBA simulation license; living-your-career fantasy through MyCareer personas and The City; MyTeam's card-collecting and competitive ladders; yearly roster updates tied to the real season; esports and community culture.
+- Monetization philosophy (devs' words, if any): O'Dwyer's testimony is the closest on-record statement: VC is deliberately NOT transferable between games ("philosophically" undesired) because each release is a fresh-start reset — the annual reset itself IS the monetization design, forcing re-earning/re-buying every cycle. You can earn VC by playing, but buying is much faster (upgrades and cosmetics).
+- Lesson for our games (1-2 lines, concrete): A yearly or seasonal reset makes everyone start equal and keeps the economy honest — if we run seasonal play in Concrete Dragon, wipe or soft-reset progression each season instead of letting grinders stack forever. Sell cosmetics and progression speed, and make sure everything remains earnable through play.
+- Sources:
+  - https://kotaku.com/2k-forced-in-court-to-explain-why-nba-2k-players-cant-transfer-digital-currency-you-have-no-ownership-or-other-rights-to-virtual-items-2000736199
+  - https://insider-gaming.com/nba-2k-does-not-want-vc-carry-over/
+  - https://www.polygon.com/2018/9/4/17806980/nba-2k19-mycareer-neighborhood-preview-ps4-xbox-one?src=rss
+  - https://kotaku.com/answering-questions-about-nba-2k11s-postgame-q-as-5628994
+- Coverage note: O'Dwyer quotes verified via fetched Kotaku page (Sep 2026, deposition testimony). Boenisch quote from Kotaku snippet — [unverified]. No interview found with Visual Concepts devs directly on why players come back beyond testimony + press analysis; the "why players come back" section blends on-record testimony with ANALYSIS.
