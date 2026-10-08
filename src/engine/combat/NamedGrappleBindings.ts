@@ -1,4 +1,5 @@
 // `.ts` extensions on purpose — the repo's runner resolves them literally.
+import { getMoveById } from '../BrutalFistMoveCatalog.ts';
 
 /**
  * THE OWNER'S NAMED GRAPPLES, BOUND TO REAL CLIPS — OR HONESTLY NOT.
@@ -17,7 +18,12 @@
  *  MISSING_CLIP    nothing real exists yet.
  * `fidelity: 'stand_in'` means the clip is a real recording of a CLOSE move,
  * not the exact one — the note says what differs. Procedural or synthetic
- * motion is TEST_ONLY and is never bound here.
+ * motion is TEST_ONLY and is never bound here. The one exception is a FLAGGED
+ * CONSTRAINED SOLVE inside a real capture: frames where a performer is hidden
+ * behind his partner, posed from his own last tracked frame and measured bone
+ * lengths toward the canon end pose, with every solved frame listed in
+ * public/motion/index.json provenance (constrainedSolve, synthetic: 'partial').
+ * A whole move is never solved.
  */
 
 export type NamedPairStatus = 'REAL_PAIR' | 'DELIVERER_ONLY' | 'RECEIVER_ONLY' | 'MISSING_CLIP';
@@ -43,9 +49,35 @@ export interface NamedGrappleBinding {
   fidelity: 'exact' | 'stand_in' | 'none';
   note: string;
   provenance: ClipProvenance[];
+  /**
+   * Length of the recorded take both halves share, seconds (REAL_PAIR owner
+   * captures). A named grapple commits for this long, so neither half is cut.
+   */
+  pairSeconds?: number;
+  /**
+   * The previous binding, kept ONLY as a fallback: what plays if the exact
+   * pair's clips are not baked (GrapplePairing falls back to it by name).
+   */
+  fallback?: { deliverer: string; receiver: string; note: string };
 }
 
 const BANNON_CAPTURE = 'mhvnsnt/Bannon assets/moves/clips @ d575dd6 — owner reference video via tools/mocap/video_to_clip.py (MediaPipe, two-body)';
+
+/** Owner approval for third-party clips, 2026-10-07. */
+export const THIRD_PARTY_APPROVED = 'third-party clip, owner-approved for use 2026-10-07';
+
+const GETBACKK_CAPTURE = 'owner-supplied reference video (original footage: third-party TikTok, credit @mackeymcqui; license class: third-party clip, owner-approved for use 2026-10-07) via Bannon tools/mocap/video_to_clip.py build_clip with an RTMO + RTMW3D two-body front end (tools/mocap/getbackk)';
+
+const CHAINSNATCHER_CAPTURE = 'owner-supplied reference video (original footage: third-party TikTok, credit @thatjtawesome3; license class: third-party clip, owner-approved for use 2026-10-07) via tools/mocap/chainsnatcher (RTMO + RTMW3D two-body front end, referee rejected, watermark masked; attacker f135-158 is a flagged constrained solve) and Bannon tools/mocap/video_to_clip.py build_clip, bones in the bake\'s BANNON_rigged convention';
+
+/**
+ * Real deliverer captures that have NO receiver and are not the clip a named
+ * move is bound to. They must never borrow a generic duration stand-in victim
+ * (GrapplePairing.receiverClipFor returns null for them).
+ */
+export const DELIVERER_ONLY_CAPTURES: Readonly<Record<string, string>> = {
+  F5: 'Owner F5 capture from the single-body era of video_to_clip (Bannon 94f78a2450); the receiver was never tracked. Getbackk is now bound to the GETBACKK two-body pair instead.',
+};
 
 export const NAMED_GRAPPLE_BINDINGS: Record<string, NamedGrappleBinding> = {
   deadliftGerman: {
@@ -73,23 +105,28 @@ export const NAMED_GRAPPLE_BINDINGS: Record<string, NamedGrappleBinding> = {
   getbackk: {
     moveKey: 'getbackk', moveId: 'bf_getbackk', displayName: 'Getbackk',
     technical: 'fireman\'s carry into a spinning facebuster (F-5); canon: fireman\'s carry tornado slam',
-    status: 'DELIVERER_ONLY', deliverer: 'F5', receiver: null,
-    fidelity: 'stand_in',
-    note: 'F5 is a real owner capture (Bannon commit 94f78a2450) but from the single-body era of video_to_clip, so only the attacker was tracked. Receiver is MISSING_CLIP. The source video is not in the Bannon repo, so `video_to_clip.py --two` cannot re-run it.',
+    status: 'REAL_PAIR', deliverer: 'GETBACKK', receiver: 'GETBACKK__RECV',
+    fidelity: 'exact',
+    note: 'Exact real pair: both bodies captured from ONE take of the owner-supplied Getbackk reference (receiver jumps in, fireman\'s carry with the left arm hooking the left thigh, ~180 degree corkscrew toss to the attacker\'s left, impact at 5.3 s, both men down). Same window and clock for both halves (6.97 s, 84 keys, ratio 1.0). Coverage: attacker 207/210 frames, receiver 191/210; every gap is <= 6 frames and linearly interpolated (listed in public/motion/index.json provenance). Original footage is a third-party TikTok, credit @mackeymcqui; license class "third-party clip, owner-approved for use 2026-10-07" (the owner approved shipping motion captured from third-party clips on 2026-10-07). Replaces the F5 deliverer-only stand-in; F5 stays deliverer-only (see DELIVERER_ONLY_CAPTURES).',
     provenance: [
-      { clip: 'F5', origin: 'AUTHORED_CAPTURE', source: 'mhvnsnt/Bannon assets/moves/clips @ d575dd6 — owner video via video_to_clip.py (single-body, commit 94f78a2450)', mixamo: false },
+      { clip: 'GETBACKK', origin: 'AUTHORED_CAPTURE', source: GETBACKK_CAPTURE, mixamo: false },
+      { clip: 'GETBACKK__RECV', origin: 'AUTHORED_CAPTURE', source: GETBACKK_CAPTURE, mixamo: false },
     ],
   },
   chainsnatcher: {
     moveKey: 'chainsnatcher', moveId: 'bf_chainsnatcher', displayName: 'Chainsnatcher',
     technical: 'jumping double knee to the back / backstabber (canon, Bannon canon/characters/finxsse_match_notes.txt: "double knee to back jumping backbreaker"; BANNON_v150.html: "jumping double-knee backstabber")',
-    status: 'REAL_PAIR', deliverer: 'KNEETHROW', receiver: 'KNEETHROWREACTION',
-    fidelity: 'stand_in',
-    note: 'Best real pair: Schwarzerblitz kneeThrow.x + kneeThrowReaction.x, one authored take (both 0.5417 s), used by the TW_KneeBash throw in chara_tutor/chara_dummy moves.txt (starting_distance 34). It is a knee-bash THROW, not a jumping double knee to the back, so it is a stand-in. The exact receiver exists: BACKBREAKER_REACTION (Schwarzerblitz common/animations/backbreaker_reaction.x, 2.0417 s, referenced by no moves.txt), but its deliverer is MISSING_CLIP. No BACKSTABBER, DOUBLE_KNEE, KNEE_BACK or CODEBREAKER clip exists in versionten, Bannon or Schwarzerblitz. Bannon BannonMDickieMoves.cpp maps only "Kidney Breaker" -> backbreaker and "Lateral Breaker" -> side backbreaker, as names with no animation.',
+    status: 'REAL_PAIR', deliverer: 'CHAINSNATCHER', receiver: 'CHAINSNATCHER__RECV',
+    fidelity: 'exact',
+    note: 'Exact real pair: both bodies captured from ONE take of the owner-supplied Chainsnatcher reference (live indie match, one handheld low-angle shot): attacker behind the receiver with his arms over the shoulders, jumps with the knees tucked, lands on his back with the knees up, receiver driven back-down onto the knees. Window 3.20-5.27 s (63 frames, 26 keys, 2.067 s, same clock for both halves). Receiver: 53/63 frames tracked, 10 interpolated in gaps of <= 6 frames. Attacker: 39/63 tracked (f96-134); f135-158 (24 frames) is a FLAGGED CONSTRAINED SOLVE, because he is hidden behind and under the receiver from the jump on: his own bone lengths, last tracked pose -> supine with knees raised, landing frame measured from the receiver, spine parallel to the receiver on the mat. The receiver\'s roll after he lands is cropped in the source and not captured. Original footage is a third-party TikTok, credit @thatjtawesome3; license class "third-party clip, owner-approved for use 2026-10-07". Replaces the KNEETHROW / KNEETHROWREACTION stand-in, which stays as the fallback only.',
+    pairSeconds: 2.0667,
+    fallback: {
+      deliverer: 'KNEETHROW', receiver: 'KNEETHROWREACTION',
+      note: 'Schwarzerblitz kneeThrow.x + kneeThrowReaction.x (one authored take, 0.5417 s), a knee-bash throw: the previous stand-in. BACKBREAKER_REACTION is retired from this binding (it stays in the bank for other throws).',
+    },
     provenance: [
-      { clip: 'KNEETHROW', origin: 'AUTHORED_SCHWARZERBLITZ', source: 'mhvnsnt/SchwarzerblitzEngine @ 83287a2e bin/media/common/animations/kneeThrow.x', mixamo: false },
-      { clip: 'KNEETHROWREACTION', origin: 'AUTHORED_SCHWARZERBLITZ', source: 'mhvnsnt/SchwarzerblitzEngine @ 83287a2e bin/media/common/animations/kneeThrowReaction.x', mixamo: false },
-      { clip: 'BACKBREAKER_REACTION', origin: 'AUTHORED_SCHWARZERBLITZ', source: 'mhvnsnt/SchwarzerblitzEngine bin/media/common/animations/backbreaker_reaction.x (exact receiver, unbound: deliverer MISSING_CLIP)', mixamo: false },
+      { clip: 'CHAINSNATCHER', origin: 'AUTHORED_CAPTURE', source: CHAINSNATCHER_CAPTURE, mixamo: false },
+      { clip: 'CHAINSNATCHER__RECV', origin: 'AUTHORED_CAPTURE', source: CHAINSNATCHER_CAPTURE, mixamo: false },
     ],
   },
   hallStreetJustice: {
@@ -152,4 +189,56 @@ export function pairTiming(delivererDur: number, receiverDur: number): PairTimin
 export function namedGrappleBinding(moveKeyOrId: string): NamedGrappleBinding | null {
   return NAMED_GRAPPLE_BINDINGS[moveKeyOrId]
     ?? Object.values(NAMED_GRAPPLE_BINDINGS).find((b) => b.moveId === moveKeyOrId) ?? null;
+}
+
+/**
+ * A named owner grapple as the THROW it is, for FighterStateMachine.
+ *
+ * Only a REAL_PAIR whose catalog entry is a throw qualifies: the attacker plays
+ * `deliverer`, the commit clip is `deliverer` (so GrapplePairing resolves the
+ * victim's half to `receiver`), and the commit lasts the recorded take.
+ * `button` is the two-button throw the catalog's inputSequence names
+ * (RP+RK -> rightThrow, LP+LK -> leftThrow); null when it names neither.
+ * Frame data is the catalog's, in seconds at 60 fps.
+ */
+export interface NamedGrappleThrow {
+  moveKey: string;
+  moveId: string;
+  displayName: string;
+  deliverer: string;
+  receiver: string;
+  button: 'leftThrow' | 'rightThrow' | null;
+  startup: number;
+  active: number;
+  recovery: number;
+  /** Engine damage, the same mapping as RosterMoveWindows.catalogDamageToEngine. */
+  damage: number;
+  commitSeconds: number;
+  /** True when the exact pair was not available and the binding's fallback pair is playing. */
+  usedFallback: boolean;
+}
+
+export function namedGrappleThrowFor(
+  moveKeyOrId: string,
+  /** Is this clip baked and playable? Default: yes. When either exact half is not, the binding's fallback pair plays. */
+  opts: { available?: (clip: string) => boolean } = {},
+): NamedGrappleThrow | null {
+  const b = namedGrappleBinding(moveKeyOrId);
+  if (!b || b.status !== 'REAL_PAIR' || !b.deliverer || !b.receiver) return null;
+  const move = getMoveById(b.moveId);
+  if (!move || !move.throw) return null;
+  const can = opts.available ?? (() => true);
+  const useFallback = Boolean(b.fallback) && !(can(b.deliverer) && can(b.receiver));
+  const deliverer = useFallback ? b.fallback!.deliverer : b.deliverer;
+  const receiver = useFallback ? b.fallback!.receiver : b.receiver;
+  const seq = (move.inputSequence ?? '').replace(/\s+/g, '').toUpperCase();
+  const button = /^RP\+RK(\(|$)/.test(seq) ? 'rightThrow' : /^LP\+LK(\(|$)/.test(seq) ? 'leftThrow' : null;
+  return {
+    moveKey: b.moveKey, moveId: b.moveId, displayName: b.displayName,
+    deliverer, receiver, button,
+    startup: move.startup / 60, active: move.active / 60, recovery: move.recovery / 60,
+    damage: move.damage * 6 + 30,
+    commitSeconds: useFallback ? (move.active + move.recovery) / 60 : (b.pairSeconds ?? (move.active + move.recovery) / 60),
+    usedFallback: useFallback,
+  };
 }

@@ -641,8 +641,13 @@ export const SIGNATURE_MOVES: Record<string, BrutalFistMove> = {
     id: 'bf_chainsnatcher', displayName: 'Chainsnatcher', category: 'signature',
     startup: 14, active: 3, recovery: 28, damage: 42, hitAdvantage: 6, blockAdvantage: -8,
     pushback: 0.6, hitstun: 36, blockstun: 14, animation: 'chainsnatcher',
-    animationAliases: ['chainsnatcher', 'chain_snatcher', 'backstabber', 'Backstabber', 'finxsse_sig', 'KNEETHROW'],
-    minRange: 0.2, maxRange: 1.6, priority: 36, low: false, mid: true, overhead: false, throw: false, canCancel: true,
+    // CHAINSNATCHER + CHAINSNATCHER__RECV: real two-body capture of the
+    // owner-supplied reference (see NamedGrappleBindings.chainsnatcher). It is
+    // a grapple, so it is a THROW: FighterStateMachine fires it from RP+RK as a
+    // command throw and the victim plays the named receiver. KNEETHROW (the old
+    // Schwarzerblitz knee-bash stand-in) stays as the last fallback deliverer.
+    animationAliases: ['chainsnatcher', 'chain_snatcher', 'backstabber', 'Backstabber', 'CHAINSNATCHER', 'finxsse_sig', 'KNEETHROW'],
+    minRange: 0.2, maxRange: 1.6, priority: 36, low: false, mid: false, overhead: false, throw: true, canCancel: false,
     inputSequence: 'RP+RK (Finxsse)',
     description: "Finxsse's Chainsnatcher. Jumping double-knee to the back — a backstabber.",
     hitbox: { offsetX: 0.5, offsetZ: 0, width: 0.7, depth: 0.6, damage: 42, hitstun: 36, blockstun: 14, pushback: 0.6, launch: 0 }
@@ -651,8 +656,10 @@ export const SIGNATURE_MOVES: Record<string, BrutalFistMove> = {
     id: 'bf_getbackk', displayName: 'Getbackk', category: 'signature',
     startup: 20, active: 3, recovery: 48, damage: 82, hitAdvantage: 0, blockAdvantage: 0,
     pushback: 0, hitstun: 70, blockstun: 0, animation: 'getbackk',
-    // F5: real owner capture, deliverer half only — see NamedGrappleBindings.getbackk.
-    animationAliases: ['getbackk', 'get_backk', 'Getbackk', 'finxsse_finisher', 'f5_mod', 'F5'],
+    // GETBACKK + GETBACKK__RECV: real two-body capture of the owner-supplied
+    // reference (see NamedGrappleBindings.getbackk). F5 (single-body, no
+    // receiver) stays as the last fallback deliverer.
+    animationAliases: ['getbackk', 'get_backk', 'Getbackk', 'GETBACKK', 'finxsse_finisher', 'f5_mod', 'F5'],
     minRange: 0.1, maxRange: 0.9, priority: 50, low: false, mid: false, overhead: false, throw: true, canCancel: false,
     inputSequence: 'LP+RP+LK+RK (Finxsse)',
     description: "Finxsse's Getbackk. Fireman-carry tornado slam — a violent modified F-5.",

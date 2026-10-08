@@ -1683,5 +1683,693 @@
     "coverFrac": 0.767,
     "lowCoverage": false,
     "roleBy": "inversion (head below hip)"
+  },
+  "FLYING_HEADBUTT": {
+    "file": "FLYING_HEADBUTT.json",
+    "bytes": 47087,
+    "dur": 2.2533,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "attacker",
+    "pairedWith": "FLYING_HEADBUTT__RECV",
+    "coverFrac": 0.37,
+    "lowCoverage": true,
+    "bodies": 2,
+    "label": "Flying Headbutt (spread-arm, top rope onto prone man)",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/FLYING_HEADBUTT.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "FLYING_HEADBUTT__RECV": {
+    "file": "FLYING_HEADBUTT__RECV.json",
+    "bytes": 47231,
+    "dur": 2.0852,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "receiver",
+    "coverFrac": 0.37,
+    "lowCoverage": true,
+    "bodies": 2,
+    "label": "Flying Headbutt (spread-arm, top rope onto prone man)",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/FLYING_HEADBUTT__RECV.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "PUMPHANDLE_GERMAN_DOUBLE": {
+    "file": "PUMPHANDLE_GERMAN_DOUBLE.json",
+    "bytes": 46832,
+    "dur": 7.5,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "attacker",
+    "pairedWith": "PUMPHANDLE_GERMAN_DOUBLE__RECV",
+    "coverFrac": 0.38,
+    "lowCoverage": true,
+    "bodies": 2,
+    "label": "Double Pumphandle German (bridging)",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/PUMPHANDLE_GERMAN_DOUBLE.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "PUMPHANDLE_GERMAN_DOUBLE__RECV": {
+    "file": "PUMPHANDLE_GERMAN_DOUBLE__RECV.json",
+    "bytes": 47043,
+    "dur": 7.4,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "receiver",
+    "coverFrac": 0.38,
+    "lowCoverage": true,
+    "bodies": 2,
+    "label": "Double Pumphandle German (bridging)",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/PUMPHANDLE_GERMAN_DOUBLE__RECV.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "BACKDROP_360_FACE": {
+    "file": "BACKDROP_360_FACE.json",
+    "bytes": 47214,
+    "dur": 6.0989,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "attacker",
+    "pairedWith": "BACKDROP_360_FACE__RECV",
+    "coverFrac": 0.98,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "360 Backdrop (face first)",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/BACKDROP_360_FACE.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "BACKDROP_360_FACE__RECV": {
+    "file": "BACKDROP_360_FACE__RECV.json",
+    "bytes": 46948,
+    "dur": 6.0989,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "receiver",
+    "coverFrac": 0.98,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "360 Backdrop (face first)",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/BACKDROP_360_FACE__RECV.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "FALCON_ARROW_STANDING": {
+    "file": "FALCON_ARROW_STANDING.json",
+    "bytes": 46908,
+    "dur": 4.6261,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "attacker",
+    "pairedWith": "FALCON_ARROW_STANDING__RECV",
+    "coverFrac": 0.84,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Falcon Arrow",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/FALCON_ARROW_STANDING.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "FALCON_ARROW_STANDING__RECV": {
+    "file": "FALCON_ARROW_STANDING__RECV.json",
+    "bytes": 46996,
+    "dur": 3.8832,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "receiver",
+    "coverFrac": 0.84,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Falcon Arrow",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/FALCON_ARROW_STANDING__RECV.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "FALCON_ARROW_GROUNDED": {
+    "file": "FALCON_ARROW_GROUNDED.json",
+    "bytes": 46960,
+    "dur": 8.1384,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "attacker",
+    "pairedWith": "FALCON_ARROW_GROUNDED__RECV",
+    "coverFrac": 0.78,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Falcon Arrow (grounded)",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/FALCON_ARROW_GROUNDED.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "FALCON_ARROW_GROUNDED__RECV": {
+    "file": "FALCON_ARROW_GROUNDED__RECV.json",
+    "bytes": 47109,
+    "dur": 6.6313,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "receiver",
+    "coverFrac": 0.78,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Falcon Arrow (grounded)",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/FALCON_ARROW_GROUNDED__RECV.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "SOMERSAULT_TORNADO_DDT": {
+    "file": "SOMERSAULT_TORNADO_DDT.json",
+    "bytes": 46695,
+    "dur": 2.9,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "attacker",
+    "pairedWith": "SOMERSAULT_TORNADO_DDT__RECV",
+    "coverFrac": 0.51,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Somersault Tornado DDT",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/SOMERSAULT_TORNADO_DDT.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "SOMERSAULT_TORNADO_DDT__RECV": {
+    "file": "SOMERSAULT_TORNADO_DDT__RECV.json",
+    "bytes": 47004,
+    "dur": 3.4667,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "receiver",
+    "coverFrac": 0.51,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Somersault Tornado DDT",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/SOMERSAULT_TORNADO_DDT__RECV.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "STALLING_SUPLEX_STEPS": {
+    "file": "STALLING_SUPLEX_STEPS.json",
+    "bytes": 47023,
+    "dur": 7.1011,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "attacker",
+    "pairedWith": "STALLING_SUPLEX_STEPS__RECV",
+    "coverFrac": 0.57,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Stalling Vertical Suplex (up the steps)",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/STALLING_SUPLEX_STEPS.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "STALLING_SUPLEX_STEPS__RECV": {
+    "file": "STALLING_SUPLEX_STEPS__RECV.json",
+    "bytes": 46931,
+    "dur": 7.6395,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "receiver",
+    "coverFrac": 0.57,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Stalling Vertical Suplex (up the steps)",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/STALLING_SUPLEX_STEPS__RECV.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "TAG_POWERBOMB_GERMAN": {
+    "file": "TAG_POWERBOMB_GERMAN.json",
+    "bytes": 46974,
+    "dur": 3.6333,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "attacker",
+    "pairedWith": "TAG_POWERBOMB_GERMAN__RECV",
+    "coverFrac": 0.5,
+    "lowCoverage": false,
+    "bodies": 3,
+    "label": "Powerbomb Toss / German (tag, 3 bodies)",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/TAG_POWERBOMB_GERMAN.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "TAG_POWERBOMB_GERMAN__RECV": {
+    "file": "TAG_POWERBOMB_GERMAN__RECV.json",
+    "bytes": 47002,
+    "dur": 3.7,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/two-body",
+    "role": "receiver",
+    "coverFrac": 0.5,
+    "lowCoverage": false,
+    "bodies": 3,
+    "label": "Powerbomb Toss / German (tag, 3 bodies)",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/TAG_POWERBOMB_GERMAN__RECV.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "F5": {
+    "file": "F5.json",
+    "bytes": 47003,
+    "dur": 3.075,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/single-body",
+    "role": "attacker",
+    "bodies": 1,
+    "label": "F5 (fireman carry spinning facebuster), single-body capture",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/F5.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "94f78a2450 (owner videos: POWERBOMB, POWERBOMB_SYCO, POWERBOMB_SITOUT, POWERBOMB_CHOKELIFT, F5)",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "DIVING_HEADBUTT_GABLE": {
+    "file": "DIVING_HEADBUTT_GABLE.json",
+    "bytes": 46863,
+    "dur": 1.9655,
+    "keys": 28,
+    "bones": 14,
+    "src": "owner reference video (footage not committed to Bannon)",
+    "via": "video_to_clip/mediapipe/single-body",
+    "role": "attacker",
+    "coverFrac": 0.69,
+    "lowCoverage": false,
+    "bodies": 1,
+    "label": "Diving Headbutt (Gable); declared __RECV was never banked",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": "mhvnsnt/Bannon",
+      "path": "assets/moves/clips/DIVING_HEADBUTT_GABLE.json",
+      "commit": "d575dd6766c9585354f70caad23cdd3e37e924af",
+      "captureCommit": "6adb55108c (Two-body motion capture: the receiver gets a clip too) / de17ebc1d7 / 2f84b6d530 re-capture",
+      "tool": "tools/mocap/video_to_clip.py (MediaPipe Pose Landmarker, Apache-2.0)",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "GETBACKK": {
+    "file": "GETBACKK.json",
+    "bytes": 140680,
+    "dur": 6.9667,
+    "keys": 84,
+    "bones": 14,
+    "src": "owner-supplied reference video, 2026-10-04; original footage: third-party TikTok (@mackeymcqui)",
+    "via": "video_to_clip/build_clip/two-body (RTMO+RTMW3D front end)",
+    "role": "attacker",
+    "pairedWith": "GETBACKK__RECV",
+    "coverFrac": 0.986,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Getbackk (fireman carry, corkscrew toss, F-5 style) — owner-supplied reference",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": null,
+      "licenseClass": "third-party clip, owner-approved for use 2026-10-07",
+      "credit": "@mackeymcqui (TikTok)",
+      "sourceVideo": {
+        "file": "GETBACKK_src.mp4",
+        "sha256": "185e4d2a2a22054f7637f7b133c6d1e8b209d7ee5300e931d5ffaacda60a0112",
+        "format": "576x1024 portrait, 30 fps, 11.5 s; trimmed to 0.0-7.0 s (TikTok outro removed); comment overlay and watermark masked (ffmpeg delogo)",
+        "supplied": "owner-supplied reference video, 2026-10-04",
+        "originalFootage": "third-party TikTok (@mackeymcqui)"
+      },
+      "captureWindowSeconds": [
+        0,
+        6.966666666666667
+      ],
+      "trackedFrames": "207/210",
+      "interpolatedGaps": [
+        {
+          "fromFrame": 25,
+          "toFrame": 26,
+          "frames": 2
+        },
+        {
+          "fromFrame": 31,
+          "toFrame": 31,
+          "frames": 1
+        }
+      ],
+      "interpolationRule": "linear, gaps of at most 6 frames only; longer gaps would have failed the capture",
+      "tool": "Bannon tools/mocap/video_to_clip.py build_clip (unchanged retarget, 84 keys, smooth 5) fed by tools/mocap/getbackk: RTMO-l 2D tracking (rtmlib, Apache-2.0) + RTMW3D-x depth ordering + bone-length-constrained 3D lift",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "GETBACKK__RECV": {
+    "file": "GETBACKK__RECV.json",
+    "bytes": 139573,
+    "dur": 6.9667,
+    "keys": 84,
+    "bones": 14,
+    "src": "owner-supplied reference video, 2026-10-04; original footage: third-party TikTok (@mackeymcqui)",
+    "via": "video_to_clip/build_clip/two-body (RTMO+RTMW3D front end)",
+    "role": "receiver",
+    "coverFrac": 0.91,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Getbackk (fireman carry, corkscrew toss, F-5 style) — owner-supplied reference",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": null,
+      "licenseClass": "third-party clip, owner-approved for use 2026-10-07",
+      "credit": "@mackeymcqui (TikTok)",
+      "sourceVideo": {
+        "file": "GETBACKK_src.mp4",
+        "sha256": "185e4d2a2a22054f7637f7b133c6d1e8b209d7ee5300e931d5ffaacda60a0112",
+        "format": "576x1024 portrait, 30 fps, 11.5 s; trimmed to 0.0-7.0 s (TikTok outro removed); comment overlay and watermark masked (ffmpeg delogo)",
+        "supplied": "owner-supplied reference video, 2026-10-04",
+        "originalFootage": "third-party TikTok (@mackeymcqui)"
+      },
+      "captureWindowSeconds": [
+        0,
+        6.966666666666667
+      ],
+      "trackedFrames": "191/210",
+      "interpolatedGaps": [
+        {
+          "fromFrame": 129,
+          "toFrame": 129,
+          "frames": 1
+        },
+        {
+          "fromFrame": 157,
+          "toFrame": 158,
+          "frames": 2
+        },
+        {
+          "fromFrame": 160,
+          "toFrame": 163,
+          "frames": 4
+        },
+        {
+          "fromFrame": 167,
+          "toFrame": 167,
+          "frames": 1
+        },
+        {
+          "fromFrame": 175,
+          "toFrame": 176,
+          "frames": 2
+        },
+        {
+          "fromFrame": 179,
+          "toFrame": 180,
+          "frames": 2
+        },
+        {
+          "fromFrame": 183,
+          "toFrame": 183,
+          "frames": 1
+        },
+        {
+          "fromFrame": 188,
+          "toFrame": 188,
+          "frames": 1
+        },
+        {
+          "fromFrame": 196,
+          "toFrame": 197,
+          "frames": 2
+        },
+        {
+          "fromFrame": 204,
+          "toFrame": 204,
+          "frames": 1
+        },
+        {
+          "fromFrame": 206,
+          "toFrame": 207,
+          "frames": 2
+        }
+      ],
+      "interpolationRule": "linear, gaps of at most 6 frames only; longer gaps would have failed the capture",
+      "tool": "Bannon tools/mocap/video_to_clip.py build_clip (unchanged retarget, 84 keys, smooth 5) fed by tools/mocap/getbackk: RTMO-l 2D tracking (rtmlib, Apache-2.0) + RTMW3D-x depth ordering + bone-length-constrained 3D lift",
+      "mixamo": false,
+      "synthetic": false
+    }
+  },
+  "CHAINSNATCHER": {
+    "file": "CHAINSNATCHER.json",
+    "bytes": 39340,
+    "dur": 2.0667,
+    "keys": 26,
+    "bones": 12,
+    "src": "owner-supplied reference video, 2026-10-07; original footage: third-party TikTok (@thatjtawesome3)",
+    "via": "video_to_clip/build_clip/two-body (RTMO+RTMW3D front end)",
+    "role": "attacker",
+    "pairedWith": "CHAINSNATCHER__RECV",
+    "coverFrac": 0.619,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Chainsnatcher (jumping double-knee backbreaker / backstabber) — owner-supplied reference",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": null,
+      "licenseClass": "third-party clip, owner-approved for use 2026-10-07",
+      "credit": "@thatjtawesome3 (TikTok)",
+      "sourceVideo": {
+        "file": "CHAINSNATCHER_src.mp4",
+        "sha256": "cc9ad43482b36e164b755be6a8c97156f001aaaba01430d81d1ef5ab2dd2b040",
+        "format": "576x1024 portrait, 30 fps, 7.8 s, one handheld low-angle shot of live indie wrestling; TikTok watermark masked (ffmpeg delogo, two positions); capture window 3.20-5.27 s",
+        "supplied": "owner-supplied reference video, 2026-10-07",
+        "originalFootage": "third-party TikTok (@thatjtawesome3)"
+      },
+      "captureWindowSeconds": [
+        3.2,
+        5.2667
+      ],
+      "trackedFrames": "39/63",
+      "interpolatedGaps": [],
+      "interpolationRule": "linear, gaps of at most 6 frames only; longer gaps would have failed the capture",
+      "constrainedSolve": {
+        "fromFrame": 135,
+        "toFrame": 158,
+        "frames": 24,
+        "rule": "NOT TRACKED: the body is occluded behind and under the partner; posed by a constrained solve (own bone lengths, last tracked pose -> canon end pose, landing frame measured from the partner). See the capture README."
+      },
+      "tool": "tools/mocap/chainsnatcher: the Getbackk RTMO-l + RTMW3D-x front end with a three-identity tracker (the referee is tracked and dropped), a FLAGGED constrained solve for the attacker's occluded landing, Bannon tools/mocap/video_to_clip.py build_clip (unchanged: key times, smoothing, pose{}) and engine_retarget.py for bones{}",
+      "boneConvention": "bones{} are ABSOLUTE local rotations on public/models/BANNON_rigged.glb (the convention scripts/bake-fighter-animations.mjs reads for the Bannon bank: sourceRest = targetRest = bind), solved by tools/mocap/chainsnatcher/engine_retarget.py from the same joints build_clip keys on; build_clip's own camera-axis, rest-relative bones would play yawed 90 degrees with T-pose arms through this bake",
+      "cameraYaw": "handheld camera orbits ~52 degrees during the take; one common yaw per frame (mean facing of both men, smoothed, held after the attacker's last tracked frame) is removed from BOTH bodies",
+      "labelFixes": "receiver f149 (isolated between two gaps): left/right labels exchanged to agree with both tracked neighbours (lr_swap rule in the README)",
+      "mixamo": false,
+      "synthetic": "partial"
+    }
+  },
+  "CHAINSNATCHER__RECV": {
+    "file": "CHAINSNATCHER__RECV.json",
+    "bytes": 39601,
+    "dur": 2.0667,
+    "keys": 26,
+    "bones": 12,
+    "src": "owner-supplied reference video, 2026-10-07; original footage: third-party TikTok (@thatjtawesome3)",
+    "via": "video_to_clip/build_clip/two-body (RTMO+RTMW3D front end)",
+    "role": "receiver",
+    "coverFrac": 0.841,
+    "lowCoverage": false,
+    "bodies": 2,
+    "label": "Chainsnatcher (jumping double-knee backbreaker / backstabber) — owner-supplied reference",
+    "provenance": {
+      "origin": "AUTHORED_CAPTURE",
+      "repo": null,
+      "licenseClass": "third-party clip, owner-approved for use 2026-10-07",
+      "credit": "@thatjtawesome3 (TikTok)",
+      "sourceVideo": {
+        "file": "CHAINSNATCHER_src.mp4",
+        "sha256": "cc9ad43482b36e164b755be6a8c97156f001aaaba01430d81d1ef5ab2dd2b040",
+        "format": "576x1024 portrait, 30 fps, 7.8 s, one handheld low-angle shot of live indie wrestling; TikTok watermark masked (ffmpeg delogo, two positions); capture window 3.20-5.27 s",
+        "supplied": "owner-supplied reference video, 2026-10-07",
+        "originalFootage": "third-party TikTok (@thatjtawesome3)"
+      },
+      "captureWindowSeconds": [
+        3.2,
+        5.2667
+      ],
+      "trackedFrames": "53/63",
+      "interpolatedGaps": [
+        {
+          "fromFrame": 113,
+          "toFrame": 114,
+          "frames": 2
+        },
+        {
+          "fromFrame": 145,
+          "toFrame": 148,
+          "frames": 4
+        },
+        {
+          "fromFrame": 150,
+          "toFrame": 152,
+          "frames": 3
+        },
+        {
+          "fromFrame": 157,
+          "toFrame": 157,
+          "frames": 1
+        }
+      ],
+      "interpolationRule": "linear, gaps of at most 6 frames only; longer gaps would have failed the capture",
+      "tool": "tools/mocap/chainsnatcher: the Getbackk RTMO-l + RTMW3D-x front end with a three-identity tracker (the referee is tracked and dropped), a FLAGGED constrained solve for the attacker's occluded landing, Bannon tools/mocap/video_to_clip.py build_clip (unchanged: key times, smoothing, pose{}) and engine_retarget.py for bones{}",
+      "boneConvention": "bones{} are ABSOLUTE local rotations on public/models/BANNON_rigged.glb (the convention scripts/bake-fighter-animations.mjs reads for the Bannon bank: sourceRest = targetRest = bind), solved by tools/mocap/chainsnatcher/engine_retarget.py from the same joints build_clip keys on; build_clip's own camera-axis, rest-relative bones would play yawed 90 degrees with T-pose arms through this bake",
+      "cameraYaw": "handheld camera orbits ~52 degrees during the take; one common yaw per frame (mean facing of both men, smoothed, held after the attacker's last tracked frame) is removed from BOTH bodies",
+      "labelFixes": "receiver f149 (isolated between two gaps): left/right labels exchanged to agree with both tracked neighbours (lr_swap rule in the README)",
+      "mixamo": false,
+      "synthetic": false
+    }
   }
 }

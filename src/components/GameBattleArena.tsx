@@ -569,6 +569,9 @@ export default function GameBattleArena({
         'lowKick','highKick','primaryCombo','counter',
         'grappleInitiate','primaryThrow','knockdown','wakeup',
         'hitReaction','ko','signature',
+        // Extras carry named owner grapples (Finxsse: Chainsnatcher). Their ids
+        // reach the FSM so a named throw fires from its two-button input.
+        'extraMove1','extraMove2',
       ] as const;
       const clips: Record<string, string> = {};
       const ids: Record<string, string> = {};
@@ -967,6 +970,9 @@ export default function GameBattleArena({
         'lowKick','highKick','primaryCombo','counter',
         'grappleInitiate','primaryThrow','knockdown','wakeup',
         'hitReaction','ko','signature',
+        // Extras carry named owner grapples (Finxsse: Chainsnatcher). Their ids
+        // reach the FSM so a named throw fires from its two-button input.
+        'extraMove1','extraMove2',
       ] as const;
       const clips: Record<string,string> = {};
       const ids: Record<string,string> = {};
