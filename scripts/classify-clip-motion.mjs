@@ -125,6 +125,13 @@ export function classify(sig, name = '') {
   if (!sig) return null;
   const { dur, totalDeg, armShare, legShare, hipYaw } = sig;
 
+  // Non-combat library clips stay UNMAPPED on purpose (clip-coverage.test.ts:
+  // "mapping a rope climb into combat would be worse than leaving it out").
+  // Traversal (climbing), Mixamo character rest poses shipped as clips
+  // (X_BOT / Y_BOT) and DCC master/blend files are not fighting motion, so the
+  // measured fallback must not turn them into a taunt, knockdown or strike.
+  if (/CLIMB|MASTER.?FILE|(^|_)[XY]_BOT$/i.test(name)) return null;
+
   // Semantic names are stronger evidence than a generic travel heuristic.
   // These families are routinely short/rotational enough to be mistaken for
   // attacks if we only look at limb travel. Preserve their role before the

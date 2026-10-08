@@ -311,6 +311,18 @@ export class LocomotionSystem {
     if (this.jumpY <= 0.02 && this.jumpV === 0) this.jumpArmed = true;
   }
 
+  /**
+   * Force a real floor landing for knockdown/get-up transitions. GameBattleArena
+   * (d3ed486) calls this so a jump/juggle Y never survives into a fall or
+   * get-up; the method was lost when this file was restored to its baseline
+   * (0df3cfa). It only zeroes the jump arc, exactly as the arc itself does on
+   * touchdown; re-arming stays with armJump(), as in the baseline.
+   */
+  land() {
+    this.jumpY = 0;
+    this.jumpV = 0;
+  }
+
   get velocity(): { x: number; z: number } {
     return { x: this.state.velocityX, z: this.state.velocityZ };
   }

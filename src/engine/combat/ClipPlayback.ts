@@ -50,7 +50,11 @@ export const WALK_PLAYBACK_MPS = 0.95;
 /** The most a strike may be sped up before it reads as a twitch, not a punch. */
 export const ATTACK_MAX_SPEEDUP = 1.0;
 /** Clips beyond this duration/window fit are data mismatches and are cut, not held. */
-export const ATTACK_RECONCILE_MAX_FIT = 1.45;
+// 2.2, not 1.45: 1.45 is the old *speed-up* band this file's header calls a
+// twitch. As a hold bound it cut HEAVYKICK (0.542s in a 0.333s light window,
+// fit 1.63) before it landed -- the exact "1x, then cut" defect measured above.
+// 2.2 is the bound the hold contract was introduced with (a862d93).
+export const ATTACK_RECONCILE_MAX_FIT = 2.2;
 
 /**
  * Combat clips are authored motion, not something to stretch to fit frame data.

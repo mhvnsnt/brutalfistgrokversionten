@@ -741,7 +741,13 @@ export interface CombatArena3DProps {
   /** Metres/second, written by the match loop. Drives foot playback rate. */
   p1GroundSpeedRef?: { current: number };
   p2GroundSpeedRef?: { current: number };
-  /** When a grapple receiver is playing, match its authored clip to the deliverer's clock. */
+  /**
+   * When a grapple receiver is playing, match its authored clip to the deliverer's clock.
+   * Accepted but NOT forwarded: FighterMesh was restored to its tested baseline
+   * (9b09638), which has no `forcedPlaybackDurationSeconds` prop, so passing it
+   * was a type error and never reached the mixer. Re-wire it here if FighterMesh
+   * regains receiver time-scaling.
+   */
   p1GrappleDurationSeconds?: number;
   p2GrappleDurationSeconds?: number;
   /** Callbacks to receive bone hitbox system references from FighterMesh */
@@ -811,8 +817,6 @@ export default function CombatArena3D({
   p2LocomotionVelocity,
   p1GroundSpeedRef,
   p2GroundSpeedRef,
-  p1GrappleDurationSeconds,
-  p2GrappleDurationSeconds,
   onP1BoneHitboxReady,
   onP2BoneHitboxReady,
   wallSplatEvent,
@@ -1149,7 +1153,6 @@ export default function CombatArena3D({
           attackDurationSeconds={p1AttackDurationSeconds}
           locomotionVelocity={p1LocomotionVelocity}
           groundSpeedRef={p1GroundSpeedRef ?? { current: Math.hypot(p1LocomotionVelocity?.forward ?? 0, p1LocomotionVelocity?.strafe ?? 0) }}
-          forcedPlaybackDurationSeconds={p1GrappleDurationSeconds}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP1BoneHitboxReady}
           attackClip={p1AttackClip}
@@ -1180,7 +1183,6 @@ export default function CombatArena3D({
           attackDurationSeconds={p2AttackDurationSeconds}
           locomotionVelocity={p2LocomotionVelocity}
           groundSpeedRef={p2GroundSpeedRef ?? { current: Math.hypot(p2LocomotionVelocity?.forward ?? 0, p2LocomotionVelocity?.strafe ?? 0) }}
-          forcedPlaybackDurationSeconds={p2GrappleDurationSeconds}
           hitStopActive={hitStopActive}
           onBoneHitboxReady={onP2BoneHitboxReady}
           attackClip={p2AttackClip}
